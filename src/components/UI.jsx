@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { CLASSES } from '../data/content.js';
+import { PRIMALS, RARITIES } from '../data/world.js';
 
 export function Crest({ variant = 'lantern', size = 'md' }) {
   return (
@@ -22,6 +23,22 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
       {showStatus && hero.status && hero.status !== 'available' ? <span className={`status-dot status-dot--${hero.status}`} title={hero.status} /> : null}
     </div>
   );
+}
+
+
+export function PrimalBadge({ primal, compact = false }) {
+  const info = PRIMALS[primal] || { icon: '◇', color: '#8f99a5', id: primal || 'Unknown' };
+  return <span className={`primal-badge ${compact ? 'primal-badge--compact' : ''}`} style={{ '--primal-color': info.color }} title={`${info.id}: strong against ${info.beats || '—'}, weak to ${info.weakTo || '—'}`}><i>{info.icon}</i>{compact ? null : <span>{info.id}</span>}</span>;
+}
+
+export function RarityBadge({ rarity }) {
+  const info = RARITIES[rarity] || { color: '#8f99a5', id: rarity || 'Common' };
+  return <span className="rarity-badge" style={{ '--rarity-color': info.color }}>{info.id}</span>;
+}
+
+export function LevelBadge({ hero, showXp = false }) {
+  const level = hero?.level || 1;
+  return <span className="level-badge" title={showXp && level < 20 ? `${hero.xp || 0} XP toward the next level` : level >= 20 ? 'Maximum level' : `Level ${level}`}><small>LV</small><strong>{level}</strong>{showXp && level < 20 ? <em>{hero.xp || 0} XP</em> : null}</span>;
 }
 
 export function ProgressBar({ value, max = 100, label = undefined, tone = 'gold', compact = false }) {

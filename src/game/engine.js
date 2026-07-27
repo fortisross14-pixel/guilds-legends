@@ -27,8 +27,20 @@ import {
   emptyFormations,
   formationForMission,
 } from '../data/formations.js';
+import {
+  LOCATION_BY_ID,
+  LOCATIONS,
+  PRIMALS,
+  PRIMAL_IDS,
+  RARITIES,
+  RARITY_IDS,
+  primalCombatModifier,
+  primalDiplomacyModifier,
+  travelDuration,
+  unlockedLocations,
+} from '../data/world.js';
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 const MAX_CHRONICLE = 1400;
 const MAX_HERO_HISTORY = 120;
 const MAX_HEROES = 480;
@@ -92,8 +104,72 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+export function xpForNextLevel(level) {
+  return level >= 20 ? 0 : 70 + level * 30;
+}
+
+function rarityFromRoll(rng, bonus = 0) {
+  const roll = rng.next() + bonus;
+  if (roll > 1.03) return 'Legend';
+  if (roll > 0.91) return 'Epic';
+  if (roll > 0.72) return 'Rare';
+  if (roll > 0.43) return 'Uncommon';
+  return 'Common';
+}
+
+function levelBandForRarity(rarity, rng, veteran = false) {
+  const bands = {
+    Common: [1, 3], Uncommon: [2, 5], Rare: [4, 8], Epic: [7, 12], Legend: [10, 15],
+  };
+  const [min, max] = bands[rarity] || bands.Common;
+  return clamp(rng.int(min, max) + (veteran ? 2 : 0), 1, 18);
+}
+
+function powerForLevel(level, rarity, rng) {
+  const rarityBonus = { Common: 0, Uncommon: 2, Rare: 5, Epic: 8, Legend: 11 }[rarity] || 0;
+  return clamp(38 + level * 2.25 + rarityBonus + rng.int(-3, 3), 38, 91);
+}
+
+function choosePrimal(rng, locationId) {
+  const locationPrimal = LOCATION_BY_ID[locationId]?.primal;
+  if (locationPrimal && rng.chance(0.58)) return locationPrimal;
+  return rng.pick(PRIMAL_IDS);
+}
+
+function applyXpInPlace(hero, amount, state, source = 'experience') {
+  if (!hero || hero.level >= 20 || amount <= 0) return [];
+  const gains = [];
+  hero.xp = (hero.xp || 0) + Math.round(amount);
+  while (hero.level < 20) {
+    const needed = xpForNextLevel(hero.level);
+    if (hero.xp < needed) break;
+    hero.xp -= needed;
+    hero.level += 1;
+    const classInfo = CLASSES[hero.classId];
+    const keys = Object.keys(hero.attributes);
+    const primary = classInfo?.primary || keys[0];
+    const secondary = classInfo?.secondary || keys[1];
+    hero.attributes[primary] = clamp(hero.attributes[primary] + 2, 20, hero.potential);
+    hero.attributes[secondary] = clamp(hero.attributes[secondary] + 1, 20, hero.potential);
+    const extra = keys.filter((key) => key !== primary && key !== secondary);
+    const randomKey = extra[(hero.level + hero.name.length) % extra.length];
+    if (randomKey) hero.attributes[randomKey] = clamp(hero.attributes[randomKey] + 1, 20, hero.potential);
+    hero.power = calculatePower(hero.attributes);
+    hero.career.peakPower = Math.max(hero.career.peakPower || 0, hero.power);
+    hero.renown += hero.level % 5 === 0 ? 2 : 1;
+    gains.push(hero.level);
+    if (state) {
+      addHeroHistory(hero, state, { type: 'level', title: `Reached level ${hero.level}`, text: `${hero.name} advanced through ${source}.` });
+      state.notifications.push({ id: `level-${hero.id}-${hero.level}-${state.date.year}-${state.date.month}`, tone: hero.level >= 15 ? 'purple' : 'green', title: `${hero.name} reached level ${hero.level}`, text: `${hero.rarity} ${hero.classId} · power ${hero.power}` });
+    }
+  }
+  return gains;
+}
+
 function tierIndexByName(name) {
-  return Math.max(0, TIERS.findIndex((tier) => tier.id === name));
+  const aliases = { Local: 'Regional', Continental: 'Global', World: 'Global', 'Mythic Legacy': 'Global' };
+  const normalized = aliases[name] || name;
+  return Math.max(0, TIERS.findIndex((tier) => tier.id === normalized));
 }
 
 function dateLabel(state) {
@@ -156,22 +232,31 @@ export function calculatePower(attributes) {
 }
 
 function createHeroFromBase(base, state, rng, options = {}) {
-  const attributes = base.attributes || baseAttributes(base.power, base.classId, rng);
+  const rarity = base.rarity || options.rarity || 'Common';
+  const level = clamp(base.level || options.level || 1, 1, 20);
+  const primal = base.primal || options.primal || choosePrimal(rng, options.homeLocationId || state.world?.currentLocationId || 'dunmere');
+  const basePower = base.power || powerForLevel(level, rarity, rng);
+  const attributes = base.attributes || baseAttributes(basePower, base.classId, rng);
   const hero = {
     id: base.id || uid('hero', rng),
     name: base.name,
     classId: base.classId,
+    primal,
+    rarity,
+    level,
+    xp: base.xp || 0,
     age: base.age,
     power: calculatePower(attributes),
-    potential: base.potential,
+    potential: Math.max(calculatePower(attributes) + 3, base.potential || RARITIES[rarity]?.maxPotential || 72),
     attributes,
     personality: base.personality,
     flaw: base.flaw,
     dream: base.dream,
     origin: base.origin,
+    homeLocationId: base.homeLocationId || options.homeLocationId || state.world?.currentLocationId || 'dunmere',
     hiddenTrait: base.hiddenTrait || rng.pick(HIDDEN_TRAITS),
     hiddenRevealed: false,
-    hook: base.hook || `${base.personality} ${base.classId.toLowerCase()} from a ${base.origin.toLowerCase()} background.`,
+    hook: base.hook || `${base.personality} ${rarity.toLowerCase()} ${primal.toLowerCase()} ${base.classId.toLowerCase()} from a ${base.origin.toLowerCase()} background.`,
     loyalty: base.loyalty ?? rng.int(48, 82),
     morale: rng.int(62, 82),
     form: rng.int(58, 76),
@@ -180,31 +265,19 @@ function createHeroFromBase(base, state, rng, options = {}) {
     status: 'available',
     injury: null,
     injuryMonths: 0,
-    salary: Math.max(18, Math.round(base.power * 0.55 + Math.max(0, base.potential - 70) * 0.25)),
+    salary: Math.max(12, Math.round((18 + level * 7 + Math.max(0, (base.potential || 70) - 70) * 0.45) * (RARITIES[rarity]?.salary || 1))),
     joinedYear: options.joinedYear ?? state.date.year,
     guildId: options.guildId || 'player',
     appointment: null,
     training: 'Fundamentals',
     roleExperience: Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])),
     career: {
-      missions: 0,
-      wins: 0,
-      partials: 0,
-      defeats: 0,
-      legendary: 0,
-      tournaments: 0,
-      titles: 0,
-      injuries: 0,
-      rescues: 0,
-      kills: 0,
-      artifacts: 0,
-      fame: 0,
-      earnings: 0,
-      bestMission: null,
-      peakPower: calculatePower(attributes),
-      serviceYears: 0,
+      missions: 0, wins: 0, partials: 0, defeats: 0, legendary: 0,
+      tournaments: 0, titles: 0, injuries: 0, rescues: 0, kills: 0,
+      artifacts: 0, fame: 0, earnings: 0, bestMission: null,
+      peakPower: calculatePower(attributes), serviceYears: 0, xpEarned: 0,
     },
-    renown: options.renown ?? Math.max(0, Math.round(base.power / 10 - 3)),
+    renown: options.renown ?? Math.max(0, level - 1 + Math.round(basePower / 14 - 2)),
     legacy: options.legacy ?? 0,
     relationships: [],
     history: [],
@@ -213,43 +286,62 @@ function createHeroFromBase(base, state, rng, options = {}) {
 }
 
 export function generateHero(state, rng, quality = 'normal', options = {}) {
-  const classId = options.classId || rng.pick(Object.keys(CLASSES));
-  const age = options.age ?? rng.int(16, quality === 'veteran' ? 36 : 28);
-  let powerBase = quality === 'elite' ? rng.int(58, 72) : quality === 'veteran' ? rng.int(55, 68) : rng.int(38, 60);
-  if (age < 20) powerBase -= rng.int(2, 7);
-  const potentialBoost = quality === 'elite' ? rng.int(12, 24) : rng.int(8, 26);
-  const potential = clamp(powerBase + potentialBoost + (age < 21 ? 5 : 0), powerBase + 3, 96);
+  const locationId = options.homeLocationId || state.world?.currentLocationId || 'dunmere';
+  const location = LOCATION_BY_ID[locationId];
+  const scoutBonus = (state.guild?.facilities?.['scout-office'] || 0) * 0.025;
+  const qualityBonus = quality === 'elite' ? 0.24 : quality === 'veteran' ? 0.12 : 0;
+  const rarity = options.rarity || rarityFromRoll(rng, scoutBonus + qualityBonus);
+  const level = options.level || levelBandForRarity(rarity, rng, quality === 'veteran');
+  const classPool = location?.specialties?.length && rng.chance(0.64) ? location.specialties : Object.keys(CLASSES);
+  const classId = options.classId || rng.pick(classPool);
+  const age = options.age ?? clamp(rng.int(17, 27) + Math.floor(level / 3) + (quality === 'veteran' ? 7 : 0), 16, 39);
+  const powerBase = powerForLevel(level, rarity, rng);
+  const rarityPotential = RARITIES[rarity]?.maxPotential || 72;
+  const potential = clamp(powerBase + rng.int(5, 16), powerBase + 3, rarityPotential);
   const name = options.name || `${rng.pick(FIRST_NAMES)} ${rng.pick(LAST_NAMES)}`;
   return createHeroFromBase({
-    name,
-    classId,
-    age,
+    name, classId, age, level, rarity,
+    primal: options.primal || choosePrimal(rng, locationId),
+    homeLocationId: locationId,
     power: powerBase,
     potential,
     personality: rng.pick(PERSONALITIES),
     flaw: rng.pick(FLAWS),
     dream: rng.pick(DREAMS),
-    origin: rng.pick(ORIGINS),
+    origin: `${rng.pick(ORIGINS)} of ${location?.name || 'the road'}`,
     loyalty: rng.int(45, 78),
-  }, state, rng, options);
+  }, state, rng, { ...options, homeLocationId: locationId });
 }
 
-function makeCandidate(state, rng, forcedQuality) {
+function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere') {
   const academyLevel = state.guild.facilities['academy'] || 0;
   const scoutLevel = state.guild.facilities['scout-office'] || 0;
   const spymasterBonus = state.guild.appointments?.Spymaster ? 0.08 : 0;
   const qualityRoll = rng.next() + academyLevel * 0.08 + scoutLevel * 0.05 + spymasterBonus;
   const quality = forcedQuality || (qualityRoll > 1.12 ? 'elite' : qualityRoll > 0.92 ? 'veteran' : 'normal');
-  const hero = generateHero(state, rng, quality);
-  const signingFee = Math.round(hero.power * 6 + Math.max(0, hero.potential - 70) * 8 + (quality === 'elite' ? 180 : 0));
+  const hero = generateHero(state, rng, quality, { homeLocationId: locationId });
+  const rarityFactor = RARITIES[hero.rarity]?.signing || 1;
+  const signingFee = Math.round((hero.level * 85 + hero.power * 3.5 + Math.max(0, hero.potential - 70) * 10) * rarityFactor);
   return {
     ...hero,
     status: 'candidate',
-    channel: academyLevel > 0 && hero.age <= 20 && rng.chance(0.35) ? 'Academy' : scoutLevel > 0 && rng.chance(0.35) ? 'Scout network' : rng.pick(['Tavern board', 'Mercenary market', 'Defector rumor']),
+    locationId,
+    channel: academyLevel > 0 && hero.age <= 20 && rng.chance(0.35) ? 'Academy' : scoutLevel > 0 && rng.chance(0.35) ? 'Scout network' : rng.pick(['Tavern board', 'Mercenary market', 'Temple recommendation', 'Defector rumor']),
     signingFee,
     expiresYear: state.date.year + 1,
-    interest: clamp(55 + state.guild.tierIndex * 8 + Math.round(state.guild.fame / 100) - Math.round(signingFee / 100), 20, 96),
+    interest: clamp(63 + state.guild.tierIndex * 10 + Math.round(state.guild.fame / 110) - hero.level * 1.6 - (hero.rarity === 'Legend' ? 12 : 0), 20, 98),
   };
+}
+
+
+function refreshCandidatesForLocationInPlace(state, rng, locationId = state.world?.currentLocationId || 'dunmere') {
+  const unlockedIds = new Set(unlockedLocations(state.guild.tierIndex).map((location) => location.id));
+  state.candidates = (state.candidates || []).filter((candidate) => candidate.expiresYear >= state.date.year && unlockedIds.has(candidate.locationId || 'dunmere'));
+  const current = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === locationId).length;
+  const target = 3 + Math.min(2, state.guild.facilities['scout-office'] || 0);
+  for (let i = current; i < target; i += 1) state.candidates.push(makeCandidate(state, rng, null, locationId));
+  state.candidates.sort((a, b) => b.rarity.localeCompare(a.rarity) || b.level - a.level || b.potential - a.potential);
+  state.candidates = state.candidates.slice(0, 60);
 }
 
 function createRival(archetype, state, rng, index) {
@@ -314,6 +406,7 @@ export function createNewGame(options = {}) {
   const rng = makeRng(seed);
   const founderName = (options.founderName || options.founder || 'Rowan Vale').replace(/^Guildmaster\s+/i, '').trim() || 'Rowan Vale';
   const founderClass = CLASSES[options.founderClass] ? options.founderClass : 'Guardian';
+  const founderPrimal = PRIMALS[options.founderPrimal] ? options.founderPrimal : 'Fire';
   const state = {
     schemaVersion: SCHEMA_VERSION,
     id: options.id || `campaign-${seed.toString(36)}`,
@@ -323,164 +416,113 @@ export function createNewGame(options = {}) {
     lastPlayedAt: new Date().toISOString(),
     date: { year: 1187, month: 0 },
     guild: {
-      id: 'player',
-      name: options.guildName || 'The Broken Lantern',
-      motto: options.motto || 'No light is lost forever.',
-      crest: options.crest || 'lantern',
-      founder: founderName,
-      founderHeroId: 'founder-player',
-      tierIndex: 0,
-      tier: 'Local',
-      fame: 4,
-      legacy: 2,
-      crowns: 650,
-      alignment: 'Undeclared',
-      rank: 18,
-      contractsCompleted: 0,
-      wins: 0,
-      losses: 0,
-      deaths: 0,
-      fallen: false,
-      charter: false,
-      facilities: facilityLevels(),
-      appointments: {},
-      formations: emptyFormations(),
-      policies: { retreat: 'Measured', treasure: 'Guild Share', publicity: 'Truthful' },
-      obligations: [],
-      rivalries: [],
+      id: 'player', name: options.guildName || 'The Broken Lantern', motto: options.motto || 'No light is lost forever.', crest: options.crest || 'lantern',
+      founder: founderName, founderHeroId: 'founder-player', tierIndex: 0, tier: 'Regional', fame: 8, legacy: 2, crowns: 720,
+      alignment: 'Undeclared', rank: 18, contractsCompleted: 0, wins: 0, losses: 0, deaths: 0, fallen: false, charter: true,
+      facilities: facilityLevels(), appointments: {}, formations: emptyFormations(), policies: { retreat: 'Measured', treasure: 'Guild Share', publicity: 'Truthful' }, obligations: [], rivalries: [],
     },
-    heroes: [],
-    historicHeroes: [],
-    candidates: [],
-    rivals: [],
-    missions: [],
-    activeMissions: [],
-    pendingDecisions: [],
-    missionHistory: [],
-    tournamentHistory: [],
-    pendingReports: [],
-    chronicle: [],
-    artifacts: [],
-    sagas: SAGA_DEFINITIONS.map((saga) => ({ ...saga, progress: 0, completed: false, discovered: saga.tier === 'Local' })),
-    tournaments: [],
-    tutorial: { step: 0, completed: false, acknowledged: false },
+    world: { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null },
+    heroes: [], historicHeroes: [], candidates: [], rivals: [], missions: [], activeMissions: [], pendingDecisions: [], missionHistory: [], tournamentHistory: [], pendingReports: [], chronicle: [], artifacts: [],
+    sagas: SAGA_DEFINITIONS.map((saga) => ({ ...saga, progress: 0, completed: false, discovered: saga.tier === 'Regional' })),
+    tournaments: [], tutorial: { step: 0, completed: false, acknowledged: false },
     goals: CHAPTER_GOALS.map((goal) => ({ ...goal, completed: false, claimed: false })),
     achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
-    stats: initialStats(),
-    notifications: [],
-    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard' },
-    flags: { firstMissionInspected: false, firstHeroInspected: false, goalsInspected: false, politicalChoiceOffered: false, firstCompanionHired: false },
+    stats: initialStats(), notifications: [], settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard' },
+    flags: { firstMissionInspected: false, firstHeroInspected: false, goalsInspected: false, politicalChoiceOffered: false, firstCompanionHired: false, firstTravelCompleted: false },
   };
 
   const founder = createHeroFromBase({
-    id: 'founder-player',
-    name: founderName,
-    classId: founderClass,
-    age: 27,
-    power: 52,
-    potential: 82,
-    personality: 'Determined',
-    flaw: 'Pride',
-    dream: 'Build a guild that outlives me',
-    origin: 'Founder of the Broken Lantern',
-    loyalty: 100,
-    hook: `You raised the banner yourself. Every triumph and failure will become part of ${founderName}’s own career.`,
-    hiddenTrait: 'None',
-  }, state, rng);
-  founder.salary = 0;
-  founder.renown = 2;
-  founder.legacy = 1;
+    id: 'founder-player', name: founderName, classId: founderClass, primal: founderPrimal, rarity: 'Uncommon', level: 1, xp: 0, age: 27,
+    power: 48, potential: 84, personality: 'Determined', flaw: 'Pride', dream: 'Build a guild that outlives me', origin: 'Founder of the Broken Lantern',
+    homeLocationId: 'dunmere', loyalty: 100, hook: `You raised the banner yourself. ${founderName} is a level 1 ${founderPrimal} ${founderClass} whose career will define the institution.`, hiddenTrait: 'None',
+  }, state, rng, { homeLocationId: 'dunmere' });
+  founder.salary = 0; founder.renown = 2; founder.legacy = 1;
   state.heroes = [founder];
-  addHeroHistory(founder, state, { type: 'founding', title: `Founded ${state.guild.name}`, text: 'Signed the Dunmere charter with no company yet standing behind the banner.' });
+  addHeroHistory(founder, state, { type: 'founding', title: `Founded ${state.guild.name}`, text: 'Signed the Dunmere charter alone, at level 1, with no company yet standing behind the banner.' });
 
   const openingPool = [...STARTING_HEROES];
   while (state.candidates.length < 3 && openingPool.length) {
     const index = rng.int(0, openingPool.length - 1);
     const base = openingPool.splice(index, 1)[0];
-    const candidate = createHeroFromBase(base, state, rng);
-    candidate.status = 'candidate';
-    candidate.channel = 'Founding appeal';
-    candidate.signingFee = 0;
-    candidate.expiresYear = state.date.year + 1;
-    candidate.interest = 100;
+    const candidate = createHeroFromBase({ ...base, power: 45 + rng.int(-2, 4), level: rng.int(1, 3), rarity: rng.chance(0.3) ? 'Rare' : 'Uncommon', primal: choosePrimal(rng, 'dunmere'), homeLocationId: 'dunmere' }, state, rng, { homeLocationId: 'dunmere' });
+    candidate.status = 'candidate'; candidate.locationId = 'dunmere'; candidate.channel = 'Founding appeal'; candidate.signingFee = 0; candidate.expiresYear = state.date.year + 1; candidate.interest = 100;
     candidate.hook = `${candidate.hook} Will join the founding pair without a signing fee.`;
     state.candidates.push(candidate);
   }
 
   state.rivals = RIVAL_ARCHETYPES.map((archetype, index) => createRival(archetype, state, rng, index));
   refreshMissionsInPlace(state, rng, true);
+  refreshCandidatesForLocationInPlace(state, rng, 'dunmere');
   createTournamentsInPlace(state, rng);
   commitRng(state, rng);
 
-  addChronicle(state, {
-    type: 'founding', importance: 5, title: `${founderName} raises the banner of ${state.guild.name}`,
-    text: 'The previous guild vanished in the Blackwood. One founder now stands in a rented hall, searching for the first companion willing to rebuild it.',
-    heroIds: [founder.id], tags: ['founding', 'broken-lantern'],
-  });
-  state.notifications.push({ id: 'welcome', tone: 'gold', title: 'A banner, not yet a company', text: 'Your first order is to hire the person who will stand beside you.' });
+  addChronicle(state, { type: 'founding', importance: 5, title: `${founderName} raises the banner of ${state.guild.name}`, text: `A level 1 ${founderPrimal} ${founderClass} stands in Dunmere, searching for the first companion willing to rebuild the vanished company.`, heroIds: [founder.id], tags: ['founding', 'broken-lantern', founderPrimal] });
+  state.notifications.push({ id: 'welcome', tone: 'gold', title: 'A banner, not yet a company', text: 'Hire one local companion. Then choose what kind of company the pair can become.' });
   evaluateStateInPlace(state);
   return state;
 }
 
-function availableTemplatePool(state) {
+function availableTemplatePool(state, location = null) {
   const currentTier = state.guild.tierIndex;
-  return MISSION_TEMPLATES.filter((template) => {
-    const templateTier = tierIndexByName(template.tier);
-    const region = REGIONS.find((r) => r.id === template.region);
-    const regionTier = tierIndexByName(region?.unlock || 'Local');
-    return templateTier <= currentTier + 1 && regionTier <= currentTier;
-  });
+  const eligible = MISSION_TEMPLATES.filter((template) => tierIndexByName(template.tier) <= currentTier);
+  if (!location) return eligible;
+  const regional = eligible.filter((template) => template.region === location.region);
+  return regional.length ? regional : eligible;
 }
 
-function instantiateMission(template, state, rng) {
-  const rewardVariance = rng.int(template.reward[0], template.reward[1]);
-  const fameVariance = rng.int(template.fame[0], template.fame[1]);
-  const issuer = rng.pick(['Dunmere Council', 'Temple of Saint Orra', 'Border Baron', 'Merchant League', 'Anonymous petitioner', 'Village moot', 'Royal bailiff']);
+function instantiateMission(template, state, rng, forcedLocation = null) {
+  const location = forcedLocation || LOCATION_BY_ID[state.world?.currentLocationId] || LOCATIONS[0];
+  const rewardVariance = rng.int(template.reward[0], template.reward[1]) + tierIndexByName(location.tier) * 80;
+  const fameVariance = rng.int(template.fame[0], template.fame[1]) + tierIndexByName(location.tier) * 2;
+  const issuerNames = [`${location.name} Council`, `${location.name} Temple`, `${location.name} Trade House`, `${location.name} Watch`, 'Anonymous petitioner', 'A local noble house'];
+  const approach = template.approach || formationForMission(template);
+  const enemyPrimal = rng.chance(0.68) ? location.primal : rng.pick(PRIMAL_IDS);
+  const patronPrimal = rng.chance(0.78) ? location.primal : rng.pick(PRIMAL_IDS);
   return {
-    id: uid('mission', rng),
-    templateId: template.id,
-    title: template.title,
-    family: template.family,
-    tier: template.tier,
-    region: template.region,
-    risk: template.risk,
-    duration: template.duration,
-    difficulty: clamp(template.difficulty + rng.int(-4, 5), 30, 99),
-    reward: rewardVariance,
-    fame: fameVariance,
-    roles: [...template.roles],
-    approach: template.approach || formationForMission(template),
-    brief: template.brief,
-    stakes: template.stakes,
-    choice: clone(template.choice),
-    saga: template.saga || null,
-    artifact: template.artifact || null,
-    tournament: Boolean(template.tournament),
-    issuer,
-    availableUntil: { year: state.date.year, month: Math.min(11, state.date.month + rng.int(2, 4)) },
+    id: uid('mission', rng), templateId: template.id,
+    title: template.id === 'wolves-old-road' ? template.title : `${template.title}`,
+    family: template.family, tier: template.tier, region: location.region,
+    locationId: location.id, locationName: location.name,
+    risk: template.risk, duration: template.duration,
+    difficulty: clamp(template.difficulty + rng.int(-4, 5) + tierIndexByName(location.tier) * 2, 30, 99),
+    reward: rewardVariance, fame: fameVariance, roles: [...template.roles], approach,
+    brief: `${template.brief} The contract originates in ${location.name}, a ${location.primal.toLowerCase()}-aligned settlement.`,
+    stakes: template.stakes, choice: clone(template.choice), saga: template.saga || null,
+    artifact: template.artifact || null, tournament: Boolean(template.tournament),
+    issuer: rng.pick(issuerNames), enemyPrimal, patronPrimal,
+    availableUntil: { year: state.date.year + (state.date.month >= 9 ? 1 : 0), month: (state.date.month + rng.int(2, 5)) % 12 },
     inspected: false,
   };
 }
 
 function refreshMissionsInPlace(state, rng, initial = false) {
-  state.missions = state.missions.filter((mission) => {
+  const currentYearMonth = state.date.year * 12 + state.date.month;
+  state.missions = (state.missions || []).filter((mission) => {
     if (mission.templateId === 'wolves-old-road' && !state.tutorial.completed && state.tutorial.step < 4) return true;
-    return mission.availableUntil.year > state.date.year || (mission.availableUntil.year === state.date.year && mission.availableUntil.month >= state.date.month);
+    const expiry = mission.availableUntil.year * 12 + mission.availableUntil.month;
+    return expiry >= currentYearMonth;
   });
-  const pool = availableTemplatePool(state);
-  const targetCount = 5 + Math.min(3, state.guild.tierIndex) + (appointmentHolder(state, 'Questmaster') ? 1 : 0);
-  if (initial && !state.missions.some((m) => m.templateId === 'wolves-old-road')) {
-    const tutorialTemplate = MISSION_TEMPLATES.find((m) => m.id === 'wolves-old-road');
-    state.missions.push(instantiateMission(tutorialTemplate, state, rng));
+  const locations = unlockedLocations(state.guild.tierIndex);
+  if (initial && !state.missions.some((mission) => mission.templateId === 'wolves-old-road')) {
+    const tutorialTemplate = MISSION_TEMPLATES.find((mission) => mission.id === 'wolves-old-road');
+    state.missions.push(instantiateMission(tutorialTemplate, state, rng, LOCATION_BY_ID.dunmere));
   }
-  let safety = 0;
-  while (state.missions.length < targetCount && safety < 30) {
-    safety += 1;
-    const template = rng.pick(pool);
-    const duplicateCount = state.missions.filter((m) => m.templateId === template.id).length;
-    if (duplicateCount >= 2) continue;
-    state.missions.push(instantiateMission(template, state, rng));
-  }
+  locations.forEach((location) => {
+    const desired = location.id === state.world?.currentLocationId ? 5 : 3;
+    let count = state.missions.filter((mission) => mission.locationId === location.id).length;
+    const pool = availableTemplatePool(state, location);
+    let safety = 0;
+    while (count < desired && safety < 40 && pool.length) {
+      safety += 1;
+      const template = rng.pick(pool);
+      const duplicateCount = state.missions.filter((mission) => mission.locationId === location.id && mission.templateId === template.id).length;
+      if (duplicateCount >= 1 && pool.length > desired) continue;
+      state.missions.push(instantiateMission(template, state, rng, location));
+      count += 1;
+    }
+  });
+  const unlockedIds = new Set(locations.map((location) => location.id));
+  state.missions = state.missions.filter((mission) => unlockedIds.has(mission.locationId || 'dunmere')).slice(0, 70);
 }
 
 export function getHero(state, heroId) {
@@ -492,9 +534,9 @@ export function heroCapacity(state) {
 }
 
 export function headquartersRoomCapacity(state) {
-  // The rented Local hall begins with four usable rooms. Social promotion and
+  // The rented Regional hall begins with four usable rooms. Social promotion and
   // investment in the Great Hall expand the physical footprint gradually.
-  const tierRooms = [4, 6, 8, 10, 12][state.guild.tierIndex] || 12;
+  const tierRooms = [4, 7, 11][state.guild.tierIndex] || 11;
   const hallExpansion = Math.max(0, (state.guild.facilities['great-hall'] || 0) - 1);
   return tierRooms + hallExpansion;
 }
@@ -505,6 +547,58 @@ export function usedFacilityRooms(state) {
 
 export function activeHeroCount(state) {
   return state.heroes.filter((hero) => !['retired', 'dead'].includes(hero.status)).length;
+}
+
+
+export function getCurrentLocation(state) {
+  return LOCATION_BY_ID[state.world?.currentLocationId || 'dunmere'] || LOCATION_BY_ID.dunmere;
+}
+
+export function getTravelQuote(state, destinationId) {
+  const fromId = state.world?.currentLocationId || 'dunmere';
+  const destination = LOCATION_BY_ID[destinationId];
+  const unlocked = unlockedLocations(state.guild.tierIndex).some((location) => location.id === destinationId);
+  const months = destination ? travelDuration(fromId, destinationId) : 0;
+  const cost = Math.round(35 + months * (38 + activeHeroCount(state) * 7) * (appointmentHolder(state, 'Quartermaster') ? 0.86 : 1));
+  return { destination, unlocked, months, cost, same: fromId === destinationId };
+}
+
+export function startTravel(state, destinationId) {
+  const next = clone(state);
+  if (next.world?.activeTravel) return { state, error: 'The guild is already traveling.' };
+  if (next.pendingDecisions.length) return { state, error: 'Resolve the critical decision before leaving.' };
+  if (next.activeMissions.length) return { state, error: 'Wait for every deployed company to return before relocating the guild.' };
+  if ((next.tournaments || []).some((tournament) => tournament.status === 'active')) return { state, error: 'Finish the active tournament before traveling.' };
+  const quote = getTravelQuote(next, destinationId);
+  if (!quote.destination) return { state, error: 'Unknown destination.' };
+  if (!quote.unlocked) return { state, error: `${quote.destination.name} requires ${quote.destination.tier} status.` };
+  if (quote.same) return { state, error: `The guild is already in ${quote.destination.name}.` };
+  if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} crowns.` };
+  next.guild.crowns -= quote.cost;
+  next.world.activeTravel = { fromId: next.world.currentLocationId, toId: destinationId, monthsRemaining: quote.months, totalMonths: quote.months, cost: quote.cost };
+  addChronicle(next, { type: 'travel', importance: 1, title: `The guild departs for ${quote.destination.name}`, text: `${activeHeroCount(next)} active heroes take the road. The journey will require ${quote.months} month${quote.months === 1 ? '' : 's'} and ${quote.cost} crowns.`, tags: ['travel', quote.destination.primal] });
+  next.notifications.push({ id: `travel-${destinationId}-${next.date.year}-${next.date.month}`, tone: 'blue', title: `Journey to ${quote.destination.name}`, text: `${quote.months} month${quote.months === 1 ? '' : 's'} remaining. Advance time to travel.` });
+  return { state: finalize(next), error: null };
+}
+
+function progressTravelInPlace(state, rng) {
+  const travel = state.world?.activeTravel;
+  if (!travel) return;
+  travel.monthsRemaining -= 1;
+  state.heroes.filter((hero) => hero.status === 'available').forEach((hero) => {
+    hero.fatigue = clamp(hero.fatigue + rng.int(1, 4), 0, 100);
+  });
+  if (travel.monthsRemaining > 0) return;
+  const destination = LOCATION_BY_ID[travel.toId] || LOCATION_BY_ID.dunmere;
+  state.world.currentLocationId = destination.id;
+  state.world.visitedLocationIds ||= [];
+  if (!state.world.visitedLocationIds.includes(destination.id)) state.world.visitedLocationIds.push(destination.id);
+  state.world.activeTravel = null;
+  state.flags.firstTravelCompleted = true;
+  refreshCandidatesForLocationInPlace(state, rng, destination.id);
+  refreshMissionsInPlace(state, rng);
+  addChronicle(state, { type: 'travel', importance: 2, title: `${state.guild.name} arrives in ${destination.name}`, text: `The guild opens its temporary hall in a ${destination.primal.toLowerCase()}-aligned settlement. New contracts and local recruits are now available.`, tags: ['arrival', destination.primal] });
+  state.notifications.push({ id: `arrival-${destination.id}-${state.date.year}-${state.date.month}`, tone: 'green', title: `Arrived in ${destination.name}`, text: `${destination.primal} influence shapes the local missions, patrons and recruitment market.` });
 }
 
 export function partyCapacity(state) {
@@ -575,7 +669,7 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
   const assignments = legacyCall ? formationTypeOrAssignments : (maybeAssignments || []);
   const formation = FORMATION_TYPES[formationType];
   if (!mission || !formation || !assignments.length) {
-    return { chance: 0, power: 0, formationType, recommended: formationForMission(mission), missingRoles: [], missingSlots: formation?.slots.filter((slot) => slot.required).map((slot) => slot.label) || [], warnings: ['Fill the required formation slots.'], breakdown: [] };
+    return { chance: 0, power: 0, primalEdge: 0, formationType, recommended: formationForMission(mission), missingRoles: [], missingSlots: formation?.slots.filter((slot) => slot.required).map((slot) => slot.label) || [], warnings: ['Fill the required formation slots.'], breakdown: [] };
   }
 
   const breakdown = [];
@@ -590,13 +684,19 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
     let rating = roleRating(hero, slot.role);
     if (slot.role === 'Commander' && state.guild.appointments?.['Guild Captain'] === hero.id) rating += 5;
     if (['Training Master', 'Questmaster', 'Quartermaster', 'Master Healer', 'Spymaster', 'Chronicler'].includes(hero.appointment)) rating -= 4;
+    const elementalRelation = formationType === 'Diplomacy'
+      ? primalDiplomacyModifier(hero.primal, mission.patronPrimal)
+      : primalCombatModifier(hero.primal, mission.enemyPrimal);
+    const primalModifier = Math.round(elementalRelation * (formationType === 'Combat' ? 9 : formationType === 'Diplomacy' ? 8 : 5));
+    rating += primalModifier;
     total += rating;
     validCount += 1;
-    breakdown.push({ heroId: hero.id, heroName: hero.name, role: slot.role, slotId: slot.id, slotLabel: slot.label, rating, classId: hero.classId });
+    breakdown.push({ heroId: hero.id, heroName: hero.name, role: slot.role, slotId: slot.id, slotLabel: slot.label, rating, classId: hero.classId, level: hero.level, rarity: hero.rarity, primal: hero.primal, primalModifier });
   });
 
   const filledSlotIds = new Set(breakdown.map((item) => item.slotId));
   const missingSlots = formation.slots.filter((slot) => slot.required && !filledSlotIds.has(slot.id));
+  const primalEdge = breakdown.reduce((sum, item) => sum + item.primalModifier, 0);
   let partyPower = validCount ? total / validCount : 0;
   partyPower += formationCompatibility(mission, formationType);
   partyPower += Math.max(0, validCount - 2) * 2.4;
@@ -621,9 +721,12 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
   if (tired.length) warnings.push(`${tired.map((hero) => hero.name).join(', ')} will enter heavily fatigued.`);
   const severeMisfits = breakdown.filter((item) => roleRating(getHero(state, item.heroId), item.role) < getHero(state, item.heroId).power - 5);
   if (severeMisfits.length) warnings.push(`${severeMisfits.map((item) => `${item.heroName} as ${item.role}`).join(', ')} is a poor class-role fit.`);
+  if (primalEdge <= -8) warnings.push(`The company is primally disadvantaged against ${formationType === 'Diplomacy' ? mission.patronPrimal : mission.enemyPrimal}.`);
+  if (primalEdge >= 8) warnings.push(`Primal composition creates a meaningful edge against ${formationType === 'Diplomacy' ? mission.patronPrimal : mission.enemyPrimal}.`);
   return {
     chance,
     power: Math.round(partyPower),
+    primalEdge,
     formationType,
     recommended: formationForMission(mission),
     missingRoles: missingSlots.map((slot) => slot.role),
@@ -696,6 +799,10 @@ export function launchMission(state, missionId, formationTypeOrAssignments, mayb
   const missionIndex = next.missions.findIndex((item) => item.id === missionId);
   if (missionIndex < 0) return { state, error: 'This contract is no longer available.' };
   const mission = next.missions[missionIndex];
+  if (next.world?.activeTravel) return { state, error: 'The guild is currently traveling and cannot launch a new mission.' };
+  if ((mission.locationId || 'dunmere') !== (next.world?.currentLocationId || 'dunmere')) {
+    return { state, error: `This contract is in ${mission.locationName || LOCATION_BY_ID[mission.locationId]?.name || 'another location'}. Travel there before committing a company.` };
+  }
   const legacyCall = Array.isArray(formationTypeOrAssignments);
   const selectedFormation = normalizedFormationType(mission, legacyCall ? mission?.formationType || mission?.approach : formationTypeOrAssignments);
   const assignments = legacyCall ? formationTypeOrAssignments : (maybeAssignments || []);
@@ -770,7 +877,7 @@ function monthlyUpkeep(state) {
 
 function trainAndRecoverHeroes(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
-  const trainingMasterBonus = appointmentHolder(state, 'Training Master') ? 0.025 : 0;
+  const trainingMaster = appointmentHolder(state, 'Training Master');
   const infirmaryLevel = (state.guild.facilities.infirmary || 0) + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
   state.heroes.forEach((hero) => {
     if (['dead', 'retired'].includes(hero.status)) return;
@@ -779,40 +886,25 @@ function trainAndRecoverHeroes(state, rng) {
       hero.health = clamp(hero.health + 5 + infirmaryLevel * 3, 0, 100);
       hero.fatigue = clamp(hero.fatigue - 12, 0, 100);
       if (hero.injuryMonths <= 0) {
-        hero.status = 'available';
-        hero.injury = null;
-        hero.health = Math.max(hero.health, 72);
+        hero.status = 'available'; hero.injury = null; hero.health = Math.max(hero.health, 72);
         state.notifications.push({ id: `recover-${hero.id}-${state.date.year}-${state.date.month}`, tone: 'green', title: `${hero.name} returns`, text: 'Recovery is complete and the hero is available again.' });
         addHeroHistory(hero, state, { type: 'recovery', title: 'Returned from injury', text: 'Cleared by the guild infirmary.' });
       }
       return;
     }
-    if (hero.status === 'mission') return;
+    if (hero.status === 'mission' || hero.status === 'tournament') return;
     hero.fatigue = clamp(hero.fatigue - (11 + infirmaryLevel * 2), 0, 100);
     hero.health = clamp(hero.health + 2 + infirmaryLevel, 0, 100);
     hero.form = clamp(hero.form + rng.int(-2, 2), 35, 92);
-    const ageFactor = hero.age <= 24 ? 1.35 : hero.age <= 31 ? 1 : hero.age <= 36 ? 0.55 : 0.2;
-    const potentialGap = Math.max(0, hero.potential - hero.power);
-    if (potentialGap > 0 && rng.chance(clamp(0.08 + trainingLevel * 0.025 + trainingMasterBonus + potentialGap * 0.002, 0.05, 0.38) * ageFactor)) {
-      const classInfo = CLASSES[hero.classId];
-      const keys = hero.training === 'Fundamentals'
-        ? Object.keys(hero.attributes)
-        : hero.training === 'Role Drills'
-          ? [classInfo.primary, classInfo.secondary]
-          : hero.training === 'Study'
-            ? ['Mind', 'Spirit']
-            : hero.training === 'Public Exhibition'
-              ? ['Presence']
-              : [classInfo.primary];
-      const key = rng.pick(keys);
-      hero.attributes[key] = clamp(hero.attributes[key] + 1, 20, 99);
-      hero.power = calculatePower(hero.attributes);
-      hero.career.peakPower = Math.max(hero.career.peakPower, hero.power);
-      state.stats.highestPower = Math.max(state.stats.highestPower, hero.power);
-    }
+    const focusBonus = { Fundamentals: 1, 'Role Drills': 2, Sparring: 3, Mentorship: 2, Study: 2, Rehabilitation: 0, 'Public Exhibition': 1 }[hero.training] || 1;
+    const fatiguePenalty = hero.training === 'Sparring' ? 3 : hero.training === 'Role Drills' ? 1 : 0;
+    const xp = Math.max(2, 5 + trainingLevel * 2 + focusBonus + (trainingMaster && trainingMaster.id !== hero.id ? 2 : 0) - Math.floor(hero.level / 8));
+    applyXpInPlace(hero, xp, state, `${hero.training.toLowerCase()} training`);
+    hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
+    hero.fatigue = clamp(hero.fatigue + fatiguePenalty, 0, 100);
+    if (hero.training === 'Public Exhibition' && rng.chance(0.12)) hero.renown += 1;
   });
 }
-
 function simulateRivals(state, rng) {
   state.rivals.forEach((rival) => {
     const activityChance = 0.52 + rival.risk * 0.28;
@@ -851,8 +943,8 @@ function simulateRivals(state, rng) {
     rival.crowns -= 25 + rival.tierIndex * 15;
     if (rival.crowns < -500) rival.fallen = true;
     if (rival.fallen && rival.crowns > 300) rival.fallen = false;
-    if (rival.fame >= TIERS[Math.min(TIERS.length - 1, rival.tierIndex + 1)].fame && rng.chance(0.04)) {
-      rival.tierIndex = Math.min(TIERS.length - 2, rival.tierIndex + 1);
+    if (rival.tierIndex < TIERS.length - 1 && rival.fame >= TIERS[rival.tierIndex + 1].fame && rng.chance(0.04)) {
+      rival.tierIndex = Math.min(TIERS.length - 1, rival.tierIndex + 1);
       addChronicle(state, { type: 'rival', importance: 3, title: `${rival.name} rises to ${TIERS[rival.tierIndex].id} status`, text: `The guild’s reach now extends across ${TIERS[rival.tierIndex].scope.toLowerCase()}.`, guildIds: [rival.id], tags: ['rival', 'promotion'] });
     }
   });
@@ -907,16 +999,17 @@ function retireHeroInPlace(state, hero, rng, reason) {
 function annualCycle(state, rng) {
   state.stats.yearsPlayed += 1;
   ageHeroes(state, rng);
-  state.candidates = state.candidates.filter((candidate) => candidate.expiresYear >= state.date.year);
-  const intake = 3 + Math.min(3, state.guild.facilities.academy || 0);
-  for (let i = 0; i < intake; i += 1) state.candidates.push(makeCandidate(state, rng));
-  state.candidates.sort((a, b) => b.potential - a.potential);
-  state.candidates = state.candidates.slice(0, 10);
+  state.candidates = (state.candidates || []).filter((candidate) => candidate.expiresYear >= state.date.year);
+  const locations = unlockedLocations(state.guild.tierIndex);
+  locations.forEach((location) => {
+    const intake = 1 + (location.id === state.world?.currentLocationId ? 1 : 0) + Math.min(1, state.guild.facilities.academy || 0);
+    for (let i = 0; i < intake; i += 1) state.candidates.push(makeCandidate(state, rng, null, location.id));
+  });
+  refreshCandidatesForLocationInPlace(state, rng, state.world?.currentLocationId || 'dunmere');
   createTournamentsInPlace(state, rng);
   archiveOldHeroesInPlace(state);
-  addChronicle(state, { type: 'year', importance: 1, title: `Year ${state.date.year} begins`, text: `${state.guild.name} enters the year ranked ${state.guild.rank}, with ${state.guild.fame} fame and ${activeHeroCount(state)} active heroes.`, tags: ['year'] });
+  addChronicle(state, { type: 'year', importance: 1, title: `Year ${state.date.year} begins in ${getCurrentLocation(state).name}`, text: `${state.guild.name} enters the year ranked ${state.guild.rank}, with ${state.guild.fame} fame, ${activeHeroCount(state)} active heroes and ${locations.length} reachable locations.`, tags: ['year'] });
 }
-
 function archiveOldHeroesInPlace(state) {
   if (state.heroes.length <= MAX_HEROES) return;
   const archival = state.heroes
@@ -938,6 +1031,10 @@ function compactHero(hero) {
     id: hero.id,
     name: hero.name,
     classId: hero.classId,
+    primal: hero.primal,
+    rarity: hero.rarity,
+    level: hero.level,
+    xp: hero.xp,
     age: hero.age,
     status: hero.status,
     power: hero.power,
@@ -972,6 +1069,7 @@ export function advanceMonths(state, count = 1) {
     }
     trainAndRecoverHeroes(next, rng);
     simulateRivals(next, rng);
+    progressTravelInPlace(next, rng);
 
     next.activeMissions.forEach((mission) => {
       mission.remaining -= 1;
@@ -1117,6 +1215,9 @@ export function resolveDecision(state, decisionId, optionId) {
       classId: hero.classId,
       role: assignment.role,
       slotId: assignment.slotId,
+      primal: hero.primal,
+      rarity: hero.rarity,
+      level: hero.level,
       power: hero.power,
       roleRating: roleRating(hero, assignment.role),
       form: hero.form,
@@ -1149,6 +1250,11 @@ export function resolveDecision(state, decisionId, optionId) {
     else hero.career.defeats += 1;
     if (grade === 'Legendary') hero.career.legendary += 1;
     hero.career.fame += Math.max(0, Math.round(fame / mission.assignments.length));
+    const xpMultiplier = { Legendary: 1.7, 'Great Success': 1.35, Success: 1, Partial: 0.78, Defeat: 0.52, Catastrophic: 0.34 }[grade] || 0.5;
+    const xpGain = Math.round((42 + mission.risk * 18 + mission.duration * 8) * xpMultiplier);
+    const levelBefore = hero.level;
+    applyXpInPlace(hero, xpGain, next, `${mission.title} (${grade.toLowerCase()})`);
+    hero.career.xpEarned = (hero.career.xpEarned || 0) + xpGain;
     if (!hero.career.bestMission || gradeMultiplier(grade) > gradeMultiplier(hero.career.bestMission.grade)) {
       hero.career.bestMission = { title: mission.title, grade, year: next.date.year };
     }
@@ -1170,6 +1276,9 @@ export function resolveDecision(state, decisionId, optionId) {
       renownChange: hero.renown - before.renown,
       legacyChange: hero.legacy - before.legacy,
       healthChange: hero.health - before.health,
+      xpGain,
+      levelBefore,
+      levelAfter: hero.level,
     });
   });
 
@@ -1227,6 +1336,11 @@ export function resolveDecision(state, decisionId, optionId) {
     title: mission.title,
     family: mission.family,
     region: mission.region,
+    locationId: mission.locationId,
+    locationName: mission.locationName || LOCATION_BY_ID[mission.locationId]?.name || mission.region,
+    enemyPrimal: mission.enemyPrimal,
+    patronPrimal: mission.patronPrimal,
+    primalEdge: estimate.primalEdge || 0,
     issuer: mission.issuer,
     risk: mission.risk,
     difficulty: mission.difficulty,
@@ -1334,36 +1448,46 @@ export function recruitCandidate(state, candidateId) {
   const index = next.candidates.findIndex((candidate) => candidate.id === candidateId);
   if (index < 0) return { state, error: 'This candidate has left the region.' };
   const candidate = next.candidates[index];
+  const currentLocationId = next.world?.currentLocationId || 'dunmere';
+  if ((candidate.locationId || 'dunmere') !== currentLocationId) {
+    const location = LOCATION_BY_ID[candidate.locationId];
+    return { state, error: `${candidate.name} is currently in ${location?.name || 'another settlement'}. Travel there to negotiate a contract.` };
+  }
+  if (next.world?.activeTravel) return { state, error: 'Recruitment negotiations cannot be completed while traveling.' };
   if (activeHeroCount(next) >= heroCapacity(next)) return { state, error: 'The Great Hall has no room for another active hero.' };
   if (next.guild.crowns < candidate.signingFee) return { state, error: `Recruitment requires ${candidate.signingFee} crowns.` };
   if (candidate.interest < 35 && next.guild.tierIndex === 0) return { state, error: `${candidate.name} does not believe the guild can fulfill their ambitions yet.` };
   next.guild.crowns -= candidate.signingFee;
   const hero = clone(candidate);
-  delete hero.signingFee;
-  delete hero.channel;
-  delete hero.expiresYear;
-  delete hero.interest;
-  hero.status = 'available';
-  hero.guildId = 'player';
-  hero.joinedYear = next.date.year;
-  addHeroHistory(hero, next, { type: 'joined', title: `Joined ${next.guild.name}`, text: `Recruited through ${candidate.channel}.` });
+  delete hero.signingFee; delete hero.channel; delete hero.expiresYear; delete hero.interest; delete hero.locationId;
+  hero.status = 'available'; hero.guildId = 'player'; hero.joinedYear = next.date.year;
+  addHeroHistory(hero, next, { type: 'joined', title: `Joined ${next.guild.name}`, text: `Recruited through ${candidate.channel} in ${getCurrentLocation(next).name} as a level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId}.` });
   const wasFoundingSolo = activeHeroCount(next) === 1 && !next.flags.firstCompanionHired;
   next.heroes.push(hero);
   next.candidates.splice(index, 1);
   if (wasFoundingSolo) {
     next.flags.firstCompanionHired = true;
-    next.candidates.forEach((remaining) => {
-      remaining.signingFee = Math.max(120, Math.round(remaining.power * 5 + Math.max(0, remaining.potential - 70) * 5));
+    next.candidates.filter((remaining) => (remaining.locationId || 'dunmere') === currentLocationId).forEach((remaining) => {
+      remaining.signingFee = Math.max(120, Math.round((remaining.level * 80 + remaining.power * 3) * (RARITIES[remaining.rarity]?.signing || 1)));
       remaining.channel = 'Tavern board';
       remaining.hook = remaining.hook.replace(' Will join the founding pair without a signing fee.', '');
     });
     completeTutorialTargetInPlace(next, 'recruitCompanion');
   }
-  addChronicle(next, { type: 'recruitment', importance: wasFoundingSolo ? 4 : hero.potential >= 88 ? 3 : 1, title: `${hero.name} joins the guild`, text: wasFoundingSolo ? `${hero.name} becomes ${next.guild.founder}’s first companion and the Broken Lantern becomes a company of two.` : `The ${hero.age}-year-old ${hero.classId.toLowerCase()} signs for ${candidate.signingFee} crowns, carrying the dream to ${hero.dream.toLowerCase()}.`, heroIds: [hero.id, ...(wasFoundingSolo ? [next.guild.founderHeroId] : [])], tags: ['recruitment', ...(wasFoundingSolo ? ['founding-companion'] : [])] });
+  addChronicle(next, {
+    type: 'recruitment', importance: wasFoundingSolo ? 4 : hero.rarity === 'Legend' ? 4 : hero.rarity === 'Epic' ? 3 : 1,
+    title: `${hero.name} joins the guild`,
+    text: wasFoundingSolo
+      ? `${hero.name}, a level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId}, becomes ${next.guild.founder}’s first companion.`
+      : `The level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId} signs for ${candidate.signingFee} crowns in ${getCurrentLocation(next).name}.`,
+    heroIds: [hero.id, ...(wasFoundingSolo ? [next.guild.founderHeroId] : [])], tags: ['recruitment', hero.rarity, hero.primal, ...(wasFoundingSolo ? ['founding-companion'] : [])],
+  });
+  const rng = rngFor(next, `recruit-${candidateId}`);
+  refreshCandidatesForLocationInPlace(next, rng, currentLocationId);
+  commitRng(next, rng);
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null };
 }
-
 export function releaseHero(state, heroId) {
   const next = clone(state);
   const hero = getHero(next, heroId);
@@ -1475,11 +1599,13 @@ export function getTournamentAccess(state, tournament) {
     { id: 'professionalTitles', label: 'Professional titles', current: state.stats.professionalTournamentWins || 0, target: requirements.professionalTitles, met: (state.stats.professionalTournamentWins || 0) >= requirements.professionalTitles },
     { id: 'tierIndex', label: 'Guild tier', current: state.guild.tierIndex, target: requirements.tierIndex, met: state.guild.tierIndex >= requirements.tierIndex },
   ].filter((check) => check.target > 0);
-  return { unlocked: checks.every((check) => check.met), checks };
+  const locationMet = !tournament.locationId || (state.world?.currentLocationId || 'dunmere') === tournament.locationId;
+  return { unlocked: checks.every((check) => check.met), checks, locationMet };
 }
 
-function createTournamentOpponents(state, rng, division, count = 7) {
+function createTournamentOpponents(state, rng, division, count = 7, locationId = 'dunmere') {
   const base = division === 'Elite' ? 76 : division === 'Professional' ? 64 : 51;
+  const location = LOCATION_BY_ID[locationId] || LOCATION_BY_ID.dunmere;
   const names = division === 'Elite'
     ? ['Royal Wardens', 'Storm Banner', 'Sunblade Company', 'Ivory Griffins', 'Crown Champions', 'The Last Oath', 'Ember Lions']
     : division === 'Professional'
@@ -1489,34 +1615,31 @@ function createTournamentOpponents(state, rng, division, count = 7) {
     id: `${division.toLowerCase()}-opponent-${state.date.year}-${index}`,
     name: names[index] || `Company ${index + 1}`,
     power: clamp(base + rng.int(-6, 7), 38, 94),
+    primal: rng.chance(0.7) ? location.primal : rng.pick(PRIMAL_IDS),
     eliminated: false,
   }));
 }
-
 function createTournamentsInPlace(state, rng) {
   const configs = [
-    { division: 'Local', name: 'Dunmere Harvest Melee', location: 'Dunmere', entryFee: 45, prize: 360, famePrize: 18, rounds: 8 },
-    { division: 'Professional', name: 'Provincial Companies Circuit', location: 'High Valedorn', entryFee: 180, prize: 980, famePrize: 42, rounds: 8 },
-    { division: 'Elite', name: "King's Shield", location: 'Crownspire', entryFee: 480, prize: 2600, famePrize: 95, rounds: 8 },
+    { division: 'Local', name: 'Dunmere Harvest Melee', locationId: 'dunmere', entryFee: 45, prize: 360, famePrize: 18, rounds: 8 },
+    { division: 'Professional', name: 'Tidecross Companies Circuit', locationId: 'tidecross', entryFee: 180, prize: 980, famePrize: 42, rounds: 8 },
+    { division: 'Elite', name: 'The Caldera Crown', locationId: 'ashen-caldera', entryFee: 480, prize: 2600, famePrize: 95, rounds: 8 },
   ];
-  state.tournaments = configs.map((config) => ({
-    id: `tournament-${config.division.toLowerCase()}-${state.date.year}`,
-    year: state.date.year,
-    ...config,
-    tier: config.division,
-    format: 'Team Combat',
-    status: 'registration',
-    formationType: 'Combat',
-    assignments: [],
-    currentRound: config.rounds,
-    finish: null,
-    opponents: createTournamentOpponents(state, rng, config.division, config.rounds - 1),
-    bracket: [],
-    champion: null,
-    teamPowerAtEntry: null,
-  }));
+  state.tournaments = configs.map((config) => {
+    const location = LOCATION_BY_ID[config.locationId];
+    return {
+      id: `tournament-${config.division.toLowerCase()}-${state.date.year}`,
+      year: state.date.year,
+      ...config,
+      location: location.name,
+      region: location.region,
+      primal: location.primal,
+      tier: config.division,
+      format: 'Team Combat', status: 'registration', formationType: 'Combat', assignments: [], currentRound: config.rounds, finish: null,
+      opponents: createTournamentOpponents(state, rng, config.division, config.rounds - 1, config.locationId), bracket: [], champion: null, teamPowerAtEntry: null,
+    };
+  });
 }
-
 function tournamentTeamEstimate(state, assignments) {
   const formation = FORMATION_TYPES.Combat;
   const filled = assignments.map((assignment) => ({ ...assignment, slot: formationSlotFor('Combat', assignment) })).filter((assignment) => assignment.slot);
@@ -1536,6 +1659,8 @@ export function enterTournament(state, tournamentId, formationType, assignments)
   if (!tournament || tournament.status !== 'registration') return { state, error: 'Tournament registration is closed.' };
   if (next.tournaments.some((item) => item.status === 'active')) return { state, error: 'The guild is already competing in another tournament.' };
   const access = getTournamentAccess(next, tournament);
+  if (next.world?.activeTravel) return { state, error: 'The guild cannot register while traveling.' };
+  if (!access.locationMet) return { state, error: `The ${tournament.name} is held in ${tournament.location}. Travel there before registering.` };
   if (!access.unlocked) return { state, error: `The ${tournament.division} circuit is still locked. Complete the listed qualification requirements first.` };
   if (formationType !== 'Combat') return { state, error: 'Team tournaments require a Combat Company arrangement.' };
   const estimate = tournamentTeamEstimate(next, assignments);
@@ -1576,7 +1701,7 @@ function completeTournamentInPlace(state, tournament, wonTitle, rng) {
       hero.legacy += tournament.division === 'Elite' ? 32 : tournament.division === 'Professional' ? 22 : 14;
       hero.renown += tournament.division === 'Elite' ? 18 : tournament.division === 'Professional' ? 11 : 7;
     }
-    return { heroId: hero.id, name: hero.name, classId: hero.classId, role: assignment.role, power: hero.power, roleRating: roleRating(hero, assignment.role) };
+    return { heroId: hero.id, name: hero.name, classId: hero.classId, role: assignment.role, power: hero.power, roleRating: roleRating(hero, assignment.role), level: hero.level, rarity: hero.rarity, primal: hero.primal };
   }).filter(Boolean);
   const record = {
     id: `tournament-record-${tournament.id}`,
@@ -1622,7 +1747,8 @@ export function fightTournamentRound(state, tournamentId, tactic = 'Measured') {
   const currentEstimate = tournamentTeamEstimate(next, tournament.assignments);
   const tacticMod = tactic === 'Aggressive' ? 4 : tactic === 'Defensive' ? 0 : tactic === 'Showmanship' ? -2 : 2;
   const fatigue = teamHeroes.reduce((sum, hero) => sum + hero.fatigue, 0) / teamHeroes.length;
-  const chance = clamp(Math.round(100 / (1 + Math.exp(-((currentEstimate.power + tacticMod - fatigue * 0.08) - opponent.power) / 8))), 8, 92);
+  const primalEdge = teamHeroes.reduce((sum, hero) => sum + primalCombatModifier(hero.primal, opponent.primal) * 7, 0) / teamHeroes.length;
+  const chance = clamp(Math.round(100 / (1 + Math.exp(-((currentEstimate.power + tacticMod + primalEdge - fatigue * 0.08) - opponent.power) / 8))), 8, 92);
   const won = rng.next() * 100 < chance;
   const roundName = tournament.currentRound === 8 ? 'Quarterfinal' : tournament.currentRound === 4 ? 'Semifinal' : 'Final';
   teamHeroes.forEach((hero) => {
@@ -1630,9 +1756,12 @@ export function fightTournamentRound(state, tournamentId, tactic = 'Measured') {
     hero.form = clamp(hero.form + (won ? 2 : -3), 25, 96);
     if (won) hero.career.wins += 1;
     else hero.career.defeats += 1;
-    addHeroHistory(hero, next, { type: 'tournament', title: `${roundName} ${won ? 'victory' : 'defeat'}: ${tournament.name}`, text: `${won ? 'Defeated' : 'Lost to'} ${opponent.name} using a ${tactic.toLowerCase()} team plan.` });
+    const xpGain = Math.round((won ? 54 : 30) + (tournament.division === 'Elite' ? 35 : tournament.division === 'Professional' ? 18 : 0));
+    applyXpInPlace(hero, xpGain, next, `${tournament.name} ${roundName.toLowerCase()}`);
+    hero.career.xpEarned = (hero.career.xpEarned || 0) + xpGain;
+    addHeroHistory(hero, next, { type: 'tournament', title: `${roundName} ${won ? 'victory' : 'defeat'}: ${tournament.name}`, text: `${won ? 'Defeated' : 'Lost to'} ${opponent.name}, a ${opponent.primal} company, using a ${tactic.toLowerCase()} team plan.` });
   });
-  const record = { round: roundName, opponent: opponent.name, opponentPower: opponent.power, teamPower: currentEstimate.power, chance, won, tactic };
+  const record = { round: roundName, opponent: opponent.name, opponentPower: opponent.power, opponentPrimal: opponent.primal, primalEdge: Math.round(primalEdge), teamPower: currentEstimate.power, chance, won, tactic };
   tournament.bracket.push(record);
   opponent.eliminated = won;
   let report = null;
@@ -1703,6 +1832,9 @@ export function getGoalMetric(state, metric) {
     case 'tierIndex': return state.guild.tierIndex;
     case 'greatHallLevel': return state.guild.facilities['great-hall'] || 0;
     case 'legendHero': return state.heroes.some((hero) => hero.power >= 80 || hero.legacy >= 150) ? 1 : 0;
+    case 'highestLevel': return Math.max(1, ...state.heroes.map((hero) => hero.level || 1), ...state.historicHeroes.map((hero) => hero.level || 1));
+    case 'primalDiversity': return new Set(state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).map((hero) => hero.primal).filter(Boolean)).size;
+    case 'professionalTournamentWins': return state.stats.professionalTournamentWins || 0;
     case 'artifacts': return state.artifacts.length;
     case 'years': return state.stats.yearsPlayed;
     case 'perfectHardMission': return state.stats.perfectHardMission;
@@ -1842,7 +1974,7 @@ export function getNextAction(state) {
     const screenByMetric = {
       missionsWon: 'missions', missionsCompleted: 'missions', tournamentBest: 'tournaments',
       fame: 'missions', alignmentChosen: 'headquarters', tierIndex: 'goals',
-      greatHallLevel: 'headquarters', legendHero: 'heroes', artifacts: 'chronicle', years: 'hall',
+      greatHallLevel: 'headquarters', legendHero: 'heroes', highestLevel: 'heroes', primalDiversity: 'world', professionalTournamentWins: 'tournaments', artifacts: 'chronicle', years: 'hall',
     };
     const actionByMetric = {
       missionsWon: 'Choose a contract you can cover with the recommended roles.',
@@ -1852,6 +1984,9 @@ export function getNextAction(state) {
       tierIndex: 'Review the promotion checklist and complete its next missing condition.',
       greatHallLevel: 'Save enough crowns to upgrade the Great Hall.',
       legendHero: 'Give a high-potential hero missions, training and meaningful roles.',
+      highestLevel: 'Missions grant much more experience than monthly training. Keep the hero active without exhausting them.',
+      primalDiversity: 'Travel to a differently aligned settlement and inspect its local recruitment market.',
+      professionalTournamentWins: 'Meet the fame and combat-win thresholds, travel to Tidecross and win the professional circuit.',
       artifacts: 'Pursue missions that display an artifact possibility.',
       years: 'Keep the institution solvent and advance the chronicle.',
     };
@@ -1884,6 +2019,10 @@ export function getDashboardSummary(state) {
     activeMissions: state.activeMissions.length,
     partyCapacity: partyCapacity(state),
     decisions: state.pendingDecisions.length,
+    location: getCurrentLocation(state).name,
+    locationId: getCurrentLocation(state).id,
+    locationPrimal: getCurrentLocation(state).primal,
+    travel: state.world?.activeTravel || null,
   };
 }
 
@@ -1921,10 +2060,26 @@ export function migrateGame(raw) {
   next.tournamentHistory ||= [];
   next.pendingReports ||= [];
   next.artifacts ||= [];
-  next.sagas ||= SAGA_DEFINITIONS.map((saga) => ({ ...saga, progress: 0, completed: false, discovered: saga.tier === 'Local' }));
+  next.world ||= { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null };
+  next.world.currentLocationId ||= 'dunmere';
+  next.world.visitedLocationIds ||= [next.world.currentLocationId];
+  next.world.activeTravel ||= null;
+  next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);
+  next.guild.tier = TIERS[next.guild.tierIndex].id;
+  const oldSagas = next.sagas || [];
+  next.sagas = SAGA_DEFINITIONS.map((saga) => {
+    const previous = oldSagas.find((item) => item.id === saga.id);
+    return { ...saga, progress: previous?.progress || 0, completed: Boolean(previous?.completed), discovered: previous?.discovered ?? saga.tier === 'Regional' };
+  });
+  const oldGoals = next.goals || [];
+  next.goals = CHAPTER_GOALS.map((goal) => {
+    const previous = oldGoals.find((item) => item.id === goal.id);
+    return { ...goal, completed: Boolean(previous?.completed), claimed: Boolean(previous?.claimed) };
+  });
   next.stats = { ...initialStats(), ...(next.stats || {}) };
   next.settings = { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', ...(next.settings || {}) };
   next.flags ||= {};
+  next.flags.firstTravelCompleted ||= false;
   next.guild.facilities = { ...facilityLevels(), ...(next.guild.facilities || {}) };
   next.guild.appointments ||= {};
   next.guild.obligations ||= [];
@@ -1932,38 +2087,56 @@ export function migrateGame(raw) {
   next.guild.formations = { ...emptyFormations(), ...(next.guild.formations || {}) };
   next.guild.founderHeroId ||= next.heroes?.[0]?.id || null;
 
-  next.heroes.forEach((hero) => {
+  const migrateHero = (hero, index = 0) => {
     hero.history ||= [];
+    hero.level ||= clamp(Math.round(((hero.power || 45) - 38) / 2.25), 1, 20);
+    hero.xp ||= 0;
+    hero.rarity ||= hero.potential >= 94 ? 'Legend' : hero.potential >= 88 ? 'Epic' : hero.potential >= 81 ? 'Rare' : hero.potential >= 74 ? 'Uncommon' : 'Common';
+    hero.primal ||= PRIMAL_IDS[hashString(hero.id || hero.name || String(index)) % PRIMAL_IDS.length];
+    hero.homeLocationId ||= 'dunmere';
     hero.roleExperience = { ...Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])), ...(hero.roleExperience || {}) };
-    hero.career ||= { missions: 0, wins: 0, partials: 0, defeats: 0, legendary: 0, tournaments: 0, titles: 0, injuries: 0, rescues: 0, kills: 0, artifacts: 0, fame: 0, earnings: 0, bestMission: null, peakPower: hero.power || 0, serviceYears: 0 };
+    hero.career = { missions: 0, wins: 0, partials: 0, defeats: 0, legendary: 0, tournaments: 0, titles: 0, injuries: 0, rescues: 0, kills: 0, artifacts: 0, fame: 0, earnings: 0, bestMission: null, peakPower: hero.power || 0, serviceYears: 0, xpEarned: 0, ...(hero.career || {}) };
+  };
+  next.heroes.forEach(migrateHero);
+  next.historicHeroes.forEach(migrateHero);
+  (next.candidates || []).forEach((hero, index) => {
+    migrateHero(hero, index);
+    hero.locationId ||= hero.homeLocationId || 'dunmere';
+    hero.signingFee ||= Math.round((hero.level * 85 + hero.power * 3.5) * (RARITIES[hero.rarity]?.signing || 1));
   });
-  (next.candidates || []).forEach((hero) => {
-    hero.roleExperience = { ...Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])), ...(hero.roleExperience || {}) };
+  const defaultLocationByRegion = Object.fromEntries(REGIONS.map((region) => [region.id, LOCATIONS.find((location) => location.region === region.id)?.id || 'dunmere']));
+  (next.missions || []).forEach((mission) => {
+    mission.approach ||= formationForMission(mission);
+    mission.locationId ||= defaultLocationByRegion[mission.region] || 'dunmere';
+    mission.locationName ||= LOCATION_BY_ID[mission.locationId]?.name || mission.region;
+    mission.enemyPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
+    mission.patronPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
   });
-  (next.missions || []).forEach((mission) => { mission.approach ||= formationForMission(mission); });
   (next.activeMissions || []).forEach((mission) => {
     mission.approach ||= formationForMission(mission);
     mission.formationType ||= mission.approach;
+    mission.locationId ||= defaultLocationByRegion[mission.region] || next.world.currentLocationId;
+    mission.locationName ||= LOCATION_BY_ID[mission.locationId]?.name || mission.region;
+    mission.enemyPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
+    mission.patronPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
     const slots = FORMATION_TYPES[mission.formationType]?.slots || FORMATION_TYPES.Combat.slots;
     mission.assignments = (mission.assignments || []).slice(0, 5).map((assignment, index) => ({
       heroId: assignment.heroId,
-      slotId: slots[index]?.id || slots[slots.length - 1].id,
-      role: slots[index]?.role || slots[slots.length - 1].role,
+      slotId: assignment.slotId || slots[index]?.id || slots[slots.length - 1].id,
+      role: assignment.role || slots[index]?.role || slots[slots.length - 1].role,
     }));
   });
 
-  // The old build had one individual tournament. New seasons use three team circuits.
   next.heroes.filter((hero) => hero.status === 'tournament').forEach((hero) => { hero.status = 'available'; });
-  if (!Array.isArray(next.tournaments) || !next.tournaments.length) {
-    const rng = rngFor(next, 'migrate-tournaments');
-    createTournamentsInPlace(next, rng);
-    commitRng(next, rng);
-  }
+  const rng = rngFor(next, 'migrate-v7');
+  refreshCandidatesForLocationInPlace(next, rng, next.world.currentLocationId);
+  refreshMissionsInPlace(next, rng);
+  createTournamentsInPlace(next, rng);
+  commitRng(next, rng);
   delete next.tournament;
   evaluateStateInPlace(next);
   return finalize(next);
 }
-
 export function validateGame(state) {
   const errors = [];
   if (!state || state.schemaVersion !== SCHEMA_VERSION) errors.push('Schema version mismatch.');
@@ -1972,12 +2145,17 @@ export function validateGame(state) {
   if (!Array.isArray(state.rivals) || state.rivals.length < 5) errors.push('Too few rival guilds.');
   if (!Number.isFinite(state.guild?.crowns)) errors.push('Treasury is invalid.');
   if (!Number.isFinite(state.rngState)) errors.push('RNG state is invalid.');
+  if (!state.world || !LOCATION_BY_ID[state.world.currentLocationId]) errors.push('Current guild location is invalid.');
+  if (state.world?.activeTravel && !LOCATION_BY_ID[state.world.activeTravel.toId]) errors.push('Travel destination is invalid.');
   const ids = new Set();
   state.heroes.forEach((hero) => {
     if (ids.has(hero.id)) errors.push(`Duplicate hero id: ${hero.id}`);
     ids.add(hero.id);
     if (!CLASSES[hero.classId]) errors.push(`Unknown class: ${hero.classId}`);
     if (!Number.isFinite(hero.power)) errors.push(`Invalid power for ${hero.name}`);
+    if (!Number.isFinite(hero.level) || hero.level < 1 || hero.level > 20) errors.push(`Invalid level for ${hero.name}`);
+    if (!RARITIES[hero.rarity]) errors.push(`Unknown rarity for ${hero.name}`);
+    if (!PRIMALS[hero.primal]) errors.push(`Unknown primal for ${hero.name}`);
     if (!Number.isFinite(hero.age) || hero.age < 0) errors.push(`Invalid age for ${hero.name}`);
   });
   if (!TIERS[state.guild?.tierIndex]) errors.push('Guild tier index is invalid.');
@@ -2047,14 +2225,16 @@ export function simulateAutoplay(initialState, months = 240) {
       state = resolveDecision(state, decision.id, option.id).state;
       while (state.pendingReports?.length) state = acknowledgeReport(state, state.pendingReports[0]);
     }
-    if (activeHeroCount(state) < 2 && state.candidates.length) {
-      const candidate = [...state.candidates].sort((a, b) => b.potential - a.potential)[0];
+    const localCandidates = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere'));
+    if (activeHeroCount(state) < 2 && localCandidates.length) {
+      const candidate = [...localCandidates].sort((a, b) => b.potential - a.potential)[0];
       const recruited = recruitCandidate(state, candidate.id);
       if (!recruited.error) state = recruited.state;
     }
     const available = state.heroes.filter((hero) => hero.status === 'available');
-    if (available.length >= 2 && state.activeMissions.length < 1 && state.missions.length) {
-      const mission = [...state.missions].sort((a, b) => a.difficulty - b.difficulty)[0];
+    const localMissions = state.missions.filter((mission) => (mission.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere'));
+    if (available.length >= 2 && state.activeMissions.length < 1 && localMissions.length) {
+      const mission = [...localMissions].sort((a, b) => a.difficulty - b.difficulty)[0];
       const { formationType, assignments } = autoplayAssignments(state, mission);
       const launched = launchMission(state, mission.id, formationType, assignments);
       if (!launched.error) state = launched.state;

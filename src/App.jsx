@@ -27,6 +27,7 @@ import {
   roleRating,
   saveFormation,
   setHeroTraining,
+  startTravel,
   updateSettings,
   upgradeFacility,
   validateGame,
@@ -42,7 +43,8 @@ import {
 } from './game/storage.js';
 import { APPOINTMENTS, CLASSES, MONTHS, TIERS } from './data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES } from './data/formations.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, ProgressBar } from './components/UI.jsx';
+import { LOCATION_BY_ID, PRIMALS, RARITIES } from './data/world.js';
+import { Badge, Button, Crest, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './components/UI.jsx';
 import HallScreen from './screens/HallScreen.jsx';
 import MissionsScreen from './screens/MissionsScreen.jsx';
 import HeroesScreen from './screens/HeroesScreen.jsx';
@@ -153,6 +155,7 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
   const [guildName, setGuildName] = useState('The Broken Lantern');
   const [founderName, setFounderName] = useState('Rowan Vale');
   const [founderClass, setFounderClass] = useState('Guardian');
+  const [founderPrimal, setFounderPrimal] = useState('Fire');
   const [motto, setMotto] = useState('No light is lost forever.');
   const [seedText, setSeedText] = useState('Dunmere');
 
@@ -161,6 +164,7 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
       setGuildName('The Broken Lantern');
       setFounderName('Rowan Vale');
       setFounderClass('Guardian');
+      setFounderPrimal('Fire');
       setMotto('No light is lost forever.');
       setSeedText('Dunmere');
     }
@@ -175,14 +179,15 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
           <label>Guild name<input value={guildName} maxLength={38} onChange={(event) => setGuildName(event.target.value)} /></label>
           <label>Your name<input value={founderName} maxLength={36} onChange={(event) => setFounderName(event.target.value)} /><small>You are an active hero, not an invisible administrator.</small></label>
           <label>Your class<select value={founderClass} onChange={(event) => setFounderClass(event.target.value)}>{Object.keys(CLASSES).map((classId) => <option key={classId}>{classId}</option>)}</select></label>
+          <label>Your primal<select value={founderPrimal} onChange={(event) => setFounderPrimal(event.target.value)}>{Object.values(PRIMALS).map((primal) => <option key={primal.id} value={primal.id}>{primal.icon} {primal.id}</option>)}</select><small>Primal is permanent. It affects combat matchups and cultural alignment.</small></label>
           <label>Motto<input value={motto} maxLength={72} onChange={(event) => setMotto(event.target.value)} /></label>
           <label>World seed<input value={seedText} maxLength={40} onChange={(event) => setSeedText(event.target.value)} /><small>The same seed produces the same opening candidates and rival variation.</small></label>
         </div>
         <div className="founder-preview">
-          <span className="founder-preview__glyph">{classInfo?.glyph}</span><div><span className="eyebrow">Founding hero</span><h3>{founderName || 'Unnamed founder'}</h3><p>{founderClass} · {classInfo?.description}</p></div>
+          <span className="founder-preview__glyph">{classInfo?.glyph}</span><div><span className="eyebrow">Founding hero</span><h3>{founderName || 'Unnamed founder'}</h3><p>Level 1 · {PRIMALS[founderPrimal]?.icon} {founderPrimal} · {founderClass} · {classInfo?.description}</p></div>
         </div>
         <div className="new-campaign__premise"><strong>The Broken Lantern scenario</strong><p>The previous guild disappeared in the Blackwood. You begin alone in a rented hall. Your first objective is to hire one companion, then prove the new company on the Old Road.</p></div>
-        <Button variant="primary" size="lg" disabled={!guildName.trim() || !founderName.trim()} onClick={() => onCreate({ guildName: guildName.trim(), founderName: founderName.trim(), founderClass, motto: motto.trim(), seedText })}>Raise the banner</Button>
+        <Button variant="primary" size="lg" disabled={!guildName.trim() || !founderName.trim()} onClick={() => onCreate({ guildName: guildName.trim(), founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText })}>Raise the banner</Button>
       </div>
     </Modal>
   );
@@ -224,27 +229,27 @@ function ReportModal({ report, onClose, openHero }) {
       <div className={`mission-report mission-report--${tone}`}>
         <header className="mission-report__hero">
           <div className="mission-report__seal">{isMission ? report.grade === 'Legendary' ? '✦' : report.grade === 'Catastrophic' ? '!' : '◆' : report.champion ? '♛' : '⚔'}</div>
-          <div><span className="eyebrow">{isMission ? `${report.family} · ${report.formationType}` : `${report.division} circuit · ${report.location}`}</span><h2>{isMission ? report.grade : report.champion ? 'Champions' : `Top ${report.finish}`}</h2><p>{report.narrative}</p></div>
+          <div><span className="eyebrow">{isMission ? `${report.family} · ${report.formationType} · ${report.locationName || report.region}` : `${report.division} circuit · ${report.location}`}</span><h2>{isMission ? report.grade : report.champion ? 'Champions' : `Top ${report.finish}`}</h2><p>{report.narrative}</p></div>
         </header>
 
         {isMission ? (
           <>
-            <div className="report-metrics"><div><span>Final chance</span><strong>{report.finalChance}%</strong><small>Roll {report.roll}</small></div><div><span>Treasury</span><strong>+{report.reward}</strong><small>Supplies −{report.supplyCost}</small></div><div><span>Fame</span><strong>{report.fame >= 0 ? '+' : ''}{report.fame}</strong><small>{report.region}</small></div><div><span>Outcome</span><strong>{report.grade}</strong><small>Risk {report.risk}/5</small></div></div>
+            <div className="report-metrics"><div><span>Final chance</span><strong>{report.finalChance}%</strong><small>Roll {report.roll}</small></div><div><span>Treasury</span><strong>+{report.reward}</strong><small>Supplies −{report.supplyCost}</small></div><div><span>Fame</span><strong>{report.fame >= 0 ? '+' : ''}{report.fame}</strong><small>{report.locationName || report.region}</small></div><div><span>Outcome</span><strong>{report.grade}</strong><small>Risk {report.risk}/5</small></div></div>
             <section className="report-decision"><span className="eyebrow">The decisive moment</span><blockquote>{report.decision?.prompt}</blockquote><div><strong>{report.decision?.label}</strong><p>{report.decision?.note}</p></div></section>
           </>
         ) : (
           <div className="report-metrics"><div><span>Finish</span><strong>{report.champion ? '1st' : `Top ${report.finish}`}</strong></div><div><span>Prize</span><strong>{report.reward}</strong></div><div><span>Fame</span><strong>+{report.fame}</strong></div><div><span>Bouts</span><strong>{report.bracket?.length || 0}</strong></div></div>
         )}
 
-        <section><span className="eyebrow">Company arrangement</span><div className="report-team">{(report.team || []).map((member) => <button key={member.heroId} onClick={() => openHero(member.heroId)}><HeroPortrait hero={{ ...member, id: member.heroId, status: member.status || 'available' }} size="sm" /><div><strong>{member.name}</strong><small>{member.classId} · {member.role}</small><span>Power {member.power} · Role {member.roleRating}</span></div>{isMission ? <i className={report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'dead' ? 'is-dead' : report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'injured' ? 'is-injured' : ''}>{report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status || 'returned'}</i> : null}</button>)}</div></section>
+        <section><span className="eyebrow">Company arrangement</span><div className="report-team">{(report.team || []).map((member) => <button key={member.heroId} onClick={() => openHero(member.heroId)}><HeroPortrait hero={{ ...member, id: member.heroId, status: member.status || 'available' }} size="sm" /><div><strong>{member.name}</strong><small>Lv {member.level || 1} · {member.rarity || 'Common'} · {member.primal || 'Fire'} {member.classId} · {member.role}</small><span>Power {member.power} · Role {member.roleRating}</span></div>{isMission ? <i className={report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'dead' ? 'is-dead' : report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'injured' ? 'is-injured' : ''}>{report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status || 'returned'}</i> : null}</button>)}</div></section>
 
         {isMission ? (
           <div className="report-consequences">
-            <section><span className="eyebrow">Individual consequences</span>{report.heroEffects?.map((effect) => <div key={effect.heroId}><strong>{effect.name}</strong><p>{effect.injury ? effect.injury : effect.status === 'dead' ? 'Killed during the expedition' : 'Returned to active service'} · form {effect.formChange >= 0 ? '+' : ''}{effect.formChange} · renown {effect.renownChange >= 0 ? '+' : ''}{effect.renownChange}</p></div>)}</section>
+            <section><span className="eyebrow">Individual consequences</span>{report.heroEffects?.map((effect) => <div key={effect.heroId}><strong>{effect.name}</strong><p>{effect.injury ? effect.injury : effect.status === 'dead' ? 'Killed during the expedition' : 'Returned to active service'} · +{effect.xpGain || 0} XP{effect.levelAfter > effect.levelBefore ? ` · LEVEL ${effect.levelAfter}` : ''} · form {effect.formChange >= 0 ? '+' : ''}{effect.formChange} · renown {effect.renownChange >= 0 ? '+' : ''}{effect.renownChange}</p></div>)}</section>
             <section><span className="eyebrow">Lasting consequences</span>{report.artifact ? <p><b>Artifact recovered:</b> {report.artifact}</p> : null}{report.consequences?.length ? report.consequences.map((item) => <p key={item}>{item}</p>) : <p>No new political obligation or rivalry was created.</p>}</section>
           </div>
         ) : (
-          <section><span className="eyebrow">Round-by-round record</span><div className="report-bouts">{report.bracket?.map((bout, index) => <article key={`${bout.round}-${index}`}><strong>{bout.round}</strong><span>{bout.won ? 'Victory' : 'Defeat'} vs {bout.opponent}</span><small>{bout.tactic} · {bout.chance}% estimate · {bout.teamPower} vs {bout.opponentPower}</small></article>)}</div></section>
+          <section><span className="eyebrow">Round-by-round record</span><div className="report-bouts">{report.bracket?.map((bout, index) => <article key={`${bout.round}-${index}`}><strong>{bout.round}</strong><span>{bout.won ? 'Victory' : 'Defeat'} vs {bout.opponent}</span><small>{bout.tactic} · {bout.chance}% estimate · {bout.opponentPrimal || 'Unknown'} opponent · primal {(bout.primalEdge || 0) >= 0 ? '+' : ''}{bout.primalEdge || 0} · {bout.teamPower} vs {bout.opponentPower}</small></article>)}</div></section>
         )}
         <Button variant="primary" size="lg" onClick={onClose}>{isMission ? 'Seal report in the Chronicle' : 'Return to the circuit'}</Button>
       </div>
@@ -258,17 +263,17 @@ function HeroDetailModal({ state, heroId, onClose, actions }) {
   const classInfo = CLASSES[hero.classId];
   const active = !['retired', 'dead'].includes(hero.status) && state.heroes.some((item) => item.id === hero.id);
   return (
-    <Modal open title={hero.name} eyebrow={`${hero.classId} · Age ${hero.age} · ${hero.status}`} onClose={onClose} width="wide">
+    <Modal open title={hero.name} eyebrow={`Level ${hero.level || 1} · ${hero.rarity || 'Common'} · ${hero.primal || 'Fire'} ${hero.classId} · Age ${hero.age} · ${hero.status}`} onClose={onClose} width="wide">
       <div className="hero-dossier">
         <aside className="hero-dossier__identity">
           <HeroPortrait hero={hero} size="xl" />
-          <Badge tone={hero.status === 'dead' ? 'red' : hero.status === 'retired' ? 'neutral' : 'green'}>{hero.status}</Badge>
+          <div className="dossier-taxonomy"><Badge tone={hero.status === 'dead' ? 'red' : hero.status === 'retired' ? 'neutral' : 'green'}>{hero.status}</Badge><RarityBadge rarity={hero.rarity || 'Common'} /><PrimalBadge primal={hero.primal || 'Fire'} /></div>
           <p>{hero.hook || `${hero.origin}.`}</p>
           <div className="dossier-tags"><Badge>{hero.personality}</Badge><Badge tone="red">Flaw: {hero.flaw}</Badge><Badge tone="blue">Dream: {hero.dream}</Badge></div>
           <div className="dossier-legacy"><span>Historical legacy</span><strong>{hero.legacy}</strong><small>{hero.renown} public renown</small></div>
         </aside>
         <div className="hero-dossier__main">
-          <div className="dossier-rating-row"><div><span>Power</span><strong>{hero.power}</strong></div><div><span>Potential</span><strong>{hero.potential}</strong></div><div><span>Peak</span><strong>{hero.career?.peakPower || hero.power}</strong></div><div><span>Service</span><strong>{hero.career?.serviceYears || 0}y</strong></div></div>
+          <div className="dossier-rating-row"><div><span>Level</span><strong>{hero.level || 1}/20</strong><small>{hero.level >= 20 ? 'Maximum' : `${hero.xp || 0} XP`}</small></div><div><span>Power</span><strong>{hero.power}</strong></div><div><span>Potential</span><strong>{hero.potential}</strong></div><div><span>Peak</span><strong>{hero.career?.peakPower || hero.power}</strong></div></div><ProgressBar value={hero.level >= 20 ? 1 : hero.xp || 0} max={hero.level >= 20 ? 1 : (70 + (hero.level || 1) * 30)} label={hero.level >= 20 ? 'Level cap reached' : `Progress to level ${(hero.level || 1) + 1}`} tone="purple" compact />
           <section><span className="eyebrow">Core attributes</span><div className="attribute-grid">{Object.entries(hero.attributes || {}).map(([name, value]) => <div key={name}><ProgressBar value={value} max={100} label={name} tone={name === classInfo?.primary ? 'gold' : name === classInfo?.secondary ? 'blue' : 'neutral'} compact /></div>)}</div></section>
           <section><span className="eyebrow">Party role ratings</span><div className="role-rating-grid">{PARTY_ROLES.map((role) => <div key={role.id}><span>{role.label}</span><strong>{roleRating(hero, role.id)}</strong></div>)}</div></section>
           <section><span className="eyebrow">Career record</span><div className="career-grid"><div><span>Missions</span><strong>{hero.career?.missions || 0}</strong></div><div><span>Victories</span><strong>{hero.career?.wins || 0}</strong></div><div><span>Legendary</span><strong>{hero.career?.legendary || 0}</strong></div><div><span>Titles</span><strong>{hero.career?.titles || 0}</strong></div><div><span>Injuries</span><strong>{hero.career?.injuries || 0}</strong></div><div><span>Artifacts</span><strong>{hero.career?.artifacts || 0}</strong></div></div></section>
@@ -298,6 +303,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
+  const localMissionCount = state.missions.filter((mission) => mission.locationId === (state.world?.currentLocationId || 'dunmere')).length;
   const nextAction = getNextAction(state);
 
   const commitState = useCallback((nextState, notice) => {
@@ -354,7 +360,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       const next = notePartySelection(state, id, formationType, assignments);
       if (next.tutorial.step !== state.tutorial.step) commitState(next);
     },
-    launchMission: (id, formationType, assignments) => applyResult(launchMission(state, id, formationType, assignments), 'The company has left Dunmere.'),
+    launchMission: (id, formationType, assignments) => applyResult(launchMission(state, id, formationType, assignments), 'The company has begun its mission.'),
     saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
     advance: (months) => applyResult(advanceMonths(state, months)),
     advanceNext: () => applyResult(advanceToNextEvent(state)),
@@ -366,6 +372,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     chooseAlignment: (alignment) => applyResult(chooseAlignment(state, alignment)),
     enterTournament: (tournamentId, formationType, assignments) => applyResult(enterTournament(state, tournamentId, formationType, assignments)),
     fightTournamentRound: (tournamentId, tactic) => applyResult(fightTournamentRound(state, tournamentId, tactic)),
+    travel: (destinationId) => applyResult(startTravel(state, destinationId)),
     openReport: (reference) => setReportModalRef(reference),
     acknowledgeReport: (reference) => {
       commitState(acknowledgeReport(state, reference));
@@ -452,7 +459,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     <div className="game-shell">
       <aside className="sidebar">
         <div className="sidebar__brand"><Crest size="md" /><div><strong>{state.guild.name}</strong><small>{state.guild.tier} · Year {state.date.year}</small></div></div>
-        <nav>{NAV_ITEMS.map((item) => <button key={item.id} className={screen === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}><span>{item.icon}</span><strong>{item.label}</strong>{item.id === 'hall' && state.pendingDecisions.length ? <i className="nav-alert">{state.pendingDecisions.length}</i> : item.id === 'missions' && state.missions.length ? <i>{state.missions.length}</i> : null}</button>)}</nav>
+        <nav>{NAV_ITEMS.map((item) => <button key={item.id} className={screen === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}><span>{item.icon}</span><strong>{item.label}</strong>{item.id === 'hall' && state.pendingDecisions.length ? <i className="nav-alert">{state.pendingDecisions.length}</i> : item.id === 'missions' && localMissionCount ? <i>{localMissionCount}</i> : null}</button>)}</nav>
         <div className="sidebar__footer"><div className={`save-indicator save-indicator--${saveStatus}`}><i />{saveStatus === 'saving' ? 'Saving…' : saveStatus === 'unsaved' ? 'Unsaved' : saveStatus === 'error' ? 'Save error' : 'Saved'}</div><button onClick={() => actions.saveNow()}>Save slot {slot}</button></div>
       </aside>
 
@@ -460,7 +467,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         <header className="topbar">
           <button className="topbar__mobile-brand" onClick={() => navigate('hall')}><Crest size="xs" /><span>{state.guild.name}</span></button>
           <div className="topbar__date"><span>{MONTHS[state.date.month]}</span><strong>{state.date.year}</strong></div>
-          <div className="topbar__resources"><span title="Treasury"><i>◈</i>{summary.crowns.toLocaleString()}</span><span title="Fame"><i>✦</i>{summary.fame}</span><span title="Legacy"><i>▤</i>{summary.legacy}</span><span title="Rank"><i>♛</i>#{summary.rank}</span></div>
+          <button className="topbar__location" onClick={() => navigate('world')} title="Current guild location"><i>{summary.travel ? '➜' : (PRIMALS[summary.locationPrimal]?.icon || '⌖')}</i><span>{summary.travel ? `Traveling · ${summary.travel.monthsRemaining}m` : summary.location}</span></button>
+          <div className="topbar__resources"><span title="Treasury"><i>◈</i><b>{summary.crowns.toLocaleString()}</b><small>gold</small></span><span title="Fame"><i>✦</i><b>{summary.fame}</b><small>fame</small></span><span title="Legacy"><i>▤</i><b>{summary.legacy}</b><small>legacy</small></span><span title="Rank"><i>♛</i><b>#{summary.rank}</b><small>rank</small></span></div>
           <div className="time-controls">
             <Button size="sm" onClick={() => actions.advance(1)} disabled={state.pendingDecisions.length > 0}>+1 month</Button>
             <Button size="sm" onClick={() => actions.advanceNext()} disabled={state.pendingDecisions.length > 0}>Next event</Button>

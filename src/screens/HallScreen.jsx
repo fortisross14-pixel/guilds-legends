@@ -1,14 +1,14 @@
 import React from 'react';
 import { getDashboardSummary, getGoalMetric, getNextAction, getPromotionRequirement } from '../game/engine.js';
 import { MONTHS, ONBOARDING_STEPS, TIERS } from '../data/content.js';
-import { Badge, Button, Crest, EmptyState, HeroPortrait, Panel, ProgressBar, RiskPips, Stat } from '../components/UI.jsx';
+import { Badge, Button, Crest, EmptyState, HeroPortrait, Panel, PrimalBadge, ProgressBar, RiskPips, Stat } from '../components/UI.jsx';
 
 export default function HallScreen({ state, navigate, actions }) {
   const summary = getDashboardSummary(state);
   const nextAction = getNextAction(state);
   const promotion = getPromotionRequirement(state);
   const availableHeroes = state.heroes.filter((hero) => hero.status === 'available').sort((a, b) => b.power - a.power).slice(0, 5);
-  const currentGoal = state.goals.find((goal) => !goal.completed && ['Local', state.guild.tier].includes(goal.tier));
+  const currentGoal = state.goals.find((goal) => !goal.completed && goal.tier === state.guild.tier) || state.goals.find((goal) => !goal.completed);
   const goalProgress = currentGoal ? getGoalMetric(state, currentGoal.metric) : 0;
 
   return (
@@ -23,6 +23,8 @@ export default function HallScreen({ state, navigate, actions }) {
             <Badge tone="gold">{state.guild.tier} Guild</Badge>
             <Badge tone="blue">Rank #{state.guild.rank}</Badge>
             <Badge tone={state.guild.alignment === 'Undeclared' ? 'neutral' : 'purple'}>{state.guild.alignment}</Badge>
+            <Badge tone="blue">{summary.travel ? `Traveling to ${summary.travel.toId}` : summary.location}</Badge>
+            <PrimalBadge primal={summary.locationPrimal} />
             {state.guild.fallen ? <Badge tone="red">Fallen Status</Badge> : null}
           </div>
         </div>
@@ -55,7 +57,7 @@ export default function HallScreen({ state, navigate, actions }) {
             {availableHeroes.map((hero) => (
               <button className="hero-strip__item" key={hero.id} onClick={() => actions.openHero(hero.id)}>
                 <HeroPortrait hero={hero} size="sm" />
-                <span><strong>{hero.name}</strong><small>{hero.classId} · Power {hero.power}</small></span>
+                <span><strong>{hero.name}</strong><small>Lv {hero.level} · {hero.rarity} · {hero.primal} {hero.classId} · Power {hero.power}</small></span>
                 <i className="form-ring" style={{ '--form': `${hero.form}%` }}>{hero.form}</i>
               </button>
             ))}

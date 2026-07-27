@@ -4,12 +4,9 @@ export const MONTHS = [
 ];
 
 export const TIERS = [
-  { id: 'Local', fame: 40, contracts: 8, rank: 5, minYears: 0, color: '#8ca2b8', scope: 'Dunmere and its neighboring districts' },
-  { id: 'Regional', fame: 180, contracts: 22, rank: 4, minYears: 1, color: '#7fbc9b', scope: 'The counties of western Valedorn' },
-  { id: 'National', fame: 650, contracts: 55, rank: 3, minYears: 8, color: '#d2ad5d', scope: 'The Kingdom of Valedorn' },
-  { id: 'Continental', fame: 1800, contracts: 110, rank: 2, minYears: 20, color: '#ca755d', scope: 'The Crownlands and neighboring realms' },
-  { id: 'World', fame: 5000, contracts: 190, rank: 1, minYears: 40, color: '#9b78c8', scope: 'The known world and its hidden frontiers' },
-  { id: 'Mythic Legacy', fame: 10000, contracts: 300, rank: 1, minYears: 75, color: '#e3c77e', scope: 'History itself' },
+  { id: 'Regional', fame: 120, contracts: 10, rank: 8, minYears: 0, color: '#7fbc9b', scope: 'Four linked settlements of western Valedorn' },
+  { id: 'National', fame: 650, contracts: 36, rank: 4, minYears: 4, color: '#d2ad5d', scope: 'Ten major locations across the Kingdom of Valedorn' },
+  { id: 'Global', fame: 2200, contracts: 95, rank: 1, minYears: 14, color: '#9b78c8', scope: 'The known world, remote frontiers and mythic routes' },
 ];
 
 export const CLASSES = {
@@ -35,13 +32,13 @@ export const PARTY_ROLES = [
 ];
 
 export const REGIONS = [
-  { id: 'Crownlands', icon: '♜', color: '#b7985b', identity: 'Feudal heartlands, knightly orders and old castles', emphasis: 'Tournaments, patronage and succession politics', unlock: 'Local' },
-  { id: 'Verdant Marches', icon: '♣', color: '#4f8a68', identity: 'Deep forests and ruined elder roads', emphasis: 'Tracking, beasts, exploration and curses', unlock: 'Local' },
-  { id: 'Ember Coast', icon: '≈', color: '#b55e50', identity: 'Merchant cities and pirate principalities', emphasis: 'Trade, naval contracts, smuggling and duels', unlock: 'Regional' },
-  { id: 'Sun Kingdoms', icon: '☀', color: '#c79b4c', identity: 'Deserts, caravan empires and sacred cities', emphasis: 'Long expeditions, diplomacy and relic hunts', unlock: 'National' },
-  { id: 'Storm Isles', icon: '⚡', color: '#557da8', identity: 'Independent islands and warrior clans', emphasis: 'Rival crews, sea routes and raid defense', unlock: 'National' },
-  { id: 'Frost Frontier', icon: '❄', color: '#8ba9b8', identity: 'Sparse settlements beyond royal control', emphasis: 'Survival, giant hunts and colony defense', unlock: 'Continental' },
-  { id: 'The Far Veil', icon: '◌', color: '#8d6ba6', identity: 'Mythic lands once treated as legend', emphasis: 'World-tier mysteries and final sagas', unlock: 'World' },
+  { id: 'Crownlands', icon: '♜', color: '#b7985b', primal: 'Fire', identity: 'Feudal heartlands, knightly orders and old castles', emphasis: 'Tournaments, patronage and succession politics', unlock: 'Regional' },
+  { id: 'Verdant Marches', icon: '♣', color: '#4f8a68', primal: 'Plant', identity: 'Deep forests and ruined elder roads', emphasis: 'Tracking, beasts, exploration and curses', unlock: 'Regional' },
+  { id: 'Ember Coast', icon: '≈', color: '#b55e50', primal: 'Water', identity: 'Merchant cities and pirate principalities', emphasis: 'Trade, naval contracts, smuggling and duels', unlock: 'National' },
+  { id: 'Sun Kingdoms', icon: '☀', color: '#c79b4c', primal: 'Fire', identity: 'Deserts, caravan empires and sacred cities', emphasis: 'Long expeditions, diplomacy and relic hunts', unlock: 'National' },
+  { id: 'Storm Isles', icon: '⚡', color: '#557da8', primal: 'Air', identity: 'Independent islands and warrior clans', emphasis: 'Rival crews, sea routes and raid defense', unlock: 'National' },
+  { id: 'Frost Frontier', icon: '❄', color: '#8ba9b8', primal: 'Animal', identity: 'Sparse settlements beyond royal control', emphasis: 'Survival, giant hunts and colony defense', unlock: 'Global' },
+  { id: 'The Far Veil', icon: '◌', color: '#8d6ba6', primal: 'Psychic', identity: 'Mythic lands once treated as legend', emphasis: 'World-tier mysteries and final sagas', unlock: 'Global' },
 ];
 
 export const FACILITIES = [
@@ -68,7 +65,7 @@ export const APPOINTMENTS = [
 
 export const MISSION_TEMPLATES = [
   {
-    id: 'wolves-old-road', title: 'Wolves on the Old Road', family: 'Monster Hunt', tier: 'Local', region: 'Verdant Marches', risk: 1,
+    id: 'wolves-old-road', title: 'Wolves on the Old Road', family: 'Monster Hunt', tier: 'Regional', region: 'Verdant Marches', risk: 1,
     duration: 1, difficulty: 49, reward: [180, 260], fame: [5, 9], roles: ['Scout', 'Vanguard'],
     brief: 'Carters refuse the north road after a pack began attacking in daylight. The tracks are too organized for ordinary wolves.',
     stakes: 'Reopen Dunmere’s main trade road before food prices rise.',
@@ -82,7 +79,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'missing-apothecary', title: 'The Missing Apothecary', family: 'Investigation', tier: 'Local', region: 'Crownlands', risk: 1,
+    id: 'missing-apothecary', title: 'The Missing Apothecary', family: 'Investigation', tier: 'Regional', region: 'Crownlands', risk: 1,
     duration: 1, difficulty: 46, reward: [150, 230], fame: [4, 8], roles: ['Specialist', 'Support'],
     brief: 'A healer vanished after purchasing grave-moss and silver thread. The temple wants discretion; the watch wants an arrest.',
     stakes: 'Find the apothecary before a spreading fever reaches the market quarter.',
@@ -96,7 +93,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'millers-daughter', title: 'The Miller’s Daughter', family: 'Rescue', tier: 'Local', region: 'Crownlands', risk: 1,
+    id: 'millers-daughter', title: 'The Miller’s Daughter', family: 'Rescue', tier: 'Regional', region: 'Crownlands', risk: 1,
     duration: 1, difficulty: 43, reward: [120, 210], fame: [5, 10], roles: ['Scout', 'Captain'],
     brief: 'A child disappeared near the flooded mill. The search party found tiny footprints and a ribbon beneath the sluice gate.',
     stakes: 'A rescue where speed matters more than treasure.',
@@ -110,7 +107,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'blackwood-lanterns', title: 'Lanterns in the Blackwood', family: 'Saga', tier: 'Local', region: 'Verdant Marches', risk: 3,
+    id: 'blackwood-lanterns', title: 'Lanterns in the Blackwood', family: 'Saga', tier: 'Regional', region: 'Verdant Marches', risk: 3,
     duration: 2, difficulty: 62, reward: [420, 620], fame: [14, 24], roles: ['Scout', 'Support', 'Captain'], saga: 'The Blackwood Disappearances',
     brief: 'Blue lights have appeared where the old guild vanished. One lantern bears the founder’s broken crest.',
     stakes: 'The first true lead in Dunmere’s oldest wound.',
@@ -124,7 +121,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'barons-tithe', title: 'The Baron’s Tithe', family: 'Political', tier: 'Local', region: 'Crownlands', risk: 2,
+    id: 'barons-tithe', title: 'The Baron’s Tithe', family: 'Political', tier: 'Regional', region: 'Crownlands', risk: 2,
     duration: 1, difficulty: 55, reward: [260, 390], fame: [6, 12], roles: ['Captain', 'Specialist'],
     brief: 'The border baron claims bandits stole his tax convoy. Villagers insist the “bandits” were hungry tenant farmers.',
     stakes: 'Choose which version of justice the guild will enforce.',
@@ -138,7 +135,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'harvest-melee-prep', title: 'Road to the Harvest Melee', family: 'Tournament', tier: 'Local', region: 'Crownlands', risk: 1,
+    id: 'harvest-melee-prep', title: 'Road to the Harvest Melee', family: 'Tournament', tier: 'Regional', region: 'Crownlands', risk: 1,
     duration: 1, difficulty: 54, reward: [180, 340], fame: [8, 16], roles: ['Striker', 'Captain'], tournament: true,
     brief: 'Dunmere’s annual melee is the fastest route to public recognition. Rival guilds have begun scouting Mara Veyne.',
     stakes: 'Place among the final four to complete a first-year objective.',
@@ -152,7 +149,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'ash-tower', title: 'The Ash Tower Bell', family: 'Dungeon', tier: 'Regional', region: 'Crownlands', risk: 3,
+    id: 'ash-tower', title: 'The Ash Tower Bell', family: 'Dungeon', tier: 'National', region: 'Crownlands', risk: 3,
     duration: 2, difficulty: 70, reward: [620, 880], fame: [18, 30], roles: ['Vanguard', 'Specialist', 'Support'], artifact: 'Bell of Ash',
     brief: 'A ruined watchtower rings at midnight despite having no bell. Every ring erases one name from the parish rolls.',
     stakes: 'Break a curse before an entire village is forgotten.',
@@ -166,7 +163,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'river-leviathan', title: 'The River Leviathan', family: 'Monster Hunt', tier: 'Regional', region: 'Verdant Marches', risk: 4,
+    id: 'river-leviathan', title: 'The River Leviathan', family: 'Monster Hunt', tier: 'National', region: 'Verdant Marches', risk: 4,
     duration: 2, difficulty: 76, reward: [780, 1100], fame: [24, 38], roles: ['Scout', 'Vanguard', 'Striker'],
     brief: 'Something vast has dammed the River Serein with uprooted oaks. Two villages are already flooding.',
     stakes: 'A major rescue that can qualify the guild for National recognition.',
@@ -180,7 +177,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'dukes-hostage', title: 'The Duke’s Hostage', family: 'Political', tier: 'Regional', region: 'Crownlands', risk: 3,
+    id: 'dukes-hostage', title: 'The Duke’s Hostage', family: 'Political', tier: 'National', region: 'Crownlands', risk: 3,
     duration: 2, difficulty: 72, reward: [700, 980], fame: [16, 30], roles: ['Captain', 'Scout', 'Specialist'], saga: 'War of Three Heirs',
     brief: 'One claimant to Valedorn’s western duchy has taken another’s son “for safekeeping.” Three patrons ask for three different outcomes.',
     stakes: 'The guild’s decision may decide a succession war.',
@@ -194,7 +191,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'pirate-ledger', title: 'The Red Ledger', family: 'Infiltration', tier: 'National', region: 'Ember Coast', risk: 3,
+    id: 'pirate-ledger', title: 'The Red Ledger', family: 'Infiltration', tier: 'Global', region: 'Ember Coast', risk: 3,
     duration: 2, difficulty: 78, reward: [950, 1350], fame: [22, 36], roles: ['Scout', 'Specialist', 'Captain'],
     brief: 'A merchant prince wants a ledger stolen from a pirate republic. Half the names inside belong to respectable nobles.',
     stakes: 'Acquire leverage that can reshape the coast’s politics.',
@@ -208,7 +205,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'giants-causeway', title: 'The Giant’s Causeway', family: 'Exploration', tier: 'Continental', region: 'Frost Frontier', risk: 5,
+    id: 'giants-causeway', title: 'The Giant’s Causeway', family: 'Exploration', tier: 'Global', region: 'Frost Frontier', risk: 5,
     duration: 3, difficulty: 86, reward: [1600, 2300], fame: [45, 70], roles: ['Scout', 'Support', 'Vanguard', 'Specialist'], artifact: 'Sky-Iron Compass',
     brief: 'A road of impossible stones appears only beneath the winter aurora. No expedition has returned from its far end.',
     stakes: 'Open a route into the unmapped north and claim a continental feat.',
@@ -222,7 +219,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'storm-wall', title: 'Beyond the Storm Wall', family: 'Legend Quest', tier: 'World', region: 'The Far Veil', risk: 5,
+    id: 'storm-wall', title: 'Beyond the Storm Wall', family: 'Legend Quest', tier: 'Global', region: 'The Far Veil', risk: 5,
     duration: 4, difficulty: 94, reward: [2600, 4000], fame: [80, 130], roles: ['Captain', 'Scout', 'Support', 'Specialist', 'Vanguard'], saga: 'Voyage Beyond the Storm Wall', artifact: 'Crown of the Last Horizon',
     brief: 'The oldest maps end at a wall of permanent lightning. A dead captain’s journal claims there is a calm sea beyond it.',
     stakes: 'A world-defining saga and the road to Mythic Legacy.',
@@ -236,7 +233,7 @@ export const MISSION_TEMPLATES = [
     },
   },
   {
-    id: 'fog-ferry', title: 'The Ferry Beneath the Fog', family: 'Investigation', tier: 'Local', region: 'Crownlands', risk: 2,
+    id: 'fog-ferry', title: 'The Ferry Beneath the Fog', family: 'Investigation', tier: 'Regional', region: 'Crownlands', risk: 2,
     duration: 1, difficulty: 54, reward: [220, 340], fame: [6, 11], roles: ['Scout', 'Specialist'],
     brief: 'The river ferry returns each dawn without its passengers. Wet footprints lead away from an empty deck.',
     stakes: 'Restore the safest crossing into Dunmere before merchants abandon the route.',
@@ -247,7 +244,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'hollow-bell', title: 'The Chapel of the Hollow Bell', family: 'Dungeon', tier: 'Local', region: 'Verdant Marches', risk: 2,
+    id: 'hollow-bell', title: 'The Chapel of the Hollow Bell', family: 'Dungeon', tier: 'Regional', region: 'Verdant Marches', risk: 2,
     duration: 2, difficulty: 57, reward: [260, 390], fame: [7, 13], roles: ['Support', 'Vanguard'], artifact: 'The Hollow Bell Clapper',
     brief: 'A ruined roadside chapel rings at midnight although its bell was stolen generations ago.',
     stakes: 'End a curse that is drawing travelers from the road in their sleep.',
@@ -258,7 +255,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'salt-road', title: 'Ambush on the Salt Road', family: 'Escort', tier: 'Regional', region: 'Ember Coast', risk: 2,
+    id: 'salt-road', title: 'Ambush on the Salt Road', family: 'Escort', tier: 'National', region: 'Ember Coast', risk: 2,
     duration: 2, difficulty: 61, reward: [420, 620], fame: [10, 18], roles: ['Captain', 'Vanguard', 'Scout'],
     brief: 'Three guilds have failed to bring a salt caravan through the western gorge. The attackers know every formation.',
     stakes: 'Secure a trade route and learn which rival is selling caravan plans.',
@@ -269,7 +266,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'mire-crown', title: 'The Mire King’s Crown', family: 'Monster Hunt', tier: 'Regional', region: 'Verdant Marches', risk: 3,
+    id: 'mire-crown', title: 'The Mire King’s Crown', family: 'Monster Hunt', tier: 'National', region: 'Verdant Marches', risk: 3,
     duration: 2, difficulty: 67, reward: [560, 780], fame: [14, 23], roles: ['Scout', 'Support', 'Striker'], artifact: 'Crown of Woven Reeds',
     brief: 'A colossal antlered beast has united the marsh predators and driven three villages onto the old causeway.',
     stakes: 'Break the siege without poisoning the wetland that feeds half the county.',
@@ -280,7 +277,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'seven-champions', title: 'The First of Seven Champions', family: 'Tournament', tier: 'Regional', region: 'Crownlands', risk: 2,
+    id: 'seven-champions', title: 'The First of Seven Champions', family: 'Tournament', tier: 'National', region: 'Crownlands', risk: 2,
     duration: 1, difficulty: 69, reward: [500, 760], fame: [18, 28], roles: ['Striker', 'Captain'], saga: 'The Seven Arena Champions', tournament: true,
     brief: 'The undefeated Gate Champion accepts one challenger from a guild without a royal patron.',
     stakes: 'Begin a multi-year challenge against the seven most celebrated fighters of the age.',
@@ -291,7 +288,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'red-ford', title: 'The Banner at Red Ford', family: 'War Operation', tier: 'Regional', region: 'Crownlands', risk: 3,
+    id: 'red-ford', title: 'The Banner at Red Ford', family: 'War Operation', tier: 'National', region: 'Crownlands', risk: 3,
     duration: 2, difficulty: 70, reward: [620, 900], fame: [15, 26], roles: ['Captain', 'Vanguard', 'Support'], saga: 'War of Three Heirs',
     brief: 'Two heirs claim the same bridge while civilians are trapped between levies. Both sides demand the guild’s banner.',
     stakes: 'Decide whether the guild is a weapon, a shield or an independent power.',
@@ -346,7 +343,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'glass-citadel', title: 'Siege of the Glass Citadel', family: 'War Operation', tier: 'Continental', region: 'Sun Kingdoms', risk: 4,
+    id: 'glass-citadel', title: 'Siege of the Glass Citadel', family: 'War Operation', tier: 'Global', region: 'Sun Kingdoms', risk: 4,
     duration: 4, difficulty: 85, reward: [1900, 2800], fame: [45, 72], roles: ['Captain', 'Vanguard', 'Specialist', 'Support', 'Striker'], artifact: 'Shard of the Noon Gate',
     brief: 'An invulnerable desert fortress reflects every siege engine and spell used against it.',
     stakes: 'End a continental war without reducing a sacred city to rubble.',
@@ -357,7 +354,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'white-giant', title: 'The White Giant’s Wake', family: 'Monster Hunt', tier: 'Continental', region: 'Frost Frontier', risk: 5,
+    id: 'white-giant', title: 'The White Giant’s Wake', family: 'Monster Hunt', tier: 'Global', region: 'Frost Frontier', risk: 5,
     duration: 4, difficulty: 88, reward: [2200, 3200], fame: [55, 85], roles: ['Vanguard', 'Scout', 'Support', 'Striker'], artifact: 'Heart-Ice Spear',
     brief: 'A giant believed dead for three centuries is walking south, followed by an avalanche that never settles.',
     stakes: 'Save the frontier colonies and decide whether the last giant should be killed or understood.',
@@ -368,7 +365,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'sunken-embassy', title: 'The Sunken Embassy', family: 'Diplomatic Mission', tier: 'Continental', region: 'Ember Coast', risk: 4,
+    id: 'sunken-embassy', title: 'The Sunken Embassy', family: 'Diplomatic Mission', tier: 'Global', region: 'Ember Coast', risk: 4,
     duration: 4, difficulty: 84, reward: [1800, 2700], fame: [42, 68], roles: ['Captain', 'Specialist', 'Scout', 'Support'], artifact: 'Seal of the Drowned Prince',
     brief: 'An embassy sank intact beneath a magically still harbor. Its treaty could prevent three kingdoms from entering war.',
     stakes: 'Recover the treaty before rival divers replace it with a forgery.',
@@ -379,7 +376,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'moon-city', title: 'The City Behind the Moon', family: 'Legend Quest', tier: 'World', region: 'The Far Veil', risk: 5,
+    id: 'moon-city', title: 'The City Behind the Moon', family: 'Legend Quest', tier: 'Global', region: 'The Far Veil', risk: 5,
     duration: 5, difficulty: 95, reward: [3000, 4700], fame: [90, 145], roles: ['Captain', 'Scout', 'Support', 'Specialist', 'Vanguard'], artifact: 'Moonless Key',
     brief: 'At each new moon, towers appear on the horizon where no land exists. Every expedition returns one day older and ten years late.',
     stakes: 'Find a civilization outside ordinary time without losing an entire generation.',
@@ -390,7 +387,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'last-dragon', title: 'The Last Dragon’s Oath', family: 'Legend Quest', tier: 'World', region: 'Frost Frontier', risk: 5,
+    id: 'last-dragon', title: 'The Last Dragon’s Oath', family: 'Legend Quest', tier: 'Global', region: 'Frost Frontier', risk: 5,
     duration: 5, difficulty: 96, reward: [3300, 5000], fame: [95, 155], roles: ['Captain', 'Vanguard', 'Striker', 'Support', 'Specialist'], artifact: 'Scale of the First Flame',
     brief: 'The last dragon wakes beneath the polar mountain and calls in an oath sworn by the first kings.',
     stakes: 'Decide whether the age of dragons ends in battle, alliance or succession.',
@@ -401,7 +398,7 @@ export const MISSION_TEMPLATES = [
     ] },
   },
   {
-    id: 'conclave-banners', title: 'The Conclave of Banners', family: 'Tournament', tier: 'World', region: 'Crownlands', risk: 4,
+    id: 'conclave-banners', title: 'The Conclave of Banners', family: 'Tournament', tier: 'Global', region: 'Crownlands', risk: 4,
     duration: 3, difficulty: 93, reward: [2800, 4300], fame: [85, 135], roles: ['Captain', 'Vanguard', 'Striker', 'Support', 'Specialist'], tournament: true,
     brief: 'Once every four years, the world’s great guilds compete across duels, rescues, monster arenas and command trials.',
     stakes: 'Be recognized as the greatest living institution rather than merely the strongest party.',
@@ -414,10 +411,10 @@ export const MISSION_TEMPLATES = [
 ];
 
 export const SAGA_DEFINITIONS = [
-  { id: 'The Blackwood Disappearances', tier: 'Local', stages: 4, description: 'Discover what happened to Dunmere’s previous guild and why blue lanterns still burn beneath the trees.' },
-  { id: 'War of Three Heirs', tier: 'Regional', stages: 5, description: 'Influence a succession struggle that can unite or divide western Valedorn.' },
+  { id: 'The Blackwood Disappearances', tier: 'Regional', stages: 4, description: 'Discover what happened to Dunmere’s previous guild and why blue lanterns still burn beneath the trees.' },
+  { id: 'War of Three Heirs', tier: 'National', stages: 5, description: 'Influence a succession struggle that can unite or divide western Valedorn.' },
   { id: 'The Seven Arena Champions', tier: 'National', stages: 5, description: 'Challenge a generation of undefeated champions across seven disciplines.' },
-  { id: 'Voyage Beyond the Storm Wall', tier: 'World', stages: 4, description: 'Cross the edge of every accepted map and decide what history should remember.' },
+  { id: 'Voyage Beyond the Storm Wall', tier: 'Global', stages: 4, description: 'Cross the edge of every accepted map and decide what history should remember.' },
 ];
 
 export const RIVAL_ARCHETYPES = [
@@ -467,20 +464,22 @@ export const ONBOARDING_STEPS = [
   { id: 'advance', title: 'Advance one month', body: 'Time moves wages, recovery, rival guilds, tournament calendars and expeditions together.', screen: 'hall', target: 'advanceMonth', reward: 45 },
   { id: 'choice', title: 'Resolve the key moment', body: 'Important missions pause for a decision. Choose what your guild values, not only the option with the best percentage.', screen: 'hall', target: 'resolveChoice', reward: 70 },
   { id: 'report', title: 'Read the expedition report', body: 'Study who did what, the final odds, rewards, wounds and consequences. Every completed mission remains available in the Chronicle.', screen: 'chronicle', target: 'viewMissionReport', reward: 45 },
-  { id: 'goals', title: 'Choose your first-year path', body: 'The opening orders are over. Your goals now become broader: combat wins, fame, the local circuit and a Regional charter.', screen: 'goals', target: 'inspectGoals', reward: 80 },
+  { id: 'goals', title: 'Choose your first-year path', body: 'The opening orders are over. Your goals now become broader: combat wins, fame, the local circuit and a National charter.', screen: 'goals', target: 'inspectGoals', reward: 80 },
 ];
 
 export const CHAPTER_GOALS = [
-  { id: 'contracts-3', title: 'A Reliable Banner', description: 'Complete 3 contracts without a hero death.', metric: 'missionsWon', target: 3, reward: { crowns: 250, fame: 8 }, tier: 'Local' },
-  { id: 'melee-top4', title: 'Dunmere Harvest Melee', description: 'Reach the final four in the Harvest Melee.', metric: 'tournamentBest', target: 4, comparator: 'lte', reward: { crowns: 180, fame: 12 }, tier: 'Local' },
-  { id: 'fame-40', title: 'Known Beyond the Gate', description: 'Reach 40 fame.', metric: 'fame', target: 40, reward: { crowns: 300, fame: 0 }, tier: 'Local' },
-  { id: 'alignment', title: 'Choose Who You Serve', description: 'Align with the council, the border baron or remain independent.', metric: 'alignmentChosen', target: 1, reward: { crowns: 120, fame: 6 }, tier: 'Local' },
-  { id: 'regional', title: 'A Regional Charter', description: 'Earn promotion from Local to Regional status.', metric: 'tierIndex', target: 1, reward: { crowns: 900, fame: 20 }, tier: 'Local' },
-  { id: 'hall-level2', title: 'A Hall Worth Remembering', description: 'Upgrade the Great Hall to level 2.', metric: 'greatHallLevel', target: 2, reward: { crowns: 350, fame: 8 }, tier: 'Regional' },
-  { id: 'legend-hero', title: 'The First Legend', description: 'Develop a hero to 80 power or 150 legacy.', metric: 'legendHero', target: 1, reward: { crowns: 650, fame: 20 }, tier: 'Regional' },
-  { id: 'national', title: 'The Royal License', description: 'Reach National tier.', metric: 'tierIndex', target: 2, reward: { crowns: 1600, fame: 40 }, tier: 'Regional' },
-  { id: 'artifact-3', title: 'Relics of an Age', description: 'Preserve 3 named artifacts.', metric: 'artifacts', target: 3, reward: { crowns: 800, fame: 25 }, tier: 'National' },
-  { id: 'century', title: 'A Century Under One Banner', description: 'Survive for 100 in-game years.', metric: 'years', target: 100, reward: { crowns: 3000, fame: 100 }, tier: 'World' },
+  { id: 'contracts-3', title: 'A Reliable Banner', description: 'Complete 3 contracts without a hero death.', metric: 'missionsWon', target: 3, reward: { crowns: 250, fame: 8 }, tier: 'Regional' },
+  { id: 'melee-top4', title: 'Dunmere Harvest Melee', description: 'Reach the final four in a Local tournament.', metric: 'tournamentBest', target: 4, comparator: 'lte', reward: { crowns: 180, fame: 12 }, tier: 'Regional' },
+  { id: 'fame-120', title: 'Known Across the Region', description: 'Reach 120 fame.', metric: 'fame', target: 120, reward: { crowns: 420, fame: 0 }, tier: 'Regional' },
+  { id: 'travel-water', title: 'Seek a Counter-Primal', description: 'Travel beyond Dunmere and recruit a hero whose primal differs from the founder’s.', metric: 'primalDiversity', target: 2, reward: { crowns: 260, fame: 8 }, tier: 'Regional' },
+  { id: 'national', title: 'The Royal License', description: 'Earn promotion from Regional to National status.', metric: 'tierIndex', target: 1, reward: { crowns: 1200, fame: 30 }, tier: 'Regional' },
+  { id: 'hall-level2', title: 'A Hall Worth Remembering', description: 'Upgrade the Great Hall to level 2.', metric: 'greatHallLevel', target: 2, reward: { crowns: 350, fame: 8 }, tier: 'National' },
+  { id: 'level-10', title: 'A Proven Hero', description: 'Develop any active hero to level 10.', metric: 'highestLevel', target: 10, reward: { crowns: 750, fame: 24 }, tier: 'National' },
+  { id: 'professional-title', title: 'Professional Champions', description: 'Win a Professional tournament.', metric: 'professionalTournamentWins', target: 1, reward: { crowns: 1100, fame: 35 }, tier: 'National' },
+  { id: 'global', title: 'A Banner Without Borders', description: 'Reach Global tier.', metric: 'tierIndex', target: 2, reward: { crowns: 2800, fame: 80 }, tier: 'National' },
+  { id: 'artifact-3', title: 'Relics of an Age', description: 'Preserve 3 named artifacts.', metric: 'artifacts', target: 3, reward: { crowns: 800, fame: 25 }, tier: 'Global' },
+  { id: 'level-20', title: 'Living Legend', description: 'Develop a hero to the level cap of 20.', metric: 'highestLevel', target: 20, reward: { crowns: 3000, fame: 120 }, tier: 'Global' },
+  { id: 'century', title: 'A Century Under One Banner', description: 'Survive for 100 in-game years.', metric: 'years', target: 100, reward: { crowns: 3000, fame: 100 }, tier: 'Global' },
 ];
 
 export const ACHIEVEMENTS = [
