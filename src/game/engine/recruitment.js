@@ -1,3 +1,4 @@
+// @ts-check
 // Player roster actions: recruit, release, refound, training, appointments, identity.
 import { APPOINTMENTS, CLASSES } from '../../data/content.js';
 import { LOCATION_BY_ID, PRIMALS, RARITIES } from '../../data/world.js';

@@ -1,3 +1,4 @@
+// @ts-check
 // Player tournament entry and starting tournament combat.
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createDuelEncounter, createPartyEncounter } from '../combat.js';

@@ -1,3 +1,4 @@
+// @ts-check
 // Save compaction, migration between schema versions, and validation.
 import { APPOINTMENTS, CHAPTER_GOALS, CLASSES, normalizeClassId, REGIONS, SAGA_DEFINITIONS, TIERS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, emptyFormations, formationForMission } from '../../data/formations.js';

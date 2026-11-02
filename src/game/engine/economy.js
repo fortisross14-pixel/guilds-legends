@@ -1,3 +1,4 @@
+// @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
 import { FACILITIES } from '../../data/content.js';
 import { LOCATION_BY_ID, travelDuration, unlockedLocations } from '../../data/world.js';

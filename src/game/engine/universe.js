@@ -1,3 +1,4 @@
+// @ts-check
 // World generation: rival guilds, historic legends, title records, artifacts and the contract board.
 import { MISSION_TEMPLATES, TIERS } from '../../data/content.js';
 import { formationForMission } from '../../data/formations.js';

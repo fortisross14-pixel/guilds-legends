@@ -1,3 +1,4 @@
+// @ts-check
 // Mission resolution: grades, injuries, relationships, rewards, reports, sagas.
 import { ONBOARDING_STEPS } from '../../data/content.js';
 import { formationForMission } from '../../data/formations.js';

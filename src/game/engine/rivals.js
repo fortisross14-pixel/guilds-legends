@@ -1,3 +1,4 @@
+// @ts-check
 // Rival guild seasons, the AI transfer market and rival institutional events.
 import { addChronicle, clamp, clone, compactHero, ensureTournamentCareer, uid } from './core.js';
 import { generateHero } from './heroes.js';

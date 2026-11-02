@@ -1,3 +1,4 @@
+// @ts-check
 // Contract inspection, party selection, launch, and queueing mission encounters.
 import { FORMATION_TYPES, emptyFormations } from '../../data/formations.js';
 import { LOCATION_BY_ID } from '../../data/world.js';

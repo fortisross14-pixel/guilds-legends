@@ -1,3 +1,4 @@
+// @ts-check
 // Hero generation, XP and levels, relationships, party role ratings and estimates.
 import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';

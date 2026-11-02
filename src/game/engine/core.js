@@ -1,3 +1,4 @@
+// @ts-check
 // Primitives (clone, RNG, ids), chronicle/history helpers, roster and guild queries.
 import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';

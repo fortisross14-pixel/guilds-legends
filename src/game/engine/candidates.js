@@ -1,3 +1,4 @@
+// @ts-check
 // Recruitment market (candidates per location) and recruitment promises.
 import { normalizeClassId, MONTHS } from '../../data/content.js';
 import { RARITIES, unlockedLocations } from '../../data/world.js';

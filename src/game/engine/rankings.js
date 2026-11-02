@@ -1,3 +1,4 @@
+// @ts-check
 // Guild ladders (Regional/National/Global) and hero all-time rankings.
 import { TIERS } from '../../data/content.js';
 import { ensureTournamentCareer, getHeroGuildName, getWorldHeroes } from './core.js';

@@ -1,3 +1,4 @@
+// @ts-check
 // Guild championships, yearly tournament creation and scheduled resolution.
 import { FORMATION_TYPES } from '../../data/formations.js';
 import { LOCATION_BY_ID, primalCombatModifier } from '../../data/world.js';

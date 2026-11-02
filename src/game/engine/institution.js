@@ -1,3 +1,4 @@
+// @ts-check
 // Succession, mentors, branches, artifacts, ambitions, retirement and release.
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES, ambitionMetric, artifactEffectFromPrestige, branchName, defaultAmbitionForHero } from '../legacy.js';

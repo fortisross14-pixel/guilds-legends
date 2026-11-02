@@ -1,3 +1,4 @@
+// @ts-check
 // Individual tournaments: access, ratings, fields, AI resolution, records.
 import { normalizeClassId } from '../../data/content.js';
 import { LOCATION_BY_ID, primalCombatModifier } from '../../data/world.js';

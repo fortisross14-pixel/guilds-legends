@@ -1,3 +1,4 @@
+// @ts-check
 // New campaign creation and default state pieces.
 import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, FACILITIES, SAGA_DEFINITIONS, STARTING_HEROES } from '../../data/content.js';
 import { emptyFormations } from '../../data/formations.js';

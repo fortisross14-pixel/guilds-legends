@@ -1,3 +1,4 @@
+// @ts-check
 // Read models for the UI (next action, summary) and small UI-state actions.
 import { ONBOARDING_STEPS } from '../../data/content.js';
 import {
@@ -164,6 +165,7 @@ export function getNextAction(state) {
   }
   const requirement = promotionRequirement(state);
   if (requirement) {
+    /** @type {[string, { current: any, target: any, met: boolean }][]} */
     const checks = [
       ['fame', requirement.fame],
       ['successful contracts', requirement.contracts],

@@ -1,3 +1,4 @@
+// @ts-check
 // Active combat and mission-game actions, and concluding them.
 import { ONBOARDING_STEPS } from '../../data/content.js';
 import { autoResolveEncounter, missionGradeFromCombat, performCombatAction } from '../combat.js';

@@ -1,3 +1,4 @@
+// @ts-check
 // Chapter goals, achievements, promotion, and evaluateStateInPlace (run after every action).
 import { REGIONS, TIERS } from '../../data/content.js';
 import { addChronicle, commitRng, dateLabel, rngFor, tierIndexByName } from './core.js';

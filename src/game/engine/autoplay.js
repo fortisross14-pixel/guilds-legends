@@ -1,3 +1,4 @@
+// @ts-check
 // Autonomous campaign simulation used by long tests and the sim script.
 import { FORMATION_TYPES, formationForMission } from '../../data/formations.js';
 import { activeHeroCount, clone, completeTutorialTargetInPlace } from './core.js';

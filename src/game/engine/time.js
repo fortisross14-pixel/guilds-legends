@@ -1,3 +1,4 @@
+// @ts-check
 // The monthly and annual loop: council activities, aging, advanceMonths.
 import { normalizeClassId, MONTHS, ONBOARDING_STEPS } from '../../data/content.js';
 import { LOCATIONS, unlockedLocations } from '../../data/world.js';
