@@ -21,6 +21,7 @@ import {
   getGuildmaster,
   getGuildRankings,
   getGuildRankSummary,
+  getGuildStar,
   getHero,
   getHeroRankings,
   getPromotionRequirement,
@@ -841,4 +842,15 @@ test('rival institutions evolve through poaching or splinter guilds over long ca
   assert.ok((state.stats.rivalPoaches || 0) + (state.stats.rivalSplits || 0) > 0);
   assert.ok(state.legacy.rivalInstitutionEvents.length > 0);
   assert.ok(state.rivals.length >= 30);
+});
+
+test('the guild star follows the current guildmaster, not the first roster entry', () => {
+  let state = createNewGame({ seed: 18004 });
+  state = hireFirstCompanion(state);
+  assert.equal(getGuildStar(state).id, state.guild.founderHeroId);
+  const companion = state.heroes[1];
+  state.heroes[0].status = 'dead';
+  state = advanceMonths(state, 1).state;
+  assert.equal(getGuildmaster(state).id, companion.id);
+  assert.equal(getGuildStar(state).id, companion.id);
 });

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { TIERS } from '../data/content.js';
-import { getGuildRankings, getGuildRankSummary, getHeroRankings } from '../game/engine.js';
+import { getGuildRankings, getGuildRankSummary, getGuildStar, getHeroRankings } from '../game/engine.js';
 import { Badge, HeroPortrait, Panel, PrimalBadge, ProgressBar, RarityBadge, Tabs } from '../components/UI.jsx';
 
 const SCOPE_COPY = {
@@ -14,6 +14,7 @@ function GuildLadders({ state, actions }) {
   const rows = useMemo(() => getGuildRankings(state, scope), [state, scope]);
   const summary = useMemo(() => getGuildRankSummary(state), [state]);
   const player = rows.find((row) => row.player);
+  const playerStar = getGuildStar(state);
   return (
     <div className="ladder-view">
       <div className="scope-cards">{summary.map((item) => <button key={item.scope} className={scope === item.scope ? 'is-selected' : ''} onClick={() => setScope(item.scope)}><small>{item.scope} rank</small><strong>#{item.rank}</strong><span>of {item.total} guilds</span><ProgressBar value={item.total - item.rank + 1} max={item.total} tone={item.scope === 'Regional' ? 'green' : item.scope === 'National' ? 'gold' : 'purple'} compact /></button>)}</div>
@@ -24,7 +25,7 @@ function GuildLadders({ state, actions }) {
             <article key={guild.id} className={guild.player ? 'is-player' : ''}>
               <span className="ranking-position">{guild.rank}</span>
               <div className="ranking-identity"><i style={{ background: guild.player ? '#c89a4b' : guild.color }} /><div><strong>{guild.name}</strong><small>{guild.player ? state.guild.motto : `${guild.archetype} · ${TIERS[guild.tierIndex]?.id}`}</small></div></div>
-              {guild.player ? <div className="ranking-star"><HeroPortrait hero={state.heroes[0]} size="xs" /><span><strong>{state.heroes[0]?.name}</strong><small>{guild.rosterSize} active heroes</small></span></div> : <button className="ranking-star" onClick={() => actions.openHero(guild.star.id)}><HeroPortrait hero={guild.star} size="xs" /><span><strong>{guild.star.name}</strong><small>{guild.star.rarity} · Lv {guild.star.level}</small></span></button>}
+              {guild.player ? <div className="ranking-star">{playerStar ? <HeroPortrait hero={playerStar} size="xs" /> : null}<span><strong>{playerStar?.name || 'No active hero'}</strong><small>{guild.rosterSize} active heroes</small></span></div> : <button className="ranking-star" onClick={() => actions.openHero(guild.star.id)}><HeroPortrait hero={guild.star} size="xs" /><span><strong>{guild.star.name}</strong><small>{guild.star.rarity} · Lv {guild.star.level}</small></span></button>}
               <strong>{guild.fame}</strong><strong>{guild.titles}</strong><strong className="historical-score">{guild.score}</strong>
             </article>
           ))}

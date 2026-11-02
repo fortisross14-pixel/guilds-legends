@@ -907,6 +907,15 @@ export function getGuildmaster(state) {
   return getHero(state, state.guild?.currentGuildmasterHeroId || state.guild?.founderHeroId);
 }
 
+// The hero shown as the player's public face: the current guildmaster while
+// active, otherwise the strongest active hero.
+export function getGuildStar(state) {
+  const isActive = (hero) => hero && !['dead', 'retired'].includes(hero.status);
+  const guildmaster = state.heroes.find((hero) => hero.id === state.guild?.currentGuildmasterHeroId);
+  if (isActive(guildmaster)) return guildmaster;
+  return [...state.heroes].filter(isActive).sort((a, b) => b.power - a.power)[0] || null;
+}
+
 export function designateSuccessor(state, heroId) {
   const next = clone(state);
   if ((next.guild?.tierIndex || 0) < 1) return { state, error: 'Formal succession planning unlocks at National status.' };
