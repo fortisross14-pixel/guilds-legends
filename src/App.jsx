@@ -494,19 +494,36 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       URL.revokeObjectURL(url);
     },
     importSave: async (text) => {
+      let imported;
       try {
-        const imported = importGame(text);
+        imported = importGame(text);
         const errors = validateGame(imported);
         if (errors.length) throw new Error(errors[0]);
-        commitState(imported, { tone: 'green', text: 'Backup imported. Save now to replace this slot permanently.' });
       } catch (error) {
         setMessage({ tone: 'red', text: `Import failed: ${error.message}` });
+        return;
+      }
+      const confirmed = window.confirm(`Import "${imported.guild.name}" (Year ${imported.date.year})?
+
+This replaces slot ${slot} (${state.guild.name}). The current campaign in this slot will be lost.`);
+      if (!confirmed) return;
+      window.clearTimeout(autosaveTimer.current);
+      setState(imported);
+      setSaveStatus('saving');
+      const result = await saveGame(slot, imported);
+      if (result.ok) {
+        setSaveStatus('saved');
+        onSlotsChanged?.();
+        setMessage({ tone: 'green', text: `Backup imported into slot ${slot}.` });
+      } else {
+        setSaveStatus('error');
+        setMessage({ tone: 'red', text: `Backup loaded, but saving to slot ${slot} failed: ${result.error}` });
       }
     },
     deleteCurrent: onDeleteCurrent,
     dismissNotification: (id) => commitState(dismissNotification(state, id)),
     clearNotifications: () => commitState(clearNotifications(state)),
-  }), [state, commitState, applyResult, saveNow, onReturnHome, onDeleteCurrent]);
+  }), [state, setState, slot, commitState, applyResult, saveNow, onReturnHome, onDeleteCurrent, onSlotsChanged]);
 
   const navigate = (id) => {
     setScreen(id);
