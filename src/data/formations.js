@@ -58,31 +58,31 @@ export const FORMATION_TYPES = {
 };
 
 export const PARTY_ROLES = [
-  { id: 'Commander', label: 'Commander', formation: 'Combat', key: 'Presence', secondaryKey: 'Mind', affinities: ['Bard', 'Guardian', 'Duelist'], description: 'Coordinates a violent encounter and prevents panic.' },
-  { id: 'Fighter', label: 'Fighter', formation: 'Combat', key: 'Might', secondaryKey: 'Finesse', affinities: ['Guardian', 'Duelist', 'Berserker', 'Ranger', 'Beastmaster'], description: 'Deals or absorbs direct pressure.' },
-  { id: 'Combat Support', label: 'Combat Support', formation: 'Combat', key: 'Spirit', secondaryKey: 'Mind', affinities: ['Cleric', 'Bard', 'Artificer', 'Mage'], description: 'Healing, wards, morale and prepared tools.' },
+  { id: 'Commander', label: 'Commander', formation: 'Combat', key: 'Presence', secondaryKey: 'Mind', affinities: ['Scholar', 'Guardian', 'Duelist'], description: 'Coordinates a violent encounter and prevents panic.' },
+  { id: 'Fighter', label: 'Fighter', formation: 'Combat', key: 'Might', secondaryKey: 'Finesse', affinities: ['Guardian', 'Duelist', 'Ranger', 'Rogue', 'Scholar'], description: 'Deals or absorbs direct pressure.' },
+  { id: 'Combat Support', label: 'Combat Support', formation: 'Combat', key: 'Spirit', secondaryKey: 'Mind', affinities: ['Cleric', 'Scholar', 'Artificer', 'Mage'], description: 'Healing, wards, morale and prepared tools.' },
 
-  { id: 'Negotiation Lead', label: 'Negotiation Lead', formation: 'Diplomacy', key: 'Presence', secondaryKey: 'Spirit', affinities: ['Bard', 'Cleric', 'Duelist'], description: 'Sets the terms and carries public authority.' },
-  { id: 'Strategist', label: 'Strategist', formation: 'Diplomacy', key: 'Mind', secondaryKey: 'Presence', affinities: ['Mage', 'Artificer', 'Bard', 'Rogue'], description: 'Anticipates incentives, traps and second-order effects.' },
-  { id: 'Advocate', label: 'Advocate', formation: 'Diplomacy', key: 'Spirit', secondaryKey: 'Presence', affinities: ['Cleric', 'Bard', 'Guardian'], description: 'Builds trust and moral legitimacy.' },
-  { id: 'Delegation Guard', label: 'Delegation Guard', formation: 'Diplomacy', key: 'Endurance', secondaryKey: 'Presence', affinities: ['Guardian', 'Duelist', 'Berserker'], description: 'Protects the delegation and gives threats weight.' },
+  { id: 'Negotiation Lead', label: 'Negotiation Lead', formation: 'Diplomacy', key: 'Presence', secondaryKey: 'Spirit', affinities: ['Scholar', 'Cleric', 'Duelist'], description: 'Sets the terms and carries public authority.' },
+  { id: 'Strategist', label: 'Strategist', formation: 'Diplomacy', key: 'Mind', secondaryKey: 'Presence', affinities: ['Mage', 'Artificer', 'Scholar', 'Rogue'], description: 'Anticipates incentives, traps and second-order effects.' },
+  { id: 'Advocate', label: 'Advocate', formation: 'Diplomacy', key: 'Spirit', secondaryKey: 'Presence', affinities: ['Cleric', 'Scholar', 'Guardian'], description: 'Builds trust and moral legitimacy.' },
+  { id: 'Delegation Guard', label: 'Delegation Guard', formation: 'Diplomacy', key: 'Endurance', secondaryKey: 'Presence', affinities: ['Guardian', 'Duelist', 'Ranger'], description: 'Protects the delegation and gives threats weight.' },
 
-  { id: 'Expedition Lead', label: 'Expedition Lead', formation: 'Expedition', key: 'Mind', secondaryKey: 'Presence', affinities: ['Ranger', 'Artificer', 'Mage', 'Beastmaster'], description: 'Chooses route, method and acceptable risk.' },
-  { id: 'Searcher', label: 'Searcher', formation: 'Expedition', key: 'Finesse', secondaryKey: 'Mind', affinities: ['Ranger', 'Rogue', 'Beastmaster'], description: 'Finds evidence, tracks, objects and hidden passages.' },
-  { id: 'Curator', label: 'Curator', formation: 'Expedition', key: 'Mind', secondaryKey: 'Spirit', affinities: ['Artificer', 'Mage', 'Cleric', 'Bard'], description: 'Authenticates discoveries and interprets their significance.' },
-  { id: 'Field Support', label: 'Field Support', formation: 'Expedition', key: 'Endurance', secondaryKey: 'Spirit', affinities: ['Cleric', 'Guardian', 'Beastmaster', 'Artificer'], description: 'Manages supplies, recovery and difficult terrain.' },
+  { id: 'Expedition Lead', label: 'Expedition Lead', formation: 'Expedition', key: 'Mind', secondaryKey: 'Presence', affinities: ['Ranger', 'Artificer', 'Mage', 'Scholar'], description: 'Chooses route, method and acceptable risk.' },
+  { id: 'Searcher', label: 'Searcher', formation: 'Expedition', key: 'Finesse', secondaryKey: 'Mind', affinities: ['Ranger', 'Rogue', 'Scholar'], description: 'Finds evidence, tracks, objects and hidden passages.' },
+  { id: 'Curator', label: 'Curator', formation: 'Expedition', key: 'Mind', secondaryKey: 'Spirit', affinities: ['Artificer', 'Mage', 'Cleric', 'Scholar'], description: 'Authenticates discoveries and interprets their significance.' },
+  { id: 'Field Support', label: 'Field Support', formation: 'Expedition', key: 'Endurance', secondaryKey: 'Spirit', affinities: ['Cleric', 'Guardian', 'Scholar', 'Artificer'], description: 'Manages supplies, recovery and difficult terrain.' },
 
-  { id: 'Mastermind', label: 'Mastermind', formation: 'Intrigue', key: 'Mind', secondaryKey: 'Presence', affinities: ['Rogue', 'Bard', 'Mage', 'Artificer'], description: 'Builds the covert plan and controls exposure.' },
+  { id: 'Mastermind', label: 'Mastermind', formation: 'Intrigue', key: 'Mind', secondaryKey: 'Presence', affinities: ['Rogue', 'Scholar', 'Mage', 'Artificer'], description: 'Builds the covert plan and controls exposure.' },
   { id: 'Infiltrator', label: 'Infiltrator', formation: 'Intrigue', key: 'Finesse', secondaryKey: 'Mind', affinities: ['Rogue', 'Ranger', 'Duelist'], description: 'Enters protected places without permission.' },
-  { id: 'Lookout', label: 'Lookout', formation: 'Intrigue', key: 'Finesse', secondaryKey: 'Presence', affinities: ['Ranger', 'Rogue', 'Beastmaster'], description: 'Tracks patrols, witnesses and escape windows.' },
-  { id: 'Extraction', label: 'Extraction', formation: 'Intrigue', key: 'Endurance', secondaryKey: 'Finesse', affinities: ['Guardian', 'Ranger', 'Rogue', 'Beastmaster'], description: 'Gets the cell out after success or discovery.' },
+  { id: 'Lookout', label: 'Lookout', formation: 'Intrigue', key: 'Finesse', secondaryKey: 'Presence', affinities: ['Ranger', 'Rogue', 'Scholar'], description: 'Tracks patrols, witnesses and escape windows.' },
+  { id: 'Extraction', label: 'Extraction', formation: 'Intrigue', key: 'Endurance', secondaryKey: 'Finesse', affinities: ['Guardian', 'Ranger', 'Rogue', 'Scholar'], description: 'Gets the cell out after success or discovery.' },
 
   // Legacy role ids remain readable in migrated saves and historical records.
-  { id: 'Captain', label: 'Captain', formation: 'Legacy', key: 'Presence', secondaryKey: 'Mind', affinities: ['Bard', 'Guardian', 'Duelist'], description: 'Legacy captain role.' },
-  { id: 'Vanguard', label: 'Vanguard', formation: 'Legacy', key: 'Endurance', secondaryKey: 'Might', affinities: ['Guardian', 'Berserker'], description: 'Legacy vanguard role.' },
-  { id: 'Striker', label: 'Striker', formation: 'Legacy', key: 'Might', secondaryKey: 'Finesse', affinities: ['Duelist', 'Berserker', 'Ranger'], description: 'Legacy striker role.' },
-  { id: 'Support', label: 'Support', formation: 'Legacy', key: 'Spirit', secondaryKey: 'Mind', affinities: ['Cleric', 'Bard', 'Artificer'], description: 'Legacy support role.' },
-  { id: 'Scout', label: 'Scout', formation: 'Legacy', key: 'Finesse', secondaryKey: 'Mind', affinities: ['Ranger', 'Rogue', 'Beastmaster'], description: 'Legacy scout role.' },
+  { id: 'Captain', label: 'Captain', formation: 'Legacy', key: 'Presence', secondaryKey: 'Mind', affinities: ['Scholar', 'Guardian', 'Duelist'], description: 'Legacy captain role.' },
+  { id: 'Vanguard', label: 'Vanguard', formation: 'Legacy', key: 'Endurance', secondaryKey: 'Might', affinities: ['Guardian', 'Duelist'], description: 'Legacy vanguard role.' },
+  { id: 'Striker', label: 'Striker', formation: 'Legacy', key: 'Might', secondaryKey: 'Finesse', affinities: ['Duelist', 'Guardian', 'Ranger'], description: 'Legacy striker role.' },
+  { id: 'Support', label: 'Support', formation: 'Legacy', key: 'Spirit', secondaryKey: 'Mind', affinities: ['Cleric', 'Scholar', 'Artificer'], description: 'Legacy support role.' },
+  { id: 'Scout', label: 'Scout', formation: 'Legacy', key: 'Finesse', secondaryKey: 'Mind', affinities: ['Ranger', 'Rogue', 'Scholar'], description: 'Legacy scout role.' },
   { id: 'Specialist', label: 'Specialist', formation: 'Legacy', key: 'Mind', secondaryKey: 'Spirit', affinities: ['Mage', 'Artificer', 'Rogue'], description: 'Legacy specialist role.' },
 ];
 
@@ -96,7 +96,10 @@ export const MISSION_APPROACH_BY_FAMILY = {
   Political: 'Diplomacy',
   Diplomacy: 'Diplomacy',
   Negotiation: 'Diplomacy',
+  'Political Mission': 'Diplomacy',
+  'Diplomatic Mission': 'Diplomacy',
   Investigation: 'Expedition',
+  Saga: 'Expedition',
   Exploration: 'Expedition',
   'Legend Quest': 'Expedition',
   'Artifact Hunt': 'Expedition',

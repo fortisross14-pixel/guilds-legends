@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { normalizeClassId } from '../data/content.js';
 import { FORMATION_TYPES, formationForMission } from '../data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
-import { partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
+import { operationalLocationIds, partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, RiskPips } from '../components/UI.jsx';
 
 function buildBestFormation(state, formationType) {
@@ -19,8 +20,11 @@ function buildBestFormation(state, formationType) {
 
 export default function MissionsScreen({ state, actions, navigate }) {
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
-  const currentLocation = LOCATION_BY_ID[currentLocationId];
-  const localMissions = useMemo(() => state.missions.filter((mission) => mission.locationId === currentLocationId), [state.missions, currentLocationId]);
+  const operationalIds = [...operationalLocationIds(state)];
+  const [operationLocationId, setOperationLocationId] = useState(currentLocationId);
+  const activeLocationId = operationalIds.includes(operationLocationId) ? operationLocationId : currentLocationId;
+  const currentLocation = LOCATION_BY_ID[activeLocationId];
+  const localMissions = useMemo(() => state.missions.filter((mission) => mission.locationId === activeLocationId), [state.missions, activeLocationId]);
   const [selectedId, setSelectedId] = useState(localMissions[0]?.id || null);
   const [formationType, setFormationType] = useState('Combat');
   const [assignments, setAssignments] = useState([]);
@@ -84,13 +88,14 @@ export default function MissionsScreen({ state, actions, navigate }) {
   return (
     <div className="screen screen--missions">
       <header className="screen-heading">
-        <div><span className="eyebrow">Local contracts · specialist arrangements</span><h1>{currentLocation?.name} Contract Board</h1><p>Only petitions from the settlement where the guild currently operates can be accepted. Choose an arrangement, then place every hero in a role where class, level and primal actually matter.</p></div>
+        <div><span className="eyebrow">Operational contracts · specialist arrangements</span><h1>{currentLocation?.name} Contract Board</h1><p>Headquarters and permanent branches can each launch companies. Choose an operational settlement, then build the arrangement that best fits its petition.</p></div>
         <div className="heading-metrics"><Badge tone="gold">{localMissions.length} local contracts</Badge><Badge tone={atFieldCapacity ? 'red' : 'blue'}>{state.activeMissions.length}/{fieldCapacity} companies deployed</Badge><PrimalBadge primal={currentLocation?.primal} /></div>
       </header>
 
-      {traveling ? <div className="travel-lock"><span>➜</span><div><strong>The guild is traveling</strong><p>New companies cannot depart until the guild reaches {LOCATION_BY_ID[state.world.activeTravel.toId]?.name}.</p></div><Button onClick={() => navigate('world')}>View journey</Button></div> : null}
+      {traveling && activeLocationId === currentLocationId ? <div className="travel-lock"><span>➜</span><div><strong>Headquarters is traveling</strong><p>Permanent branches can still launch companies while the main hall moves toward {LOCATION_BY_ID[state.world.activeTravel.toId]?.name}.</p></div><Button onClick={() => navigate('world')}>View journey</Button></div> : null}
 
       <div className="filter-bar">
+        {operationalIds.length > 1 ? <label>Operating hall<select value={activeLocationId} onChange={(event) => { setOperationLocationId(event.target.value); setSelectedId(null); }} >{operationalIds.map((id) => <option key={id} value={id}>{LOCATION_BY_ID[id]?.name}{id === currentLocationId ? ' · HQ' : ' · Branch'}</option>)}</select></label> : null}
         <label>Mission family<select value={family} onChange={(event) => setFamily(event.target.value)}>{families.map((item) => <option key={item}>{item}</option>)}</select></label>
         <span className="filter-bar__hint"><b>{currentLocation?.primal} territory:</b> local patrons prefer {currentLocation?.primal} delegates, while combat enemies frequently share the local primal. Travel to recruit counters before returning for dangerous hunts.</span>
         <Button size="sm" onClick={() => navigate('world')}>Change region</Button>
@@ -131,6 +136,10 @@ export default function MissionsScreen({ state, actions, navigate }) {
               </div>
 
               <div className={`formation-explainer formation-explainer--${formation.color}`}><div><span>{formation.icon}</span><strong>{formation.label}</strong></div><p>{formation.description}</p></div>
+              {formationType === 'Combat' ? <div className="tactical-combat-intro"><strong>Turn-based engagement</strong><p>When the company reaches hostile contact, time pauses. Read enemy tells, manage stamina, select a tactical lead for class Signatures, and choose whether to attack, guard, feint, recover or press the mission objective.</p></div> : null}
+              {formationType === 'Diplomacy' ? <div className="mission-game-intro mission-game-intro--diplomacy"><strong>Playable negotiation</strong><p>The mission pauses at the decisive meeting. Build Trust and Insight, move Agreement toward 100, decide when to present evidence or apply pressure, and remember that concessions can secure peace while reducing the final reward.</p></div> : null}
+              {formationType === 'Expedition' ? <div className="mission-game-intro mission-game-intro--expedition"><strong>Playable expedition</strong><p>Choose the pace turn by turn. Survey routes, search for evidence, manage Supplies and Hazard, and verify important discoveries before declaring an artifact or conclusion authentic.</p></div> : null}
+              {formationType === 'Intrigue' ? <div className="mission-game-intro mission-game-intro--intrigue"><strong>Playable covert operation</strong><p>Gather Intel, infiltrate without letting Heat spiral, create distractions and extract only after the objective is secure. A premature escape attempt can expose the entire cell.</p></div> : null}
               <div className="primal-rule-callout" style={{ '--primal': PRIMALS[primalTarget]?.color }}><PrimalBadge primal={primalTarget} /><p>{formationType === 'Diplomacy' ? `Matching the ${selected.patronPrimal} patron increases trust. Opposing elemental force is less persuasive than cultural fluency.` : `${selected.enemyPrimal} opposition: ${PRIMALS[selected.enemyPrimal]?.weakTo} heroes have an advantage; ${PRIMALS[selected.enemyPrimal]?.beats} heroes are vulnerable.`}</p></div>
 
               <div className="formation-toolbar"><Button size="sm" onClick={autoBuild}>Build best available</Button><Button size="sm" onClick={() => actions.saveFormation(formationType, assignments)} disabled={!assignments.length}>Save as default</Button><span>{assignments.length}/5 filled</span></div>
@@ -142,7 +151,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
                   return (
                     <article className={`formation-slot ${slot.required ? 'is-required' : ''} ${hero ? 'is-filled' : ''}`} key={slot.id}>
                       <div className="formation-slot__label"><span>{slot.required ? 'Required' : 'Optional'}</span><strong>{slot.label}</strong><small>{slot.description}</small></div>
-                      <label>Assigned hero<select value={hero?.id || ''} onChange={(event) => assignSlot(slot, event.target.value)}><option value="">— Empty —</option>{availableHeroes.map((candidate) => <option key={candidate.id} value={candidate.id} disabled={assignments.some((item) => item.heroId === candidate.id && item.slotId !== slot.id)}>{candidate.name} · Lv {candidate.level} {candidate.rarity} {candidate.primal} {candidate.classId} · role {roleRating(candidate, slot.role)}</option>)}</select></label>
+                      <label>Assigned hero<select value={hero?.id || ''} onChange={(event) => assignSlot(slot, event.target.value)}><option value="">— Empty —</option>{availableHeroes.map((candidate) => <option key={candidate.id} value={candidate.id} disabled={assignments.some((item) => item.heroId === candidate.id && item.slotId !== slot.id)}>{candidate.name} · Lv {candidate.level} {candidate.rarity} {candidate.primal} {normalizeClassId(candidate.classId)} · role {roleRating(candidate, slot.role)}</option>)}</select></label>
                       {hero ? <div className="formation-slot__hero"><HeroPortrait hero={hero} size="xs" /><div><strong>{hero.name}</strong><small><LevelBadge hero={hero} /> <RarityBadge rarity={hero.rarity} /> <PrimalBadge primal={hero.primal} /></small></div><b>{roleRating(hero, slot.role)}</b></div> : null}
                     </article>
                   );
@@ -160,7 +169,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
               <div className="commit-bar">
                 <div><span>Supplies</span><strong>{Math.max(20, Math.round((25 + selected.risk * 18 + selected.duration * 12 + (formationType === 'Expedition' ? 12 : 0)) * (state.guild.appointments?.Quartermaster ? 0.88 : 1)))} crowns</strong></div>
                 <div><span>Potential reward</span><strong>{selected.reward} crowns · {selected.fame} fame</strong></div>
-                <Button variant="primary" size="lg" onClick={launch} disabled={traveling || assignments.length < 2 || estimate?.missingSlots.length > 0 || atFieldCapacity}>{traveling ? 'Traveling' : atFieldCapacity ? 'All companies deployed' : `Send ${formationType} company`}</Button>
+                <Button variant="primary" size="lg" onClick={launch} disabled={(traveling && activeLocationId === currentLocationId) || assignments.length < 2 || estimate?.missingSlots.length > 0 || atFieldCapacity}>{traveling && activeLocationId === currentLocationId ? 'Traveling' : atFieldCapacity ? 'All companies deployed' : `Send ${formationType} company`}</Button>
               </div>
             </>
           ) : <EmptyState icon="▤" title="Select a local contract" text="Choose a petition from the current settlement to begin planning." />}
@@ -169,7 +178,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
 
       <Panel title="Parties already beyond the gate" eyebrow="Active expeditions">
         {state.activeMissions.length ? <div className="deployed-grid">{state.activeMissions.map((mission) => (
-          <article className="deployed-card" key={mission.id}><div className="deployed-card__top"><Badge tone="blue">{mission.locationName}</Badge><Badge tone="purple">{mission.formationType || mission.approach}</Badge><RiskPips risk={mission.risk} /></div><h3>{mission.title}</h3><p>{mission.assignments.map((assignment) => { const hero = state.heroes.find((item) => item.id === assignment.heroId); return hero ? `${hero.name} (${assignment.role})` : null; }).filter(Boolean).join(' · ')}</p><ProgressBar value={mission.duration - mission.remaining} max={mission.duration} label={mission.remaining <= 0 ? 'Decision waiting' : `${mission.remaining} month${mission.remaining === 1 ? '' : 's'} remaining`} tone={mission.remaining <= 0 ? 'gold' : 'blue'} /></article>
+          <article className="deployed-card" key={mission.id}><div className="deployed-card__top"><Badge tone="blue">{mission.locationName}</Badge><Badge tone="purple">{mission.formationType || mission.approach}</Badge><RiskPips risk={mission.risk} /></div><h3>{mission.title}</h3><p>{mission.assignments.map((assignment) => { const hero = state.heroes.find((item) => item.id === assignment.heroId); return hero ? `${hero.name} (${assignment.role})` : null; }).filter(Boolean).join(' · ')}</p><ProgressBar value={mission.duration - mission.remaining} max={mission.duration} label={mission.remaining <= 0 ? (mission.formationType === 'Combat' && !mission.combatResolved ? 'Battle waiting' : ['Diplomacy', 'Expedition', 'Intrigue'].includes(mission.formationType) && !mission.missionGameResolved ? `${mission.formationType} challenge waiting` : 'Aftermath decision waiting') : `${mission.remaining} month${mission.remaining === 1 ? '' : 's'} remaining`} tone={mission.remaining <= 0 ? 'gold' : 'blue'} /></article>
         ))}</div> : <EmptyState icon="◇" title="The road is quiet" text="No active expedition is consuming time or heroes." />}
       </Panel>
     </div>

@@ -1,7 +1,9 @@
 import React from 'react';
-import { getDashboardSummary, getGoalMetric, getNextAction, getPromotionRequirement } from '../game/engine.js';
+import { normalizeClassId } from '../data/content.js';
+import { branchCapacity, getDashboardSummary, getGoalMetric, getGuildmaster, getNextAction, getPromotionRequirement } from '../game/engine.js';
 import { MONTHS, ONBOARDING_STEPS, TIERS } from '../data/content.js';
 import { Badge, Button, Crest, EmptyState, HeroPortrait, Panel, PrimalBadge, ProgressBar, RiskPips, Stat } from '../components/UI.jsx';
+import CouncilPlanner from '../components/CouncilPlanner.jsx';
 
 export default function HallScreen({ state, navigate, actions }) {
   const summary = getDashboardSummary(state);
@@ -10,6 +12,10 @@ export default function HallScreen({ state, navigate, actions }) {
   const availableHeroes = state.heroes.filter((hero) => hero.status === 'available').sort((a, b) => b.power - a.power).slice(0, 5);
   const currentGoal = state.goals.find((goal) => !goal.completed && goal.tier === state.guild.tier) || state.goals.find((goal) => !goal.completed);
   const goalProgress = currentGoal ? getGoalMetric(state, currentGoal.metric) : 0;
+  const guildmaster = getGuildmaster(state);
+  const successor = state.guild.successorHeroId ? state.heroes.find((hero) => hero.id === state.guild.successorHeroId) : null;
+  const activeBranches = (state.guild.branches || []).filter((branch) => branch.active !== false);
+  const branchCap = branchCapacity(state);
 
   return (
     <div className="screen screen--hall">
@@ -51,6 +57,11 @@ export default function HallScreen({ state, navigate, actions }) {
         </Button>
       </section>
 
+      <Panel title="Council planning" eyebrow="Assign the month before time advances" className="council-panel">
+        <p className="council-intro">Your guild can do several things at once. Deployed heroes stay committed to missions or tournaments; everyone else follows the monthly assignment below when time advances.</p>
+        <CouncilPlanner state={state} actions={actions} />
+      </Panel>
+
       <div className="dashboard-grid dashboard-grid--main">
         <Panel title="The company today" eyebrow="Available roster" action={<Button size="sm" onClick={() => navigate('heroes')}>Full roster</Button>}>
           <div className="hero-strip">
@@ -81,6 +92,9 @@ export default function HallScreen({ state, navigate, actions }) {
       </div>
 
       <div className="dashboard-grid dashboard-grid--lower">
+        {state.guild.tierIndex >= 1 ? <Panel title="Institutional continuity" eyebrow="The banner is larger than one career" action={<Button size="sm" onClick={() => navigate('legacy')}>Legacy office</Button>}>
+          <div className="institution-pulse"><div><span>Guildmaster</span><strong>{guildmaster?.name || 'Council vacancy'}</strong><small>{guildmaster ? `${guildmaster.career?.leadershipYears || 0} years leading` : 'Succession pending'}</small></div><div><span>Designated heir</span><strong>{successor?.name || 'None'}</strong><small>{successor ? `Lv ${successor.level} · Loyalty ${successor.loyalty}` : 'The council will choose if needed'}</small></div><div><span>Branches</span><strong>{activeBranches.length}/{branchCap}</strong><small>{activeBranches.length ? activeBranches.map((branch) => branch.name).join(' · ') : 'No permanent chapters yet'}</small></div></div>
+        </Panel> : null}
         <Panel title="The next threshold" eyebrow={`Path to ${promotion?.target.id || 'Mythic Legacy'}`}>
           {promotion ? (
             <div className="requirement-list">

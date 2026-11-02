@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { CLASSES } from '../data/content.js';
+import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, normalizeClassId } from '../data/content.js';
 import { LOCATION_BY_ID, PRIMALS, RARITIES } from '../data/world.js';
-import { activeHeroCount, heroCapacity, xpForNextLevel } from '../game/engine.js';
+import { activeHeroCount, heroCapacity, operationalLocationIds, xpForNextLevel } from '../game/engine.js';
+import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from '../data/activities.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, Tabs } from '../components/UI.jsx';
-
-const TRAINING_OPTIONS = ['Fundamentals', 'Role Drills', 'Sparring', 'Mentorship', 'Study', 'Rehabilitation', 'Public Exhibition'];
 
 function candidateValue(candidate) {
   return candidate.level * 70 + candidate.power * 4 + candidate.potential * 2;
@@ -16,11 +15,14 @@ export default function HeroesScreen({ state, actions, navigate }) {
   const [classFilter, setClassFilter] = useState('All');
   const [primalFilter, setPrimalFilter] = useState('All');
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
-  const currentLocation = LOCATION_BY_ID[currentLocationId];
+  const operationalIds = [...operationalLocationIds(state)];
+  const [marketLocationId, setMarketLocationId] = useState(currentLocationId);
+  const activeMarketId = operationalIds.includes(marketLocationId) ? marketLocationId : currentLocationId;
+  const currentLocation = LOCATION_BY_ID[activeMarketId];
 
   const roster = useMemo(() => state.heroes
     .filter((hero) => !['retired', 'dead'].includes(hero.status))
-    .filter((hero) => classFilter === 'All' || hero.classId === classFilter)
+    .filter((hero) => classFilter === 'All' || normalizeClassId(hero.classId) === classFilter)
     .filter((hero) => primalFilter === 'All' || hero.primal === primalFilter)
     .sort((a, b) => {
       if (sort === 'age') return a.age - b.age;
@@ -31,11 +33,11 @@ export default function HeroesScreen({ state, actions, navigate }) {
     }), [state.heroes, classFilter, primalFilter, sort]);
 
   const localCandidates = useMemo(() => state.candidates
-    .filter((candidate) => (candidate.locationId || 'dunmere') === currentLocationId)
-    .sort((a, b) => candidateValue(b) - candidateValue(a)), [state.candidates, currentLocationId]);
+    .filter((candidate) => (candidate.locationId || 'dunmere') === activeMarketId)
+    .sort((a, b) => candidateValue(b) - candidateValue(a)), [state.candidates, activeMarketId]);
   const remoteCandidates = useMemo(() => state.candidates
-    .filter((candidate) => (candidate.locationId || 'dunmere') !== currentLocationId)
-    .sort((a, b) => candidateValue(b) - candidateValue(a)), [state.candidates, currentLocationId]);
+    .filter((candidate) => !operationalIds.includes(candidate.locationId || 'dunmere'))
+    .sort((a, b) => candidateValue(b) - candidateValue(a)), [state.candidates, operationalIds.join('|')]);
 
   const legends = useMemo(() => [...state.heroes.filter((hero) => ['retired', 'dead'].includes(hero.status)), ...state.historicHeroes]
     .sort((a, b) => b.legacy - a.legacy), [state.heroes, state.historicHeroes]);
@@ -63,13 +65,13 @@ export default function HeroesScreen({ state, actions, navigate }) {
           </div>
           <div className="hero-grid">
             {roster.map((hero) => {
-              const classInfo = CLASSES[hero.classId];
+              const classInfo = CLASSES[normalizeClassId(hero.classId)];
               const nextLevelXp = xpForNextLevel(hero.level);
               return (
                 <article className={`hero-card hero-card--${hero.status}`} key={hero.id} style={{ '--rarity': RARITIES[hero.rarity]?.color, '--primal': PRIMALS[hero.primal]?.color }}>
                   <button className="hero-card__identity" onClick={() => actions.openHero(hero.id)}>
                     <div className="hero-card__portrait-stack"><HeroPortrait hero={hero} size="lg" /><LevelBadge hero={hero} /></div>
-                    <div><div className="hero-card__name"><h3>{hero.name}</h3>{hero.appointment ? <Badge tone="purple">{hero.appointment}</Badge> : null}</div><div className="hero-card__taxonomy"><RarityBadge rarity={hero.rarity} /><PrimalBadge primal={hero.primal} /><span>{hero.classId}</span></div><p>Age {hero.age} · {hero.origin}</p><small>{hero.hook}</small></div>
+                    <div><div className="hero-card__name"><h3>{hero.name}</h3>{hero.appointment ? <Badge tone="purple">{hero.appointment}</Badge> : null}</div><div className="hero-card__taxonomy"><RarityBadge rarity={hero.rarity} /><PrimalBadge primal={hero.primal} /><span>{normalizeClassId(hero.classId)}</span></div><p>Age {hero.age} · {hero.origin}</p><small>{hero.hook}</small></div>
                   </button>
                   <div className="hero-level-track">
                     <div><span>{hero.level >= 20 ? 'Maximum level reached' : `Progress to level ${hero.level + 1}`}</span><strong>{hero.level >= 20 ? '20 / 20' : `${hero.xp}/${nextLevelXp} XP`}</strong></div>
@@ -87,8 +89,10 @@ export default function HeroesScreen({ state, actions, navigate }) {
                     <ProgressBar value={hero.loyalty} max={100} label="Loyalty" tone={hero.loyalty >= 70 ? 'green' : hero.loyalty >= 45 ? 'gold' : 'red'} compact />
                   </div>
                   <div className="hero-card__tags"><Badge>{hero.personality}</Badge><Badge tone="red">{hero.flaw}</Badge><Badge tone="blue">Dream: {hero.dream}</Badge></div>
-                  <div className="hero-card__footer">
-                    <label>Monthly training<select value={hero.training} disabled={['mission', 'injured', 'tournament'].includes(hero.status)} onChange={(event) => actions.setTraining(hero.id, event.target.value)}>{TRAINING_OPTIONS.map((item) => <option key={item}>{item}</option>)}</select></label>
+                  {hero.promises?.some((promise) => promise.status === 'active') ? <div className="hero-card__promise"><Badge tone="gold">Promise</Badge>{hero.promises.filter((promise) => promise.status === 'active').map((promise) => <span key={promise.id}><strong>{promise.label}</strong><small>Due {promise.dueLabel}</small></span>)}</div> : null}
+                  <div className="hero-card__footer hero-card__footer--planning">
+                    <label>Monthly assignment<select value={hero.monthlyActivity || (hero.status === 'injured' ? 'Infirmary' : 'Training')} disabled={['mission', 'tournament'].includes(hero.status)} onChange={(event) => actions.setMonthlyActivity(hero.id, event.target.value)}>{MONTHLY_ACTIVITIES.map((item) => <option key={item.id} value={item.id}>{item.icon} {item.label}</option>)}</select></label>
+                    {(hero.monthlyActivity || 'Training') === 'Training' && !['mission', 'tournament'].includes(hero.status) ? <label>Training focus<select value={hero.training} onChange={(event) => actions.setTraining(hero.id, event.target.value)}>{TRAINING_FOCI.map((item) => <option key={item}>{item}</option>)}</select></label> : null}
                     <span className={`availability availability--${hero.status}`}>{hero.status === 'injured' ? `${hero.injury} · ${hero.injuryMonths}m` : hero.status}</span>
                     <Button size="sm" onClick={() => actions.openHero(hero.id)}>Career</Button>
                   </div>
@@ -103,7 +107,8 @@ export default function HeroesScreen({ state, actions, navigate }) {
 
       {tab === 'recruit' ? (
         <div className="recruit-layout">
-          <Panel title={`The market in ${currentLocation?.name}`} eyebrow={`${currentLocation?.primal} territory · local negotiations only`}>
+          <Panel title={`The market in ${currentLocation?.name}`} eyebrow={`${currentLocation?.primal} territory · ${activeMarketId === currentLocationId ? 'headquarters' : 'branch'} negotiations`}>
+            {operationalIds.length > 1 ? <label className="market-switcher">Operating market<select value={activeMarketId} onChange={(event) => setMarketLocationId(event.target.value)}>{operationalIds.map((id) => <option key={id} value={id}>{LOCATION_BY_ID[id]?.name}{id === currentLocationId ? ' · HQ' : ' · Branch'}</option>)}</select></label> : null}
             <div className="recruit-market-intro">
               <div><span>{currentLocation?.icon}</span><div><strong>{currentLocation?.name} specialties</strong><p>{currentLocation?.specialties.join(' · ')}</p></div></div>
               <p>Higher-level and rarer heroes can transform the guild immediately, but demand a larger signing fee and monthly salary. Markets refresh with time and whenever the guild arrives in a new settlement.</p>
@@ -111,12 +116,13 @@ export default function HeroesScreen({ state, actions, navigate }) {
             <div className="candidate-grid">
               {localCandidates.map((candidate) => (
                 <article className="candidate-card" key={candidate.id} style={{ '--rarity': RARITIES[candidate.rarity]?.color, '--primal': PRIMALS[candidate.primal]?.color }}>
-                  <div className="candidate-card__top"><div className="hero-card__portrait-stack"><HeroPortrait hero={candidate} size="md" showStatus={false} /><LevelBadge hero={candidate} /></div><div><h3>{candidate.name}</h3><div className="candidate-card__taxonomy"><RarityBadge rarity={candidate.rarity} /><PrimalBadge primal={candidate.primal} /></div><p>{candidate.classId} · Age {candidate.age}</p><Badge tone={candidate.channel === 'Academy' ? 'purple' : candidate.channel === 'Scout network' ? 'blue' : 'neutral'}>{candidate.channel}</Badge></div></div>
+                  <div className="candidate-card__top"><div className="hero-card__portrait-stack"><HeroPortrait hero={candidate} size="md" showStatus={false} /><LevelBadge hero={candidate} /></div><div><h3>{candidate.name}</h3><div className="candidate-card__taxonomy"><RarityBadge rarity={candidate.rarity} /><PrimalBadge primal={candidate.primal} /></div><p>{normalizeClassId(candidate.classId)} · Age {candidate.age}</p><Badge tone={candidate.channel === 'Academy' ? 'purple' : candidate.channel === 'Scout network' ? 'blue' : 'neutral'}>{candidate.channel}</Badge></div></div>
                   <div className="candidate-card__ratings"><span><small>Power</small><strong>{candidate.power}</strong></span><span><small>Potential</small><strong>{candidate.potential}</strong></span><span><small>Interest</small><strong>{candidate.interest}%</strong></span></div>
                   <p className="candidate-card__hook">{candidate.hook}</p>
-                  <div className="candidate-card__conditions"><span><b>Dream</b>{candidate.dream}</span><span><b>Flaw</b>{candidate.flaw}</span><span><b>Monthly salary</b>{candidate.salary} crowns</span></div>
-                  <div className="candidate-card__contract"><span>Signing fee<strong>{candidate.signingFee.toLocaleString()}</strong></span><span>First-year commitment<strong>{(candidate.signingFee + candidate.salary * 12).toLocaleString()}</strong></span></div>
-                  <Button variant="primary" onClick={() => actions.recruit(candidate.id)} disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee}>{candidate.signingFee === 0 ? 'Choose as founding companion' : state.guild.crowns < candidate.signingFee ? `Need ${candidate.signingFee - state.guild.crowns} more crowns` : `Offer ${candidate.signingFee} crowns`}</Button>
+                  <div className="candidate-card__conditions candidate-card__conditions--personality"><span><b>Personality · {candidate.personality}</b>{PERSONALITY_PROFILES[candidate.personality] || 'Personality affects field decisions.'}</span><span><b>Flaw · {candidate.flaw}</b>{FLAW_PROFILES[candidate.flaw] || candidate.flaw}</span><span><b>Dream</b>{candidate.dream}</span><span><b>Monthly salary</b>{candidate.salary} crowns</span></div>
+                  {candidate.demand ? <div className="candidate-demand"><Badge tone="gold">Contract demand</Badge><div><strong>{candidate.demand.label}</strong><p>{candidate.demand.description}</p><small>Promise deadline: {candidate.demand.dueLabel}</small></div></div> : null}
+                  <div className="candidate-card__contract"><span>Signing fee<strong>{candidate.signingFee.toLocaleString()}</strong></span><span>First-year commitment<strong>{(candidate.signingFee + candidate.salary * 12).toLocaleString()}</strong></span>{candidate.demand ? <span>Unconditional buyout<strong>{(candidate.signingFee + (candidate.buyoutFee || 0)).toLocaleString()}</strong></span> : null}</div>
+                  <div className="candidate-card__actions"><Button variant="primary" onClick={() => actions.recruit(candidate.id, 'accept')} disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee}>{candidate.signingFee === 0 ? 'Choose as founding companion' : state.guild.crowns < candidate.signingFee ? `Need ${candidate.signingFee - state.guild.crowns} more crowns` : candidate.demand ? `Sign & promise · ${candidate.signingFee}` : `Offer ${candidate.signingFee} crowns`}</Button>{candidate.demand ? <Button onClick={() => actions.recruit(candidate.id, 'buyout')} disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee + (candidate.buyoutFee || 0)}>Buy out demand · {(candidate.signingFee + (candidate.buyoutFee || 0)).toLocaleString()}</Button> : null}</div>
                 </article>
               ))}
               {!localCandidates.length ? <EmptyState icon="✦" title="The local market is empty" text="Advance into a new year or travel to another settlement to meet different classes and primals." action={<Button onClick={() => navigate('world')}>Open world map</Button>} /> : null}
@@ -131,7 +137,7 @@ export default function HeroesScreen({ state, actions, navigate }) {
               <p className="muted">Upgrade the Great Hall or earn a higher social tier to increase active capacity.</p>
             </Panel>
             {remoteCandidates.length ? <Panel title="Scouted elsewhere" eyebrow={`${remoteCandidates.length} known candidates`}>
-              <div className="remote-candidate-list">{remoteCandidates.slice(0, 6).map((candidate) => <article key={candidate.id}><PrimalBadge primal={candidate.primal} compact /><div><strong>{candidate.name}</strong><small>Lv {candidate.level} {candidate.rarity} {candidate.classId}</small><span>{LOCATION_BY_ID[candidate.locationId]?.name}</span></div></article>)}</div>
+              <div className="remote-candidate-list">{remoteCandidates.slice(0, 6).map((candidate) => <article key={candidate.id}><PrimalBadge primal={candidate.primal} compact /><div><strong>{candidate.name}</strong><small>Lv {candidate.level} {candidate.rarity} {normalizeClassId(candidate.classId)}</small><span>{LOCATION_BY_ID[candidate.locationId]?.name}</span></div></article>)}</div>
               <Button onClick={() => navigate('world')}>Plan recruitment journey</Button>
             </Panel> : null}
           </aside>
@@ -142,7 +148,7 @@ export default function HeroesScreen({ state, actions, navigate }) {
         <Panel title="Careers that no longer move" eyebrow="Institutional memory">
           {legends.length ? <div className="legend-list">{legends.map((hero, index) => (
             <button className="legend-row" key={hero.id} onClick={() => actions.openHero(hero.id)}>
-              <span className="legend-row__rank">{index + 1}</span><HeroPortrait hero={hero} size="xs" /><div><strong>{hero.name}</strong><small>Lv {hero.level || 1} · {hero.rarity || 'Common'} · {hero.primal || 'Unknown'} {hero.classId} · {hero.status === 'dead' ? `Died ${hero.deathYear || ''}` : `Retired ${hero.retiredYear || ''}`}</small></div><span>{hero.career?.missions || 0} missions</span><span>{hero.career?.titles || 0} titles</span><b>{hero.legacy} legacy</b>
+              <span className="legend-row__rank">{index + 1}</span><HeroPortrait hero={hero} size="xs" /><div><strong>{hero.name}</strong><small>Lv {hero.level || 1} · {hero.rarity || 'Common'} · {hero.primal || 'Unknown'} {normalizeClassId(hero.classId)} · {hero.status === 'dead' ? `Died ${hero.deathYear || ''}` : `Retired ${hero.retiredYear || ''}`}</small></div><span>{hero.career?.missions || 0} missions</span><span>{hero.career?.titles || 0} titles</span><b>{hero.legacy} legacy</b>
             </button>
           ))}</div> : <EmptyState icon="▤" title="The archive is still young" text="Retirements and deaths will eventually turn this page into the emotional center of the campaign." />}
         </Panel>

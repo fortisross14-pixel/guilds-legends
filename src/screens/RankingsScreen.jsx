@@ -1,82 +1,135 @@
 import React, { useMemo, useState } from 'react';
 import { TIERS } from '../data/content.js';
-import { getGuildRankings, getHeroRankings } from '../game/engine.js';
-import { Badge, HeroPortrait, Panel, ProgressBar, Tabs } from '../components/UI.jsx';
+import { getGuildRankings, getGuildRankSummary, getHeroRankings } from '../game/engine.js';
+import { Badge, HeroPortrait, Panel, PrimalBadge, ProgressBar, RarityBadge, Tabs } from '../components/UI.jsx';
+
+const SCOPE_COPY = {
+  Regional: 'All recognized companies in the opening districts.',
+  National: 'Regional challengers measured against kingdom-level institutions.',
+  Global: 'Every known banner, from Dunmere to the Far Veil.',
+};
+
+function GuildLadders({ state, actions }) {
+  const [scope, setScope] = useState('Regional');
+  const rows = useMemo(() => getGuildRankings(state, scope), [state, scope]);
+  const summary = useMemo(() => getGuildRankSummary(state), [state]);
+  const player = rows.find((row) => row.player);
+  return (
+    <div className="ladder-view">
+      <div className="scope-cards">{summary.map((item) => <button key={item.scope} className={scope === item.scope ? 'is-selected' : ''} onClick={() => setScope(item.scope)}><small>{item.scope} rank</small><strong>#{item.rank}</strong><span>of {item.total} guilds</span><ProgressBar value={item.total - item.rank + 1} max={item.total} tone={item.scope === 'Regional' ? 'green' : item.scope === 'National' ? 'gold' : 'purple'} compact /></button>)}</div>
+      <Panel title={`${scope} guild ranking`} eyebrow={SCOPE_COPY[scope]} action={<Badge tone="gold">Your score {player?.score || 0}</Badge>}>
+        <div className="universe-ranking-table">
+          <div className="universe-ranking-table__head"><span>#</span><span>Guild</span><span>Star</span><span>Fame</span><span>Titles</span><span>Score</span></div>
+          {rows.map((guild) => (
+            <article key={guild.id} className={guild.player ? 'is-player' : ''}>
+              <span className="ranking-position">{guild.rank}</span>
+              <div className="ranking-identity"><i style={{ background: guild.player ? '#c89a4b' : guild.color }} /><div><strong>{guild.name}</strong><small>{guild.player ? state.guild.motto : `${guild.archetype} · ${TIERS[guild.tierIndex]?.id}`}</small></div></div>
+              {guild.player ? <div className="ranking-star"><HeroPortrait hero={state.heroes[0]} size="xs" /><span><strong>{state.heroes[0]?.name}</strong><small>{guild.rosterSize} active heroes</small></span></div> : <button className="ranking-star" onClick={() => actions.openHero(guild.star.id)}><HeroPortrait hero={guild.star} size="xs" /><span><strong>{guild.star.name}</strong><small>{guild.star.rarity} · Lv {guild.star.level}</small></span></button>}
+              <strong>{guild.fame}</strong><strong>{guild.titles}</strong><strong className="historical-score">{guild.score}</strong>
+            </article>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+function HeroGoat({ state, actions }) {
+  const [filter, setFilter] = useState('All');
+  const heroes = useMemo(() => getHeroRankings(state), [state]);
+  const visible = heroes.filter((hero) => filter === 'All' || filter === 'Active' && !['retired', 'dead'].includes(hero.status) || filter === 'Legends' && (hero.career?.titles || 0) >= 3 || filter === 'My Guild' && hero.player);
+  const playerBest = heroes.find((hero) => hero.player);
+  return (
+    <div className="goat-view">
+      <div className="goat-summary">
+        <div><small>Your highest-ranked hero</small><strong>#{playerBest?.historicalRank || '—'}</strong><span>{playerBest?.name || 'No ranked career yet'}</span></div>
+        <div><small>Universe careers</small><strong>{heroes.length}</strong><span>Active, retired and historical</span></div>
+        <div><small>Highest score</small><strong>{heroes[0]?.historicalScore || 0}</strong><span>{heroes[0]?.name}</span></div>
+      </div>
+      <div className="filter-pills">{['All', 'Active', 'Legends', 'My Guild'].map((item) => <button key={item} className={filter === item ? 'is-selected' : ''} onClick={() => setFilter(item)}>{item}</button>)}</div>
+      <Panel title="Greatest hero careers" eyebrow="Major deeds 25% · tournaments 20% · quests 15% · peak 15% · longevity 10% · leadership 10% · cultural influence 5%">
+        <div className="universe-hero-ranking">
+          {visible.slice(0, 180).map((hero) => (
+            <button key={hero.id} className={hero.player ? 'is-player' : ''} onClick={() => actions.openHero(hero.id)}>
+              <span className="ranking-position">{hero.historicalRank}</span><HeroPortrait hero={hero} size="xs" />
+              <div className="universe-hero-ranking__identity"><strong>{hero.name}</strong><small>{hero.guildName} · {hero.classId} · {hero.status}</small><span><RarityBadge rarity={hero.rarity} /><PrimalBadge primal={hero.primal} compact /></span></div>
+              <span><small>Titles</small><b>{hero.career?.titles || 0}</b></span>
+              <span><small>Bout wins</small><b>{hero.career?.tournamentBoutWins || 0}</b></span>
+              <span><small>Prize</small><b>{(hero.career?.prizeMoney || 0).toLocaleString()}</b></span>
+              <span><small>Peak</small><b>{hero.career?.peakPower || hero.power}</b></span>
+              <strong className="historical-score">{hero.historicalScore}</strong>
+            </button>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+function TournamentLegends({ state, actions }) {
+  const heroes = useMemo(() => getHeroRankings(state), [state]);
+  const titleKings = [...heroes].sort((a, b) => (b.career?.individualTitles || 0) - (a.career?.individualTitles || 0) || (b.career?.prizeMoney || 0) - (a.career?.prizeMoney || 0)).slice(0, 12);
+  const prizeLeaders = [...heroes].sort((a, b) => (b.career?.prizeMoney || 0) - (a.career?.prizeMoney || 0)).slice(0, 12);
+  const records = Object.values(state.titleRecords || {});
+  return (
+    <div className="tournament-almanac-grid">
+      <Panel title="Most individual titles" eyebrow="Repeat champions define an era">
+        <div className="leader-list">{titleKings.map((hero, index) => <button key={hero.id} onClick={() => actions.openHero(hero.id)}><span>{index + 1}</span><HeroPortrait hero={hero} size="xs" /><div><strong>{hero.name}</strong><small>{hero.guildName}</small></div><b>{hero.career?.individualTitles || 0}</b></button>)}</div>
+      </Panel>
+      <Panel title="Career prize money" eyebrow="Tournament earnings">
+        <div className="leader-list">{prizeLeaders.map((hero, index) => <button key={hero.id} onClick={() => actions.openHero(hero.id)}><span>{index + 1}</span><HeroPortrait hero={hero} size="xs" /><div><strong>{hero.name}</strong><small>{hero.career?.titles || 0} titles</small></div><b>{(hero.career?.prizeMoney || 0).toLocaleString()} ◈</b></button>)}</div>
+      </Panel>
+      <Panel title="Records to chase" eyebrow="Win one tournament enough times to own its history" className="records-to-chase">
+        <div className="record-chase-grid">{records.map((record) => <article key={record.id}><small>{record.circuit} · {record.kind}</small><strong>{record.name}</strong><p><b>{record.recordHolderName}</b> holds the record with <em>{record.recordWins}</em> wins.</p><span>Your best: {record.kind === 'individual' ? Math.max(0, ...state.heroes.map((hero) => hero.career?.titleWins?.[record.id] || 0)) : record.winsByGuild?.player || 0}</span></article>)}</div>
+      </Panel>
+    </div>
+  );
+}
+
+function ArtifactAlmanac({ state, actions }) {
+  const all = [...(state.artifacts || []).map((artifact) => ({ ...artifact, player: true })), ...(state.worldArtifacts || []).map((artifact) => ({ ...artifact, player: false }))].sort((a, b) => b.prestige - a.prestige);
+  return (
+    <Panel title="Artifacts of the known world" eyebrow="Ownership contributes to historical greatness">
+      <div className="world-artifact-grid">{all.map((artifact) => {
+        const owner = [...state.heroes, ...state.historicHeroes, ...state.rivals.flatMap((guild) => [guild.star, ...(guild.members || [])]), ...(state.worldHistoricHeroes || [])].find((hero) => hero.id === artifact.ownerId);
+        const guild = artifact.player ? state.guild.name : state.rivals.find((item) => item.id === artifact.ownerGuildId)?.name;
+        return <article key={artifact.id} className={artifact.player ? 'is-player' : ''}><span>◈</span><div><small>Prestige {artifact.prestige}</small><h3>{artifact.name}</h3><p>{artifact.legend}</p><button disabled={!owner} onClick={() => owner && actions.openHero(owner.id)}>{owner ? `${owner.name} · ${guild || 'Open circuit'}` : 'Guild vault'}</button></div></article>;
+      })}</div>
+    </Panel>
+  );
+}
+
+function GuildDirectory({ state, actions }) {
+  const [guildId, setGuildId] = useState(state.rivals[0]?.id || '');
+  const guild = state.rivals.find((item) => item.id === guildId) || state.rivals[0];
+  if (!guild) return null;
+  const roster = [guild.star, ...(guild.members || [])];
+  return (
+    <div className="guild-directory">
+      <aside>{state.rivals.map((item) => <button key={item.id} className={item.id === guild.id ? 'is-selected' : ''} onClick={() => setGuildId(item.id)}><i style={{ background: item.color }} /><div><strong>{item.name}</strong><small>{TIERS[item.tierIndex]?.id} · {item.titles} titles</small></div><span>{item.power}</span></button>)}</aside>
+      <Panel title={guild.name} eyebrow={`${guild.archetype} · Founded ${guild.founded}`} action={<Badge tone="gold">{guild.titles} titles</Badge>}>
+        <div className="directory-banner" style={{ '--guild-color': guild.color }}><blockquote>“{guild.motto}”</blockquote><div><span>Fame <b>{guild.fame}</b></span><span>Legacy <b>{guild.legacy}</b></span><span>Prize money <b>{guild.prizeMoney.toLocaleString()}</b></span><span>Power <b>{guild.power}</b></span></div></div>
+        <div className="directory-roster">{roster.map((hero, index) => <button key={hero.id} onClick={() => actions.openHero(hero.id)}><HeroPortrait hero={hero} size="sm" /><div><small>{index === 0 ? 'Guild star' : 'Company member'}</small><strong>{hero.name}</strong><span>{hero.rarity} · Lv {hero.level} · {hero.classId}</span></div><PrimalBadge primal={hero.primal} compact /><b>{hero.power}</b></button>)}</div>
+      </Panel>
+    </div>
+  );
+}
 
 export default function RankingsScreen({ state, actions }) {
   const [tab, setTab] = useState('guilds');
-  const guilds = useMemo(() => getGuildRankings(state), [state]);
-  const heroes = useMemo(() => getHeroRankings(state), [state]);
-  const titleRace = useMemo(() => [...state.heroes].filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => (b.power + b.form * 0.2 + b.renown * 0.12) - (a.power + a.form * 0.2 + a.renown * 0.12)).slice(0, 8), [state.heroes]);
-
+  const heroCount = state.rivals.reduce((sum, guild) => sum + 1 + guild.members.length, 0) + (state.freeAgents?.length || 0) + (state.worldHistoricHeroes?.length || 0) + state.heroes.length;
   return (
     <div className="screen screen--rankings">
       <header className="screen-heading">
-        <div><span className="eyebrow">The argument of an era</span><h1>Rankings & Almanac</h1><p>The strongest hero is not automatically the greatest career. Titles, longevity, legendary deeds and historical context all matter.</p></div>
-        <div className="heading-metrics"><Badge tone="gold">Guild rank #{state.guild.rank}</Badge><Badge tone="purple">{heroes.length} recorded careers</Badge></div>
+        <div><span className="eyebrow">The world existed before you—and keeps moving without you</span><h1>Universe Almanac</h1><p>Compare your young banner to regional companies, national powers, global institutions and generations of champions.</p></div>
+        <div className="heading-metrics"><Badge tone="gold">{state.rivals.length + 1} guilds</Badge><Badge tone="purple">{heroCount} simulated heroes</Badge><Badge tone="blue">{state.universeStats?.boutsResolved || 0} recorded bouts</Badge></div>
       </header>
-
-      <Tabs active={tab} onChange={setTab} items={[
-        { id: 'guilds', label: 'Guild power ranking', icon: '⚑' },
-        { id: 'heroes', label: 'Historical heroes', icon: '✦' },
-        { id: 'races', label: 'Current title races', icon: '♛' },
-        { id: 'artifacts', label: 'Artifacts', icon: '◈' },
-      ]} />
-
-      {tab === 'guilds' ? (
-        <Panel title="Guild power ranking" eyebrow="Form, fame, tier and legacy">
-          <div className="ranking-table">
-            <div className="ranking-table__head"><span>Rank</span><span>Guild</span><span>Tier</span><span>Fame</span><span>Legacy</span><span>Form</span></div>
-            {guilds.map((guild) => (
-              <article key={guild.id} className={guild.player ? 'is-player' : ''}>
-                <span className="ranking-position">{guild.rank}</span>
-                <div className="ranking-identity"><i style={{ background: guild.player ? '#c89a4b' : state.rivals.find((rival) => rival.id === guild.id)?.color }} /><div><strong>{guild.name}</strong><small>{guild.player ? state.guild.motto : state.rivals.find((rival) => rival.id === guild.id)?.archetype}</small></div></div>
-                <Badge tone={guild.player ? 'gold' : 'neutral'}>{TIERS[guild.tierIndex].id}</Badge>
-                <strong>{guild.fame}</strong><strong>{guild.legacy}</strong><span>{Math.round(guild.form)}</span>
-              </article>
-            ))}
-          </div>
-          <p className="table-note">The ranking intentionally values social tier and sustained legacy more than one hot month. A fallen guild keeps historical prestige but loses practical access.</p>
-        </Panel>
-      ) : null}
-
-      {tab === 'heroes' ? (
-        <Panel title="Greatest careers" eyebrow="Historical score, not raw power">
-          <div className="hero-ranking-list">
-            {heroes.slice(0, 100).map((hero, index) => (
-              <button key={hero.id} className={hero.guildId === 'player' || !hero.guildId ? 'is-player' : ''} onClick={() => actions.openHero(hero.id)}>
-                <span className="ranking-position">{index + 1}</span><HeroPortrait hero={hero} size="xs" /><div className="hero-ranking-list__name"><strong>{hero.name}</strong><small>{hero.classId} · {hero.status}</small></div><span><small>Peak</small><b>{hero.career?.peakPower || hero.power}</b></span><span><small>Titles</small><b>{hero.career?.titles || 0}</b></span><span><small>Legendary</small><b>{hero.career?.legendary || 0}</b></span><span><small>Legacy</small><b>{hero.legacy}</b></span><strong className="historical-score">{hero.historicalScore}</strong>
-              </button>
-            ))}
-          </div>
-        </Panel>
-      ) : null}
-
-      {tab === 'races' ? (
-        <div className="dashboard-grid dashboard-grid--races">
-          <Panel title="Champion of the year" eyebrow="Form-weighted projection">
-            <div className="race-list">
-              {titleRace.map((hero, index) => {
-                const score = hero.power + hero.form * 0.2 + hero.renown * 0.12;
-                const max = titleRace[0] ? titleRace[0].power + titleRace[0].form * 0.2 + titleRace[0].renown * 0.12 : 100;
-                return <button key={hero.id} onClick={() => actions.openHero(hero.id)}><span>{index + 1}</span><HeroPortrait hero={hero} size="xs" /><div><strong>{hero.name}</strong><small>{hero.classId} · Form {hero.form}</small><ProgressBar value={score} max={max} tone={index === 0 ? 'gold' : 'blue'} compact /></div><b>{Math.round(score)}</b></button>;
-              })}
-            </div>
-          </Panel>
-          <Panel title="Rival guilds to watch" eyebrow="Threat is more than rank">
-            <div className="threat-list">{[...state.rivals].sort((a, b) => (b.hostility + b.form + b.power) - (a.hostility + a.form + a.power)).slice(0, 6).map((rival) => <article key={rival.id}><i style={{ background: rival.color }} /><div><strong>{rival.name}</strong><small>{rival.star.name} · PWR {rival.star.power}</small><ProgressBar value={rival.hostility} max={100} tone={rival.hostility >= 60 ? 'red' : 'purple'} compact /></div><Badge tone={rival.fallen ? 'red' : rival.hostility >= 60 ? 'red' : 'neutral'}>{rival.fallen ? 'Fallen' : `${rival.hostility} hostility`}</Badge></article>)}</div>
-          </Panel>
-        </div>
-      ) : null}
-
-      {tab === 'artifacts' ? (
-        <Panel title="The guild vault" eyebrow="Ownership history and legend">
-          {state.artifacts.length ? <div className="artifact-grid">{state.artifacts.map((artifact) => {
-            const owner = state.heroes.find((hero) => hero.id === artifact.ownerId) || state.historicHeroes.find((hero) => hero.id === artifact.ownerId);
-            return <article key={artifact.id}><span className="artifact-grid__icon">◈</span><div><span className="eyebrow">Recovered {artifact.discoveredYear}</span><h3>{artifact.name}</h3><p>{artifact.legend}</p><div className="artifact-grid__meta"><Badge tone="purple">Prestige {artifact.prestige}</Badge><span>{owner ? `Bearer: ${owner.name}` : 'Held in the guild vault'}</span></div></div></article>;
-          })}</div> : <div className="empty-state"><span className="empty-state__icon">◈</span><h3>The vault is empty</h3><p>Legend quests and exceptional dungeon outcomes create named artifacts with permanent ownership histories.</p></div>}
-        </Panel>
-      ) : null}
+      <Tabs active={tab} onChange={setTab} items={[{ id: 'guilds', label: 'Guild ladders', icon: '⚑' }, { id: 'heroes', label: 'Hero GOAT', icon: '✦' }, { id: 'tournaments', label: 'Tournament legends', icon: '♛' }, { id: 'directory', label: 'Guild directory', icon: '▤' }, { id: 'artifacts', label: 'Artifacts', icon: '◈' }]} />
+      {tab === 'guilds' ? <GuildLadders state={state} actions={actions} /> : null}
+      {tab === 'heroes' ? <HeroGoat state={state} actions={actions} /> : null}
+      {tab === 'tournaments' ? <TournamentLegends state={state} actions={actions} /> : null}
+      {tab === 'directory' ? <GuildDirectory state={state} actions={actions} /> : null}
+      {tab === 'artifacts' ? <ArtifactAlmanac state={state} actions={actions} /> : null}
     </div>
   );
 }

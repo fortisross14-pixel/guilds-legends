@@ -19,6 +19,7 @@ export default function WorldScreen({ state, actions, navigate }) {
   const locationMissions = state.missions.filter((mission) => mission.locationId === selected.id);
   const locationCandidates = state.candidates.filter((candidate) => candidate.locationId === selected.id);
   const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id);
+  const selectedBranch = (state.guild.branches || []).find((branch) => branch.active !== false && branch.locationId === selected.id);
   const tierCounts = useMemo(() => Object.fromEntries(['Regional', 'National', 'Global'].map((tier) => [tier, LOCATIONS.filter((location) => location.tier === tier).length])), []);
 
   const startJourney = () => actions.travel(selected.id);
@@ -53,14 +54,14 @@ export default function WorldScreen({ state, actions, navigate }) {
             return (
               <button
                 key={location.id}
-                className={`location-node ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
+                className={`location-node ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
                 style={{ left: `${location.x}%`, top: `${location.y}%`, '--primal': PRIMALS[location.primal].color }}
                 onClick={() => setSelectedId(location.id)}
                 aria-label={`${location.name}, ${location.tier}, ${location.primal}`}
               >
                 <span>{canReach ? location.icon : '⌁'}</span>
                 <strong>{canReach ? location.name : location.tier}</strong>
-                <small>{isCurrent ? 'Guild here' : canReach ? location.primal : 'Locked'}</small>
+                <small>{isCurrent ? 'HQ here' : (state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'Branch' : canReach ? location.primal : 'Locked'}</small>
               </button>
             );
           })}
@@ -77,13 +78,15 @@ export default function WorldScreen({ state, actions, navigate }) {
               <div className="dossier-row"><span>Recruitment specialties</span><strong>{selected.specialties.join(' · ')}</strong></div>
               <div className="dossier-row"><span>Visited</span><strong>{visited.has(selected.id) ? 'Yes' : 'Not yet'}</strong></div>
 
-              {selected.id !== currentLocationId ? (
+              {selectedBranch ? (
+                <div className="current-location-actions"><Badge tone="purple">Permanent branch · Level {selectedBranch.level}</Badge><Button variant="primary" onClick={() => navigate('missions')}>Open branch contracts</Button><Button onClick={() => navigate('heroes')}>Open branch market</Button><Button onClick={() => navigate('legacy')}>Manage branch</Button></div>
+              ) : selected.id !== currentLocationId ? (
                 <div className="travel-quote">
                   <div><span>Journey</span><strong>{quote.months} month{quote.months === 1 ? '' : 's'}</strong></div><div><span>Travel budget</span><strong>{quote.cost} crowns</strong></div>
-                  <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost || state.activeMissions.length > 0}>{travel ? 'Already traveling' : state.activeMissions.length ? 'Recall deployed companies first' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name}`}</Button>
+                  <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost || (state.activeMissions.length > 0 && state.guild.tierIndex === 0)}>{travel ? 'Already traveling' : state.activeMissions.length > 0 && state.guild.tierIndex === 0 ? 'Recall deployed companies first' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name}`}</Button>
                 </div>
               ) : (
-                <div className="current-location-actions"><Badge tone="green">Current headquarters</Badge><Button variant="primary" onClick={() => navigate('missions')}>Open local contracts</Button><Button onClick={() => navigate('heroes')}>Open hiring market</Button></div>
+                <div className="current-location-actions"><Badge tone="green">Current headquarters</Badge><Button variant="primary" onClick={() => navigate('missions')}>Open local contracts</Button><Button onClick={() => navigate('heroes')}>Open hiring market</Button>{state.guild.tierIndex >= 1 ? <Button onClick={() => navigate('legacy')}>Manage branches</Button> : null}</div>
               )}
 
               {locationMissions.length ? <div className="region-missions">{locationMissions.slice(0, 3).map((mission) => <button key={mission.id} onClick={() => selected.id === currentLocationId ? navigate('missions') : null}><div><strong>{mission.title}</strong><small>{mission.family} · {mission.enemyPrimal} threat · {mission.reward} crowns</small></div><RiskPips risk={mission.risk} /></button>)}</div> : <p className="muted">No current petitions are known here. New work appears as months pass.</p>}

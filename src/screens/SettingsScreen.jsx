@@ -1,15 +1,32 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Badge, Button, Panel } from '../components/UI.jsx';
 
 export default function SettingsScreen({ state, actions, slot }) {
   const fileRef = useRef(null);
   const [importText, setImportText] = useState('');
+  const founder = state.heroes.find((hero) => hero.id === state.guild.founderHeroId);
+  const [guildName, setGuildName] = useState(state.guild.name);
+  const [founderName, setFounderName] = useState(founder?.name || state.guild.founder || '');
+
+  useEffect(() => {
+    setGuildName(state.guild.name);
+    setFounderName(founder?.name || state.guild.founder || '');
+  }, [state.guild.name, state.guild.founder, founder?.name]);
 
   return (
     <div className="screen screen--settings">
       <header className="screen-heading"><div><span className="eyebrow">Campaign management</span><h1>Settings & Save</h1><p>Saves use IndexedDB, not localStorage. History is compacted safely and storage errors never crash rendering.</p></div><div className="heading-metrics"><Badge tone="green">Save slot {slot}</Badge></div></header>
 
       <div className="settings-grid">
+        <Panel title="Guild identity" eyebrow="Names can evolve; history stays intact">
+          <div className="settings-form identity-settings">
+            <label>Guild name<input value={guildName} maxLength={38} onChange={(event) => setGuildName(event.target.value)} /><small>Renaming creates a Chronicle entry instead of rewriting the past.</small></label>
+            <Button disabled={!guildName.trim() || guildName.trim() === state.guild.name} onClick={() => actions.renameGuild(guildName)}>Rename guild</Button>
+            <label>Founder name<input value={founderName} maxLength={36} onChange={(event) => setFounderName(event.target.value)} /><small>Your founder remains the same hero; only the recorded name changes.</small></label>
+            <Button disabled={!founderName.trim() || founderName.trim() === founder?.name} onClick={() => actions.renameFounder(founderName)}>Rename founder</Button>
+          </div>
+        </Panel>
+
         <Panel title="Simulation" eyebrow="Campaign preferences">
           <div className="settings-form">
             <label>Difficulty<select value={state.settings.difficulty} onChange={(event) => actions.updateSettings({ difficulty: event.target.value })}><option>Story</option><option>Standard</option><option>Harsh</option></select><small>Story reduces mission difficulty by 6. Harsh increases it by 6.</small></label>

@@ -9,6 +9,8 @@ export const TIERS = [
   { id: 'Global', fame: 2200, contracts: 95, rank: 1, minYears: 14, color: '#9b78c8', scope: 'The known world, remote frontiers and mythic routes' },
 ];
 
+export const CLASS_MIGRATIONS = { Shaman: 'Cleric', Berserker: 'Guardian', Bard: 'Scholar', Beastmaster: 'Ranger' };
+
 export const CLASSES = {
   Guardian: { glyph: '◆', primary: 'Might', secondary: 'Endurance', role: 'Vanguard', description: 'Protection, control and endurance.' },
   Duelist: { glyph: '✦', primary: 'Finesse', secondary: 'Presence', role: 'Striker', description: 'Single-target mastery and tournament brilliance.' },
@@ -16,11 +18,14 @@ export const CLASSES = {
   Rogue: { glyph: '◈', primary: 'Finesse', secondary: 'Mind', role: 'Specialist', description: 'Stealth, traps and infiltration.' },
   Cleric: { glyph: '✚', primary: 'Spirit', secondary: 'Presence', role: 'Support', description: 'Healing, wards and morale.' },
   Mage: { glyph: '✧', primary: 'Mind', secondary: 'Spirit', role: 'Specialist', description: 'Area magic, lore and supernatural utility.' },
-  Berserker: { glyph: '▲', primary: 'Might', secondary: 'Spirit', role: 'Striker', description: 'Burst force, fear and monster killing.' },
-  Bard: { glyph: '♫', primary: 'Presence', secondary: 'Mind', role: 'Captain', description: 'Fame, morale, negotiation and memory.' },
+  Scholar: { glyph: '▣', primary: 'Mind', secondary: 'Presence', role: 'Captain', description: 'Tactics, diplomacy, research and disciplined planning.' },
   Artificer: { glyph: '⚙', primary: 'Mind', secondary: 'Endurance', role: 'Specialist', description: 'Devices, sieges, repairs and artifacts.' },
-  Beastmaster: { glyph: '♞', primary: 'Spirit', secondary: 'Finesse', role: 'Scout', description: 'Pets, pursuit, travel and terrain.' },
 };
+
+export const CLASS_IDS = Object.keys(CLASSES);
+export function normalizeClassId(classId) {
+  return CLASSES[classId] ? classId : (CLASS_MIGRATIONS[classId] || 'Guardian');
+}
 
 export const PARTY_ROLES = [
   { id: 'Captain', label: 'Captain', description: 'Makes key decisions and holds the party together.', key: 'Presence' },
@@ -422,10 +427,10 @@ export const RIVAL_ARCHETYPES = [
   { name: 'Order of the White Mantle', archetype: 'Noble Order', motto: 'Honor before applause.', color: '#c7c0a6', strategy: 'prestige', risk: 0.42, specialty: 'Guardian' },
   { name: 'Mosswood Fellowship', archetype: 'Frontier Brotherhood', motto: 'No road is truly lost.', color: '#4f7956', strategy: 'loyal', risk: 0.48, specialty: 'Ranger' },
   { name: 'The Gilded Quill', archetype: 'Scholastic Circle', motto: 'Knowledge wins the second battle.', color: '#6e5f91', strategy: 'research', risk: 0.35, specialty: 'Mage' },
-  { name: 'Redwake Crew', archetype: 'Popular Crew', motto: 'Make the crowd remember.', color: '#b45d42', strategy: 'fame', risk: 0.76, specialty: 'Bard' },
+  { name: 'Redwake Crew', archetype: 'Popular Crew', motto: 'Make the crowd remember.', color: '#b45d42', strategy: 'fame', risk: 0.76, specialty: 'Scholar' },
   { name: 'Saint Orra’s Vigil', archetype: 'Religious Order', motto: 'Stand where darkness gathers.', color: '#56789b', strategy: 'discipline', risk: 0.39, specialty: 'Cleric' },
   { name: 'The Velvet Knives', archetype: 'Criminal Guild', motto: 'The unseen hand decides.', color: '#57435f', strategy: 'secrets', risk: 0.58, specialty: 'Rogue' },
-  { name: 'Ashen Banner', archetype: 'Veteran Company', motto: 'We have survived worse.', color: '#6e6c67', strategy: 'veterans', risk: 0.46, specialty: 'Berserker' },
+  { name: 'Ashen Banner', archetype: 'Veteran Company', motto: 'We have survived worse.', color: '#6e6c67', strategy: 'veterans', risk: 0.46, specialty: 'Guardian' },
 ];
 
 export const FIRST_NAMES = [
@@ -445,6 +450,32 @@ export const ORIGINS = ['Farmer', 'Noble bastard', 'Temple orphan', 'Nomad', 'Ex
 export const PERSONALITIES = ['Brave', 'Vain', 'Patient', 'Jealous', 'Merciful', 'Obsessive', 'Cautious', 'Witty', 'Honorable', 'Restless'];
 export const DREAMS = ['Become champion', 'Map the world', 'Avenge family', 'Found a school', 'Recover a lost artifact', 'Save a kingdom', 'Surpass a famous parent', 'Never lose a companion'];
 export const FLAWS = ['Cowardice', 'Greed', 'Injury-prone', 'Arrogance', 'Addiction', 'Divided loyalty', 'Recklessness', 'Pride', 'Superstition', 'Melancholy'];
+
+export const PERSONALITY_PROFILES = {
+  Brave: 'Acts decisively under danger and likes bold plans.',
+  Vain: 'Craves visible credit and performs best when given the stage.',
+  Patient: 'Prefers information, preparation and low-risk openings.',
+  Jealous: 'Competes intensely with more celebrated companions.',
+  Merciful: 'Values restraint, rescue and humane outcomes.',
+  Obsessive: 'Fixates on clues, artifacts and unfinished objectives.',
+  Cautious: 'Protects the company from unnecessary exposure and attrition.',
+  Witty: 'Finds social openings and creates convincing distractions.',
+  Honorable: 'Responds strongly to evidence, promises and principled conduct.',
+  Restless: 'Needs movement, field work and ambitious assignments.',
+};
+
+export const FLAW_PROFILES = {
+  Cowardice: 'Loses effectiveness when asked to take the most dangerous line.',
+  Greed: 'Responds to treasure and can resent low-reward sacrifice.',
+  'Injury-prone': 'Suffers a higher chance of wounds during dangerous work.',
+  Arrogance: 'Can ignore information and overestimate personal leverage.',
+  Addiction: 'Long deployments and idle months can destabilize performance.',
+  'Divided loyalty': 'Political or covert work may create conflicting obligations.',
+  Recklessness: 'Pushes tempo well but creates additional danger and exposure.',
+  Pride: 'Dislikes concessions, retreats and visibly subordinate roles.',
+  Superstition: 'Can misread strange evidence, relics and unexplained phenomena.',
+  Melancholy: 'Confidence and social energy are less reliable after setbacks.',
+};
 export const HIDDEN_TRAITS = ['Royal blood', 'Forbidden magic', 'Ancient curse', 'Legendary lineage', 'Prophetic dreams', 'Monster kinship', 'None', 'None', 'None'];
 
 export const STARTING_HEROES = [
@@ -462,7 +493,8 @@ export const ONBOARDING_STEPS = [
   { id: 'select-party', title: 'Build your first Combat Company', body: 'Assign a Commander and at least one Fighter. Place heroes where their class and attributes actually fit.', screen: 'missions', target: 'selectParty', reward: 50 },
   { id: 'launch', title: 'Commit the company', body: 'Launch the mission. The formation is saved with the expedition so its result can be examined later.', screen: 'missions', target: 'launchMission', reward: 60 },
   { id: 'advance', title: 'Advance one month', body: 'Time moves wages, recovery, rival guilds, tournament calendars and expeditions together.', screen: 'hall', target: 'advanceMonth', reward: 45 },
-  { id: 'choice', title: 'Resolve the key moment', body: 'Important missions pause for a decision. Choose what your guild values, not only the option with the best percentage.', screen: 'hall', target: 'resolveChoice', reward: 70 },
+  { id: 'combat', title: 'Fight the road battle', body: 'The enemy telegraphs its next intent. Attack recovering enemies, Feint defensive ones, Guard heavy attacks and use your class signature at the right moment.', screen: 'missions', target: 'completeCombat', reward: 65 },
+  { id: 'choice', title: 'Resolve the key moment', body: 'Combat determines how well the mission went. The final story choice now determines what your guild does with that result.', screen: 'hall', target: 'resolveChoice', reward: 70 },
   { id: 'report', title: 'Read the expedition report', body: 'Study who did what, the final odds, rewards, wounds and consequences. Every completed mission remains available in the Chronicle.', screen: 'chronicle', target: 'viewMissionReport', reward: 45 },
   { id: 'goals', title: 'Choose your first-year path', body: 'The opening orders are over. Your goals now become broader: combat wins, fame, the local circuit and a National charter.', screen: 'goals', target: 'inspectGoals', reward: 80 },
 ];

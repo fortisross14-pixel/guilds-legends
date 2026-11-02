@@ -3,6 +3,7 @@ import {
   APPOINTMENTS,
   CHAPTER_GOALS,
   CLASSES,
+  normalizeClassId,
   FACILITIES,
   FIRST_NAMES,
   FLAWS,
@@ -39,13 +40,43 @@ import {
   travelDuration,
   unlockedLocations,
 } from '../data/world.js';
+import {
+  GUILD_BLUEPRINTS,
+  GUILD_TOURNAMENT_DEFINITIONS,
+  HISTORIC_LEGENDS,
+  INDIVIDUAL_TOURNAMENT_DEFINITIONS,
+  WORLD_ARTIFACT_SEEDS,
+} from '../data/universe.js';
+import {
+  autoResolveEncounter,
+  createDuelEncounter,
+  createPartyEncounter,
+  missionGradeFromCombat,
+  performCombatAction,
+} from './combat.js';
+import {
+  AMBITION_TEMPLATES,
+  BRANCH_RULES,
+  ambitionMetric,
+  artifactEffectFromPrestige,
+  branchName,
+  defaultAmbitionForHero,
+} from './legacy.js';
+import {
+  autoResolveMissionGame,
+  createMissionGame,
+  missionGradeFromMissionGame,
+  performMissionGameAction,
+} from './missionGames.js';
 
-const SCHEMA_VERSION = 7;
-const MAX_CHRONICLE = 1400;
-const MAX_HERO_HISTORY = 120;
-const MAX_HEROES = 480;
-const MAX_MISSION_HISTORY = 900;
+const SCHEMA_VERSION = 12;
+const MAX_CHRONICLE = 900;
+const MAX_HERO_HISTORY = 80;
+const MAX_HEROES = 300;
+const MAX_MISSION_HISTORY = 500;
 const MAX_TOURNAMENT_HISTORY = 260;
+const MAX_WORLD_HERO_HISTORY = 18;
+const MAX_TITLE_HISTORY = 120;
 
 export function clone(value) {
   return typeof structuredClone === 'function'
@@ -97,7 +128,10 @@ function commitRng(state, rng) {
 }
 
 function uid(prefix, rng) {
-  return `${prefix}-${Math.floor(rng.next() * 1e9).toString(36)}-${Date.now().toString(36).slice(-5)}`;
+  // IDs are RNG-derived so identical campaign seeds stay reproducible across runs.
+  // Keep one RNG draw per ID so identity generation does not alter simulation pacing.
+  const roll = Math.floor(rng.next() * 1e15);
+  return `${prefix}-${roll.toString(36)}`;
 }
 
 function clamp(value, min, max) {
@@ -145,7 +179,7 @@ function applyXpInPlace(hero, amount, state, source = 'experience') {
     if (hero.xp < needed) break;
     hero.xp -= needed;
     hero.level += 1;
-    const classInfo = CLASSES[hero.classId];
+    const classInfo = CLASSES[normalizeClassId(hero.classId)];
     const keys = Object.keys(hero.attributes);
     const primary = classInfo?.primary || keys[0];
     const secondary = classInfo?.secondary || keys[1];
@@ -219,6 +253,7 @@ function baseAttributes(power, classId, rng) {
     Presence: clamp(power + rng.int(-9, 9), 20, 95),
     Endurance: clamp(power + rng.int(-9, 9), 20, 95),
   };
+  classId = normalizeClassId(classId);
   const classInfo = CLASSES[classId];
   attrs[classInfo.primary] = clamp(attrs[classInfo.primary] + 8, 20, 99);
   attrs[classInfo.secondary] = clamp(attrs[classInfo.secondary] + 4, 20, 99);
@@ -270,16 +305,26 @@ function createHeroFromBase(base, state, rng, options = {}) {
     guildId: options.guildId || 'player',
     appointment: null,
     training: 'Fundamentals',
+    monthlyActivity: 'Training',
     roleExperience: Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])),
     career: {
       missions: 0, wins: 0, partials: 0, defeats: 0, legendary: 0,
-      tournaments: 0, titles: 0, injuries: 0, rescues: 0, kills: 0,
-      artifacts: 0, fame: 0, earnings: 0, bestMission: null,
+      tournaments: 0, individualTournaments: 0, tournamentBouts: 0, tournamentBoutWins: 0,
+      titles: 0, individualTitles: 0, guildTitles: 0, runnerUps: 0, semifinals: 0,
+      bestTournamentFinish: 99, titleWins: {}, prizeMoney: 0, tournamentFame: 0,
+      injuries: 0, rescues: 0, kills: 0,
+      artifacts: 0, artifactPrestige: 0, fame: 0, earnings: 0, bestMission: null,
       peakPower: calculatePower(attributes), serviceYears: 0, xpEarned: 0,
     },
     renown: options.renown ?? Math.max(0, level - 1 + Math.round(basePower / 14 - 2)),
     legacy: options.legacy ?? 0,
-    relationships: [],
+    relationships: base.relationships || [],
+    mentorId: base.mentorId || null,
+    apprenticeIds: base.apprenticeIds || [],
+    ambitions: base.ambitions || [],
+    artifactIds: base.artifactIds || [],
+    artifactPowerBonus: base.artifactPowerBonus || 0,
+    promises: base.promises || [],
     history: [],
   };
   return hero;
@@ -292,7 +337,7 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
   const qualityBonus = quality === 'elite' ? 0.24 : quality === 'veteran' ? 0.12 : 0;
   const rarity = options.rarity || rarityFromRoll(rng, scoutBonus + qualityBonus);
   const level = options.level || levelBandForRarity(rarity, rng, quality === 'veteran');
-  const classPool = location?.specialties?.length && rng.chance(0.64) ? location.specialties : Object.keys(CLASSES);
+  const classPool = (location?.specialties?.length && rng.chance(0.64) ? location.specialties : Object.keys(CLASSES)).map(normalizeClassId);
   const classId = options.classId || rng.pick(classPool);
   const age = options.age ?? clamp(rng.int(17, 27) + Math.floor(level / 3) + (quality === 'veteran' ? 7 : 0), 16, 39);
   const powerBase = powerForLevel(level, rarity, rng);
@@ -313,6 +358,87 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
   }, state, rng, { ...options, homeLocationId: locationId });
 }
 
+
+function campaignMonthSerial(state) {
+  return state.date.year * 12 + state.date.month;
+}
+
+function promiseDeadlineLabel(serial) {
+  const year = Math.floor(serial / 12);
+  const month = serial % 12;
+  return `${MONTHS[month]} ${year}`;
+}
+
+function candidateDemandFor(hero, state, rng) {
+  if (hero.level <= 1 && hero.rarity === 'Common' && rng.chance(0.35)) return null;
+  const dream = hero.dream || '';
+  let kind = 'formation';
+  let formationType = null;
+  let label = '';
+  let description = '';
+  if (['Become champion', 'Surpass a famous parent'].includes(dream) || (hero.classId === 'Duelist' && rng.chance(0.45))) {
+    kind = 'tournament';
+    label = 'A place in the arena';
+    description = 'Enter this hero in an individual tournament before the promise expires.';
+  } else {
+    if (dream === 'Map the world' || dream === 'Recover a lost artifact' || ['Ranger', 'Artificer', 'Scholar'].includes(normalizeClassId(hero.classId))) formationType = 'Expedition';
+    else if (dream === 'Save a kingdom' || ['Scholar', 'Cleric'].includes(normalizeClassId(hero.classId))) formationType = 'Diplomacy';
+    else if (hero.classId === 'Rogue') formationType = 'Intrigue';
+    else formationType = 'Combat';
+    label = `${formationType} opportunity`;
+    description = `Field this hero in ${['Expedition', 'Intrigue'].includes(formationType) ? 'an' : 'a'} ${formationType.toLowerCase()} mission before the promise expires.`;
+  }
+  const duration = hero.rarity === 'Legend' ? 8 : hero.rarity === 'Epic' ? 10 : 12;
+  const dueSerial = campaignMonthSerial(state) + duration;
+  return {
+    id: `promise-${hero.id}`,
+    kind,
+    formationType,
+    label,
+    description,
+    dueSerial,
+    dueLabel: promiseDeadlineLabel(dueSerial),
+    status: 'offered',
+  };
+}
+
+function promiseMatches(promise, eventType, details = {}) {
+  if (!promise || promise.status !== 'active') return false;
+  if (promise.kind === 'tournament') return eventType === 'tournament';
+  if (promise.kind === 'formation') return eventType === 'mission' && promise.formationType === details.formationType;
+  return false;
+}
+
+function fulfillPromisesInPlace(state, hero, eventType, details = {}) {
+  (hero.promises || []).forEach((promise) => {
+    if (!promiseMatches(promise, eventType, details)) return;
+    promise.status = 'fulfilled';
+    promise.fulfilledSerial = campaignMonthSerial(state);
+    promise.fulfilledLabel = dateLabel(state);
+    hero.loyalty = clamp(hero.loyalty + 5, 0, 100);
+    hero.morale = clamp(hero.morale + 3, 0, 100);
+    addHeroHistory(hero, state, { type: 'promise', title: `Promise fulfilled: ${promise.label}`, text: promise.description });
+    state.notifications.push({ id: `promise-fulfilled-${hero.id}-${promise.id}`, tone: 'green', title: `${hero.name}: promise fulfilled`, text: `${promise.label} strengthens loyalty to the guild.` });
+  });
+}
+
+function updatePromiseDeadlinesInPlace(state) {
+  const now = campaignMonthSerial(state);
+  state.heroes.forEach((hero) => {
+    if (['dead', 'retired'].includes(hero.status)) return;
+    (hero.promises || []).forEach((promise) => {
+      if (promise.status !== 'active' || now < promise.dueSerial) return;
+      promise.status = 'broken';
+      promise.brokenSerial = now;
+      hero.loyalty = clamp(hero.loyalty - 16, 0, 100);
+      hero.morale = clamp(hero.morale - 9, 0, 100);
+      addHeroHistory(hero, state, { type: 'promise-broken', title: `Broken promise: ${promise.label}`, text: `The guild failed to deliver before ${promise.dueLabel}.` });
+      state.notifications.push({ id: `promise-broken-${hero.id}-${promise.id}`, tone: 'red', title: `${hero.name}: promise broken`, text: `${promise.label} was not honored. Loyalty falls sharply.` });
+      if (hero.rarity === 'Legend' || hero.rarity === 'Epic') addChronicle(state, { type: 'relationship', importance: 2, title: `${hero.name} accuses the guild of breaking its word`, text: `${promise.label} was promised when ${hero.name} signed, but the deadline passed.`, heroIds: [hero.id], tags: ['promise', 'broken'] });
+    });
+  });
+}
+
 function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere') {
   const academyLevel = state.guild.facilities['academy'] || 0;
   const scoutLevel = state.guild.facilities['scout-office'] || 0;
@@ -328,6 +454,8 @@ function makeCandidate(state, rng, forcedQuality, locationId = state.world?.curr
     locationId,
     channel: academyLevel > 0 && hero.age <= 20 && rng.chance(0.35) ? 'Academy' : scoutLevel > 0 && rng.chance(0.35) ? 'Scout network' : rng.pick(['Tavern board', 'Mercenary market', 'Temple recommendation', 'Defector rumor']),
     signingFee,
+    buyoutFee: Math.round(signingFee * (hero.rarity === 'Legend' ? 0.65 : hero.rarity === 'Epic' ? 0.5 : 0.35)),
+    demand: candidateDemandFor(hero, state, rng),
     expiresYear: state.date.year + 1,
     interest: clamp(63 + state.guild.tierIndex * 10 + Math.round(state.guild.fame / 110) - hero.level * 1.6 - (hero.rarity === 'Legend' ? 12 : 0), 20, 98),
   };
@@ -344,29 +472,212 @@ function refreshCandidatesForLocationInPlace(state, rng, locationId = state.worl
   state.candidates = state.candidates.slice(0, 60);
 }
 
-function createRival(archetype, state, rng, index) {
-  const star = generateHero(state, rng, index < 2 ? 'elite' : 'veteran', { guildId: `rival-${index}` });
-  star.renown += rng.int(5, 15);
-  star.legacy += rng.int(8, 25);
+function ensureTournamentCareer(hero) {
+  hero.career ||= {};
+  hero.career.individualTournaments ||= 0;
+  hero.career.tournamentBouts ||= 0;
+  hero.career.tournamentBoutWins ||= 0;
+  hero.career.individualTitles ||= 0;
+  hero.career.guildTitles ||= 0;
+  hero.career.runnerUps ||= 0;
+  hero.career.semifinals ||= 0;
+  hero.career.bestTournamentFinish ||= 99;
+  hero.career.titleWins ||= {};
+  hero.career.prizeMoney ||= 0;
+  hero.career.tournamentFame ||= 0;
+  hero.career.artifactPrestige ||= 0;
+  hero.specializations ||= { tournament: 0, missions: 0, diplomacy: 0, exploration: 0 };
+  return hero;
+}
+
+function createRival(blueprint, state, rng, index) {
+  const tierIndex = clamp(blueprint.tierIndex ?? 0, 0, TIERS.length - 1);
+  const quality = tierIndex === 2 ? 'elite' : tierIndex === 1 ? (rng.chance(0.72) ? 'elite' : 'veteran') : (index < 2 ? 'veteran' : 'normal');
+  const home = LOCATION_BY_ID[blueprint.homeLocationId] || LOCATION_BY_ID.dunmere;
+  const guildId = `rival-${index}`;
+  const starRoll = rng.next();
+  const starRarity = tierIndex === 2
+    ? (starRoll < 0.75 ? 'Legend' : 'Epic')
+    : tierIndex === 1
+      ? (starRoll < 0.25 ? 'Legend' : starRoll < 0.90 ? 'Epic' : 'Rare')
+      : (starRoll < 0.08 ? 'Legend' : starRoll < 0.70 ? 'Epic' : 'Rare');
+  const starLevel = tierIndex === 2 ? rng.int(14, 19) : tierIndex === 1 ? rng.int(9, 15) : rng.int(4, 10);
+  const star = ensureTournamentCareer(generateHero(state, rng, quality, {
+    guildId,
+    homeLocationId: home.id,
+    classId: blueprint.specialty,
+    rarity: starRarity,
+    level: starLevel,
+    age: clamp(rng.int(20, 31) + Math.floor(starLevel / 5), 20, 38),
+  }));
+  star.status = 'active';
+  star.renown += 8 + tierIndex * 18 + rng.int(0, 15);
+  star.legacy += 12 + tierIndex * 38 + rng.int(0, 28);
+  star.specializations.tournament = rng.int(5, 11) + tierIndex * 2;
+  star.hook = `${blueprint.name} built its public identity around ${star.name}, a ${star.rarity.toLowerCase()} ${star.classId.toLowerCase()} with a reputation for tournament pressure.`;
+
+  const rosterSize = tierIndex === 2 ? rng.int(6, 8) : tierIndex === 1 ? rng.int(5, 7) : rng.int(4, 6);
+  const members = [];
+  for (let memberIndex = 1; memberIndex < rosterSize; memberIndex += 1) {
+    const memberQuality = tierIndex === 2 ? (rng.chance(0.55) ? 'elite' : 'veteran') : tierIndex === 1 ? 'veteran' : 'normal';
+    const member = ensureTournamentCareer(generateHero(state, rng, memberQuality, {
+      guildId,
+      homeLocationId: home.id,
+      level: tierIndex === 2 ? rng.int(10, 17) : tierIndex === 1 ? rng.int(6, 13) : rng.int(2, 8),
+    }));
+    member.status = 'active';
+    member.specializations.tournament = rng.chance(0.18 + tierIndex * 0.05) ? rng.int(4, 10) : rng.int(0, 3);
+    member.specializations.missions = rng.int(1, 7);
+    members.push(member);
+  }
+
+  const fameBand = tierIndex === 2 ? [1100, 2600] : tierIndex === 1 ? [260, 1050] : [22, 220];
+  const legacyBand = tierIndex === 2 ? [850, 2400] : tierIndex === 1 ? [180, 850] : [20, 280];
+  const power = Math.round([star, ...members].sort((a, b) => b.power - a.power).slice(0, 5).reduce((sum, hero) => sum + hero.power, 0) / Math.min(5, rosterSize));
   return {
-    id: `rival-${index}`,
-    ...archetype,
-    founded: state.date.year - rng.int(3, 70),
-    fame: rng.int(18, 115),
-    legacy: rng.int(10, 180),
-    crowns: rng.int(700, 3200),
-    tierIndex: rng.chance(0.25) ? 1 : 0,
-    form: rng.int(45, 78),
-    power: rng.int(50, 69),
-    wins: rng.int(2, 18),
-    losses: rng.int(1, 12),
-    titles: rng.int(0, 3),
+    id: guildId,
+    name: blueprint.name,
+    motto: blueprint.motto,
+    archetype: blueprint.archetype,
+    color: blueprint.color,
+    strategy: blueprint.strategy,
+    risk: blueprint.risk,
+    specialty: blueprint.specialty,
+    homeLocationId: home.id,
+    region: home.region,
+    founded: state.date.year - rng.int(tierIndex === 2 ? 45 : 3, tierIndex === 2 ? 180 : tierIndex === 1 ? 110 : 70),
+    fame: rng.int(...fameBand),
+    legacy: rng.int(...legacyBand),
+    crowns: rng.int(900 + tierIndex * 1800, 3800 + tierIndex * 5200),
+    tierIndex,
+    leagueTierIndex: tierIndex,
+    form: rng.int(45, 82),
+    power,
+    wins: rng.int(4 + tierIndex * 12, 20 + tierIndex * 32),
+    losses: rng.int(2, 14 + tierIndex * 8),
+    titles: rng.int(tierIndex, 2 + tierIndex * 4),
+    prizeMoney: rng.int(tierIndex * 800, 1800 + tierIndex * 8000),
+    seasonPoints: rng.int(10, 90) + tierIndex * 75,
+    careerPoints: rng.int(40, 280) + tierIndex * 480,
     hostility: rng.int(5, 45),
     relationship: 0,
     star,
+    members,
     recent: [],
     fallen: false,
   };
+}
+
+function createHistoricHero(base, state, rng) {
+  const hero = ensureTournamentCareer(createHeroFromBase({
+    id: base.id,
+    name: base.name,
+    classId: base.classId,
+    primal: base.primal,
+    rarity: base.rarity,
+    level: base.level,
+    age: base.age,
+    power: base.peakPower,
+    potential: base.peakPower,
+    personality: 'Driven',
+    flaw: 'Pride',
+    dream: 'Become champion',
+    origin: `${base.guildName} legend`,
+    loyalty: 70,
+    hook: `${base.name} is remembered as one of the defining tournament figures before the Broken Lantern was restored.`,
+    hiddenTrait: 'Legendary lineage',
+  }, state, rng, { guildId: `historic-${base.guildName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` }));
+  hero.status = base.status;
+  hero.renown = base.renown;
+  hero.legacy = base.legacy;
+  hero.guildName = base.guildName;
+  hero.career.tournaments = base.titles * 4 + 4;
+  hero.career.individualTournaments = hero.career.tournaments;
+  hero.career.titles = base.titles;
+  hero.career.individualTitles = base.titles;
+  hero.career.tournamentBouts = base.titles * 12 + 18;
+  hero.career.tournamentBoutWins = base.titles * 9 + 11;
+  hero.career.prizeMoney = base.prizeMoney;
+  hero.career.tournamentFame = Math.round(base.renown * 0.72);
+  hero.career.bestTournamentFinish = 1;
+  hero.career.peakPower = base.peakPower;
+  hero.specializations.tournament = 12;
+  hero.history = [{ year: 1186, month: 11, date: 'Before the campaign', type: 'legacy', title: `${base.titles} major titles`, text: `${base.name} entered the historical record with ${base.prizeMoney} crowns in prize money and a peak power of ${base.peakPower}.` }];
+  return hero;
+}
+
+function createTitleRecords() {
+  return Object.fromEntries([
+    ...INDIVIDUAL_TOURNAMENT_DEFINITIONS.map((definition) => [definition.id, {
+      id: definition.id,
+      name: definition.name,
+      kind: 'individual',
+      circuit: definition.circuit,
+      locationId: definition.locationId,
+      recordHolderName: definition.record.name,
+      recordWins: definition.record.wins,
+      winners: definition.record.years.map((year) => ({ year, heroId: null, heroName: definition.record.name, guildName: 'Historical record', player: false })),
+      winsByHero: { [`historic:${definition.record.name}`]: definition.record.wins },
+    }]),
+    ...GUILD_TOURNAMENT_DEFINITIONS.map((definition) => [definition.id, {
+      id: definition.id,
+      name: definition.name,
+      kind: 'guild',
+      circuit: definition.circuit,
+      locationId: definition.locationId,
+      recordHolderName: definition.record.name,
+      recordWins: definition.record.wins,
+      winners: [],
+      winsByGuild: { [`historic:${definition.record.name}`]: definition.record.wins },
+    }]),
+  ]);
+}
+
+function createWorldArtifactsInPlace(state, rng) {
+  state.worldArtifacts = WORLD_ARTIFACT_SEEDS.map((seed, index) => {
+    const rival = state.rivals[(index * 5 + 3) % state.rivals.length];
+    const owner = index % 2 === 0 ? rival.star : rival.members[index % Math.max(1, rival.members.length)];
+    if (owner) {
+      owner.career.artifacts += 1;
+      owner.career.artifactPrestige += seed.prestige;
+    }
+    return {
+      id: `world-artifact-${index}`,
+      name: seed.name,
+      prestige: seed.prestige,
+      legend: seed.legend,
+      ownerId: owner?.id || null,
+      ownerGuildId: rival.id,
+      discoveredYear: state.date.year - rng.int(8, 90),
+      history: [{ year: state.date.year - rng.int(8, 90), ownerId: owner?.id || null, ownerName: owner?.name || rival.name, guildId: rival.id, guildName: rival.name }],
+    };
+  });
+}
+
+function createUniverseInPlace(state, rng) {
+  state.rivals = GUILD_BLUEPRINTS.map((blueprint, index) => createRival(blueprint, state, rng, index));
+  state.worldHistoricHeroes = HISTORIC_LEGENDS.map((legend) => createHistoricHero(legend, state, rng));
+  state.freeAgents = [];
+  const freeAgentCount = 22;
+  for (let index = 0; index < freeAgentCount; index += 1) {
+    const location = LOCATIONS[index % LOCATIONS.length];
+    const quality = index < 2 ? 'elite' : index < 8 ? 'veteran' : 'normal';
+    const hero = ensureTournamentCareer(generateHero(state, rng, quality, { guildId: null, homeLocationId: location.id }));
+    hero.status = 'free-agent';
+    hero.guildId = null;
+    hero.specializations.tournament = rng.chance(0.32) ? rng.int(5, 11) : rng.int(0, 3);
+    hero.hook = `${hero.name} competes without a permanent banner and may become known through the open tournament circuit.`;
+    state.freeAgents.push(hero);
+  }
+  state.titleRecords = createTitleRecords();
+  createWorldArtifactsInPlace(state, rng);
+  state.universeStats = { individualTournamentsResolved: 0, guildTournamentsResolved: 0, boutsResolved: 0, seasonsSimulated: 0 };
+}
+
+export function getWorldHeroes(state, includeHistoric = true) {
+  const active = (state.rivals || []).flatMap((rival) => [rival.star, ...(rival.members || [])]).filter(Boolean);
+  const free = state.freeAgents || [];
+  return includeHistoric ? [...active, ...free, ...(state.worldHistoricHeroes || [])] : [...active, ...free];
 }
 
 function facilityLevels() {
@@ -382,6 +693,8 @@ function initialStats() {
     combatWins: 0,
     tournamentBest: 99,
     tournamentsWon: 0,
+    individualTournamentWins: 0,
+    guildTournamentWins: 0,
     localTournamentWins: 0,
     professionalTournamentWins: 0,
     eliteTournamentWins: 0,
@@ -391,6 +704,12 @@ function initialStats() {
     rivalries: 0,
     mythicFeats: 0,
     signatureFeats: 0,
+    branchesFounded: 0,
+    successions: 0,
+    ambitionsCompleted: 0,
+    inheritedAmbitionsCompleted: 0,
+    rivalSplits: 0,
+    rivalPoaches: 0,
     alignmentChosen: 0,
     births: 0,
     deaths: 0,
@@ -417,22 +736,24 @@ export function createNewGame(options = {}) {
     date: { year: 1187, month: 0 },
     guild: {
       id: 'player', name: options.guildName || 'The Broken Lantern', motto: options.motto || 'No light is lost forever.', crest: options.crest || 'lantern',
-      founder: founderName, founderHeroId: 'founder-player', tierIndex: 0, tier: 'Regional', fame: 8, legacy: 2, crowns: 720,
+      founder: founderName, founderHeroId: 'founder-player', currentGuildmasterHeroId: 'founder-player', successorHeroId: null, tierIndex: 0, tier: 'Regional', fame: 8, legacy: 2, crowns: 720,
       alignment: 'Undeclared', rank: 18, contractsCompleted: 0, wins: 0, losses: 0, deaths: 0, fallen: false, charter: true,
-      facilities: facilityLevels(), appointments: {}, formations: emptyFormations(), policies: { retreat: 'Measured', treasure: 'Guild Share', publicity: 'Truthful' }, obligations: [], rivalries: [],
+      facilities: facilityLevels(), appointments: {}, formations: emptyFormations(), branches: [], policies: { retreat: 'Measured', treasure: 'Guild Share', publicity: 'Truthful' }, obligations: [], rivalries: [],
     },
     world: { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null },
-    heroes: [], historicHeroes: [], candidates: [], rivals: [], missions: [], activeMissions: [], pendingDecisions: [], missionHistory: [], tournamentHistory: [], pendingReports: [], chronicle: [], artifacts: [],
+    council: { lastReport: null, unread: false },
+    heroes: [], historicHeroes: [], candidates: [], rivals: [], freeAgents: [], worldHistoricHeroes: [], missions: [], activeMissions: [], activeEncounter: null, activeMissionGame: null, pendingDecisions: [], missionHistory: [], tournamentHistory: [], pendingReports: [], chronicle: [], artifacts: [], worldArtifacts: [], titleRecords: {}, guildTournaments: [], universeStats: {},
     sagas: SAGA_DEFINITIONS.map((saga) => ({ ...saga, progress: 0, completed: false, discovered: saga.tier === 'Regional' })),
     tournaments: [], tutorial: { step: 0, completed: false, acknowledged: false },
     goals: CHAPTER_GOALS.map((goal) => ({ ...goal, completed: false, claimed: false })),
     achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
     stats: initialStats(), notifications: [], settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard' },
+    legacy: { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] },
     flags: { firstMissionInspected: false, firstHeroInspected: false, goalsInspected: false, politicalChoiceOffered: false, firstCompanionHired: false, firstTravelCompleted: false },
   };
 
   const founder = createHeroFromBase({
-    id: 'founder-player', name: founderName, classId: founderClass, primal: founderPrimal, rarity: 'Uncommon', level: 1, xp: 0, age: 27,
+    id: 'founder-player', name: founderName, classId: founderClass, primal: founderPrimal, rarity: 'Rare', level: 1, xp: 0, age: 27,
     power: 48, potential: 84, personality: 'Determined', flaw: 'Pride', dream: 'Build a guild that outlives me', origin: 'Founder of the Broken Lantern',
     homeLocationId: 'dunmere', loyalty: 100, hook: `You raised the banner yourself. ${founderName} is a level 1 ${founderPrimal} ${founderClass} whose career will define the institution.`, hiddenTrait: 'None',
   }, state, rng, { homeLocationId: 'dunmere' });
@@ -441,16 +762,21 @@ export function createNewGame(options = {}) {
   addHeroHistory(founder, state, { type: 'founding', title: `Founded ${state.guild.name}`, text: 'Signed the Dunmere charter alone, at level 1, with no company yet standing behind the banner.' });
 
   const openingPool = [...STARTING_HEROES];
+  const openingPrimals = ['Fire', rng.pick(PRIMAL_IDS.filter((id) => id !== 'Fire')), rng.pick(PRIMAL_IDS.filter((id) => id !== 'Fire'))];
+  if (openingPrimals[2] === openingPrimals[1]) {
+    openingPrimals[2] = PRIMAL_IDS.find((id) => id !== 'Fire' && id !== openingPrimals[1]) || 'Water';
+  }
   while (state.candidates.length < 3 && openingPool.length) {
     const index = rng.int(0, openingPool.length - 1);
     const base = openingPool.splice(index, 1)[0];
-    const candidate = createHeroFromBase({ ...base, power: 45 + rng.int(-2, 4), level: rng.int(1, 3), rarity: rng.chance(0.3) ? 'Rare' : 'Uncommon', primal: choosePrimal(rng, 'dunmere'), homeLocationId: 'dunmere' }, state, rng, { homeLocationId: 'dunmere' });
-    candidate.status = 'candidate'; candidate.locationId = 'dunmere'; candidate.channel = 'Founding appeal'; candidate.signingFee = 0; candidate.expiresYear = state.date.year + 1; candidate.interest = 100;
+    const primal = openingPrimals[state.candidates.length] || choosePrimal(rng, 'dunmere');
+    const candidate = createHeroFromBase({ ...base, power: 45 + rng.int(-2, 4), level: rng.int(1, 3), rarity: rng.chance(0.3) ? 'Rare' : 'Uncommon', primal, homeLocationId: 'dunmere' }, state, rng, { homeLocationId: 'dunmere' });
+    candidate.status = 'candidate'; candidate.locationId = 'dunmere'; candidate.channel = 'Founding appeal'; candidate.signingFee = 0; candidate.buyoutFee = 0; candidate.demand = null; candidate.expiresYear = state.date.year + 1; candidate.interest = 100;
     candidate.hook = `${candidate.hook} Will join the founding pair without a signing fee.`;
     state.candidates.push(candidate);
   }
 
-  state.rivals = RIVAL_ARCHETYPES.map((archetype, index) => createRival(archetype, state, rng, index));
+  createUniverseInPlace(state, rng);
   refreshMissionsInPlace(state, rng, true);
   refreshCandidatesForLocationInPlace(state, rng, 'dunmere');
   createTournamentsInPlace(state, rng);
@@ -476,8 +802,9 @@ function instantiateMission(template, state, rng, forcedLocation = null) {
   const fameVariance = rng.int(template.fame[0], template.fame[1]) + tierIndexByName(location.tier) * 2;
   const issuerNames = [`${location.name} Council`, `${location.name} Temple`, `${location.name} Trade House`, `${location.name} Watch`, 'Anonymous petitioner', 'A local noble house'];
   const approach = template.approach || formationForMission(template);
-  const enemyPrimal = rng.chance(0.68) ? location.primal : rng.pick(PRIMAL_IDS);
-  const patronPrimal = rng.chance(0.78) ? location.primal : rng.pick(PRIMAL_IDS);
+  const openingDunmere = state.date.year <= 1188 && location.id === 'dunmere';
+  const enemyPrimal = rng.chance(openingDunmere ? 0.42 : 0.58) ? location.primal : rng.pick(PRIMAL_IDS);
+  const patronPrimal = rng.chance(openingDunmere ? 0.6 : 0.72) ? location.primal : rng.pick(PRIMAL_IDS);
   return {
     id: uid('mission', rng), templateId: template.id,
     title: template.id === 'wolves-old-road' ? template.title : `${template.title}`,
@@ -526,7 +853,22 @@ function refreshMissionsInPlace(state, rng, initial = false) {
 }
 
 export function getHero(state, heroId) {
-  return state.heroes.find((hero) => hero.id === heroId) || state.historicHeroes.find((hero) => hero.id === heroId) || null;
+  return state.heroes.find((hero) => hero.id === heroId)
+    || state.historicHeroes.find((hero) => hero.id === heroId)
+    || getWorldHeroes(state, true).find((hero) => hero.id === heroId)
+    || null;
+}
+
+export function getGuild(state, guildId) {
+  if (guildId === 'player') return { ...state.guild, id: 'player', player: true };
+  return state.rivals.find((guild) => guild.id === guildId) || null;
+}
+
+export function getHeroGuildName(state, hero) {
+  if (!hero) return 'Unknown';
+  if (hero.guildId === 'player' || state.heroes.some((item) => item.id === hero.id) || state.historicHeroes.some((item) => item.id === hero.id)) return state.guild.name;
+  const rival = state.rivals.find((guild) => guild.id === hero.guildId);
+  return rival?.name || hero.guildName || 'Free agent';
 }
 
 export function heroCapacity(state) {
@@ -549,6 +891,174 @@ export function activeHeroCount(state) {
   return state.heroes.filter((hero) => !['retired', 'dead'].includes(hero.status)).length;
 }
 
+export function branchCapacity(state) {
+  if ((state.guild?.tierIndex || 0) < 1) return 0;
+  return state.guild.tierIndex >= 2 ? BRANCH_RULES.Global.max : BRANCH_RULES.National.max;
+}
+
+export function operationalLocationIds(state) {
+  return new Set([
+    state.world?.currentLocationId || 'dunmere',
+    ...((state.guild?.branches || []).filter((branch) => branch.active !== false).map((branch) => branch.locationId)),
+  ]);
+}
+
+export function getGuildmaster(state) {
+  return getHero(state, state.guild?.currentGuildmasterHeroId || state.guild?.founderHeroId);
+}
+
+export function designateSuccessor(state, heroId) {
+  const next = clone(state);
+  if ((next.guild?.tierIndex || 0) < 1) return { state, error: 'Formal succession planning unlocks at National status.' };
+  const hero = getHero(next, heroId);
+  if (!hero || ['dead', 'retired'].includes(hero.status)) return { state, error: 'Choose an active hero as successor.' };
+  if (hero.id === next.guild.currentGuildmasterHeroId) return { state, error: 'The current guildmaster cannot succeed themselves.' };
+  if ((hero.age || 0) < 20) return { state, error: 'A successor must be at least 20 years old.' };
+  if ((hero.loyalty || 0) < 45) return { state, error: 'This hero is not loyal enough to accept the succession pact.' };
+  const prior = next.guild.successorHeroId ? getHero(next, next.guild.successorHeroId) : null;
+  next.guild.successorHeroId = hero.id;
+  hero.loyalty = clamp(hero.loyalty + 3, 0, 100);
+  if (prior && prior.id !== hero.id) prior.loyalty = clamp(prior.loyalty - 3, 0, 100);
+  addHeroHistory(hero, next, { type: 'succession', title: 'Named guildmaster successor', text: `${hero.name} is formally designated to inherit the banner.` });
+  addChronicle(next, { type: 'succession', importance: 3, title: `${hero.name} named heir to the guild`, text: `${next.guild.name} makes its line of institutional succession public.`, heroIds: [hero.id], tags: ['succession', 'institution'] });
+  return { state: finalize(next), error: null };
+}
+
+export function assignMentor(state, mentorId, apprenticeId) {
+  const next = clone(state);
+  const mentor = getHero(next, mentorId);
+  const apprentice = getHero(next, apprenticeId);
+  if (!mentor || !apprentice || mentor.id === apprentice.id) return { state, error: 'Choose two different active heroes.' };
+  if (['dead', 'retired'].includes(mentor.status) || ['dead', 'retired'].includes(apprentice.status)) return { state, error: 'Mentorship requires active heroes.' };
+  if ((mentor.level || 1) < (apprentice.level || 1) + 3 && (mentor.age || 0) < (apprentice.age || 0) + 7) return { state, error: 'The mentor needs a meaningful level or experience advantage.' };
+  if (apprentice.mentorId) {
+    const old = getHero(next, apprentice.mentorId);
+    if (old) old.apprenticeIds = (old.apprenticeIds || []).filter((id) => id !== apprentice.id);
+  }
+  apprentice.mentorId = mentor.id;
+  mentor.apprenticeIds ||= [];
+  if (!mentor.apprenticeIds.includes(apprentice.id)) mentor.apprenticeIds.push(apprentice.id);
+  const aRel = relationshipEntry(apprentice, mentor.id); aRel.value = clamp((aRel.value || 0) + 8, -100, 100); aRel.label = 'Mentor';
+  const mRel = relationshipEntry(mentor, apprentice.id); mRel.value = clamp((mRel.value || 0) + 6, -100, 100); mRel.label = 'Apprentice';
+  addHeroHistory(apprentice, next, { type: 'mentorship', title: `Began studying under ${mentor.name}`, text: `${mentor.name} becomes a formal mentor.` });
+  addChronicle(next, { type: 'relationship', importance: 2, title: `${mentor.name} takes ${apprentice.name} as an apprentice`, text: 'A new line of institutional knowledge begins inside the guild.', heroIds: [mentor.id, apprentice.id], tags: ['mentorship'] });
+  return { state: finalize(next), error: null };
+}
+
+export function foundBranch(state, locationId, commanderHeroId) {
+  const next = clone(state);
+  if (branchCapacity(next) <= 0) return { state, error: 'Branches unlock when the guild reaches National status.' };
+  next.guild.branches ||= [];
+  if (next.guild.branches.filter((branch) => branch.active !== false).length >= branchCapacity(next)) return { state, error: `Your current status supports only ${branchCapacity(next)} branch${branchCapacity(next) === 1 ? '' : 'es'}.` };
+  if (next.guild.branches.some((branch) => branch.locationId === locationId && branch.active !== false)) return { state, error: 'A branch already operates there.' };
+  if (!(next.world?.visitedLocationIds || []).includes(locationId)) return { state, error: 'Visit a settlement before founding a permanent branch there.' };
+  if ((next.world?.currentLocationId || 'dunmere') === locationId) return { state, error: 'That settlement already hosts the guild headquarters.' };
+  const location = LOCATION_BY_ID[locationId];
+  if (!location) return { state, error: 'Unknown branch location.' };
+  const commander = getHero(next, commanderHeroId);
+  const minLevel = next.guild.tierIndex >= 2 ? BRANCH_RULES.Global.minLevel : BRANCH_RULES.National.minLevel;
+  if (!commander || ['dead', 'retired', 'mission', 'tournament'].includes(commander.status)) return { state, error: 'Choose an available active hero to command the branch.' };
+  if ((commander.level || 1) < minLevel) return { state, error: `A branch commander must be at least level ${minLevel}.` };
+  const cost = next.guild.tierIndex >= 2 ? BRANCH_RULES.Global.cost : BRANCH_RULES.National.cost;
+  if (next.guild.crowns < cost) return { state, error: `Founding a branch requires ${cost} crowns.` };
+  next.guild.crowns -= cost;
+  const rng = rngFor(next, `branch-${locationId}-${commander.id}`);
+  const branch = { id: uid('branch', rng), name: branchName(locationId, next.guild.name), locationId, commanderHeroId: commander.id, foundedYear: next.date.year, level: 1, fame: 10, active: true, incomeLastMonth: 0 };
+  next.guild.branches.push(branch);
+  commander.branchId = branch.id;
+  commander.monthlyActivity = 'Guild Duty';
+  commander.loyalty = clamp(commander.loyalty + 5, 0, 100);
+  next.stats.branchesFounded += 1;
+  addHeroHistory(commander, next, { type: 'branch', title: `Founded the ${location.name} branch`, text: `${commander.name} becomes the first branch commander.` });
+  addChronicle(next, { type: 'branch', importance: 4, title: `${next.guild.name} opens a branch in ${location.name}`, text: `${commander.name} takes command of a permanent chapter. Contracts and recruits in ${location.name} can now be handled without relocating headquarters.`, heroIds: [commander.id], tags: ['branch', location.primal, next.guild.tier] });
+  refreshCandidatesForLocationInPlace(next, rng, locationId);
+  commitRng(next, rng);
+  return { state: finalize(next), error: null };
+}
+
+export function assignBranchCommander(state, branchId, heroId) {
+  const next = clone(state);
+  const branch = (next.guild.branches || []).find((item) => item.id === branchId);
+  if (!branch) return { state, error: 'Branch not found.' };
+  const hero = getHero(next, heroId);
+  const minLevel = next.guild.tierIndex >= 2 ? BRANCH_RULES.Global.minLevel : BRANCH_RULES.National.minLevel;
+  if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status)) return { state, error: 'Choose an available active hero.' };
+  if ((hero.level || 1) < minLevel) return { state, error: `A branch commander must be at least level ${minLevel}.` };
+  const previous = getHero(next, branch.commanderHeroId);
+  if (previous) previous.branchId = null;
+  branch.commanderHeroId = hero.id;
+  branch.active = true;
+  hero.branchId = branch.id;
+  hero.monthlyActivity = 'Guild Duty';
+  hero.loyalty = clamp(hero.loyalty + 3, 0, 100);
+  addHeroHistory(hero, next, { type: 'branch', title: `Took command of ${branch.name}`, text: 'Assigned as permanent branch commander.' });
+  addChronicle(next, { type: 'branch', importance: 2, title: `${hero.name} takes command of ${branch.name}`, text: 'The chapter resumes full operations beneath a new commander.', heroIds: [hero.id], tags: ['branch', 'command'] });
+  return { state: finalize(next), error: null };
+}
+
+export function upgradeBranch(state, branchId) {
+  const next = clone(state);
+  const branch = (next.guild.branches || []).find((item) => item.id === branchId && item.active !== false);
+  if (!branch) return { state, error: 'Branch not found.' };
+  if (branch.level >= 3) return { state, error: 'This branch is already fully developed.' };
+  const cost = 900 * branch.level + 500;
+  if (next.guild.crowns < cost) return { state, error: `Branch expansion requires ${cost} crowns.` };
+  next.guild.crowns -= cost;
+  branch.level += 1;
+  branch.fame += 8;
+  addChronicle(next, { type: 'branch', importance: 2, title: `${branch.name} expands`, text: `The branch reaches level ${branch.level}, increasing its local income and scouting reach.`, tags: ['branch', 'expansion'] });
+  return { state: finalize(next), error: null };
+}
+
+export function assignArtifact(state, artifactId, heroId = null) {
+  const next = clone(state);
+  const artifact = (next.artifacts || []).find((item) => item.id === artifactId);
+  if (!artifact) return { state, error: 'Artifact not found in the guild collection.' };
+  if (artifact.ownerId === heroId) return { state, error: null };
+  const previous = artifact.ownerId ? getHero(next, artifact.ownerId) : null;
+  if (previous) {
+    previous.artifactIds = (previous.artifactIds || []).filter((id) => id !== artifact.id);
+    previous.artifactPowerBonus = Math.max(0, (previous.artifactPowerBonus || 0) - (artifact.effect?.bonus || 0));
+  }
+  artifact.ownerHistory ||= [];
+  if (!heroId) {
+    artifact.ownerId = null;
+    artifact.ownerHistory.unshift({ year: next.date.year, month: next.date.month, heroId: null, heroName: 'Guild Vault', action: 'returned' });
+    return { state: finalize(next), error: null };
+  }
+  const hero = getHero(next, heroId);
+  if (!hero || ['dead', 'retired'].includes(hero.status)) return { state, error: 'Choose an active hero to carry the artifact.' };
+  artifact.effect ||= artifactEffectFromPrestige(artifact.prestige || 0, artifact.name);
+  const hasOwnedBefore = artifact.ownerHistory.some((entry) => entry.heroId === hero.id);
+  artifact.ownerId = hero.id;
+  hero.artifactIds ||= [];
+  if (!hero.artifactIds.includes(artifact.id)) hero.artifactIds.push(artifact.id);
+  hero.artifactPowerBonus = (hero.artifactPowerBonus || 0) + artifact.effect.bonus;
+  if (!hasOwnedBefore) {
+    hero.career.artifacts = (hero.career.artifacts || 0) + 1;
+    hero.career.artifactPrestige = (hero.career.artifactPrestige || 0) + Math.round((artifact.prestige || 0) * 0.1);
+  }
+  artifact.ownerHistory.unshift({ year: next.date.year, month: next.date.month, heroId: hero.id, heroName: hero.name, action: 'assigned' });
+  addChronicle(next, { type: 'artifact', importance: (artifact.prestige || 0) >= 70 ? 4 : 2, title: `${artifact.name} passes to ${hero.name}`, text: `${hero.name} is entrusted with the artifact. ${artifact.effect.label}.`, heroIds: [hero.id], tags: ['artifact', artifact.effect.domain] });
+  return { state: finalize(next), error: null };
+}
+
+export function inheritAmbition(state, legacyAmbitionId, heroId) {
+  const next = clone(state);
+  next.legacy ||= { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] };
+  const record = next.legacy.inheritedAmbitions.find((item) => item.id === legacyAmbitionId && item.status === 'unclaimed');
+  if (!record) return { state, error: 'That inherited ambition is no longer available.' };
+  const hero = getHero(next, heroId);
+  if (!hero || ['dead', 'retired'].includes(hero.status)) return { state, error: 'Choose an active hero to inherit the ambition.' };
+  hero.ambitions ||= [];
+  const inherited = { ...record.ambition, id: `${record.ambition.id}-inherited-${hero.id}`, status: 'active', inheritedFromHeroId: record.fromHeroId, inheritedFromHeroName: record.fromHeroName, rewardLegacy: Math.round((record.ambition.rewardLegacy || 18) * 1.5) };
+  hero.ambitions.push(inherited);
+  record.status = 'claimed'; record.claimedByHeroId = hero.id; record.claimedYear = next.date.year;
+  addHeroHistory(hero, next, { type: 'inherited-will', title: `Inherited ${record.fromHeroName}'s unfinished dream`, text: inherited.label });
+  addChronicle(next, { type: 'legacy', importance: 4, title: `${hero.name} takes up ${record.fromHeroName}'s unfinished ambition`, text: `${inherited.label}. Completing it will carry extra historical weight.`, heroIds: [hero.id, record.fromHeroId], tags: ['inherited-will', 'ambition'] });
+  return { state: finalize(next), error: null };
+}
+
 
 export function getCurrentLocation(state) {
   return LOCATION_BY_ID[state.world?.currentLocationId || 'dunmere'] || LOCATION_BY_ID.dunmere;
@@ -566,9 +1076,11 @@ export function getTravelQuote(state, destinationId) {
 export function startTravel(state, destinationId) {
   const next = clone(state);
   if (next.world?.activeTravel) return { state, error: 'The guild is already traveling.' };
+  if (next.activeEncounter) return { state, error: 'Conclude the active combat before leaving.' };
+  if (next.activeMissionGame) return { state, error: 'Conclude the active mission challenge before leaving.' };
   if (next.pendingDecisions.length) return { state, error: 'Resolve the critical decision before leaving.' };
-  if (next.activeMissions.length) return { state, error: 'Wait for every deployed company to return before relocating the guild.' };
-  if ((next.tournaments || []).some((tournament) => tournament.status === 'active')) return { state, error: 'Finish the active tournament before traveling.' };
+  if (next.activeMissions.length && next.guild.tierIndex === 0) return { state, error: 'At Regional scale, wait for every deployed company to return before relocating headquarters.' };
+  if ([...(next.tournaments || []), ...(next.guildTournaments || [])].some((tournament) => tournament.status === 'active')) return { state, error: 'Finish the active tournament before traveling.' };
   const quote = getTravelQuote(next, destinationId);
   if (!quote.destination) return { state, error: 'Unknown destination.' };
   if (!quote.unlocked) return { state, error: `${quote.destination.name} requires ${quote.destination.tier} status.` };
@@ -576,7 +1088,7 @@ export function startTravel(state, destinationId) {
   if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} crowns.` };
   next.guild.crowns -= quote.cost;
   next.world.activeTravel = { fromId: next.world.currentLocationId, toId: destinationId, monthsRemaining: quote.months, totalMonths: quote.months, cost: quote.cost };
-  addChronicle(next, { type: 'travel', importance: 1, title: `The guild departs for ${quote.destination.name}`, text: `${activeHeroCount(next)} active heroes take the road. The journey will require ${quote.months} month${quote.months === 1 ? '' : 's'} and ${quote.cost} crowns.`, tags: ['travel', quote.destination.primal] });
+  addChronicle(next, { type: 'travel', importance: 1, title: `The guild departs for ${quote.destination.name}`, text: `${next.guild.tierIndex === 0 ? activeHeroCount(next) : next.heroes.filter((hero) => hero.status === 'available' && !hero.branchId).length} headquarters heroes take the road. Deployed companies and branches continue operating. The journey will require ${quote.months} month${quote.months === 1 ? '' : 's'} and ${quote.cost} crowns.`, tags: ['travel', quote.destination.primal] });
   next.notifications.push({ id: `travel-${destinationId}-${next.date.year}-${next.date.month}`, tone: 'blue', title: `Journey to ${quote.destination.name}`, text: `${quote.months} month${quote.months === 1 ? '' : 's'} remaining. Advance time to travel.` });
   return { state: finalize(next), error: null };
 }
@@ -633,7 +1145,7 @@ export function roleRating(hero, roleId) {
     secondary * 0.18 +
     hero.form * 0.08 +
     hero.morale * 0.05 +
-    affinity + experience -
+    affinity + experience + (hero.artifactPowerBonus || 0) -
     hero.fatigue * 0.2 -
     healthPenalty,
   );
@@ -794,14 +1306,14 @@ export function saveFormation(state, formationType, assignments) {
   return { state: finalize(next), error: null };
 }
 
-export function launchMission(state, missionId, formationTypeOrAssignments, maybeAssignments) {
-  const next = clone(state);
+export function launchMission(state, missionId, formationTypeOrAssignments, maybeAssignments, mutate = false) {
+  const next = mutate ? state : clone(state);
   const missionIndex = next.missions.findIndex((item) => item.id === missionId);
   if (missionIndex < 0) return { state, error: 'This contract is no longer available.' };
   const mission = next.missions[missionIndex];
-  if (next.world?.activeTravel) return { state, error: 'The guild is currently traveling and cannot launch a new mission.' };
-  if ((mission.locationId || 'dunmere') !== (next.world?.currentLocationId || 'dunmere')) {
-    return { state, error: `This contract is in ${mission.locationName || LOCATION_BY_ID[mission.locationId]?.name || 'another location'}. Travel there before committing a company.` };
+  if (next.world?.activeTravel && !(next.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === (mission.locationId || 'dunmere'))) return { state, error: 'Headquarters is traveling; only established branches can launch new missions until arrival.' };
+  if (!operationalLocationIds(next).has(mission.locationId || 'dunmere')) {
+    return { state, error: `This contract is in ${mission.locationName || LOCATION_BY_ID[mission.locationId]?.name || 'another location'}. Travel there or establish a branch before committing a company.` };
   }
   const legacyCall = Array.isArray(formationTypeOrAssignments);
   const selectedFormation = normalizedFormationType(mission, legacyCall ? mission?.formationType || mission?.approach : formationTypeOrAssignments);
@@ -843,6 +1355,7 @@ export function launchMission(state, missionId, formationTypeOrAssignments, mayb
     hero.fatigue = clamp(hero.fatigue + 10 + mission.risk * 4, 0, 100);
     hero.roleExperience[assignment.role] = (hero.roleExperience[assignment.role] || 0) + 1;
     addHeroHistory(hero, next, { type: 'mission-start', title: `Departed for ${mission.title}`, text: `Assigned as ${assignment.role} in a ${selectedFormation} arrangement.` });
+    fulfillPromisesInPlace(next, hero, 'mission', { formationType: selectedFormation, missionId: mission.id });
   });
   next.activeMissions.push(active);
   next.missions.splice(missionIndex, 1);
@@ -868,6 +1381,106 @@ function missionDecision(activeMission) {
   };
 }
 
+function missionEnemyClass(mission) {
+  if (mission.family === 'Monster Hunt') return 'Ranger';
+  if (mission.family === 'War Operation') return 'Guardian';
+  if (mission.family === 'Rescue') return 'Duelist';
+  if (mission.family === 'Escort') return 'Ranger';
+  if (mission.family === 'Dungeon') return 'Guardian';
+  return 'Guardian';
+}
+
+function missionOpponentName(mission) {
+  if (mission.family === 'Monster Hunt') return `${mission.enemyPrimal || 'Wild'} apex beast`;
+  if (mission.family === 'War Operation') return `${mission.locationName || mission.region} warband`;
+  if (mission.family === 'Rescue') return 'Captors and their champion';
+  if (mission.family === 'Escort') return 'Road ambushers';
+  if (mission.family === 'Dungeon') return 'Dungeon guardians';
+  return 'Hostile force';
+}
+
+function missionCombatObjective(mission) {
+  if (mission.family === 'Rescue' || mission.family === 'Escort') return { type: 'protect', target: 6, label: 'Protect the objective until relief arrives' };
+  if (mission.family === 'Dungeon') return { type: 'break', target: 100, label: 'Break the hostile position' };
+  if (mission.family === 'War Operation') return { type: 'hold', target: 7, label: 'Hold the field until relief arrives' };
+  if (mission.family === 'Monster Hunt') return { type: 'eliminate', target: 100, label: 'Bring down the target' };
+  return { type: 'capture', target: 100, label: 'Secure the objective' };
+}
+
+function createMissionCombatEncounterInPlace(state, mission) {
+  const playerHeroes = mission.assignments
+    .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
+    .filter((item) => item.hero && item.hero.status !== 'dead');
+  if (playerHeroes.length < 2) return false;
+  const encounterSeed = (state.rngState ^ hashString(`mission-combat:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
+  const opponentPower = clamp(Math.round(mission.difficulty * 0.84 + mission.risk * 3), 32, 96);
+  const opponentLevel = clamp(Math.round(1 + (mission.difficulty - 28) / 4.5), 1, 20);
+  const objective = missionCombatObjective(mission);
+  state.activeEncounter = createPartyEncounter({
+    id: `combat-${mission.id}`,
+    seed: encounterSeed,
+    sourceType: 'mission',
+    sourceId: mission.id,
+    title: mission.title,
+    roundName: 'Mission engagement',
+    objective: mission.stakes || 'Break the hostile force and secure the mission objective.',
+    playerHeroes,
+    opponentName: missionOpponentName(mission),
+    opponentPrimal: mission.enemyPrimal || LOCATION_BY_ID[mission.locationId]?.primal || 'Iron',
+    opponentClassId: missionEnemyClass(mission),
+    opponentPower,
+    opponentLevel,
+    risk: mission.risk,
+    prestige: mission.fame || 0,
+    objectiveType: objective.type,
+    objectiveTarget: objective.target,
+    objectiveLabel: objective.label,
+  });
+  mission.combatStarted = true;
+  addChronicle(state, {
+    type: 'combat', importance: mission.risk >= 4 ? 3 : 1,
+    title: `Battle joined: ${mission.title}`,
+    text: `${playerHeroes.map((item) => item.hero.name).join(', ')} enter a turn-based engagement against ${state.activeEncounter.enemy.name}.`,
+    heroIds: playerHeroes.map((item) => item.hero.id), tags: ['combat', mission.family, mission.enemyPrimal],
+  });
+  return true;
+}
+
+function queueDueCombatMissionInPlace(state) {
+  if (state.activeEncounter) return false;
+  const mission = state.activeMissions.find((item) => item.remaining <= 0 && item.formationType === 'Combat' && !item.combatResolved && !state.pendingDecisions.some((decision) => decision.missionId === item.id));
+  if (!mission) return false;
+  return createMissionCombatEncounterInPlace(state, mission);
+}
+
+function createPlayableMissionGameInPlace(state, mission) {
+  const playerHeroes = mission.assignments
+    .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
+    .filter((item) => item.hero && item.hero.status !== 'dead');
+  if (playerHeroes.length < 2) return false;
+  const seed = (state.rngState ^ hashString(`mission-game:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
+  const game = createMissionGame({ mission, playerHeroes, seed });
+  if (!game) return false;
+  state.activeMissionGame = game;
+  mission.missionGameStarted = true;
+  addChronicle(state, {
+    type: 'mission-game', importance: mission.risk >= 4 ? 3 : 1,
+    title: `${mission.formationType} challenge: ${mission.title}`,
+    text: `${playerHeroes.map((item) => item.hero.name).join(', ')} reach the decisive ${mission.formationType.toLowerCase()} phase of the mission.`,
+    heroIds: playerHeroes.map((item) => item.hero.id), tags: [mission.formationType, mission.family, 'playable'],
+  });
+  return true;
+}
+
+function queueDueMissionGameInPlace(state) {
+  if (state.activeEncounter || state.activeMissionGame) return false;
+  const mission = state.activeMissions.find((item) => item.remaining <= 0 && item.formationType !== 'Combat' && !item.missionGameResolved && !state.pendingDecisions.some((decision) => decision.missionId === item.id));
+  if (!mission) return false;
+  if (createPlayableMissionGameInPlace(state, mission)) return true;
+  state.pendingDecisions.push(missionDecision(mission));
+  return true;
+}
+
 function monthlyUpkeep(state) {
   const wages = state.heroes.filter((hero) => !['retired', 'dead', 'candidate'].includes(hero.status)).reduce((sum, hero) => sum + hero.salary, 0);
   const facilityUpkeep = Object.values(state.guild.facilities).reduce((sum, level) => sum + level * 8, 0);
@@ -875,79 +1488,228 @@ function monthlyUpkeep(state) {
   return wages + facilityUpkeep + appointmentUpkeep;
 }
 
-function trainAndRecoverHeroes(state, rng) {
+function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
   const trainingMaster = appointmentHolder(state, 'Training Master');
   const infirmaryLevel = (state.guild.facilities.infirmary || 0) + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
+  const results = [];
+  let scouts = 0;
+  let exhibitionFame = 0;
+
   state.heroes.forEach((hero) => {
     if (['dead', 'retired'].includes(hero.status)) return;
+    if (hero.status === 'mission') {
+      results.push({ heroId: hero.id, name: hero.name, activity: 'Mission', icon: '⌖', summary: 'Deployed on an active mission.' });
+      return;
+    }
+    if (hero.status === 'tournament') {
+      results.push({ heroId: hero.id, name: hero.name, activity: 'Tournament', icon: '♛', summary: 'Committed to an active tournament.' });
+      return;
+    }
+
+    const requested = hero.monthlyActivity || (hero.status === 'injured' ? 'Infirmary' : 'Training');
+    const activity = hero.status === 'injured' && !['Infirmary', 'Rest'].includes(requested) ? 'Infirmary' : requested;
+    const before = { level: hero.level, xp: hero.xp || 0, careerXp: hero.career.xpEarned || 0, health: hero.health, fatigue: hero.fatigue, renown: hero.renown, loyalty: hero.loyalty };
+    let summary = '';
+
     if (hero.status === 'injured') {
-      hero.injuryMonths -= 1 + (infirmaryLevel >= 3 && rng.chance(0.25) ? 1 : 0);
-      hero.health = clamp(hero.health + 5 + infirmaryLevel * 3, 0, 100);
-      hero.fatigue = clamp(hero.fatigue - 12, 0, 100);
+      const treatmentBonus = activity === 'Infirmary' ? 1 + Math.floor(infirmaryLevel / 2) : 0;
+      hero.injuryMonths -= 1 + treatmentBonus + (infirmaryLevel >= 3 && rng.chance(0.25) ? 1 : 0);
+      hero.health = clamp(hero.health + 5 + infirmaryLevel * 3 + (activity === 'Infirmary' ? 5 : 0), 0, 100);
+      hero.fatigue = clamp(hero.fatigue - (activity === 'Rest' ? 18 : 14), 0, 100);
       if (hero.injuryMonths <= 0) {
         hero.status = 'available'; hero.injury = null; hero.health = Math.max(hero.health, 72);
         state.notifications.push({ id: `recover-${hero.id}-${state.date.year}-${state.date.month}`, tone: 'green', title: `${hero.name} returns`, text: 'Recovery is complete and the hero is available again.' });
         addHeroHistory(hero, state, { type: 'recovery', title: 'Returned from injury', text: 'Cleared by the guild infirmary.' });
+        summary = 'Cleared from injury and returned to active duty.';
+      } else {
+        summary = `${activity === 'Infirmary' ? 'Treated in the infirmary' : 'Rested'}; ${Math.max(1, hero.injuryMonths)} month${hero.injuryMonths === 1 ? '' : 's'} of recovery remain.`;
       }
-      return;
+    } else if (activity === 'Rest') {
+      hero.fatigue = clamp(hero.fatigue - (24 + infirmaryLevel * 2), 0, 100);
+      hero.health = clamp(hero.health + 7 + infirmaryLevel, 0, 100);
+      hero.form = clamp(hero.form + 1, 35, 92);
+      summary = 'Recovered health and fatigue.';
+    } else if (activity === 'Infirmary') {
+      hero.fatigue = clamp(hero.fatigue - (18 + infirmaryLevel * 2), 0, 100);
+      hero.health = clamp(hero.health + 11 + infirmaryLevel * 3, 0, 100);
+      const xp = Math.max(1, 2 + infirmaryLevel);
+      applyXpInPlace(hero, xp, state, 'rehabilitation');
+      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
+      summary = `Rehabilitated under medical supervision and gained ${xp} XP.`;
+    } else if (activity === 'Scouting') {
+      scouts += 1 + (['Ranger', 'Rogue'].includes(hero.classId) ? 1 : 0);
+      const xp = 4 + (state.guild.facilities['scout-office'] || 0) * 2;
+      applyXpInPlace(hero, xp, state, 'field scouting');
+      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
+      hero.fatigue = clamp(hero.fatigue + 3, 0, 100);
+      hero.roleExperience.Scout = (hero.roleExperience.Scout || 0) + 1;
+      summary = `Searched the local region and gained ${xp} XP.`;
+    } else if (activity === 'Public Exhibition') {
+      const fame = rng.int(1, 3) + (normalizeClassId(hero.classId) === 'Scholar' ? 1 : 0);
+      state.guild.fame += fame;
+      exhibitionFame += fame;
+      hero.renown += rng.int(1, 2);
+      hero.fatigue = clamp(hero.fatigue + 4, 0, 100);
+      const xp = 3;
+      applyXpInPlace(hero, xp, state, 'public exhibition');
+      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
+      summary = `Earned ${fame} guild fame and increased personal renown.`;
+    } else if (activity === 'Guild Duty') {
+      const appointed = Boolean(hero.appointment);
+      hero.loyalty = clamp(hero.loyalty + (appointed ? 2 : 1), 0, 100);
+      const xp = appointed ? 4 : 2;
+      applyXpInPlace(hero, xp, state, 'guild duty');
+      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
+      if (appointed && rng.chance(0.22)) state.guild.legacy += 1;
+      summary = appointed ? `Worked as ${hero.appointment}; loyalty and institutional experience improved.` : 'Handled routine guild work and strengthened loyalty.';
+    } else {
+      hero.fatigue = clamp(hero.fatigue - (7 + infirmaryLevel), 0, 100);
+      hero.health = clamp(hero.health + 2 + infirmaryLevel, 0, 100);
+      hero.form = clamp(hero.form + rng.int(-2, 2), 35, 92);
+      const focusBonus = { Fundamentals: 1, 'Role Drills': 2, Sparring: 3, Mentorship: 2, Study: 2 }[hero.training] || 1;
+      const fatiguePenalty = hero.training === 'Sparring' ? 5 : hero.training === 'Role Drills' ? 2 : 1;
+      const mentor = hero.mentorId ? getHero(state, hero.mentorId) : null;
+      const mentorBonus = mentor && !['dead', 'retired', 'mission', 'tournament'].includes(mentor.status) ? Math.max(1, Math.min(4, Math.floor(((mentor.level || 1) - (hero.level || 1)) / 3) + 1)) : 0;
+      const xp = Math.max(2, 5 + trainingLevel * 2 + focusBonus + (trainingMaster && trainingMaster.id !== hero.id ? 2 : 0) + mentorBonus - Math.floor(hero.level / 8));
+      applyXpInPlace(hero, xp, state, `${hero.training.toLowerCase()} training`);
+      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
+      hero.fatigue = clamp(hero.fatigue + fatiguePenalty, 0, 100);
+      summary = `${hero.training} training produced ${xp} XP${mentorBonus ? `, including ${mentorBonus} from ${mentor.name}'s mentorship` : ''}.`;
     }
-    if (hero.status === 'mission' || hero.status === 'tournament') return;
-    hero.fatigue = clamp(hero.fatigue - (11 + infirmaryLevel * 2), 0, 100);
-    hero.health = clamp(hero.health + 2 + infirmaryLevel, 0, 100);
-    hero.form = clamp(hero.form + rng.int(-2, 2), 35, 92);
-    const focusBonus = { Fundamentals: 1, 'Role Drills': 2, Sparring: 3, Mentorship: 2, Study: 2, Rehabilitation: 0, 'Public Exhibition': 1 }[hero.training] || 1;
-    const fatiguePenalty = hero.training === 'Sparring' ? 3 : hero.training === 'Role Drills' ? 1 : 0;
-    const xp = Math.max(2, 5 + trainingLevel * 2 + focusBonus + (trainingMaster && trainingMaster.id !== hero.id ? 2 : 0) - Math.floor(hero.level / 8));
-    applyXpInPlace(hero, xp, state, `${hero.training.toLowerCase()} training`);
-    hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
-    hero.fatigue = clamp(hero.fatigue + fatiguePenalty, 0, 100);
-    if (hero.training === 'Public Exhibition' && rng.chance(0.12)) hero.renown += 1;
+
+    results.push({
+      heroId: hero.id,
+      name: hero.name,
+      activity,
+      icon: { Training: '⚔', Rest: '☾', Infirmary: '✚', Scouting: '⌖', 'Public Exhibition': '✦', 'Guild Duty': '♜' }[activity] || '◆',
+      summary,
+      levelBefore: before.level,
+      levelAfter: hero.level,
+      xpDelta: Math.max(0, (hero.career.xpEarned || 0) - before.careerXp),
+      healthDelta: hero.health - before.health,
+      fatigueDelta: hero.fatigue - before.fatigue,
+      renownDelta: hero.renown - before.renown,
+      loyaltyDelta: hero.loyalty - before.loyalty,
+    });
   });
+
+  if (scouts > 0) {
+    const locationId = state.world?.currentLocationId || 'dunmere';
+    const extraCandidateChance = clamp(0.2 + scouts * 0.12 + (state.guild.facilities['scout-office'] || 0) * 0.08, 0, 0.85);
+    if (rng.chance(extraCandidateChance)) {
+      const candidate = makeCandidate(state, rng, scouts >= 3 ? 'veteran' : null, locationId);
+      candidate.expiresYear = state.date.year + 1;
+      state.candidates.push(candidate);
+      state.notifications.push({ id: `scout-recruit-${candidate.id}`, tone: 'blue', title: 'Scouts found new talent', text: `${candidate.name}, a ${candidate.rarity} ${candidate.classId}, has appeared in the local market.` });
+    }
+  }
+
+  return { results, scouts, exhibitionFame };
 }
+
 function simulateRivals(state, rng) {
   state.rivals.forEach((rival) => {
-    const activityChance = 0.52 + rival.risk * 0.28;
+    rival.seasonPoints ||= 0;
+    rival.careerPoints ||= 0;
+    rival.prizeMoney ||= 0;
+    const roster = [rival.star, ...(rival.members || [])].filter(Boolean);
+    const activityChance = 0.48 + rival.risk * 0.3;
     if (rng.chance(activityChance)) {
-      const difficulty = 48 + rival.tierIndex * 10 + rng.int(-8, 12);
-      const effective = rival.power + rival.form * 0.12 + (rival.strategy === 'spend' ? 4 : 0) + rng.int(-9, 9);
+      const participant = rng.chance(0.52) ? rival.star : rng.pick(roster);
+      ensureTournamentCareer(participant);
+      const difficulty = 47 + rival.tierIndex * 11 + rng.int(-8, 13);
+      const effective = rival.power + rival.form * 0.12 + (participant.specializations?.missions || 0) * 0.7 + (rival.strategy === 'spend' ? 4 : 0) + rng.int(-9, 9);
       const winChance = clamp(1 / (1 + Math.exp(-(effective - difficulty) / 10)), 0.12, 0.9);
       const won = rng.chance(winChance);
+      participant.career.missions += 1;
       if (won) {
         const fameGain = rng.int(3, 9) + rival.tierIndex * 2;
         rival.fame += fameGain;
         rival.legacy += Math.max(1, Math.round(fameGain * 0.4));
         rival.crowns += rng.int(90, 300) * (rival.tierIndex + 1);
         rival.wins += 1;
+        rival.seasonPoints += 3 + rival.tierIndex;
+        rival.careerPoints += 2 + rival.tierIndex;
         rival.form = clamp(rival.form + rng.int(1, 4), 35, 90);
-        rival.star.renown += rng.int(1, 3);
-        rival.star.career.wins += 1;
-        rival.star.career.missions += 1;
-        if (rng.chance(0.035 + rival.risk * 0.03)) {
-          rival.titles += 1;
-          rival.star.career.titles += 1;
-          rival.star.legacy += 12;
-          addChronicle(state, { type: 'rival', importance: 3, title: `${rival.name} claims a major victory`, text: `${rival.star.name} leads the ${rival.archetype.toLowerCase()} to another title.`, guildIds: [rival.id], tags: ['rival', 'title'] });
-        }
+        participant.renown += rng.int(1, 3);
+        participant.career.wins += 1;
+        participant.career.earnings += rng.int(30, 100) * (rival.tierIndex + 1);
+        participant.specializations.missions = clamp((participant.specializations?.missions || 0) + (rng.chance(0.2) ? 1 : 0), 0, 15);
       } else {
         rival.losses += 1;
         rival.form = clamp(rival.form - rng.int(1, 5), 25, 90);
         rival.crowns -= rng.int(35, 140);
-        rival.star.career.defeats += 1;
-        rival.star.career.missions += 1;
+        participant.career.defeats += 1;
+        rival.seasonPoints = Math.max(0, rival.seasonPoints - 1);
         if (rng.chance(0.025 * rival.risk)) {
-          addChronicle(state, { type: 'rival', importance: 2, title: `${rival.name} returns bloodied`, text: `${rival.star.name} survives a disastrous contract that weakens the guild’s standing.`, guildIds: [rival.id], tags: ['rival', 'defeat'] });
+          addChronicle(state, { type: 'rival', importance: 2, title: `${rival.name} returns bloodied`, text: `${participant.name} survives a disastrous contract that weakens the guild’s standing.`, guildIds: [rival.id], heroIds: [participant.id], tags: ['rival', 'defeat'] });
         }
       }
     }
     rival.crowns -= 25 + rival.tierIndex * 15;
+    rival.power = Math.round(roster.sort((a, b) => b.power - a.power).slice(0, 5).reduce((sum, hero) => sum + hero.power, 0) / Math.max(1, Math.min(5, roster.length)));
     if (rival.crowns < -500) rival.fallen = true;
     if (rival.fallen && rival.crowns > 300) rival.fallen = false;
-    if (rival.tierIndex < TIERS.length - 1 && rival.fame >= TIERS[rival.tierIndex + 1].fame && rng.chance(0.04)) {
-      rival.tierIndex = Math.min(TIERS.length - 1, rival.tierIndex + 1);
-      addChronicle(state, { type: 'rival', importance: 3, title: `${rival.name} rises to ${TIERS[rival.tierIndex].id} status`, text: `The guild’s reach now extends across ${TIERS[rival.tierIndex].scope.toLowerCase()}.`, guildIds: [rival.id], tags: ['rival', 'promotion'] });
-    }
+    // Rival institutions keep their league identity stable. Their results,
+    // rosters and rankings change, but a familiar Regional opponent does not
+    // disappear from the ladder simply because its fame has grown.
+    rival.tierIndex = rival.leagueTierIndex ?? rival.tierIndex;
   });
+}
+
+function runAiTransferMarketInPlace(state, rng) {
+  const freeAgents = [...(state.freeAgents || [])]
+    .filter((hero) => hero.status === 'free-agent')
+    .sort((a, b) => (b.power + b.level * 1.7 + (b.specializations?.tournament || 0) * 1.4) - (a.power + a.level * 1.7 + (a.specializations?.tournament || 0) * 1.4));
+  let signings = 0;
+  const signedIds = new Set();
+  const released = [];
+
+  for (const candidate of freeAgents) {
+    if (signings >= 5) break;
+    const candidateTier = heroCompetitionTier(state, candidate);
+    const suitors = state.rivals
+      .filter((guild) => (guild.leagueTierIndex ?? guild.tierIndex) >= candidateTier)
+      .map((guild) => {
+        const members = guild.members || [];
+        const weakest = [...members].sort((a, b) => (a.power + (a.specializations?.tournament || 0)) - (b.power + (b.specializations?.tournament || 0)))[0];
+        const fit = guild.specialty === candidate.classId ? 8 : 0;
+        const need = weakest ? (candidate.power - weakest.power) : 12;
+        return { guild, weakest, score: need + fit + rng.int(-4, 6) };
+      })
+      .filter((row) => !row.weakest || row.score >= 5)
+      .sort((a, b) => b.score - a.score);
+    if (!suitors.length) continue;
+    const { guild, weakest } = suitors[0];
+    if (weakest) {
+      guild.members = guild.members.filter((hero) => hero.id !== weakest.id);
+      if ((weakest.age || 24) < 36) {
+        weakest.guildId = null;
+        weakest.status = 'free-agent';
+        released.push(weakest);
+      } else {
+        weakest.status = 'retired';
+        weakest.retiredYear = state.date.year;
+        if ((weakest.career?.titles || 0) > 0 || weakest.legacy >= 90) state.worldHistoricHeroes.push(compactHero(weakest));
+      }
+    }
+    candidate.guildId = guild.id;
+    candidate.status = 'active';
+    candidate.homeLocationId = guild.homeLocationId;
+    guild.members.push(candidate);
+    guild.recent = [...(guild.recent || []).slice(-8), `${candidate.name} joined from the open circuit.`];
+    signedIds.add(candidate.id);
+    signings += 1;
+    if (candidate.rarity === 'Legend' || candidate.renown >= 150) {
+      addChronicle(state, { type: 'transfer', importance: 2, title: `${guild.name} signs ${candidate.name}`, text: `The ${candidate.rarity.toLowerCase()} ${candidate.classId.toLowerCase()} leaves the open circuit for a permanent banner.`, heroIds: [candidate.id], guildIds: [guild.id], tags: ['rival', 'transfer'] });
+    }
+  }
+
+  state.freeAgents = state.freeAgents.filter((hero) => !signedIds.has(hero.id));
+  for (const hero of released) {
+    if (!state.freeAgents.some((candidate) => candidate.id === hero.id)) state.freeAgents.push(hero);
+  }
 }
 
 function ageHeroes(state, rng) {
@@ -968,16 +1730,63 @@ function ageHeroes(state, rng) {
     if (rng.chance(retirementChance)) retireHeroInPlace(state, hero, rng, 'voluntary');
   });
 
+  const archiveNpc = (hero, guildName) => {
+    hero.status = 'retired';
+    hero.retiredYear = state.date.year;
+    hero.career.serviceYears = Math.max(hero.career.serviceYears || 0, state.date.year - (hero.joinedYear || state.date.year));
+    hero.legacy += Math.round((hero.renown || 0) * 0.25 + (hero.career.titles || 0) * 10);
+    if ((hero.career.titles || 0) > 0 || hero.legacy >= 90 || hero.renown >= 80) {
+      hero.hook = `${hero.name} completed a career with ${guildName}, winning ${hero.career.titles || 0} titles.`;
+      state.worldHistoricHeroes.push(compactHero(hero));
+    }
+  };
+
   state.rivals.forEach((rival) => {
-    rival.star.age += 1;
-    if (rival.star.age > 38 && rng.chance(0.12 + (rival.star.age - 38) * 0.05)) {
-      const oldStar = rival.star;
-      oldStar.status = 'retired';
-      rival.legacy += oldStar.legacy;
-      rival.star = generateHero(state, rng, rng.chance(0.35) ? 'elite' : 'veteran', { guildId: rival.id });
-      addChronicle(state, { type: 'rival', importance: 2, title: `${oldStar.name} leaves ${rival.name}`, text: `The ${oldStar.classId.toLowerCase()} retires with ${oldStar.career.titles} titles. ${rival.star.name} becomes the guild’s new public face.`, guildIds: [rival.id], tags: ['rival', 'retirement'] });
+    const roster = [rival.star, ...(rival.members || [])].filter(Boolean);
+    roster.forEach((hero) => {
+      hero.age += 1;
+      hero.career.serviceYears = (hero.career.serviceYears || 0) + 1;
+      if (hero.age >= 36 && rng.chance(clamp(0.025 + (hero.age - 36) * 0.045, 0.02, 0.75))) archiveNpc(hero, rival.name);
+    });
+    let survivors = roster.filter((hero) => hero.status !== 'retired');
+    const desired = rival.tierIndex === 2 ? 7 : rival.tierIndex === 1 ? 6 : 5;
+    while (survivors.length < desired) {
+      const replacement = ensureTournamentCareer(generateHero(state, rng, rival.tierIndex === 2 ? 'elite' : rival.tierIndex === 1 ? 'veteran' : 'normal', { guildId: rival.id, homeLocationId: rival.homeLocationId }));
+      replacement.status = 'active';
+      replacement.specializations.tournament = rng.chance(0.22) ? rng.int(4, 9) : rng.int(0, 3);
+      survivors.push(replacement);
+    }
+    survivors.sort((a, b) => (b.power + b.renown * 0.08 + (b.specializations?.tournament || 0)) - (a.power + a.renown * 0.08 + (a.specializations?.tournament || 0)));
+    const formerStar = rival.star;
+    rival.star = survivors[0];
+    rival.members = survivors.slice(1);
+    if (formerStar?.id !== rival.star.id) {
+      addChronicle(state, { type: 'rival', importance: 2, title: `${rival.star.name} becomes the face of ${rival.name}`, text: `${formerStar?.name || 'The prior captain'} yields the public role after a change of generation.`, heroIds: [rival.star.id], guildIds: [rival.id], tags: ['rival', 'succession'] });
     }
   });
+
+  state.freeAgents = (state.freeAgents || []).filter((hero) => {
+    hero.age += 1;
+    hero.career.serviceYears = (hero.career.serviceYears || 0) + 1;
+    if (hero.age > 39 && rng.chance(clamp(0.1 + (hero.age - 39) * 0.1, 0.1, 0.8))) {
+      archiveNpc(hero, 'the open circuit');
+      return false;
+    }
+    return true;
+  });
+  const annualFreeAgents = 2 + state.guild.tierIndex;
+  for (let index = 0; index < annualFreeAgents; index += 1) {
+    const location = rng.pick(LOCATIONS);
+    const hero = ensureTournamentCareer(generateHero(state, rng, rng.chance(0.12) ? 'elite' : rng.chance(0.34) ? 'veteran' : 'normal', { guildId: null, homeLocationId: location.id }));
+    hero.status = 'free-agent';
+    hero.guildId = null;
+    hero.specializations.tournament = rng.chance(0.3) ? rng.int(4, 10) : rng.int(0, 3);
+    state.freeAgents.push(hero);
+  }
+  runAiTransferMarketInPlace(state, rng);
+  state.freeAgents.sort((a, b) => (b.renown + b.power) - (a.renown + a.power));
+  state.freeAgents = state.freeAgents.slice(0, 40);
+  state.worldHistoricHeroes = (state.worldHistoricHeroes || []).sort((a, b) => b.legacy - a.legacy).slice(0, 250);
 }
 
 function retireHeroInPlace(state, hero, rng, reason) {
@@ -989,6 +1798,8 @@ function retireHeroInPlace(state, hero, rng, reason) {
   hero.legacy += Math.round(hero.renown * 0.7 + hero.career.titles * 15 + hero.career.legendary * 10 + hero.career.missions * 0.8);
   state.stats.retirements += 1;
   state.guild.legacy += Math.max(2, Math.round(hero.legacy * 0.1));
+  transferArtifactsFromHeroInPlace(state, hero);
+  offerInheritedAmbitionsInPlace(state, hero);
   addHeroHistory(hero, state, { type: 'retirement', title: 'Retired from active service', text: `${hero.name} leaves the field after ${hero.career.serviceYears} years beneath the banner.` });
   addChronicle(state, { type: 'retirement', importance: hero.legacy >= 80 ? 4 : 2, title: `${hero.name} retires`, text: `${hero.name} ends a career of ${hero.career.missions} missions, ${hero.career.titles} titles and ${hero.legacy} legacy.`, heroIds: [hero.id], tags: ['retirement'] });
   if (hero.dream && hero.career.legendary === 0 && rng.chance(0.45)) {
@@ -996,9 +1807,185 @@ function retireHeroInPlace(state, hero, rng, reason) {
   }
 }
 
+
+function evaluateHeroAmbitionsInPlace(state) {
+  const all = [...(state.heroes || []), ...(state.historicHeroes || [])];
+  all.forEach((hero) => {
+    hero.ambitions ||= [];
+    if (!hero.ambitions.length && !['dead', 'retired'].includes(hero.status)) hero.ambitions.push(defaultAmbitionForHero(hero, 0));
+    hero.ambitions.forEach((ambition) => {
+      if (ambition.status !== 'active') return;
+      const progress = ambitionMetric(hero, ambition);
+      if (progress < ambition.target) return;
+      ambition.status = 'completed';
+      ambition.completedYear = state.date.year;
+      ambition.completedMonth = state.date.month;
+      hero.legacy += ambition.rewardLegacy || 18;
+      state.guild.legacy += Math.max(4, Math.round((ambition.rewardLegacy || 18) * 0.35));
+      state.stats.ambitionsCompleted = (state.stats.ambitionsCompleted || 0) + 1;
+      if (ambition.inheritedFromHeroId) state.stats.inheritedAmbitionsCompleted = (state.stats.inheritedAmbitionsCompleted || 0) + 1;
+      addHeroHistory(hero, state, { type: 'ambition', title: `Ambition fulfilled: ${ambition.label}`, text: ambition.inheritedFromHeroName ? `The unfinished will of ${ambition.inheritedFromHeroName} is finally completed.` : 'A personal career ambition enters the permanent record.' });
+      addChronicle(state, { type: 'legacy', importance: ambition.inheritedFromHeroId ? 5 : 3, title: `${hero.name} fulfills ${ambition.label.toLowerCase()}`, text: ambition.inheritedFromHeroName ? `${hero.name} completes the ambition inherited from ${ambition.inheritedFromHeroName}.` : `${hero.name} turns a private ambition into institutional history.`, heroIds: [hero.id, ...(ambition.inheritedFromHeroId ? [ambition.inheritedFromHeroId] : [])], tags: ['ambition', ambition.inheritedFromHeroId ? 'inherited-will' : 'career'] });
+    });
+  });
+}
+
+function offerInheritedAmbitionsInPlace(state, hero) {
+  state.legacy ||= { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] };
+  const unfinished = (hero.ambitions || []).filter((ambition) => ambition.status === 'active');
+  unfinished.forEach((ambition) => {
+    if (state.legacy.inheritedAmbitions.some((item) => item.fromHeroId === hero.id && item.ambition?.templateId === ambition.templateId && item.status === 'unclaimed')) return;
+    state.legacy.inheritedAmbitions.unshift({
+      id: `inherited-${hero.id}-${ambition.templateId}-${state.date.year}`,
+      fromHeroId: hero.id,
+      fromHeroName: hero.name,
+      ambition: { ...ambition },
+      status: 'unclaimed',
+      createdYear: state.date.year,
+    });
+  });
+  state.legacy.inheritedAmbitions = state.legacy.inheritedAmbitions.slice(0, 30);
+}
+
+function transferArtifactsFromHeroInPlace(state, hero) {
+  const owned = (state.artifacts || []).filter((artifact) => artifact.ownerId === hero.id);
+  owned.forEach((artifact) => {
+    artifact.effect ||= artifactEffectFromPrestige(artifact.prestige || 0, artifact.name);
+    artifact.ownerHistory ||= [];
+    artifact.ownerHistory.unshift({ year: state.date.year, month: state.date.month, heroId: null, heroName: 'Guild Vault', action: hero.status === 'dead' ? 'recovered after death' : 'returned after retirement' });
+    artifact.ownerId = null;
+  });
+  hero.artifactIds = [];
+  hero.artifactPowerBonus = 0;
+}
+
+function ensureGuildmasterInPlace(state) {
+  state.guild.currentGuildmasterHeroId ||= state.guild.founderHeroId;
+  const current = getHero(state, state.guild.currentGuildmasterHeroId);
+  if (current && !['dead', 'retired'].includes(current.status)) return current;
+  const designated = state.guild.successorHeroId ? getHero(state, state.guild.successorHeroId) : null;
+  const candidates = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
+  const chosen = designated && !['dead', 'retired'].includes(designated.status)
+    ? designated
+    : [...candidates].sort((a, b) => ((b.attributes?.Presence || 0) + b.loyalty * 0.35 + b.legacy * 0.12 + b.level * 2) - ((a.attributes?.Presence || 0) + a.loyalty * 0.35 + a.legacy * 0.12 + a.level * 2))[0];
+  if (!chosen) return null;
+  const priorName = current?.name || state.guild.founder;
+  state.guild.currentGuildmasterHeroId = chosen.id;
+  state.guild.successorHeroId = null;
+  chosen.loyalty = clamp(chosen.loyalty + 6, 0, 100);
+  chosen.career.leadershipYears ||= 0;
+  state.stats.successions = (state.stats.successions || 0) + 1;
+  state.legacy ||= { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] };
+  state.legacy.successionHistory.unshift({ year: state.date.year, month: state.date.month, fromHeroId: current?.id || null, fromName: priorName, toHeroId: chosen.id, toName: chosen.name });
+  addHeroHistory(chosen, state, { type: 'succession', title: 'Inherited the guildmaster mantle', text: `${chosen.name} becomes guildmaster after ${priorName}.` });
+  addChronicle(state, { type: 'succession', importance: 5, title: `${chosen.name} becomes guildmaster`, text: `${priorName}'s era ends and ${chosen.name} inherits the banner of ${state.guild.name}.`, heroIds: [chosen.id, ...(current?.id ? [current.id] : [])], tags: ['succession', 'era'] });
+  return chosen;
+}
+
+function simulateBranchesInPlace(state, rng) {
+  const results = [];
+  for (const branch of state.guild.branches || []) {
+    if (branch.active === false) continue;
+    const commander = getHero(state, branch.commanderHeroId);
+    if (!commander || ['dead', 'retired'].includes(commander.status)) {
+      branch.active = false;
+      addChronicle(state, { type: 'branch', importance: 3, title: `${branch.name} loses its commander`, text: 'The chapter suspends field operations until the institution can reestablish a command structure.', tags: ['branch', 'inactive'] });
+      continue;
+    }
+    const baseIncome = 24 + branch.level * 18 + Math.round((commander.attributes?.Presence || 50) * 0.2);
+    const variance = rng.int(-8, 14);
+    const income = Math.max(8, baseIncome + variance);
+    const upkeep = 14 + branch.level * 9;
+    const net = income - upkeep;
+    state.guild.crowns += net;
+    branch.incomeLastMonth = net;
+    branch.fame = Math.max(0, branch.fame + (rng.chance(0.2 + branch.level * 0.06) ? 1 : 0));
+    if (rng.chance(0.08 * branch.level)) state.guild.fame += 1;
+    if (rng.chance(0.12 + branch.level * 0.08)) refreshCandidatesForLocationInPlace(state, rng, branch.locationId);
+    results.push({ branchId: branch.id, name: branch.name, net, commanderId: commander.id });
+  }
+  return results;
+}
+
+function simulateRivalInstitutionsInPlace(state, rng) {
+  state.legacy ||= { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] };
+  const rivalEventsBefore = (state.stats.rivalPoaches || 0) + (state.stats.rivalSplits || 0);
+  // Poaching creates memorable transfers between established guilds without making rosters chaotic.
+  if (state.rivals.length && rng.chance(0.38)) {
+    const targets = state.rivals.filter((guild) => guild.members?.length >= 4).sort((a, b) => a.fame - b.fame);
+    const source = targets.slice(0, Math.max(1, Math.ceil(targets.length / 2)))[rng.int(0, Math.max(0, Math.ceil(targets.length / 2) - 1))];
+    const suitors = state.rivals.filter((guild) => guild.id !== source?.id && guild.fame > (source?.fame || 0) * 1.25).sort((a, b) => b.crowns - a.crowns);
+    const destination = suitors[0];
+    const poachable = source?.members?.filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => (b.rarity === 'Legend' ? 4 : b.rarity === 'Epic' ? 3 : b.rarity === 'Rare' ? 2 : 1) - (a.rarity === 'Legend' ? 4 : a.rarity === 'Epic' ? 3 : a.rarity === 'Rare' ? 2 : 1))[0];
+    if (source && destination && poachable && rng.chance(0.5)) {
+      source.members = source.members.filter((hero) => hero.id !== poachable.id);
+      poachable.guildId = destination.id;
+      destination.members.push(poachable);
+      destination.crowns -= 300 + poachable.level * 35;
+      source.relationship = clamp((source.relationship || 0) - 10, -100, 100);
+      destination.relationship = clamp((destination.relationship || 0) - 5, -100, 100);
+      state.stats.rivalPoaches = (state.stats.rivalPoaches || 0) + 1;
+      const event = { year: state.date.year, type: 'poach', sourceGuildId: source.id, destinationGuildId: destination.id, heroId: poachable.id };
+      state.legacy.rivalInstitutionEvents.unshift(event);
+      addChronicle(state, { type: 'transfer', importance: poachable.rarity === 'Legend' || poachable.rarity === 'Epic' ? 4 : 2, title: `${poachable.name} defects to ${destination.name}`, text: `${source.name} loses one of its established heroes to a richer rival.`, heroIds: [poachable.id], guildIds: [source.id, destination.id], tags: ['rival', 'poaching'] });
+    }
+  }
+
+  // Strong internal factions occasionally split off. Cap total guilds so century saves remain readable.
+  if (state.rivals.length < 36 && rng.chance(0.12)) {
+    const parent = [...state.rivals].filter((guild) => guild.members?.length >= 6 && guild.fame >= 80).sort((a, b) => b.members.length - a.members.length)[0];
+    if (parent && rng.chance(0.45)) {
+      const defectors = parent.members.splice(-2);
+      if (defectors.length === 2) {
+        const leader = defectors.sort((a, b) => b.power - a.power)[0];
+        const newId = uid('rival-split', rng);
+        const newName = `${leader.name.split(' ')[0]} ${rng.pick(['Company', 'Covenant', 'Banner', 'Brotherhood', 'Circle'])}`;
+        defectors.forEach((hero) => { hero.guildId = newId; });
+        const newGuild = {
+          ...clone(parent), id: newId, name: newName, motto: `No inheritance without a challenge.`, founded: state.date.year,
+          fame: Math.max(25, Math.round(parent.fame * 0.28)), legacy: Math.max(10, Math.round(parent.legacy * 0.16)), crowns: 900 + rng.int(0, 1800),
+          wins: 0, losses: 0, titles: 0, prizeMoney: 0, seasonPoints: 0, careerPoints: 0, hostility: rng.int(15, 55), relationship: 0,
+          star: leader, members: defectors.filter((hero) => hero.id !== leader.id), recent: [`Split from ${parent.name} in ${state.date.year}.`], fallen: false,
+        };
+        while (newGuild.members.length < 4) {
+          const replacement = ensureTournamentCareer(generateHero(state, rng, parent.tierIndex === 2 ? 'veteran' : 'normal', { guildId: newId, homeLocationId: parent.homeLocationId }));
+          replacement.status = 'active'; newGuild.members.push(replacement);
+        }
+        parent.fame = Math.max(10, Math.round(parent.fame * 0.88));
+        state.rivals.push(newGuild);
+        state.stats.rivalSplits = (state.stats.rivalSplits || 0) + 1;
+        state.legacy.rivalInstitutionEvents.unshift({ year: state.date.year, type: 'split', parentGuildId: parent.id, newGuildId: newId, leaderId: leader.id });
+        addChronicle(state, { type: 'rival', importance: 4, title: `${newName} breaks away from ${parent.name}`, text: `${leader.name} leads a faction out beneath a new banner. The regional order changes overnight.`, heroIds: [leader.id], guildIds: [parent.id, newId], tags: ['rival', 'split', 'founding'] });
+      }
+    }
+  }
+  // If the universe has somehow remained perfectly static for several years,
+  // force a single memorable transfer so long campaigns still develop rival history.
+  if (((state.stats.rivalPoaches || 0) + (state.stats.rivalSplits || 0)) === rivalEventsBefore && rivalEventsBefore === 0 && (state.stats.yearsPlayed || 0) >= 4 && state.rivals.length >= 2) {
+    const source = [...state.rivals].filter((guild) => guild.members?.length >= 4).sort((a, b) => a.fame - b.fame)[0];
+    const destination = [...state.rivals].filter((guild) => guild.id !== source?.id).sort((a, b) => (b.fame + b.crowns * 0.01) - (a.fame + a.crowns * 0.01))[0];
+    const poachable = source?.members?.filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => b.power - a.power)[0];
+    if (source && destination && poachable) {
+      source.members = source.members.filter((hero) => hero.id !== poachable.id);
+      poachable.guildId = destination.id;
+      destination.members.push(poachable);
+      state.stats.rivalPoaches = (state.stats.rivalPoaches || 0) + 1;
+      state.legacy.rivalInstitutionEvents.unshift({ year: state.date.year, type: 'poach', sourceGuildId: source.id, destinationGuildId: destination.id, heroId: poachable.id, forced: true });
+      addChronicle(state, { type: 'transfer', importance: 3, title: `${poachable.name} changes banners`, text: `${destination.name} lures a proven rival hero away, ensuring the circuit never stays static for long.`, heroIds: [poachable.id], guildIds: [source.id, destination.id], tags: ['rival', 'poaching'] });
+    }
+  }
+  state.legacy.rivalInstitutionEvents = state.legacy.rivalInstitutionEvents.slice(0, 80);
+}
+
 function annualCycle(state, rng) {
   state.stats.yearsPlayed += 1;
+  state.universeStats.seasonsSimulated = (state.universeStats.seasonsSimulated || 0) + 1;
   ageHeroes(state, rng);
+  const guildmaster = ensureGuildmasterInPlace(state);
+  if (guildmaster) guildmaster.career.leadershipYears = (guildmaster.career.leadershipYears || 0) + 1;
+  simulateRivalInstitutionsInPlace(state, rng);
+  evaluateHeroAmbitionsInPlace(state);
+  state.rivals.forEach((rival) => { rival.seasonPoints = 0; });
   state.candidates = (state.candidates || []).filter((candidate) => candidate.expiresYear >= state.date.year);
   const locations = unlockedLocations(state.guild.tierIndex);
   locations.forEach((location) => {
@@ -1008,8 +1995,9 @@ function annualCycle(state, rng) {
   refreshCandidatesForLocationInPlace(state, rng, state.world?.currentLocationId || 'dunmere');
   createTournamentsInPlace(state, rng);
   archiveOldHeroesInPlace(state);
-  addChronicle(state, { type: 'year', importance: 1, title: `Year ${state.date.year} begins in ${getCurrentLocation(state).name}`, text: `${state.guild.name} enters the year ranked ${state.guild.rank}, with ${state.guild.fame} fame, ${activeHeroCount(state)} active heroes and ${locations.length} reachable locations.`, tags: ['year'] });
+  addChronicle(state, { type: 'year', importance: 1, title: `Year ${state.date.year} begins in ${getCurrentLocation(state).name}`, text: `${state.guild.name} enters the year ranked #${state.guild.rank} in its current ladder, with ${state.guild.fame} fame, ${activeHeroCount(state)} active heroes and ${locations.length} reachable locations.`, tags: ['year'] });
 }
+
 function archiveOldHeroesInPlace(state) {
   if (state.heroes.length <= MAX_HEROES) return;
   const archival = state.heroes
@@ -1044,6 +2032,12 @@ function compactHero(hero) {
     dream: hero.dream,
     flaw: hero.flaw,
     origin: hero.origin,
+    relationships: (hero.relationships || []).slice(0, 12),
+    mentorId: hero.mentorId || null,
+    apprenticeIds: (hero.apprenticeIds || []).slice(0, 8),
+    ambitions: (hero.ambitions || []).slice(0, 6),
+    artifactIds: (hero.artifactIds || []).slice(0, 8),
+    artifactPowerBonus: hero.artifactPowerBonus || 0,
     joinedYear: hero.joinedYear,
     retiredYear: hero.retiredYear,
     deathYear: hero.deathYear,
@@ -1052,13 +2046,24 @@ function compactHero(hero) {
   };
 }
 
-export function advanceMonths(state, count = 1) {
+export function advanceMonths(state, count = 1, mutate = false) {
+  if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
+  if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
   if (state.pendingDecisions.length) return { state, error: 'Resolve the critical decision before advancing time.' };
-  let next = clone(state);
+  if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
+    return { state, error: 'Finish the active tournament before advancing time.' };
+  }
+  let next = mutate ? state : clone(state);
+  let advancedCount = 0;
+  let latestCouncilMonth = null;
   for (let step = 0; step < count; step += 1) {
-    if (next.pendingDecisions.length) break;
+    if (next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame) break;
     const rng = rngFor(next, `advance-${step}`);
     const upkeep = monthlyUpkeep(next);
+    const monthLabel = `${MONTHS[next.date.month]} ${next.date.year}`;
+    const crownsBefore = next.guild.crowns;
+    const fameBefore = next.guild.fame;
+    const legacyBefore = next.guild.legacy;
     next.guild.crowns -= upkeep;
     if (next.guild.crowns < 0) {
       next.stats.bankruptMonths += 1;
@@ -1067,33 +2072,56 @@ export function advanceMonths(state, count = 1) {
       next.stats.bankruptMonths = Math.max(0, next.stats.bankruptMonths - 1);
       if (next.guild.fallen && next.guild.crowns > 300) next.guild.fallen = false;
     }
-    trainAndRecoverHeroes(next, rng);
+    const councilResolution = resolveMonthlyHeroActivities(next, rng);
+    const branchResolution = simulateBranchesInPlace(next, rng);
     simulateRivals(next, rng);
     progressTravelInPlace(next, rng);
 
     next.activeMissions.forEach((mission) => {
       mission.remaining -= 1;
-      if (mission.remaining <= 0 && !next.pendingDecisions.some((decision) => decision.missionId === mission.id)) {
-        next.pendingDecisions.push(missionDecision(mission));
-      }
     });
+    queueDueCombatMissionInPlace(next);
+    queueDueMissionGameInPlace(next);
 
     next.date.month += 1;
     if (next.date.month >= 12) {
       next.date.month = 0;
       next.date.year += 1;
-      annualCycle(next, rng);
     }
+    updatePromiseDeadlinesInPlace(next);
+    simulateScheduledCompetitionsInPlace(next, rng);
+    if (next.date.month === 0) annualCycle(next, rng);
     refreshMissionsInPlace(next, rng);
     if (!next.tournaments?.length || next.tournaments[0].year < next.date.year) createTournamentsInPlace(next, rng);
+    latestCouncilMonth = {
+      id: `council-${next.date.year}-${next.date.month}-${step}`,
+      label: monthLabel,
+      upkeep,
+      crownsBefore,
+      crownsAfter: next.guild.crowns,
+      fameDelta: next.guild.fame - fameBefore,
+      legacyDelta: next.guild.legacy - legacyBefore,
+      scouts: councilResolution.scouts,
+      exhibitionFame: councilResolution.exhibitionFame,
+      activities: councilResolution.results,
+      branches: branchResolution,
+    };
+    advancedCount += 1;
     commitRng(next, rng);
     if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'advanceMonth') completeTutorialTargetInPlace(next, 'advanceMonth');
     evaluateStateInPlace(next);
+  }
+  if (advancedCount > 0 && latestCouncilMonth) {
+    next.council ||= { lastReport: null, unread: false };
+    next.council.lastReport = { ...latestCouncilMonth, advancedMonths: advancedCount };
+    next.council.unread = true;
   }
   return { state: finalize(next), error: null };
 }
 
 export function advanceToNextEvent(state) {
+  if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
+  if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
   if (state.pendingDecisions.length) return { state, error: 'Resolve the critical decision before advancing time.' };
   if (!state.activeMissions.length) return advanceMonths(state, 1);
   const months = Math.max(1, Math.min(...state.activeMissions.map((mission) => mission.remaining)));
@@ -1139,6 +2167,8 @@ function injureHero(state, hero, mission, grade, rng, extraRisk = 0) {
     hero.legacy += 20 + mission.risk * 6;
     state.guild.deaths += 1;
     state.stats.deaths += 1;
+    transferArtifactsFromHeroInPlace(state, hero);
+    offerInheritedAmbitionsInPlace(state, hero);
     addHeroHistory(hero, state, { type: 'death', title: `Died during ${mission.title}`, text: `The guild recovered ${hero.name}’s name, but not their future.` });
     addChronicle(state, { type: 'death', importance: 5, title: `${hero.name} dies beneath the banner`, text: `${hero.name} is killed during ${mission.title}. The guild’s history will divide into before and after this day.`, heroIds: [hero.id], tags: ['death', mission.family] });
     return { injured: true, died: true };
@@ -1146,6 +2176,7 @@ function injureHero(state, hero, mission, grade, rng, extraRisk = 0) {
 
   const injuries = ['Broken ribs', 'Deep blade wound', 'Crushed shoulder', 'Fevered wound', 'Shattered ankle', 'Arcane burn', 'Severe concussion'];
   hero.status = 'injured';
+  hero.monthlyActivity = 'Infirmary';
   hero.injury = rng.pick(injuries);
   hero.injuryMonths = rng.int(1, 2 + mission.risk);
   hero.health = clamp(hero.health - rng.int(14, 30), 20, 95);
@@ -1166,8 +2197,76 @@ function assignmentForLegacyCheck(assignments, roleCheck) {
   return assignments.find((assignment) => assignment.role === roleCheck || equivalents[roleCheck]?.includes(assignment.role));
 }
 
-export function resolveDecision(state, decisionId, optionId) {
-  const next = clone(state);
+
+function relationshipEntry(hero, otherId) {
+  hero.relationships ||= [];
+  let entry = hero.relationships.find((item) => item.heroId === otherId);
+  if (!entry) {
+    entry = { heroId: otherId, value: 0, lastReason: '' };
+    hero.relationships.push(entry);
+  }
+  return entry;
+}
+
+function adjustRelationshipInPlace(hero, otherId, delta, reason) {
+  if (!hero || hero.id === otherId || !delta) return null;
+  const entry = relationshipEntry(hero, otherId);
+  const before = entry.value || 0;
+  entry.value = clamp(before + delta, -100, 100);
+  entry.lastReason = reason;
+  return { heroId: hero.id, otherId, delta: entry.value - before, value: entry.value, reason };
+}
+
+function personalityReactionFor(hero, mission, option, grade) {
+  const text = `${option.label || ''} ${option.note || ''} ${option.tag || ''}`.toLowerCase();
+  let morale = 0;
+  let loyalty = 0;
+  const reasons = [];
+  const likes = (condition, m, l, reason) => { if (condition) { morale += m; loyalty += l; reasons.push(reason); } };
+  if (hero.personality === 'Brave') likes(/heroic|bold|fight|pursu|pressure|ambush/.test(text) || (mission.formationType === 'Combat' && mission.risk >= 3), 2, 1, 'approved of the bold course');
+  if (hero.personality === 'Merciful') {
+    likes(/mercy|protect|rescue|cure|civilian|spare/.test(text), 3, 1, 'approved of the humane choice');
+    likes(/execute|kill|sacrifice|abandon/.test(text), -4, -2, 'was disturbed by the lack of mercy');
+  }
+  if (hero.personality === 'Honorable') {
+    likes(/law|council|temple|evidence|truth|promise|protect/.test(text), 2, 2, 'saw the decision as honorable');
+    likes(/steal|blackmail|lie|smuggl|assassin/.test(text), -3, -2, 'disliked the dishonorable method');
+  }
+  if (hero.personality === 'Obsessive') likes(/truth|artifact|clue|evidence|recover|investigat/.test(text) || mission.artifact, 2, 1, 'felt the decision served the deeper objective');
+  if (hero.personality === 'Cautious') {
+    likes(/protect|fortif|safe|careful|withdraw/.test(text), 2, 1, 'approved of the controlled risk');
+    likes(/bait|reckless|dangerous|both rescues/.test(text), -2, -1, 'thought the guild took needless risk');
+  }
+  if (hero.personality === 'Vain') likes((option.fame || 0) >= 3 || grade === 'Legendary', 2, 1, 'enjoyed the public glory');
+  if (hero.personality === 'Patient') likes(['Diplomacy', 'Expedition'].includes(mission.formationType) && ['Success', 'Great Success', 'Legendary'].includes(grade), 1, 1, 'valued the patient preparation');
+  if (hero.personality === 'Witty') likes(mission.formationType === 'Diplomacy' && ['Success', 'Great Success', 'Legendary'].includes(grade), 2, 1, 'thrived in the social contest');
+  if (hero.personality === 'Restless') likes(/pursu|push|split|chase|follow/.test(text), 2, 0, 'preferred decisive movement');
+  if (hero.flaw === 'Greed') likes((option.reward || 0) >= 60, 2, 0, 'approved of the richer outcome');
+  if (hero.flaw === 'Pride') likes(/concede|submit|apolog|surrender/.test(text), -3, -2, 'resented the concession');
+  if (hero.flaw === 'Recklessness') likes(/bold|bait|dangerous|pursu/.test(text), 1, 0, 'was energized by the danger');
+  if (hero.flaw === 'Cowardice') likes(mission.risk >= 4 && /bold|bait|both|pursu/.test(text), -3, -1, 'was shaken by the risk');
+  return { morale, loyalty, text: reasons.join('; ') };
+}
+
+function applyTeamRelationshipsInPlace(state, heroIds, grade, option) {
+  const changes = [];
+  const heroes = heroIds.map((id) => getHero(state, id)).filter(Boolean);
+  const base = { Legendary: 3, 'Great Success': 2, Success: 1, Partial: 0, Defeat: -1, Catastrophic: -2 }[grade] || 0;
+  for (const hero of heroes) {
+    for (const other of heroes) {
+      if (hero.id === other.id) continue;
+      let delta = base;
+      if (hero.personality === 'Jealous' && other.renown >= hero.renown + 15 && base > 0) delta -= 2;
+      if (hero.personality === 'Merciful' && other.personality === 'Merciful' && /mercy|protect|rescue|cure/.test(`${option.label} ${option.tag}`.toLowerCase())) delta += 1;
+      const changed = adjustRelationshipInPlace(hero, other.id, delta, `${grade} during ${option.label}`);
+      if (changed?.delta) changes.push(changed);
+    }
+  }
+  return changes;
+}
+
+export function resolveDecision(state, decisionId, optionId, mutate = false) {
+  const next = mutate ? state : clone(state);
   const decisionIndex = next.pendingDecisions.findIndex((decision) => decision.id === decisionId);
   if (decisionIndex < 0) return { state, error: 'This decision is no longer pending.' };
   const decision = next.pendingDecisions[decisionIndex];
@@ -1188,13 +2287,15 @@ export function resolveDecision(state, decisionId, optionId) {
     else adjustedChance -= 8;
   }
   adjustedChance = clamp(adjustedChance, 3, 97);
-  const roll = rng.next() * 100;
+  const forcedGrade = decision.forcedGrade || option.forcedGrade || null;
+  const roll = forcedGrade ? Math.max(1, Math.min(99, 100 - adjustedChance)) : rng.next() * 100;
   const margin = adjustedChance - roll;
-  const grade = gradeFromMargin(margin, roll / 100, adjustedChance);
+  const grade = forcedGrade || gradeFromMargin(margin, roll / 100, adjustedChance);
   const success = ['Partial', 'Success', 'Great Success', 'Legendary'].includes(grade);
   const cleanSuccess = ['Success', 'Great Success', 'Legendary'].includes(grade);
   const multiplier = gradeMultiplier(grade);
   let rewardMultiplier = next.guild.policies.treasure === 'Equal Shares' ? 0.9 : next.guild.policies.treasure === "Captain's Discretion" ? 1.04 : next.guild.policies.treasure === 'Public Trust' ? 0.82 : 1;
+  if (decision.missionGameSummary?.rewardModifier) rewardMultiplier *= decision.missionGameSummary.rewardModifier;
   if (next.guild.alignment === 'Baron' && ['Political Mission', 'War Operation'].includes(mission.family)) rewardMultiplier += 0.1;
   const reward = Math.max(0, Math.round((mission.reward + (option.reward || 0)) * multiplier * rewardMultiplier));
   const rawFame = Math.round((mission.fame + (option.fame || 0)) * multiplier);
@@ -1234,7 +2335,7 @@ export function resolveDecision(state, decisionId, optionId) {
   mission.assignments.forEach((assignment) => {
     const hero = getHero(next, assignment.heroId);
     if (!hero || hero.status === 'dead') return;
-    const before = { form: hero.form, morale: hero.morale, renown: hero.renown, legacy: hero.legacy, health: hero.health };
+    const before = { form: hero.form, morale: hero.morale, loyalty: hero.loyalty, renown: hero.renown, legacy: hero.legacy, health: hero.health };
     hero.career.missions += 1;
     hero.career.earnings += Math.round(reward / mission.assignments.length);
     hero.fatigue = clamp(hero.fatigue + 12 + mission.risk * 5, 0, 100);
@@ -1243,6 +2344,9 @@ export function resolveDecision(state, decisionId, optionId) {
     if (next.guild.policies.treasure === 'Equal Shares') { hero.morale = clamp(hero.morale + 3, 15, 100); hero.loyalty = clamp(hero.loyalty + 1, 0, 100); }
     if (next.guild.policies.treasure === "Captain's Discretion") hero.loyalty = clamp(hero.loyalty + (['Commander', 'Negotiation Lead', 'Expedition Lead', 'Mastermind'].includes(assignment.role) ? 2 : -1), 0, 100);
     if (next.guild.policies.treasure === 'Public Trust') hero.legacy += 1;
+    const personalityReaction = personalityReactionFor(hero, mission, option, grade);
+    hero.morale = clamp(hero.morale + personalityReaction.morale, 15, 100);
+    hero.loyalty = clamp(hero.loyalty + personalityReaction.loyalty, 0, 100);
     hero.renown = Math.max(0, hero.renown + Math.round(fame / mission.assignments.length) + (grade === 'Legendary' ? 6 : 0));
     hero.legacy += Math.max(0, Math.round(fame * 0.35) + (grade === 'Legendary' ? 12 : 0));
     if (cleanSuccess) hero.career.wins += 1;
@@ -1273,6 +2377,8 @@ export function resolveDecision(state, decisionId, optionId) {
       injury: hero.injury,
       formChange: hero.form - before.form,
       moraleChange: hero.morale - before.morale,
+      loyaltyChange: hero.loyalty - before.loyalty,
+      personalityReaction: personalityReaction.text || null,
       renownChange: hero.renown - before.renown,
       legacyChange: hero.legacy - before.legacy,
       healthChange: hero.health - before.health,
@@ -1281,6 +2387,8 @@ export function resolveDecision(state, decisionId, optionId) {
       levelAfter: hero.level,
     });
   });
+
+  const relationshipChanges = applyTeamRelationshipsInPlace(next, mission.assignments.map((assignment) => assignment.heroId), grade, option);
 
   next.guild.crowns += reward;
   next.guild.fame = Math.max(0, next.guild.fame + fame);
@@ -1323,8 +2431,10 @@ export function resolveDecision(state, decisionId, optionId) {
   const artifactName = option.artifact || (recoveredMissionArtifact ? mission.artifact : null);
   if (artifactName && cleanSuccess && !next.artifacts.some((artifact) => artifact.name === artifactName)) {
     const owner = mission.assignments.map((assignment) => getHero(next, assignment.heroId)).filter(Boolean).sort((a, b) => b.renown - a.renown)[0];
-    next.artifacts.push({ id: uid('artifact', rng), name: artifactName, discoveredYear: next.date.year, originMission: mission.title, ownerId: owner?.id || null, legend: `${artifactName} entered the guild vault after ${mission.title}.`, prestige: mission.risk * 12 + (grade === 'Legendary' ? 20 : 0) });
-    if (owner) { owner.career.artifacts += 1; owner.legacy += 10; }
+    const prestige = mission.risk * 12 + (grade === 'Legendary' ? 20 : 0);
+    const artifact = { id: uid('artifact', rng), name: artifactName, discoveredYear: next.date.year, originMission: mission.title, ownerId: owner?.id || null, legend: `${artifactName} entered the guild vault after ${mission.title}.`, prestige, effect: artifactEffectFromPrestige(prestige, artifactName), ownerHistory: [{ year: next.date.year, month: next.date.month, heroId: owner?.id || null, heroName: owner?.name || 'Guild Vault', action: 'claimed' }] };
+    next.artifacts.push(artifact);
+    if (owner) { owner.career.artifacts += 1; owner.career.artifactPrestige = (owner.career.artifactPrestige || 0) + prestige; owner.legacy += 10; owner.artifactIds ||= []; owner.artifactIds.push(artifact.id); owner.artifactPowerBonus = (owner.artifactPowerBonus || 0) + artifact.effect.bonus; }
   }
 
   const narrative = resultNarrative(mission, option, grade, reward, fame, injuries, deaths);
@@ -1359,7 +2469,10 @@ export function resolveDecision(state, decisionId, optionId) {
     finalChance: adjustedChance,
     roll: Math.round(roll),
     decision: { prompt: decision.prompt, optionId: option.id, label: option.label, note: option.note },
+    combat: decision.combatSummary || null,
+    missionGame: decision.missionGameSummary || null,
     team: teamSnapshot,
+    relationshipChanges,
     heroEffects,
     injuries,
     deaths,
@@ -1390,6 +2503,10 @@ export function resolveDecision(state, decisionId, optionId) {
   });
   next.activeMissions.splice(missionIndex, 1);
   next.pendingDecisions.splice(decisionIndex, 1);
+  if (!next.pendingDecisions.length) {
+    queueDueCombatMissionInPlace(next);
+    queueDueMissionGameInPlace(next);
+  }
   if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'resolveChoice') completeTutorialTargetInPlace(next, 'resolveChoice');
   commitRng(next, rng);
   evaluateStateInPlace(next);
@@ -1415,11 +2532,13 @@ function resultNarrative(mission, option, grade, reward, fame, injuries, deaths)
 
 export function getReport(state, reference) {
   if (!reference) return null;
-  const kind = typeof reference === 'string' ? (reference.startsWith('tournament-record-') ? 'tournament' : 'mission') : reference.kind;
   const id = typeof reference === 'string' ? reference : reference.id;
-  return kind === 'tournament'
-    ? state.tournamentHistory?.find((record) => record.id === id) || null
-    : state.missionHistory?.find((record) => record.id === id) || null;
+  const explicitKind = typeof reference === 'string' ? null : reference.kind;
+  if (explicitKind === 'tournament') return state.tournamentHistory?.find((record) => record.id === id) || null;
+  if (explicitKind === 'mission') return state.missionHistory?.find((record) => record.id === id) || null;
+  return state.tournamentHistory?.find((record) => record.id === id)
+    || state.missionHistory?.find((record) => record.id === id)
+    || null;
 }
 
 export function acknowledgeReport(state, reference) {
@@ -1443,25 +2562,35 @@ function progressSagaInPlace(state, sagaId, amount) {
   }
 }
 
-export function recruitCandidate(state, candidateId) {
+export function recruitCandidate(state, candidateId, negotiation = 'accept') {
   const next = clone(state);
   const index = next.candidates.findIndex((candidate) => candidate.id === candidateId);
   if (index < 0) return { state, error: 'This candidate has left the region.' };
   const candidate = next.candidates[index];
   const currentLocationId = next.world?.currentLocationId || 'dunmere';
-  if ((candidate.locationId || 'dunmere') !== currentLocationId) {
+  if (!operationalLocationIds(next).has(candidate.locationId || 'dunmere')) {
     const location = LOCATION_BY_ID[candidate.locationId];
-    return { state, error: `${candidate.name} is currently in ${location?.name || 'another settlement'}. Travel there to negotiate a contract.` };
+    return { state, error: `${candidate.name} is currently in ${location?.name || 'another settlement'}. Travel there or open a branch before negotiating a contract.` };
   }
-  if (next.world?.activeTravel) return { state, error: 'Recruitment negotiations cannot be completed while traveling.' };
+  if (next.world?.activeTravel && !(next.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === (candidate.locationId || 'dunmere'))) return { state, error: 'Headquarters is traveling; recruitment can continue only through established branches.' };
   if (activeHeroCount(next) >= heroCapacity(next)) return { state, error: 'The Great Hall has no room for another active hero.' };
-  if (next.guild.crowns < candidate.signingFee) return { state, error: `Recruitment requires ${candidate.signingFee} crowns.` };
+  const acceptingPromise = negotiation !== 'buyout' || !candidate.demand;
+  const totalFee = candidate.signingFee + (!acceptingPromise ? (candidate.buyoutFee || 0) : 0);
+  if (next.guild.crowns < totalFee) return { state, error: `Recruitment requires ${totalFee} crowns.` };
   if (candidate.interest < 35 && next.guild.tierIndex === 0) return { state, error: `${candidate.name} does not believe the guild can fulfill their ambitions yet.` };
-  next.guild.crowns -= candidate.signingFee;
+  next.guild.crowns -= totalFee;
   const hero = clone(candidate);
-  delete hero.signingFee; delete hero.channel; delete hero.expiresYear; delete hero.interest; delete hero.locationId;
+  const acceptedDemand = acceptingPromise && candidate.demand ? { ...candidate.demand, status: 'active', acceptedSerial: campaignMonthSerial(next) } : null;
+  const recruitedLocationId = hero.locationId || currentLocationId;
+  delete hero.signingFee; delete hero.buyoutFee; delete hero.demand; delete hero.channel; delete hero.expiresYear; delete hero.interest; delete hero.locationId;
+  hero.homeLocationId = recruitedLocationId;
   hero.status = 'available'; hero.guildId = 'player'; hero.joinedYear = next.date.year;
-  addHeroHistory(hero, next, { type: 'joined', title: `Joined ${next.guild.name}`, text: `Recruited through ${candidate.channel} in ${getCurrentLocation(next).name} as a level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId}.` });
+  hero.promises = acceptedDemand ? [acceptedDemand] : [];
+  addHeroHistory(hero, next, {
+    type: 'joined',
+    title: `Joined ${next.guild.name}`,
+    text: `Recruited through ${candidate.channel} in ${LOCATION_BY_ID[recruitedLocationId]?.name || getCurrentLocation(next).name} as a level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId}.${acceptedDemand ? ` The guild promised: ${acceptedDemand.label}.` : candidate.demand && !acceptingPromise ? ' The guild paid a premium for an unconditional contract.' : ''}`,
+  });
   const wasFoundingSolo = activeHeroCount(next) === 1 && !next.flags.firstCompanionHired;
   next.heroes.push(hero);
   next.candidates.splice(index, 1);
@@ -1469,8 +2598,13 @@ export function recruitCandidate(state, candidateId) {
     next.flags.firstCompanionHired = true;
     next.candidates.filter((remaining) => (remaining.locationId || 'dunmere') === currentLocationId).forEach((remaining) => {
       remaining.signingFee = Math.max(120, Math.round((remaining.level * 80 + remaining.power * 3) * (RARITIES[remaining.rarity]?.signing || 1)));
+      remaining.buyoutFee = Math.round(remaining.signingFee * (remaining.rarity === 'Legend' ? 0.65 : remaining.rarity === 'Epic' ? 0.5 : 0.35));
       remaining.channel = 'Tavern board';
       remaining.hook = remaining.hook.replace(' Will join the founding pair without a signing fee.', '');
+      if (!remaining.demand) {
+        const rr = rngFor(next, `post-founder-demand-${remaining.id}`);
+        remaining.demand = candidateDemandFor(remaining, next, rr);
+      }
     });
     completeTutorialTargetInPlace(next, 'recruitCompanion');
   }
@@ -1479,8 +2613,8 @@ export function recruitCandidate(state, candidateId) {
     title: `${hero.name} joins the guild`,
     text: wasFoundingSolo
       ? `${hero.name}, a level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId}, becomes ${next.guild.founder}’s first companion.`
-      : `The level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId} signs for ${candidate.signingFee} crowns in ${getCurrentLocation(next).name}.`,
-    heroIds: [hero.id, ...(wasFoundingSolo ? [next.guild.founderHeroId] : [])], tags: ['recruitment', hero.rarity, hero.primal, ...(wasFoundingSolo ? ['founding-companion'] : [])],
+      : `The level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId} signs for ${totalFee} crowns in ${LOCATION_BY_ID[recruitedLocationId]?.name || getCurrentLocation(next).name}.${acceptedDemand ? ` The contract includes a promise: ${acceptedDemand.label}.` : candidate.demand && !acceptingPromise ? ' A buyout premium removes the candidate’s original career demand.' : ''}`,
+    heroIds: [hero.id, ...(wasFoundingSolo ? [next.guild.founderHeroId] : [])], tags: ['recruitment', hero.rarity, hero.primal, ...(acceptedDemand ? ['promise'] : []), ...(wasFoundingSolo ? ['founding-companion'] : [])],
   });
   const rng = rngFor(next, `recruit-${candidateId}`);
   refreshCandidatesForLocationInPlace(next, rng, currentLocationId);
@@ -1492,12 +2626,19 @@ export function releaseHero(state, heroId) {
   const next = clone(state);
   const hero = getHero(next, heroId);
   if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status)) return { state, error: 'This hero cannot be released now.' };
-  if (hero.id === next.guild.founderHeroId) return { state, error: 'The active founder cannot be released from their own guild.' };
+  if (hero.id === next.guild.currentGuildmasterHeroId) return { state, error: 'The current guildmaster cannot be released while leading the institution.' };
   hero.status = 'retired';
+  if (hero.branchId) {
+    const branch = (next.guild.branches || []).find((item) => item.id === hero.branchId);
+    if (branch) branch.active = false;
+    hero.branchId = null;
+  }
   clearHeroAppointmentInPlace(next, hero);
   hero.retiredYear = next.date.year;
   hero.retirementReason = 'released';
   next.stats.retirements += 1;
+  transferArtifactsFromHeroInPlace(next, hero);
+  offerInheritedAmbitionsInPlace(next, hero);
   addHeroHistory(hero, next, { type: 'departure', title: `Released by ${next.guild.name}`, text: 'The hero’s career may continue elsewhere.' });
   addChronicle(next, { type: 'departure', importance: 1, title: `${hero.name} leaves the guild`, text: `The contract ends after ${hero.career.serviceYears} years of service.`, heroIds: [hero.id], tags: ['departure'] });
   return { state: finalize(next), error: null };
@@ -1509,6 +2650,48 @@ export function setHeroTraining(state, heroId, training) {
   if (!hero || ['dead', 'retired'].includes(hero.status)) return next;
   hero.training = training;
   return finalize(next);
+}
+
+export function setHeroMonthlyActivity(state, heroId, activity) {
+  const allowed = ['Training', 'Rest', 'Infirmary', 'Scouting', 'Public Exhibition', 'Guild Duty'];
+  const next = clone(state);
+  const hero = getHero(next, heroId);
+  if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status) || !allowed.includes(activity)) return next;
+  hero.monthlyActivity = activity;
+  return finalize(next);
+}
+
+export function acknowledgeCouncilReport(state) {
+  const next = clone(state);
+  next.council ||= { lastReport: null, unread: false };
+  next.council.unread = false;
+  return finalize(next);
+}
+
+export function renameGuild(state, name) {
+  const clean = String(name || '').trim().slice(0, 38);
+  if (!clean) return { state, error: 'Guild name cannot be empty.' };
+  if (clean === state.guild.name) return { state, error: null };
+  const next = clone(state);
+  const oldName = next.guild.name;
+  next.guild.name = clean;
+  addChronicle(next, { type: 'identity', importance: 2, title: `${oldName} becomes ${clean}`, text: `The guild formally adopts a new name while preserving the same charter and history.`, tags: ['identity', 'rename'] });
+  return { state: finalize(next), error: null };
+}
+
+export function renameFounderHero(state, name) {
+  const clean = String(name || '').trim().slice(0, 36);
+  if (!clean) return { state, error: 'Founder name cannot be empty.' };
+  const next = clone(state);
+  const founder = getHero(next, next.guild.founderHeroId);
+  if (!founder) return { state, error: 'The founder could not be found.' };
+  if (clean === founder.name) return { state, error: null };
+  const oldName = founder.name;
+  founder.name = clean;
+  next.guild.founder = clean;
+  addHeroHistory(founder, next, { type: 'identity', title: `Known as ${clean}`, text: `The guild records were amended from ${oldName} to ${clean}.` });
+  addChronicle(next, { type: 'identity', importance: 1, title: `${oldName} is now recorded as ${clean}`, text: `The founder’s name is updated throughout the living chronicle.`, heroIds: [founder.id], tags: ['identity', 'rename'] });
+  return { state: finalize(next), error: null };
 }
 
 export function appointHero(state, heroId, appointmentId) {
@@ -1586,60 +2769,792 @@ export function inspectGoals(state) {
   return finalize(next);
 }
 
-function tournamentRequirements(divisionId) {
-  return TOURNAMENT_DIVISIONS.find((division) => division.id === divisionId)?.requirements || TOURNAMENT_DIVISIONS[0].requirements;
+function tournamentDefinition(tournament) {
+  const source = tournament.kind === 'guild' ? GUILD_TOURNAMENT_DEFINITIONS : INDIVIDUAL_TOURNAMENT_DEFINITIONS;
+  return source.find((definition) => definition.id === tournament.definitionId) || null;
 }
 
-export function getTournamentAccess(state, tournament) {
-  const requirements = tournamentRequirements(tournament.division);
+function tournamentRequirements(tournament) {
+  const definition = tournamentDefinition(tournament) || tournament;
+  return {
+    fame: definition.minFame || 0,
+    combatWins: definition.minCombatWins || 0,
+    tierIndex: definition.tierIndex || 0,
+    level: definition.minLevel || 0,
+  };
+}
+
+export function getTournamentAccess(state, tournament, heroId = null) {
+  if (!tournament) return { unlocked: false, checks: [], locationMet: false, registrationOpen: false };
+  const requirements = tournamentRequirements(tournament);
+  const hero = heroId ? getHero(state, heroId) : null;
   const checks = [
-    { id: 'fame', label: 'Fame', current: state.guild.fame, target: requirements.fame, met: state.guild.fame >= requirements.fame },
+    { id: 'fame', label: 'Guild fame', current: state.guild.fame, target: requirements.fame, met: state.guild.fame >= requirements.fame },
     { id: 'combatWins', label: 'Combat mission wins', current: state.stats.combatWins || 0, target: requirements.combatWins, met: (state.stats.combatWins || 0) >= requirements.combatWins },
-    { id: 'localTitles', label: 'Local titles', current: state.stats.localTournamentWins || 0, target: requirements.localTitles, met: (state.stats.localTournamentWins || 0) >= requirements.localTitles },
-    { id: 'professionalTitles', label: 'Professional titles', current: state.stats.professionalTournamentWins || 0, target: requirements.professionalTitles, met: (state.stats.professionalTournamentWins || 0) >= requirements.professionalTitles },
     { id: 'tierIndex', label: 'Guild tier', current: state.guild.tierIndex, target: requirements.tierIndex, met: state.guild.tierIndex >= requirements.tierIndex },
+    { id: 'level', label: 'Hero level', current: hero?.level || 0, target: requirements.level, met: !requirements.level || Boolean(hero && hero.level >= requirements.level) },
   ].filter((check) => check.target > 0);
   const locationMet = !tournament.locationId || (state.world?.currentLocationId || 'dunmere') === tournament.locationId;
-  return { unlocked: checks.every((check) => check.met), checks, locationMet };
+  const registrationOpen = tournament.status === 'registration' && state.date.year === tournament.year && state.date.month <= tournament.month;
+  return { unlocked: checks.every((check) => check.met), checks, locationMet, registrationOpen };
 }
 
-function createTournamentOpponents(state, rng, division, count = 7, locationId = 'dunmere') {
-  const base = division === 'Elite' ? 76 : division === 'Professional' ? 64 : 51;
-  const location = LOCATION_BY_ID[locationId] || LOCATION_BY_ID.dunmere;
-  const names = division === 'Elite'
-    ? ['Royal Wardens', 'Storm Banner', 'Sunblade Company', 'Ivory Griffins', 'Crown Champions', 'The Last Oath', 'Ember Lions']
-    : division === 'Professional'
-      ? ['Iron Hart Company', 'Silver Concord', 'Greencloak Lodge', 'Red Pike Company', 'Temple Blades', 'Western Spears', 'Blackwood Wardens']
-      : ['Mill Gate Watch', 'Dunmere Blades', 'Old Road Company', 'Barley Crown', 'Saint Orra Wardens', 'Northbridge Crew', 'Fox & Pike'];
-  return Array.from({ length: count }, (_, index) => ({
-    id: `${division.toLowerCase()}-opponent-${state.date.year}-${index}`,
-    name: names[index] || `Company ${index + 1}`,
-    power: clamp(base + rng.int(-6, 7), 38, 94),
-    primal: rng.chance(0.7) ? location.primal : rng.pick(PRIMAL_IDS),
-    eliminated: false,
-  }));
+function heroTournamentRating(hero, tournament, opponentPrimal = null) {
+  if (!hero) return 0;
+  ensureTournamentCareer(hero);
+  const attrs = hero.attributes || {};
+  const classBonus = { Duelist: 9, Guardian: 5, Ranger: 4, Mage: 3, Rogue: 3, Cleric: 2, Scholar: 2, Artificer: 1 }[normalizeClassId(hero.classId)] || 0;
+  const rarityBonus = { Common: -14, Uncommon: -8, Rare: 0, Epic: 8, Legend: 18 }[hero.rarity] || 0;
+  const technical = (attrs.Finesse || hero.power) * 0.28 + (attrs.Might || hero.power) * 0.16 + (attrs.Presence || hero.power) * 0.13 + (attrs.Mind || hero.power) * 0.08;
+  const primal = opponentPrimal ? primalCombatModifier(hero.primal, opponentPrimal) * 5.5 : 0;
+  const circuitPressure = tournament.circuit === 'Global' ? (hero.level - 12) * 0.35 : tournament.circuit === 'National' ? (hero.level - 7) * 0.25 : 0;
+  const agePressure = Math.max(0, (hero.age || 24) - 34) * 0.72;
+  return (hero.power + (hero.artifactPowerBonus || 0)) * 0.45 + technical + hero.form * 0.09 + classBonus + rarityBonus + (hero.specializations?.tournament || 0) + primal + circuitPressure - hero.fatigue * 0.055 - agePressure;
 }
-function createTournamentsInPlace(state, rng) {
-  const configs = [
-    { division: 'Local', name: 'Dunmere Harvest Melee', locationId: 'dunmere', entryFee: 45, prize: 360, famePrize: 18, rounds: 8 },
-    { division: 'Professional', name: 'Tidecross Companies Circuit', locationId: 'tidecross', entryFee: 180, prize: 980, famePrize: 42, rounds: 8 },
-    { division: 'Elite', name: 'The Caldera Crown', locationId: 'ashen-caldera', entryFee: 480, prize: 2600, famePrize: 95, rounds: 8 },
-  ];
-  state.tournaments = configs.map((config) => {
-    const location = LOCATION_BY_ID[config.locationId];
-    return {
-      id: `tournament-${config.division.toLowerCase()}-${state.date.year}`,
+
+function guildTournamentRating(state, guildId) {
+  if (guildId === 'player') {
+    const active = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => b.power - a.power).slice(0, 5);
+    return active.length ? active.reduce((sum, hero) => sum + hero.power + (hero.artifactPowerBonus || 0) + (hero.specializations?.tournament || 0) * 0.45, 0) / active.length : 0;
+  }
+  const guild = state.rivals.find((item) => item.id === guildId);
+  if (!guild) return 0;
+  const roster = [guild.star, ...(guild.members || [])].filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => b.power - a.power).slice(0, 5);
+  return roster.length ? roster.reduce((sum, hero) => sum + hero.power + (hero.specializations?.tournament || 0) * 0.45, 0) / roster.length + guild.form * 0.08 : guild.power;
+}
+
+function heroCompetitionTier(state, hero) {
+  if (hero.guildId === 'player') return state.guild.tierIndex;
+  const rival = state.rivals.find((guild) => guild.id === hero.guildId);
+  if (rival) return rival.leagueTierIndex ?? rival.tierIndex;
+  const profile = (hero.renown || 0) + (hero.career?.tournamentFame || 0) * 0.25;
+  if ((hero.level || 1) >= 14 || profile >= 480) return 2;
+  if ((hero.level || 1) >= 8 || profile >= 110) return 1;
+  return 0;
+}
+
+function eligibleWorldTournamentHeroes(state, definition) {
+  const minLevel = Math.max(1, (definition.minLevel || 1) - 3);
+  const maxTier = definition.circuit === 'Regional' ? 0 : definition.circuit === 'National' ? 1 : 2;
+  const maxLevel = definition.circuit === 'Regional' ? 13 : definition.circuit === 'National' ? 18 : 20;
+  const maxProfile = definition.circuit === 'Regional' ? 260 : definition.circuit === 'National' ? 1050 : Infinity;
+  const maxCareerTitles = definition.circuit === 'Regional' ? 8 : definition.circuit === 'National' ? 20 : Infinity;
+  return getWorldHeroes(state, false)
+    .filter((hero) => ['active', 'free-agent', 'available'].includes(hero.status))
+    .filter((hero) => hero.level >= minLevel && hero.level <= maxLevel)
+    .filter((hero) => heroCompetitionTier(state, hero) <= maxTier)
+    .filter((hero) => ((hero.renown || 0) + (hero.career?.tournamentFame || 0) * 0.25) <= maxProfile)
+    .filter((hero) => (hero.career?.individualTitles || 0) <= maxCareerTitles)
+    .filter((hero) => definition.circuit !== 'Global' || ['Rare', 'Epic', 'Legend'].includes(hero.rarity));
+}
+
+function weightedTournamentSelection(rows, count, rng, exponent) {
+  const selected = [];
+  const pool = [...rows];
+  while (selected.length < count && pool.length) {
+    const index = Math.min(pool.length - 1, Math.floor(Math.pow(rng.next(), exponent) * pool.length));
+    selected.push(pool.splice(index, 1)[0]);
+  }
+  return selected;
+}
+
+function buildIndividualTournamentField(state, rng, tournament, count) {
+  const definition = tournamentDefinition(tournament) || tournament;
+  const aiRepeatCeiling = (definition.record?.wins || 4) + 2;
+  const all = eligibleWorldTournamentHeroes(state, definition)
+    .filter((hero) => (hero.career?.titleWins?.[definition.id] || 0) < aiRepeatCeiling)
+    .map((hero) => {
+      const priorWins = hero.career?.titleWins?.[definition.id] || 0;
+      const baseRepeatPressure = definition.circuit === 'Regional' ? 5.5 : definition.circuit === 'National' ? 4.2 : 3.2;
+      const repeatPressure = priorWins * baseRepeatPressure + Math.max(0, priorWins - 4) * 8;
+      const independentPenalty = hero.status === 'free-agent' ? 5 : 0;
+      return { hero, score: heroTournamentRating(hero, tournament) + rng.int(-7, 7) - repeatPressure - independentPenalty };
+    });
+
+  const local = all.filter(({ hero }) => hero.homeLocationId === definition.locationId);
+  const preferred = local.length >= Math.ceil(count * 0.6) ? local : all;
+  const guildRows = preferred.filter(({ hero }) => hero.status !== 'free-agent').sort((a, b) => b.score - a.score);
+  const freeRows = preferred.filter(({ hero }) => hero.status === 'free-agent').sort((a, b) => b.score - a.score);
+  const freeCap = definition.circuit === 'Regional' ? Math.min(2, Math.ceil(count * 0.15)) : 1;
+  const exponent = definition.circuit === 'Regional' ? 1.35 : definition.circuit === 'National' ? 1.8 : 2.25;
+  const selectedFree = weightedTournamentSelection(freeRows.slice(0, Math.max(8, freeCap * 4)), Math.min(freeCap, freeRows.length), rng, exponent);
+  const selectedGuild = weightedTournamentSelection(guildRows.slice(0, Math.max(count * 4, 36)), count - selectedFree.length, rng, exponent);
+  const selected = [...selectedGuild, ...selectedFree];
+
+  if (selected.length < count) {
+    const used = new Set(selected.map((row) => row.hero.id));
+    const fallback = all.filter((row) => !used.has(row.hero.id)).sort((a, b) => b.score - a.score);
+    selected.push(...weightedTournamentSelection(fallback, count - selected.length, rng, exponent));
+  }
+  return selected.map((row) => row.hero.id);
+}
+
+function seedEntrants(state, tournament, ids, scoreFn) {
+  return [...new Set(ids)].map((id) => ({ id, score: scoreFn(id) })).sort((a, b) => b.score - a.score).map((row) => row.id);
+}
+
+function expectedFinishForSeed(seed, size, profile, prestige) {
+  let expected = seed <= 2 ? 2 : seed <= 4 ? 4 : seed <= 8 ? 8 : size;
+  // Seed represents current competitive strength; profile represents public pressure.
+  // A world-famous hero entering a modest event is expected to dominate even when form is poor.
+  if (profile >= prestige * 8) expected = 1;
+  else if (profile >= prestige * 4) expected = Math.min(expected, 2);
+  else if (profile >= prestige * 2) expected = Math.min(expected, 4);
+  else if (seed === 1 && profile >= prestige * 1.3) expected = 1;
+  return expected;
+}
+
+function tournamentFameDelta(hero, tournament, expectedFinish, actualFinish, boutWins, showmanshipWins = 0) {
+  const prestige = tournament.prestige || 20;
+  const profile = (hero.renown || 0) + (hero.career?.tournamentFame || 0) * 0.35;
+  const expected = Math.max(1, expectedFinish || tournament.size);
+  const actual = Math.max(1, actualFinish || tournament.size);
+  const improvement = Math.log2(expected / actual);
+  const newcomer = Math.max(0, prestige * 1.35 - profile) / Math.max(18, prestige * 0.75);
+  let delta = boutWins * Math.max(1, prestige / 17) + improvement * Math.max(3, prestige / 5) + newcomer + showmanshipWins * 2;
+  if (actual === 1) delta += prestige / 4;
+  if (actual > expected) {
+    const failure = Math.log2(actual / expected);
+    delta = profile < prestige * 1.15 ? Math.max(0, boutWins * prestige / 24 + newcomer) : -failure * prestige / 6;
+  }
+  if (actual === tournament.size && profile < prestige * 0.9) delta = Math.max(1, Math.round(newcomer));
+  return clamp(Math.round(delta), -30, 120);
+}
+
+function snapshotTournamentHero(state, heroId) {
+  const hero = getHero(state, heroId);
+  return hero ? {
+    heroId: hero.id,
+    name: hero.name,
+    guildId: hero.guildId || null,
+    guildName: getHeroGuildName(state, hero),
+    classId: hero.classId,
+    primal: hero.primal,
+    rarity: hero.rarity,
+    level: hero.level,
+    power: hero.power,
+    tournamentRating: Math.round(heroTournamentRating(hero, { circuit: 'Regional' })),
+  } : null;
+}
+
+function updateIndividualTitleRecordInPlace(state, tournament, winner) {
+  const record = state.titleRecords[tournament.definitionId];
+  if (!record || !winner) return;
+  const key = winner.id;
+  record.winsByHero[key] = (record.winsByHero[key] || 0) + 1;
+  const wins = record.winsByHero[key];
+  record.winners.unshift({ year: tournament.year, heroId: winner.id, heroName: winner.name, guildName: getHeroGuildName(state, winner), player: winner.guildId === 'player' });
+  record.winners = record.winners.slice(0, MAX_TITLE_HISTORY);
+  if (wins > record.recordWins) {
+    record.recordWins = wins;
+    record.recordHolderName = winner.name;
+  }
+}
+
+function updateGuildTitleRecordInPlace(state, tournament, guildId) {
+  const record = state.titleRecords[tournament.definitionId];
+  if (!record) return;
+  const guildName = guildId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === guildId)?.name || 'Unknown guild';
+  record.winsByGuild[guildId] = (record.winsByGuild[guildId] || 0) + 1;
+  const wins = record.winsByGuild[guildId];
+  record.winners.unshift({ year: tournament.year, guildId, guildName, player: guildId === 'player' });
+  record.winners = record.winners.slice(0, MAX_TITLE_HISTORY);
+  if (wins > record.recordWins) {
+    record.recordWins = wins;
+    record.recordHolderName = guildName;
+  }
+}
+
+function placementPrize(tournament, finish) {
+  if (finish === 1) return tournament.purse;
+  if (finish === 2) return Math.round(tournament.purse * 0.28);
+  if (finish === 4) return Math.round(tournament.purse * 0.09);
+  return 0;
+}
+
+function recordIndividualTournamentInPlace(state, tournament, championId, playerResult = null) {
+  const champion = getHero(state, championId);
+  if (!champion) return null;
+  ensureTournamentCareer(champion);
+  champion.career.titles += 1;
+  champion.career.individualTitles += 1;
+  champion.career.titleWins[tournament.definitionId] = (champion.career.titleWins[tournament.definitionId] || 0) + 1;
+  champion.career.prizeMoney += tournament.purse;
+  champion.career.tournamentFame += Math.round(tournament.prestige * 0.55);
+  champion.career.bestTournamentFinish = 1;
+  champion.renown += Math.round(tournament.prestige * 0.35);
+  champion.legacy += Math.round(tournament.prestige * 0.5);
+  applyXpInPlace(champion, 80 + tournament.prestige, champion.guildId === 'player' ? state : null, `${tournament.name} championship`);
+  addHeroHistory(champion, state, { type: 'tournament-title', title: `Won ${tournament.name}`, text: `Claimed the ${tournament.trophy} and ${tournament.purse} crowns in prize money.` });
+  updateIndividualTitleRecordInPlace(state, tournament, champion);
+
+  if (champion.guildId === 'player') {
+    state.guild.crowns += tournament.purse;
+    state.guild.legacy += Math.round(tournament.prestige * 0.28);
+    state.stats.tournamentsWon += 1;
+    state.stats.individualTournamentWins = (state.stats.individualTournamentWins || 0) + 1;
+    if (tournament.circuit === 'Regional') state.stats.localTournamentWins += 1;
+    if (tournament.circuit === 'National') state.stats.professionalTournamentWins += 1;
+    if (tournament.circuit === 'Global') state.stats.eliteTournamentWins += 1;
+    state.stats.signatureFeats += tournament.circuit === 'Global' ? 1 : 0;
+  } else {
+    const rival = state.rivals.find((guild) => guild.id === champion.guildId);
+    if (rival) {
+      rival.titles += 1;
+      rival.prizeMoney = (rival.prizeMoney || 0) + tournament.purse;
+      rival.fame += Math.round(tournament.prestige * 0.35);
+      rival.legacy += Math.round(tournament.prestige * 0.3);
+      rival.careerPoints = (rival.careerPoints || 0) + tournament.prestige;
+    }
+  }
+
+  const record = {
+    id: `individual-record-${tournament.id}`,
+    kind: 'individual-tournament',
+    tournamentId: tournament.id,
+    definitionId: tournament.definitionId,
+    title: tournament.name,
+    circuit: tournament.circuit,
+    location: tournament.location,
+    year: tournament.year,
+    championId,
+    championName: champion.name,
+    championGuild: getHeroGuildName(state, champion),
+    prize: tournament.purse,
+    prestige: tournament.prestige,
+    entrants: tournament.initialEntrants.map((id) => snapshotTournamentHero(state, id)).filter(Boolean),
+    bracket: clone(tournament.bracket),
+    playerResult,
+    narrative: playerResult
+      ? `${playerResult.heroName} finished ${playerResult.finish === 1 ? 'as champion' : `in the top ${playerResult.finish}`}, against an expectation of top ${playerResult.expectedFinish}. ${playerResult.fameDelta >= 0 ? 'The run increased' : 'The result damaged'} public standing by ${Math.abs(playerResult.fameDelta)} fame.`
+      : `${champion.name} of ${getHeroGuildName(state, champion)} won the ${tournament.name}.`,
+  };
+  state.tournamentHistory.unshift(record);
+  state.tournamentHistory = state.tournamentHistory.slice(0, MAX_TOURNAMENT_HISTORY);
+  state.universeStats.individualTournamentsResolved = (state.universeStats.individualTournamentsResolved || 0) + 1;
+  if (playerResult) state.pendingReports.unshift({ kind: 'tournament', id: record.id });
+  addChronicle(state, {
+    type: 'tournament',
+    importance: playerResult?.finish === 1 || tournament.circuit === 'Global' ? 5 : playerResult ? 2 : tournament.prestige >= 100 ? 4 : 2,
+    title: `${champion.name} wins the ${tournament.name}`,
+    text: record.narrative,
+    heroIds: [championId, ...(playerResult && playerResult.heroId !== championId ? [playerResult.heroId] : [])],
+    guildIds: champion.guildId ? [champion.guildId] : [],
+    tags: ['tournament', tournament.circuit, 'individual'],
+    tournamentRecordId: record.id,
+  });
+  return record;
+}
+
+function resolveAiDuel(state, tournament, heroAId, heroBId, rng) {
+  const heroA = getHero(state, heroAId);
+  const heroB = getHero(state, heroBId);
+  if (!heroA) return heroBId;
+  if (!heroB) return heroAId;
+  const volatility = tournament.circuit === 'Regional' ? 12 : tournament.circuit === 'National' ? 10 : 8;
+  const ratingA = heroTournamentRating(heroA, tournament, heroB.primal) + rng.int(-volatility, volatility);
+  const ratingB = heroTournamentRating(heroB, tournament, heroA.primal) + rng.int(-volatility, volatility);
+  const winner = ratingA >= ratingB ? heroA : heroB;
+  const loser = winner.id === heroA.id ? heroB : heroA;
+  ensureTournamentCareer(winner);
+  ensureTournamentCareer(loser);
+  winner.career.tournamentBouts += 1;
+  winner.career.tournamentBoutWins += 1;
+  loser.career.tournamentBouts += 1;
+  winner.form = clamp(winner.form + 1, 30, 96);
+  loser.form = clamp(loser.form - 1, 25, 96);
+  return winner.id;
+}
+
+function resolveIndividualRoundInPlace(state, tournament, rng, playerTactic = 'Measured', forcedPlayerResult = null) {
+  const entrants = [...tournament.activeEntrants];
+  const pairs = [];
+  for (let i = 0; i < entrants.length / 2; i += 1) pairs.push([entrants[i], entrants[entrants.length - 1 - i]]);
+  const roundSize = entrants.length;
+  const roundName = roundSize === 16 ? 'Round of 16' : roundSize === 8 ? 'Quarterfinal' : roundSize === 4 ? 'Semifinal' : 'Final';
+  const winners = [];
+  let playerLost = false;
+  let showmanshipWin = false;
+  for (const [heroAId, heroBId] of pairs) {
+    let winnerId;
+    let chance = null;
+    let tactic = null;
+    const playerId = tournament.playerHeroId;
+    if (playerId && (heroAId === playerId || heroBId === playerId)) {
+      const player = getHero(state, playerId);
+      const opponent = getHero(state, heroAId === playerId ? heroBId : heroAId);
+      const tacticMod = { Measured: 1, Aggressive: 4, Defensive: 0, Showmanship: -3 }[playerTactic] ?? 1;
+      const fatigueCost = forcedPlayerResult ? clamp(5 + (forcedPlayerResult.turns || 4) * 2, 8, 22) : ({ Measured: 11, Aggressive: 17, Defensive: 7, Showmanship: 13 }[playerTactic] ?? 11);
+      const playerRating = heroTournamentRating(player, tournament, opponent?.primal) + tacticMod;
+      const opponentRating = heroTournamentRating(opponent, tournament, player?.primal);
+      chance = clamp(Math.round(100 / (1 + Math.exp(-(playerRating - opponentRating) / 7.5))), 7, 93);
+      winnerId = forcedPlayerResult ? (forcedPlayerResult.playerWon ? playerId : opponent.id) : (rng.next() * 100 < chance ? playerId : opponent.id);
+      tactic = forcedPlayerResult ? 'Turn-based' : playerTactic;
+      ensureTournamentCareer(player);
+      player.career.tournamentBouts += 1;
+      player.fatigue = clamp(player.fatigue + fatigueCost, 0, 100);
+      player.form = clamp(player.form + (winnerId === playerId ? 2 : -4), 25, 96);
+      const xpGain = Math.round((winnerId === playerId ? 62 : 36) + tournament.prestige * 0.45 + (forcedPlayerResult ? Math.min(20, (forcedPlayerResult.turns || 0) * 2) : 0));
+      applyXpInPlace(player, xpGain, state, `${tournament.name} ${roundName.toLowerCase()}`);
+      player.career.xpEarned += xpGain;
+      if (winnerId === playerId) {
+        player.career.tournamentBoutWins += 1;
+        tournament.playerBoutWins += 1;
+        if (!forcedPlayerResult && playerTactic === 'Showmanship') { tournament.showmanshipWins += 1; showmanshipWin = true; }
+      } else playerLost = true;
+      addHeroHistory(player, state, { type: 'tournament', title: `${roundName}: ${winnerId === playerId ? 'victory' : 'defeat'} at ${tournament.name}`, text: forcedPlayerResult ? `${winnerId === playerId ? 'Defeated' : 'Lost to'} ${opponent.name} after ${forcedPlayerResult.turns || '?'} tactical turns.` : `${winnerId === playerId ? 'Defeated' : 'Lost to'} ${opponent.name} using a ${playerTactic.toLowerCase()} approach.` });
+      if (opponent) {
+        ensureTournamentCareer(opponent);
+        opponent.career.tournamentBouts += 1;
+        if (winnerId === opponent.id) opponent.career.tournamentBoutWins += 1;
+      }
+    } else {
+      winnerId = resolveAiDuel(state, tournament, heroAId, heroBId, rng);
+    }
+    winners.push(winnerId);
+    tournament.bracket.push({ round: roundName, heroAId, heroAName: getHero(state, heroAId)?.name, heroBId, heroBName: getHero(state, heroBId)?.name, winnerId, winnerName: getHero(state, winnerId)?.name, playerBout: Boolean(tournament.playerHeroId && [heroAId, heroBId].includes(tournament.playerHeroId)), chance, tactic, showmanshipWin, combat: forcedPlayerResult && tournament.playerHeroId && [heroAId, heroBId].includes(tournament.playerHeroId) ? { turns: forcedPlayerResult.turns, method: forcedPlayerResult.method, playerHpPct: forcedPlayerResult.playerHpPct, enemyHpPct: forcedPlayerResult.enemyHpPct } : null });
+    state.universeStats.boutsResolved = (state.universeStats.boutsResolved || 0) + 1;
+  }
+  tournament.activeEntrants = winners;
+  tournament.currentRoundSize = winners.length;
+  return { roundSize, roundName, playerLost };
+}
+
+function finishPlayerIndividualTournamentInPlace(state, tournament, actualFinish) {
+  const hero = getHero(state, tournament.playerHeroId);
+  if (!hero) return null;
+  ensureTournamentCareer(hero);
+  hero.status = 'available';
+  hero.career.bestTournamentFinish = Math.min(hero.career.bestTournamentFinish || 99, actualFinish);
+  if (actualFinish === 2) hero.career.runnerUps += 1;
+  if (actualFinish === 4) hero.career.semifinals += 1;
+  const fameDelta = tournamentFameDelta(hero, tournament, tournament.expectedFinish, actualFinish, tournament.playerBoutWins || 0, tournament.showmanshipWins || 0);
+  const prize = placementPrize(tournament, actualFinish);
+  hero.renown = Math.max(0, hero.renown + fameDelta);
+  hero.career.tournamentFame += Math.max(0, fameDelta);
+  hero.career.prizeMoney += prize;
+  state.guild.fame = Math.max(0, state.guild.fame + fameDelta);
+  state.guild.crowns += prize;
+  state.stats.tournamentBest = Math.min(state.stats.tournamentBest, actualFinish);
+  if (tournament.initialSeed > tournament.size / 2 && actualFinish <= 4) state.stats.upsets += 1;
+  return {
+    heroId: hero.id,
+    heroName: hero.name,
+    finish: actualFinish,
+    expectedFinish: tournament.expectedFinish,
+    initialSeed: tournament.initialSeed,
+    boutWins: tournament.playerBoutWins || 0,
+    fameDelta,
+    prize,
+    showmanshipWins: tournament.showmanshipWins || 0,
+  };
+}
+
+function completeIndividualTournamentInPlace(state, tournament, rng, playerFinish = null) {
+  // Count the edition once for every entrant. Player registration already increments this field.
+  tournament.initialEntrants.forEach((heroId) => {
+    const hero = getHero(state, heroId);
+    if (!hero) return;
+    ensureTournamentCareer(hero);
+    if (heroId !== tournament.playerHeroId) {
+      hero.career.tournaments += 1;
+      hero.career.individualTournaments += 1;
+    }
+  });
+  while (tournament.activeEntrants.length > 1) resolveIndividualRoundInPlace(state, tournament, rng, 'Measured');
+  const championId = tournament.activeEntrants[0];
+  const finalBout = [...tournament.bracket].reverse().find((bout) => bout.round === 'Final');
+  const runnerUpId = finalBout ? (finalBout.heroAId === championId ? finalBout.heroBId : finalBout.heroAId) : null;
+  const semifinalLosers = tournament.bracket.filter((bout) => bout.round === 'Semifinal').map((bout) => bout.heroAId === bout.winnerId ? bout.heroBId : bout.heroAId).filter(Boolean);
+  [{ id: runnerUpId, finish: 2 }, ...semifinalLosers.map((id) => ({ id, finish: 4 }))].forEach(({ id, finish }) => {
+    const hero = getHero(state, id);
+    if (!hero || id === tournament.playerHeroId) return;
+    ensureTournamentCareer(hero);
+    hero.career.bestTournamentFinish = Math.min(hero.career.bestTournamentFinish || 99, finish);
+    if (finish === 2) hero.career.runnerUps += 1;
+    else hero.career.semifinals += 1;
+    const prize = placementPrize(tournament, finish);
+    hero.career.prizeMoney += prize;
+    hero.career.tournamentFame += Math.round(tournament.prestige * (finish === 2 ? 0.2 : 0.08));
+    hero.renown += Math.round(tournament.prestige * (finish === 2 ? 0.12 : 0.05));
+    const guild = state.rivals.find((item) => item.id === hero.guildId);
+    if (guild) {
+      guild.prizeMoney += prize;
+      guild.seasonPoints += finish === 2 ? 5 : 2;
+      guild.careerPoints += finish === 2 ? 8 : 3;
+    }
+  });
+  tournament.status = 'completed';
+  tournament.championId = championId;
+  tournament.championName = getHero(state, championId)?.name || 'Unknown champion';
+  tournament.finish = playerFinish;
+  const playerResult = tournament.playerHeroId ? finishPlayerIndividualTournamentInPlace(state, tournament, playerFinish || (championId === tournament.playerHeroId ? 1 : tournament.size)) : null;
+  return recordIndividualTournamentInPlace(state, tournament, championId, playerResult);
+}
+
+function createIndividualTournamentsInPlace(state, rng) {
+  state.tournaments = INDIVIDUAL_TOURNAMENT_DEFINITIONS
+    .filter((definition) => !definition.cadence || state.date.year % definition.cadence === 0)
+    .map((definition) => {
+      const location = LOCATION_BY_ID[definition.locationId];
+      const tournament = {
+        id: `${definition.id}-${state.date.year}`,
+        definitionId: definition.id,
+        kind: 'individual',
+        year: state.date.year,
+        name: definition.name,
+        circuit: definition.circuit,
+        division: definition.circuit,
+        locationId: definition.locationId,
+        location: location.name,
+        region: location.region,
+        primal: location.primal,
+        month: definition.month,
+        size: definition.size,
+        entryFee: definition.entryFee,
+        purse: definition.purse,
+        prestige: definition.prestige,
+        trophy: definition.trophy,
+        description: definition.description,
+        status: 'registration',
+        playerHeroId: null,
+        playerBoutWins: 0,
+        showmanshipWins: 0,
+        initialSeed: null,
+        expectedFinish: null,
+        bracket: [],
+        championId: null,
+        championName: null,
+      };
+      tournament.initialEntrants = buildIndividualTournamentField(state, rng, tournament, tournament.size);
+      tournament.activeEntrants = seedEntrants(state, tournament, tournament.initialEntrants, (id) => heroTournamentRating(getHero(state, id), tournament));
+      tournament.currentRoundSize = tournament.activeEntrants.length;
+      return tournament;
+    });
+}
+
+function buildGuildTournamentField(state, tournament) {
+  const eligible = state.rivals.filter((guild) => guild.tierIndex >= tournament.tierIndex).sort((a, b) => guildTournamentRating(state, b.id) - guildTournamentRating(state, a.id));
+  return eligible.slice(0, tournament.size).map((guild) => guild.id);
+}
+
+function createGuildTournamentsInPlace(state) {
+  state.guildTournaments = GUILD_TOURNAMENT_DEFINITIONS.map((definition) => {
+    const location = LOCATION_BY_ID[definition.locationId];
+    const tournament = {
+      id: `${definition.id}-${state.date.year}`,
+      definitionId: definition.id,
+      kind: 'guild',
       year: state.date.year,
-      ...config,
+      name: definition.name,
+      circuit: definition.circuit,
+      division: definition.circuit,
+      locationId: definition.locationId,
       location: location.name,
       region: location.region,
       primal: location.primal,
-      tier: config.division,
-      format: 'Team Combat', status: 'registration', formationType: 'Combat', assignments: [], currentRound: config.rounds, finish: null,
-      opponents: createTournamentOpponents(state, rng, config.division, config.rounds - 1, config.locationId), bracket: [], champion: null, teamPowerAtEntry: null,
+      month: definition.month,
+      size: definition.size,
+      entryFee: definition.entryFee,
+      purse: definition.purse,
+      prestige: definition.prestige,
+      trophy: definition.trophy,
+      description: definition.description,
+      tierIndex: definition.tierIndex,
+      status: 'registration',
+      assignments: [],
+      bracket: [],
+      playerBoutWins: 0,
+      initialSeed: null,
+      expectedFinish: null,
+      championGuildId: null,
     };
+    tournament.initialEntrants = buildGuildTournamentField(state, tournament);
+    tournament.activeEntrants = seedEntrants(state, tournament, tournament.initialEntrants, (id) => guildTournamentRating(state, id));
+    tournament.currentRoundSize = tournament.activeEntrants.length;
+    return tournament;
   });
 }
+
+function createTournamentsInPlace(state, rng) {
+  createIndividualTournamentsInPlace(state, rng);
+  createGuildTournamentsInPlace(state);
+}
+
+export function enterHeroTournament(state, tournamentId, heroId) {
+  const next = clone(state);
+  const tournament = next.tournaments.find((item) => item.id === tournamentId);
+  const hero = getHero(next, heroId);
+  if (!tournament || tournament.status !== 'registration') return { state, error: 'Tournament registration is closed.' };
+  if (!hero || !next.heroes.some((item) => item.id === heroId)) return { state, error: 'Choose one of your active heroes.' };
+  const access = getTournamentAccess(next, tournament, heroId);
+  if (!access.registrationOpen) return { state, error: 'This year’s registration window has closed.' };
+  if (!access.locationMet) return { state, error: `Travel to ${tournament.location} before entering.` };
+  if (!access.unlocked) return { state, error: 'The selected hero or guild does not meet the entry requirements.' };
+  if (hero.status !== 'available') return { state, error: `${hero.name} is not currently available.` };
+  if (next.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} crowns.` };
+  if (next.tournaments.some((item) => item.status === 'active') || next.guildTournaments.some((item) => item.status === 'active')) return { state, error: 'Finish the current tournament before entering another.' };
+  next.guild.crowns -= tournament.entryFee;
+  tournament.playerHeroId = heroId;
+  const entrants = tournament.initialEntrants.filter((id) => id !== heroId);
+  if (entrants.length >= tournament.size) entrants.pop();
+  entrants.push(heroId);
+  tournament.initialEntrants = seedEntrants(next, tournament, entrants, (id) => heroTournamentRating(getHero(next, id), tournament));
+  tournament.activeEntrants = [...tournament.initialEntrants];
+  tournament.currentRoundSize = tournament.activeEntrants.length;
+  tournament.initialSeed = tournament.initialEntrants.indexOf(heroId) + 1;
+  tournament.expectedFinish = expectedFinishForSeed(tournament.initialSeed, tournament.size, hero.renown + hero.career.tournamentFame * 0.35, tournament.prestige);
+  tournament.status = 'active';
+  hero.status = 'tournament';
+  ensureTournamentCareer(hero);
+  hero.career.tournaments += 1;
+  hero.career.individualTournaments += 1;
+  addHeroHistory(hero, next, { type: 'tournament-entry', title: `Entered ${tournament.name}`, text: `Seeded #${tournament.initialSeed}; public expectation: top ${tournament.expectedFinish}.` });
+  fulfillPromisesInPlace(next, hero, 'tournament', { tournamentId: tournament.id });
+  addChronicle(next, { type: 'tournament', importance: 1, title: `${hero.name} enters the ${tournament.name}`, text: `The ${hero.rarity.toLowerCase()} ${hero.classId.toLowerCase()} is seeded #${tournament.initialSeed} in a field of ${tournament.size}. The public expects a top-${tournament.expectedFinish} finish.`, heroIds: [hero.id], tags: ['tournament', 'entry', tournament.circuit] });
+  return { state: finalize(next), error: null };
+}
+
+
+function individualRoundLabel(size) {
+  return size === 16 ? 'Round of 16' : size === 8 ? 'Quarterfinal' : size === 4 ? 'Semifinal' : 'Final';
+}
+
+function guildRoundLabel(size) {
+  return size === 8 ? 'Quarterfinal' : size === 4 ? 'Semifinal' : 'Final';
+}
+
+function mirroredOpponentId(entrants, playerId) {
+  const index = entrants.indexOf(playerId);
+  if (index < 0) return null;
+  const opponentIndex = entrants.length - 1 - index;
+  if (opponentIndex < 0 || opponentIndex >= entrants.length || opponentIndex === index) return null;
+  return entrants[opponentIndex];
+}
+
+function dominantRosterPrimal(heroes, fallback = 'Iron') {
+  const counts = {};
+  heroes.filter(Boolean).forEach((hero) => { counts[hero.primal] = (counts[hero.primal] || 0) + 1; });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || fallback;
+}
+
+export function beginHeroTournamentCombat(state, tournamentId) {
+  const next = clone(state);
+  if (next.activeEncounter) return { state, error: 'Another combat is already waiting for your command.' };
+  const tournament = next.tournaments.find((item) => item.id === tournamentId);
+  if (!tournament || tournament.status !== 'active' || !tournament.playerHeroId) return { state, error: 'No active hero tournament entry.' };
+  const player = getHero(next, tournament.playerHeroId);
+  const opponentId = mirroredOpponentId(tournament.activeEntrants, tournament.playerHeroId);
+  const opponent = getHero(next, opponentId);
+  if (!player || !opponent) return { state, error: 'The next tournament opponent could not be prepared.' };
+  const roundName = individualRoundLabel(tournament.currentRoundSize || tournament.activeEntrants.length);
+  next.activeEncounter = createDuelEncounter({
+    id: `duel-${tournament.id}-${tournament.currentRoundSize}`,
+    seed: (next.rngState ^ hashString(`duel:${tournament.id}:${tournament.currentRoundSize}:${player.id}:${opponent.id}`)) >>> 0,
+    sourceType: 'hero-tournament',
+    sourceId: tournament.id,
+    title: tournament.name,
+    roundName,
+    playerHero: player,
+    opponentHero: opponent,
+    prestige: tournament.prestige,
+  });
+  next.activeEncounter.sourceMeta = { playerHeroId: player.id, opponentHeroId: opponent.id, tournamentId: tournament.id };
+  return { state: finalize(next), error: null, encounter: next.activeEncounter };
+}
+
+export function beginGuildTournamentCombat(state, tournamentId) {
+  const next = clone(state);
+  if (next.activeEncounter) return { state, error: 'Another combat is already waiting for your command.' };
+  const tournament = next.guildTournaments.find((item) => item.id === tournamentId);
+  if (!tournament || tournament.status !== 'active' || !tournament.assignments?.length) return { state, error: 'No active guild championship entry.' };
+  const opponentGuildId = mirroredOpponentId(tournament.activeEntrants, 'player');
+  const opponent = next.rivals.find((guild) => guild.id === opponentGuildId);
+  if (!opponent) return { state, error: 'The opposing guild could not be prepared.' };
+  const playerHeroes = tournament.assignments.map((assignment) => ({ hero: getHero(next, assignment.heroId), role: assignment.role })).filter((item) => item.hero);
+  const rosterTarget = clamp(playerHeroes.length, 2, 5);
+  const opponentRoster = [opponent.star, ...(opponent.members || [])]
+    .filter((hero) => hero && !['dead', 'retired'].includes(hero.status))
+    .sort((a, b) => (b.power || 0) - (a.power || 0))
+    .slice(0, rosterTarget);
+  if (playerHeroes.length < 2 || opponentRoster.length < 2) return { state, error: 'Both companies need at least two active heroes.' };
+  const roundName = guildRoundLabel(tournament.currentRoundSize || tournament.activeEntrants.length);
+  next.activeEncounter = createPartyEncounter({
+    id: `guild-battle-${tournament.id}-${tournament.currentRoundSize}`,
+    seed: (next.rngState ^ hashString(`guild-battle:${tournament.id}:${tournament.currentRoundSize}:${opponent.id}`)) >>> 0,
+    sourceType: 'guild-tournament',
+    sourceId: tournament.id,
+    title: tournament.name,
+    roundName,
+    objective: `Break ${opponent.name}'s formation and carry the banner into the next round.`,
+    playerHeroes,
+    opponentName: opponent.name,
+    opponentPrimal: dominantRosterPrimal(opponentRoster, LOCATION_BY_ID[opponent.homeLocationId]?.primal || tournament.primal || 'Iron'),
+    opponentClassId: opponent.star?.classId || 'Guardian',
+    opponentPower: opponent.power,
+    opponentLevel: Math.round(opponentRoster.reduce((sum, hero) => sum + (hero.level || 1), 0) / opponentRoster.length),
+    opponentRoster,
+    risk: tournament.circuit === 'Global' ? 5 : 4,
+    prestige: tournament.prestige,
+    objectiveType: 'eliminate',
+    objectiveLabel: 'Break the opposing company',
+  });
+  next.activeEncounter.sourceMeta = { opponentGuildId: opponent.id, tournamentId: tournament.id };
+  return { state: finalize(next), error: null, encounter: next.activeEncounter };
+}
+
+
+function concludeMissionGameInPlace(state) {
+  const game = state.activeMissionGame;
+  if (!game || game.status === 'active' || !game.result) return false;
+  const mission = state.activeMissions.find((item) => item.id === game.sourceId);
+  if (!mission) {
+    state.activeMissionGame = null;
+    return false;
+  }
+  mission.missionGameResolved = true;
+  const grade = missionGradeFromMissionGame(game);
+  const decision = missionDecision(mission);
+  decision.forcedGrade = grade;
+  decision.missionGameResolved = true;
+  decision.missionGameSummary = {
+    type: game.type,
+    grade,
+    status: game.status,
+    turns: game.result.turns,
+    performance: game.result.performance,
+    rewardModifier: game.result.rewardModifier,
+    metrics: clone(game.result.metrics),
+    log: clone(game.result.log || []),
+  };
+  const outcomeText = game.status === 'won' ? 'The company controls the decisive phase.' : game.status === 'partial' ? 'The company secures only part of what it came for.' : 'The decisive phase goes against the company.';
+  decision.prompt = `${outcomeText} ${decision.prompt}`;
+  state.pendingDecisions.push(decision);
+  state.activeMissionGame = null;
+  addChronicle(state, {
+    type: game.status === 'won' ? 'mission-game-victory' : game.status === 'partial' ? 'mission-game-mixed' : 'mission-game-defeat',
+    importance: mission.risk >= 4 ? 4 : 2,
+    title: `${grade}: ${mission.title}`,
+    text: `${game.type} play determined the mission after ${game.result.turns} turns. The company now faces the aftermath decision.`,
+    heroIds: mission.assignments.map((assignment) => assignment.heroId), tags: [game.type, mission.family, grade],
+  });
+  return true;
+}
+
+export function performActiveMissionGameAction(state, actionId, leadHeroId = null) {
+  if (!state.activeMissionGame) return { state, error: 'There is no active mission challenge.' };
+  if (state.activeMissionGame.status !== 'active') return { state, error: 'This mission challenge is already resolved.' };
+  const next = clone(state);
+  const result = performMissionGameAction(next.activeMissionGame, actionId, leadHeroId);
+  if (result.error) return { state, error: result.error };
+  next.activeMissionGame = result.game;
+  concludeMissionGameInPlace(next);
+  evaluateStateInPlace(next);
+  return { state: finalize(next), error: null };
+}
+
+export function autoResolveActiveMissionGame(state, mutate = false) {
+  if (!state.activeMissionGame) return { state, error: 'There is no active mission challenge.' };
+  const next = mutate ? state : clone(state);
+  next.activeMissionGame = autoResolveMissionGame(next.activeMissionGame);
+  concludeMissionGameInPlace(next);
+  evaluateStateInPlace(next);
+  return { state: finalize(next), error: null };
+}
+
+export function performActiveCombatAction(state, actionId, leadHeroId = null) {
+  if (!state.activeEncounter) return { state, error: 'There is no active combat.' };
+  if (state.activeEncounter.status !== 'active') return { state, error: 'The combat is over. Conclude the result before issuing another order.' };
+  const next = clone(state);
+  const normalizedAction = typeof actionId === 'string' ? actionId.toLowerCase() : actionId;
+  next.activeEncounter = performCombatAction(next.activeEncounter, normalizedAction, leadHeroId);
+  return { state: finalize(next), error: null, encounter: next.activeEncounter };
+}
+
+export function autoResolveActiveCombat(state, mutate = false) {
+  if (!state.activeEncounter) return { state, error: 'There is no active combat.' };
+  const next = mutate ? state : clone(state);
+  next.activeEncounter = autoResolveEncounter(next.activeEncounter);
+  return { state: finalize(next), error: null, encounter: next.activeEncounter };
+}
+
+export function concludeActiveCombat(state, mutate = false) {
+  if (!state.activeEncounter) return { state, error: 'There is no combat to conclude.' };
+  if (state.activeEncounter.status === 'active' || !state.activeEncounter.result) return { state, error: 'The combat has not finished yet.' };
+  const next = mutate ? state : clone(state);
+  const encounter = next.activeEncounter;
+  const combatResult = clone(encounter.result);
+  let report = null;
+  let round = null;
+
+  if (encounter.sourceType === 'mission') {
+    const mission = next.activeMissions.find((item) => item.id === encounter.sourceId);
+    if (!mission) return { state, error: 'The mission behind this combat can no longer be found.' };
+    mission.combatResolved = true;
+    const grade = missionGradeFromCombat(encounter);
+    const decision = missionDecision(mission);
+    decision.forcedGrade = grade;
+    decision.combatResolved = true;
+    decision.combatSummary = {
+      grade,
+      playerWon: combatResult.playerWon,
+      turns: combatResult.turns,
+      method: combatResult.method,
+      playerHpPct: combatResult.playerHpPct,
+      enemyHpPct: combatResult.enemyHpPct,
+      playerDamage: combatResult.playerDamage,
+      enemyDamage: combatResult.enemyDamage,
+      log: encounter.log.slice(-12),
+    };
+    decision.prompt = `${combatResult.playerWon ? 'The hostile force breaks.' : 'The company is forced back.'} ${decision.prompt}`;
+    next.pendingDecisions.push(decision);
+    next.activeEncounter = null;
+    if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'completeCombat') completeTutorialTargetInPlace(next, 'completeCombat');
+    addChronicle(next, {
+      type: combatResult.playerWon ? 'combat-victory' : 'combat-defeat',
+      importance: mission.risk >= 4 ? 4 : 2,
+      title: `${combatResult.playerWon ? 'Victory' : 'Defeat'} in ${mission.title}`,
+      text: `${mission.title} was decided after ${combatResult.turns} tactical turns. The expedition now faces its aftermath decision.`,
+      heroIds: mission.assignments.map((assignment) => assignment.heroId),
+      tags: ['combat', mission.family, grade],
+    });
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'mission-combat', grade, combat: combatResult } };
+  }
+
+  if (encounter.sourceType === 'hero-tournament') {
+    const tournament = next.tournaments.find((item) => item.id === encounter.sourceId);
+    if (!tournament || tournament.status !== 'active') return { state, error: 'The tournament round can no longer be found.' };
+    const rng = rngFor(next, `hero-tournament-combat:${tournament.id}:${tournament.currentRoundSize}`);
+    round = resolveIndividualRoundInPlace(next, tournament, rng, 'Measured', combatResult);
+    if (round.playerLost) report = completeIndividualTournamentInPlace(next, tournament, rng, round.roundSize);
+    else if (tournament.activeEntrants.length === 1) report = completeIndividualTournamentInPlace(next, tournament, rng, 1);
+    commitRng(next, rng);
+  } else if (encounter.sourceType === 'guild-tournament') {
+    const tournament = next.guildTournaments.find((item) => item.id === encounter.sourceId);
+    if (!tournament || tournament.status !== 'active') return { state, error: 'The guild championship round can no longer be found.' };
+    const rng = rngFor(next, `guild-tournament-combat:${tournament.id}:${tournament.currentRoundSize}`);
+    round = resolveGuildRoundInPlace(next, tournament, rng, 'Measured', combatResult);
+    if (round.playerLost) report = completeGuildTournamentInPlace(next, tournament, rng, round.roundSize);
+    else if (tournament.activeEntrants.length === 1) report = completeGuildTournamentInPlace(next, tournament, rng, 1);
+    commitRng(next, rng);
+  } else {
+    return { state, error: 'Unknown combat source.' };
+  }
+
+  next.activeEncounter = null;
+  evaluateStateInPlace(next);
+  return { state: finalize(next), error: null, result: round, report };
+}
+
+export function fightHeroTournamentRound(state, tournamentId, tactic = 'Measured') {
+  const begun = beginHeroTournamentCombat(state, tournamentId);
+  if (begun.error) return begun;
+  const resolved = autoResolveActiveCombat(begun.state);
+  if (resolved.error) return resolved;
+  return concludeActiveCombat(resolved.state);
+}
+
 function tournamentTeamEstimate(state, assignments) {
   const formation = FORMATION_TYPES.Combat;
   const filled = assignments.map((assignment) => ({ ...assignment, slot: formationSlotFor('Combat', assignment) })).filter((assignment) => assignment.slot);
@@ -1653,173 +3568,271 @@ function tournamentTeamEstimate(state, assignments) {
   return { power, breakdown, requiredMissing, valid: breakdown.length >= 2 && breakdown.length <= 5 && ids.size === breakdown.length && requiredMissing.length === 0 };
 }
 
-export function enterTournament(state, tournamentId, formationType, assignments) {
+export function enterGuildTournament(state, tournamentId, formationType, assignments) {
   const next = clone(state);
-  const tournament = next.tournaments?.find((item) => item.id === tournamentId);
-  if (!tournament || tournament.status !== 'registration') return { state, error: 'Tournament registration is closed.' };
-  if (next.tournaments.some((item) => item.status === 'active')) return { state, error: 'The guild is already competing in another tournament.' };
+  const tournament = next.guildTournaments.find((item) => item.id === tournamentId);
+  if (!tournament || tournament.status !== 'registration') return { state, error: 'Guild championship registration is closed.' };
   const access = getTournamentAccess(next, tournament);
-  if (next.world?.activeTravel) return { state, error: 'The guild cannot register while traveling.' };
-  if (!access.locationMet) return { state, error: `The ${tournament.name} is held in ${tournament.location}. Travel there before registering.` };
-  if (!access.unlocked) return { state, error: `The ${tournament.division} circuit is still locked. Complete the listed qualification requirements first.` };
-  if (formationType !== 'Combat') return { state, error: 'Team tournaments require a Combat Company arrangement.' };
+  if (!access.registrationOpen) return { state, error: 'This year’s registration window has closed.' };
+  if (!access.locationMet) return { state, error: `Travel to ${tournament.location} before registering.` };
+  if (!access.unlocked) return { state, error: 'The guild has not earned this championship license.' };
+  if (formationType !== 'Combat') return { state, error: 'Guild championships require a Combat Company.' };
   const estimate = tournamentTeamEstimate(next, assignments);
-  if (!estimate.valid) return { state, error: `A tournament company needs a Commander, a Fighter and no duplicate heroes.` };
+  if (!estimate.valid) return { state, error: 'A guild championship company needs a Commander, a Fighter and no duplicate heroes.' };
   const unavailable = assignments.map((assignment) => getHero(next, assignment.heroId)).filter((hero) => !hero || hero.status !== 'available');
-  if (unavailable.length) return { state, error: 'Every tournament team member must be available.' };
+  if (unavailable.length) return { state, error: 'Every company member must be available.' };
   if (next.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} crowns.` };
-
+  if (next.tournaments.some((item) => item.status === 'active') || next.guildTournaments.some((item) => item.status === 'active')) return { state, error: 'Finish the current tournament before entering another.' };
   next.guild.crowns -= tournament.entryFee;
   tournament.assignments = assignments.map((assignment) => {
     const slot = formationSlotFor('Combat', assignment);
     return { heroId: assignment.heroId, slotId: slot.id, role: slot.role };
   });
+  const entrants = tournament.initialEntrants.filter((id) => id !== 'player');
+  if (entrants.length >= tournament.size) entrants.pop();
+  entrants.push('player');
+  tournament.initialEntrants = seedEntrants(next, tournament, entrants, (id) => id === 'player' ? estimate.power : guildTournamentRating(next, id));
+  tournament.activeEntrants = [...tournament.initialEntrants];
+  tournament.initialSeed = tournament.initialEntrants.indexOf('player') + 1;
+  tournament.expectedFinish = expectedFinishForSeed(tournament.initialSeed, tournament.size, next.guild.fame, tournament.prestige);
   tournament.status = 'active';
-  tournament.currentRound = 8;
   tournament.teamPowerAtEntry = estimate.power;
   tournament.assignments.forEach((assignment) => {
     const hero = getHero(next, assignment.heroId);
     hero.status = 'tournament';
+    ensureTournamentCareer(hero);
     hero.career.tournaments += 1;
     hero.roleExperience[assignment.role] = (hero.roleExperience[assignment.role] || 0) + 1;
+    fulfillPromisesInPlace(next, hero, 'tournament', { tournamentId: tournament.id, guildTournament: true });
   });
-  addChronicle(next, {
-    type: 'tournament', importance: 1, title: `${next.guild.name} enters the ${tournament.name}`,
-    text: `${tournament.assignments.map((assignment) => `${getHero(next, assignment.heroId)?.name} (${assignment.role})`).join(', ')} enter the ${tournament.division.toLowerCase()} circuit.`,
-    heroIds: tournament.assignments.map((assignment) => assignment.heroId), tags: ['tournament', tournament.division, 'Combat'],
-  });
+  addChronicle(next, { type: 'tournament', importance: 2, title: `${next.guild.name} enters ${tournament.name}`, text: `The Combat Company is seeded #${tournament.initialSeed}; the expected finish is top ${tournament.expectedFinish}.`, heroIds: tournament.assignments.map((assignment) => assignment.heroId), tags: ['tournament', 'guild', tournament.circuit] });
   return { state: finalize(next), error: null };
 }
 
-function completeTournamentInPlace(state, tournament, wonTitle, rng) {
-  const team = tournament.assignments.map((assignment) => {
-    const hero = getHero(state, assignment.heroId);
-    if (!hero) return null;
-    hero.status = 'available';
-    if (wonTitle) {
-      hero.career.titles += 1;
-      hero.legacy += tournament.division === 'Elite' ? 32 : tournament.division === 'Professional' ? 22 : 14;
-      hero.renown += tournament.division === 'Elite' ? 18 : tournament.division === 'Professional' ? 11 : 7;
+function resolveGuildRoundInPlace(state, tournament, rng, tactic = 'Measured', forcedPlayerResult = null) {
+  const entrants = [...tournament.activeEntrants];
+  const pairs = [];
+  for (let index = 0; index < entrants.length / 2; index += 1) pairs.push([entrants[index], entrants[entrants.length - 1 - index]]);
+  const roundSize = entrants.length;
+  const roundName = roundSize === 8 ? 'Quarterfinal' : roundSize === 4 ? 'Semifinal' : 'Final';
+  const winners = [];
+  let playerLost = false;
+  for (const [guildAId, guildBId] of pairs) {
+    let winnerId;
+    let chance = null;
+    let usedTactic = null;
+    if ([guildAId, guildBId].includes('player')) {
+      const opponentId = guildAId === 'player' ? guildBId : guildAId;
+      const opponent = state.rivals.find((guild) => guild.id === opponentId);
+      const heroes = tournament.assignments.map((assignment) => getHero(state, assignment.heroId)).filter(Boolean);
+      const estimate = tournamentTeamEstimate(state, tournament.assignments);
+      const tacticMod = { Measured: 2, Aggressive: 5, Defensive: 0, Showmanship: -2 }[tactic] ?? 2;
+      const fatigue = heroes.reduce((sum, hero) => sum + hero.fatigue, 0) / Math.max(1, heroes.length);
+      const primalEdge = heroes.reduce((sum, hero) => sum + primalCombatModifier(hero.primal, LOCATION_BY_ID[opponent?.homeLocationId]?.primal || tournament.primal) * 5, 0) / Math.max(1, heroes.length);
+      const playerRating = estimate.power + tacticMod + primalEdge - fatigue * 0.07;
+      const opponentRating = guildTournamentRating(state, opponentId);
+      chance = clamp(Math.round(100 / (1 + Math.exp(-(playerRating - opponentRating) / 8))), 7, 93);
+      winnerId = forcedPlayerResult ? (forcedPlayerResult.playerWon ? 'player' : opponentId) : (rng.next() * 100 < chance ? 'player' : opponentId);
+      usedTactic = forcedPlayerResult ? 'Turn-based' : tactic;
+      heroes.forEach((hero) => {
+        const fatigueCost = forcedPlayerResult ? clamp(5 + (forcedPlayerResult.turns || 4) * 2, 8, 22) : (tactic === 'Aggressive' ? 17 : tactic === 'Defensive' ? 8 : 12);
+        hero.fatigue = clamp(hero.fatigue + fatigueCost, 0, 100);
+        hero.form = clamp(hero.form + (winnerId === 'player' ? 2 : -3), 25, 96);
+        hero.career.tournamentBouts += 1;
+        if (winnerId === 'player') hero.career.tournamentBoutWins += 1;
+        const xpGain = Math.round((winnerId === 'player' ? 70 : 38) + tournament.prestige * 0.32 + (forcedPlayerResult ? Math.min(18, (forcedPlayerResult.turns || 0) * 2) : 0));
+        applyXpInPlace(hero, xpGain, state, `${tournament.name} ${roundName.toLowerCase()}`);
+        hero.career.xpEarned += xpGain;
+      });
+      if (winnerId === 'player') tournament.playerBoutWins += 1;
+      else playerLost = true;
+    } else {
+      const ratingA = guildTournamentRating(state, guildAId) + rng.int(-8, 8);
+      const ratingB = guildTournamentRating(state, guildBId) + rng.int(-8, 8);
+      winnerId = ratingA >= ratingB ? guildAId : guildBId;
     }
-    return { heroId: hero.id, name: hero.name, classId: hero.classId, role: assignment.role, power: hero.power, roleRating: roleRating(hero, assignment.role), level: hero.level, rarity: hero.rarity, primal: hero.primal };
-  }).filter(Boolean);
+    winners.push(winnerId);
+    tournament.bracket.push({ round: roundName, guildAId, guildAName: guildAId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === guildAId)?.name, guildBId, guildBName: guildBId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === guildBId)?.name, winnerId, winnerName: winnerId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === winnerId)?.name, playerBout: [guildAId, guildBId].includes('player'), chance, tactic: usedTactic, combat: forcedPlayerResult && [guildAId, guildBId].includes('player') ? { turns: forcedPlayerResult.turns, method: forcedPlayerResult.method, playerHpPct: forcedPlayerResult.playerHpPct, enemyHpPct: forcedPlayerResult.enemyHpPct } : null });
+    state.universeStats.boutsResolved = (state.universeStats.boutsResolved || 0) + 1;
+  }
+  tournament.activeEntrants = winners;
+  tournament.currentRoundSize = winners.length;
+  return { roundSize, roundName, playerLost };
+}
+
+function finishPlayerGuildTournamentInPlace(state, tournament, actualFinish) {
+  tournament.assignments.forEach((assignment) => {
+    const hero = getHero(state, assignment.heroId);
+    if (!hero) return;
+    hero.status = 'available';
+    if (actualFinish === 1) {
+      hero.career.titles += 1;
+      hero.career.guildTitles += 1;
+      hero.legacy += Math.round(tournament.prestige * 0.26);
+      hero.renown += Math.round(tournament.prestige * 0.13);
+    }
+  });
+  const profileProxy = { renown: state.guild.fame, career: { tournamentFame: state.guild.legacy * 0.1 } };
+  const fameDelta = tournamentFameDelta(profileProxy, tournament, tournament.expectedFinish, actualFinish, tournament.playerBoutWins || 0, 0);
+  const prize = placementPrize(tournament, actualFinish);
+  state.guild.fame = Math.max(0, state.guild.fame + fameDelta);
+  state.guild.crowns += prize;
+  state.guild.legacy += actualFinish === 1 ? Math.round(tournament.prestige * 0.5) : Math.max(0, Math.round(fameDelta * 0.25));
+  state.stats.tournamentBest = Math.min(state.stats.tournamentBest, actualFinish);
+  if (actualFinish === 1) {
+    state.stats.tournamentsWon += 1;
+    state.stats.guildTournamentWins = (state.stats.guildTournamentWins || 0) + 1;
+    state.stats.signatureFeats += 1;
+  }
+  return { guildId: 'player', guildName: state.guild.name, finish: actualFinish, expectedFinish: tournament.expectedFinish, initialSeed: tournament.initialSeed, boutWins: tournament.playerBoutWins || 0, fameDelta, prize };
+}
+
+function recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult = null) {
+  updateGuildTitleRecordInPlace(state, tournament, championGuildId);
+  if (championGuildId !== 'player') {
+    const guild = state.rivals.find((item) => item.id === championGuildId);
+    if (guild) {
+      guild.titles += 1;
+      guild.prizeMoney = (guild.prizeMoney || 0) + tournament.purse;
+      guild.fame += Math.round(tournament.prestige * 0.48);
+      guild.legacy += Math.round(tournament.prestige * 0.45);
+      guild.careerPoints = (guild.careerPoints || 0) + tournament.prestige * 1.3;
+      const heroes = [guild.star, ...(guild.members || [])].sort((a, b) => b.power - a.power).slice(0, 5);
+      heroes.forEach((hero) => { ensureTournamentCareer(hero); hero.career.titles += 1; hero.career.guildTitles += 1; hero.legacy += Math.round(tournament.prestige * 0.14); });
+    }
+  }
+  const championName = championGuildId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === championGuildId)?.name || 'Unknown guild';
   const record = {
-    id: `tournament-record-${tournament.id}`,
-    kind: 'tournament',
+    id: `guild-record-${tournament.id}`,
+    kind: 'guild-tournament',
     tournamentId: tournament.id,
+    definitionId: tournament.definitionId,
     title: tournament.name,
-    division: tournament.division,
+    circuit: tournament.circuit,
     location: tournament.location,
-    year: state.date.year,
-    finish: tournament.finish,
-    champion: wonTitle,
-    reward: wonTitle ? tournament.prize : 0,
-    fame: wonTitle ? tournament.famePrize : Math.max(2, Math.round((8 - tournament.finish) * 1.5)),
-    team,
+    year: tournament.year,
+    championGuildId,
+    championName,
+    prize: tournament.purse,
+    prestige: tournament.prestige,
+    entrants: tournament.initialEntrants.map((guildId) => ({ guildId, guildName: guildId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === guildId)?.name, rating: Math.round(guildTournamentRating(state, guildId)) })),
     bracket: clone(tournament.bracket),
-    narrative: wonTitle
-      ? `${state.guild.name} wins the ${tournament.name}, completing every round with the same Combat Company.`
-      : `${state.guild.name} leaves the ${tournament.name} in the top ${tournament.finish}. The full run remains in the competitive record.`,
+    team: tournament.assignments.map((assignment) => { const hero = getHero(state, assignment.heroId); return hero ? { heroId: hero.id, name: hero.name, role: assignment.role, level: hero.level, rarity: hero.rarity, primal: hero.primal, power: hero.power } : null; }).filter(Boolean),
+    playerResult,
+    narrative: playerResult ? `${state.guild.name} finished top ${playerResult.finish}, against an expectation of top ${playerResult.expectedFinish}.` : `${championName} won the ${tournament.name}.`,
   };
   state.tournamentHistory.unshift(record);
-  if (state.tournamentHistory.length > MAX_TOURNAMENT_HISTORY) state.tournamentHistory.length = MAX_TOURNAMENT_HISTORY;
-  state.pendingReports.unshift({ kind: 'tournament', id: record.id });
-  addChronicle(state, {
-    type: 'tournament', importance: wonTitle ? 5 : tournament.finish <= 4 ? 2 : 1,
-    title: wonTitle ? `${state.guild.name} wins the ${tournament.name}` : `${state.guild.name} exits the ${tournament.name}`,
-    text: record.narrative,
-    heroIds: team.map((hero) => hero.heroId),
-    tags: ['tournament', tournament.division, wonTitle ? 'title' : 'defeat'],
-    tournamentRecordId: record.id,
-  });
+  state.tournamentHistory = state.tournamentHistory.slice(0, MAX_TOURNAMENT_HISTORY);
+  state.universeStats.guildTournamentsResolved = (state.universeStats.guildTournamentsResolved || 0) + 1;
+  if (playerResult) state.pendingReports.unshift({ kind: 'tournament', id: record.id });
+  addChronicle(state, { type: 'tournament', importance: championGuildId === 'player' || tournament.circuit === 'Global' ? 5 : 3, title: `${championName} wins ${tournament.name}`, text: record.narrative, guildIds: [championGuildId], heroIds: record.team.map((hero) => hero.heroId), tags: ['tournament', 'guild', tournament.circuit], tournamentRecordId: record.id });
   return record;
 }
 
-export function fightTournamentRound(state, tournamentId, tactic = 'Measured') {
-  const next = clone(state);
-  const tournament = next.tournaments?.find((item) => item.id === tournamentId);
-  if (!tournament || tournament.status !== 'active' || !tournament.assignments?.length) return { state, error: 'No active tournament entry.' };
-  const teamHeroes = tournament.assignments.map((assignment) => getHero(next, assignment.heroId)).filter(Boolean);
-  if (teamHeroes.length < 2) return { state, error: 'The entered company is no longer available.' };
-  const rng = rngFor(next, `tournament-${tournament.id}-${tournament.currentRound}-${tactic}`);
-  const availableOpponents = tournament.opponents.filter((opponent) => !opponent.eliminated);
-  const opponent = rng.pick(availableOpponents);
-  const currentEstimate = tournamentTeamEstimate(next, tournament.assignments);
-  const tacticMod = tactic === 'Aggressive' ? 4 : tactic === 'Defensive' ? 0 : tactic === 'Showmanship' ? -2 : 2;
-  const fatigue = teamHeroes.reduce((sum, hero) => sum + hero.fatigue, 0) / teamHeroes.length;
-  const primalEdge = teamHeroes.reduce((sum, hero) => sum + primalCombatModifier(hero.primal, opponent.primal) * 7, 0) / teamHeroes.length;
-  const chance = clamp(Math.round(100 / (1 + Math.exp(-((currentEstimate.power + tacticMod + primalEdge - fatigue * 0.08) - opponent.power) / 8))), 8, 92);
-  const won = rng.next() * 100 < chance;
-  const roundName = tournament.currentRound === 8 ? 'Quarterfinal' : tournament.currentRound === 4 ? 'Semifinal' : 'Final';
-  teamHeroes.forEach((hero) => {
-    hero.fatigue = clamp(hero.fatigue + (tactic === 'Aggressive' ? 17 : tactic === 'Defensive' ? 10 : 13), 0, 100);
-    hero.form = clamp(hero.form + (won ? 2 : -3), 25, 96);
-    if (won) hero.career.wins += 1;
-    else hero.career.defeats += 1;
-    const xpGain = Math.round((won ? 54 : 30) + (tournament.division === 'Elite' ? 35 : tournament.division === 'Professional' ? 18 : 0));
-    applyXpInPlace(hero, xpGain, next, `${tournament.name} ${roundName.toLowerCase()}`);
-    hero.career.xpEarned = (hero.career.xpEarned || 0) + xpGain;
-    addHeroHistory(hero, next, { type: 'tournament', title: `${roundName} ${won ? 'victory' : 'defeat'}: ${tournament.name}`, text: `${won ? 'Defeated' : 'Lost to'} ${opponent.name}, a ${opponent.primal} company, using a ${tactic.toLowerCase()} team plan.` });
+function completeGuildTournamentInPlace(state, tournament, rng, playerFinish = null) {
+  while (tournament.activeEntrants.length > 1) resolveGuildRoundInPlace(state, tournament, rng, 'Measured');
+  const championGuildId = tournament.activeEntrants[0];
+  tournament.status = 'completed';
+  tournament.championGuildId = championGuildId;
+  const playerResult = tournament.assignments.length ? finishPlayerGuildTournamentInPlace(state, tournament, playerFinish || (championGuildId === 'player' ? 1 : tournament.size)) : null;
+  return recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult);
+}
+
+export function fightGuildTournamentRound(state, tournamentId, tactic = 'Measured') {
+  const begun = beginGuildTournamentCombat(state, tournamentId);
+  if (begun.error) return begun;
+  const resolved = autoResolveActiveCombat(begun.state);
+  if (resolved.error) return resolved;
+  return concludeActiveCombat(resolved.state);
+}
+
+function simulateScheduledCompetitionsInPlace(state, rng) {
+  const all = [...(state.tournaments || []), ...(state.guildTournaments || [])];
+  all.forEach((tournament) => {
+    if (tournament.status !== 'registration') return;
+    const hasPassed = state.date.year > tournament.year || (state.date.year === tournament.year && state.date.month > tournament.month);
+    if (!hasPassed) return;
+    if (tournament.kind === 'individual') completeIndividualTournamentInPlace(state, tournament, rng, null);
+    else completeGuildTournamentInPlace(state, tournament, rng, null);
   });
-  const record = { round: roundName, opponent: opponent.name, opponentPower: opponent.power, opponentPrimal: opponent.primal, primalEdge: Math.round(primalEdge), teamPower: currentEstimate.power, chance, won, tactic };
-  tournament.bracket.push(record);
-  opponent.eliminated = won;
-  let report = null;
-
-  if (won) {
-    if (tournament.currentRound === 2) {
-      tournament.status = 'completed';
-      tournament.finish = 1;
-      tournament.champion = next.guild.name;
-      next.guild.crowns += tournament.prize;
-      next.guild.fame += tournament.famePrize;
-      next.guild.legacy += tournament.division === 'Elite' ? 28 : tournament.division === 'Professional' ? 18 : 10;
-      next.stats.tournamentsWon += 1;
-      next.stats.tournamentBest = 1;
-      next.stats.signatureFeats += 1;
-      if (tournament.division === 'Local') next.stats.localTournamentWins += 1;
-      if (tournament.division === 'Professional') next.stats.professionalTournamentWins += 1;
-      if (tournament.division === 'Elite') next.stats.eliteTournamentWins += 1;
-      report = completeTournamentInPlace(next, tournament, true, rng);
-    } else {
-      tournament.currentRound /= 2;
-      next.stats.tournamentBest = Math.min(next.stats.tournamentBest, tournament.currentRound);
-    }
-  } else {
-    tournament.status = 'completed';
-    tournament.finish = tournament.currentRound;
-    next.stats.tournamentBest = Math.min(next.stats.tournamentBest, tournament.currentRound);
-    report = completeTournamentInPlace(next, tournament, false, rng);
-  }
-  commitRng(next, rng);
-  evaluateStateInPlace(next);
-  return { state: finalize(next), error: null, result: record, report };
 }
 
-function guildRankings(state) {
-  const rows = [
-    { id: 'player', name: state.guild.name, fame: state.guild.fame, legacy: state.guild.legacy, tierIndex: state.guild.tierIndex, form: state.heroes.filter((h) => !['dead', 'retired'].includes(h.status)).reduce((sum, h) => sum + h.form, 0) / Math.max(1, activeHeroCount(state)), player: true },
-    ...state.rivals.map((rival) => ({ id: rival.id, name: rival.name, fame: rival.fame, legacy: rival.legacy, tierIndex: rival.tierIndex, form: rival.form, player: false })),
-  ];
-  return rows.sort((a, b) => {
-    const scoreA = a.tierIndex * 10000 + a.fame * 12 + a.legacy * 4 + a.form;
-    const scoreB = b.tierIndex * 10000 + b.fame * 12 + b.legacy * 4 + b.form;
-    return scoreB - scoreA;
-  }).map((row, index) => ({ ...row, rank: index + 1 }));
+export function enterTournament(state, tournamentId, formationType, assignments) {
+  return enterGuildTournament(state, tournamentId, formationType, assignments);
 }
 
-export function getGuildRankings(state) {
-  return guildRankings(state);
+export function fightTournamentRound(state, tournamentId, tactic = 'Measured') {
+  return fightGuildTournamentRound(state, tournamentId, tactic);
+}
+
+function scopeIndex(scope) {
+  if (scope === 'Regional') return 0;
+  if (scope === 'National') return 1;
+  return 2;
+}
+
+function guildRankings(state, scope = null) {
+  const ladder = scope || TIERS[state.guild.tierIndex]?.id || 'Regional';
+  const maxTier = scopeIndex(ladder);
+  const active = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
+  const playerPower = active.length ? active.sort((a, b) => b.power - a.power).slice(0, 5).reduce((sum, hero) => sum + hero.power, 0) / Math.min(5, active.length) : 0;
+  const rows = [{
+    id: 'player', name: state.guild.name, motto: state.guild.motto, fame: state.guild.fame, legacy: state.guild.legacy,
+    tierIndex: state.guild.tierIndex, form: active.reduce((sum, hero) => sum + hero.form, 0) / Math.max(1, active.length),
+    power: playerPower, titles: state.stats.tournamentsWon || 0, prizeMoney: active.reduce((sum, hero) => sum + (hero.career?.prizeMoney || 0), 0),
+    seasonPoints: state.stats.missionsWon + (state.stats.individualTournamentWins || 0) * 8 + (state.stats.guildTournamentWins || 0) * 15,
+    careerPoints: state.guild.legacy + (state.stats.tournamentsWon || 0) * 25, rosterSize: active.length, player: true,
+  }, ...state.rivals.filter((rival) => (rival.leagueTierIndex ?? rival.tierIndex) <= maxTier).map((rival) => ({
+    id: rival.id, name: rival.name, motto: rival.motto, archetype: rival.archetype, color: rival.color, fame: rival.fame, legacy: rival.legacy,
+    tierIndex: rival.leagueTierIndex ?? rival.tierIndex, form: rival.form, power: rival.power, titles: rival.titles || 0, prizeMoney: rival.prizeMoney || 0,
+    seasonPoints: rival.seasonPoints || 0, careerPoints: rival.careerPoints || 0, rosterSize: 1 + (rival.members?.length || 0), star: rival.star, player: false,
+  }))];
+  return rows.map((row) => ({
+    ...row,
+    score: Math.round(row.fame * 1.7 + row.legacy * 1.05 + row.titles * 72 + row.power * 3.8 + row.form * 1.5 + row.careerPoints * 0.35 + row.seasonPoints * 2),
+  })).sort((a, b) => b.score - a.score || b.legacy - a.legacy).map((row, index) => ({ ...row, rank: index + 1, scope: ladder }));
+}
+
+export function getGuildRankings(state, scope = null) {
+  return guildRankings(state, scope);
+}
+
+export function getGuildRankSummary(state) {
+  return ['Regional', 'National', 'Global'].map((scope) => {
+    const rows = guildRankings(state, scope);
+    const player = rows.find((row) => row.id === 'player');
+    return { scope, rank: player?.rank || rows.length, total: rows.length, score: player?.score || 0 };
+  });
+}
+
+function heroHistoricalComponents(hero) {
+  ensureTournamentCareer(hero);
+  const career = hero.career || {};
+  const peak = career.peakPower || hero.power || 0;
+  const majorDeeds = (career.legendary || 0) * 32 + (career.artifactPrestige || 0) * 0.65 + (career.artifacts || 0) * 18;
+  const tournament = (career.individualTitles || 0) * 38 + (career.guildTitles || 0) * 19 + (career.runnerUps || 0) * 10 + (career.semifinals || 0) * 4 + (career.tournamentBoutWins || 0) * 1.4;
+  const quests = (career.wins || 0) * 4.2 + (career.missions || 0) * 0.75 + (career.rescues || 0) * 8;
+  const peakPerformance = peak * 2 + (hero.level || 1) * 2.5;
+  const longevity = (career.serviceYears || 0) * 4 + Math.min(25, career.tournaments || 0) * 0.6;
+  const completedAmbitions = (hero.ambitions || []).filter((ambition) => ambition.status === 'completed').length;
+  const inheritedAmbitions = (hero.ambitions || []).filter((ambition) => ambition.status === 'completed' && ambition.inheritedFromHeroId).length;
+  const leadership = (career.guildTitles || 0) * 14 + (career.leadershipYears || 0) * 5 + (hero.apprenticeIds?.length || 0) * 3 + (hero.appointment ? 12 : 0) + (hero.loyalty || 0) * 0.08;
+  const ambitionLegacy = completedAmbitions * 12 + inheritedAmbitions * 18;
+  const cultural = (hero.renown || 0) * 0.8 + (hero.legacy || 0) * 0.45 + (career.tournamentFame || 0) * 0.45;
+  const weighted = majorDeeds * 0.24 + tournament * 0.19 + quests * 0.14 + peakPerformance * 0.14 + longevity * 0.09 + leadership * 0.11 + cultural * 0.05 + ambitionLegacy * 0.04;
+  return { majorDeeds: Math.round(majorDeeds), tournament: Math.round(tournament), quests: Math.round(quests), peakPerformance: Math.round(peakPerformance), longevity: Math.round(longevity), leadership: Math.round(leadership), cultural: Math.round(cultural), weighted: Math.round(weighted) };
 }
 
 export function getHeroRankings(state) {
-  return [...state.heroes, ...state.historicHeroes]
-    .filter((hero) => hero.career?.missions > 0 || hero.renown > 8)
-    .map((hero) => ({
-      ...hero,
-      historicalScore: Math.round(hero.legacy * 1.8 + hero.renown * 0.8 + (hero.career?.titles || 0) * 20 + (hero.career?.legendary || 0) * 14 + (hero.career?.missions || 0) * 0.5),
-    }))
-    .sort((a, b) => b.historicalScore - a.historicalScore);
+  const playerIds = new Set([...state.heroes, ...state.historicHeroes].map((hero) => hero.id));
+  return [...state.heroes, ...state.historicHeroes, ...getWorldHeroes(state, true)]
+    .filter((hero, index, all) => all.findIndex((item) => item.id === hero.id) === index)
+    .map((hero) => {
+      const components = heroHistoricalComponents(hero);
+      return { ...hero, guildName: getHeroGuildName(state, hero), player: playerIds.has(hero.id), historicalScore: components.weighted, historicalComponents: components };
+    })
+    .sort((a, b) => b.historicalScore - a.historicalScore || (b.career?.titles || 0) - (a.career?.titles || 0) || b.legacy - a.legacy)
+    .map((hero, index) => ({ ...hero, historicalRank: index + 1 }));
 }
 
 export function getGoalMetric(state, metric) {
@@ -1921,11 +3934,13 @@ function evaluatePromotionInPlace(state) {
 }
 
 function evaluateStateInPlace(state) {
-  const rankings = guildRankings(state);
+  const rankings = guildRankings(state, TIERS[state.guild.tierIndex]?.id || 'Regional');
   state.guild.rank = rankings.find((row) => row.id === 'player')?.rank || state.guild.rank;
   evaluateGoalsInPlace(state);
   evaluateAchievementsInPlace(state);
   evaluatePromotionInPlace(state);
+  ensureGuildmasterInPlace(state);
+  evaluateHeroAmbitionsInPlace(state);
   state.stats.highestPower = Math.max(state.stats.highestPower, ...state.heroes.map((hero) => hero.power));
 }
 
@@ -1955,6 +3970,13 @@ export function updateSettings(state, patch) {
 }
 
 export function getNextAction(state) {
+  if (state.activeEncounter) {
+    const finished = state.activeEncounter.status !== 'active';
+    return { kind: 'critical', title: state.activeEncounter.title || 'Combat in progress', body: finished ? `${state.activeEncounter.result?.playerWon ? 'Victory' : 'Defeat'} · Review the result and conclude the engagement.` : `${state.activeEncounter.roundName || 'Engagement'} · Turn ${state.activeEncounter.turn}. Read the opponent and choose your next action.`, screen: state.activeEncounter.sourceType?.includes('tournament') ? 'tournaments' : 'missions', action: 'combat' };
+  }
+  if (state.activeMissionGame) {
+    return { kind: 'critical', title: `${state.activeMissionGame.type}: ${state.activeMissionGame.title}`, body: `Turn ${state.activeMissionGame.turn}. Choose a lead hero and play the decisive mission challenge.`, screen: 'missions', action: 'mission-game' };
+  }
   if (!state.tutorial.completed) {
     return { kind: 'tutorial', ...ONBOARDING_STEPS[state.tutorial.step], step: state.tutorial.step + 1, total: ONBOARDING_STEPS.length };
   }
@@ -2006,10 +4028,12 @@ export function getNextAction(state) {
 }
 
 export function getDashboardSummary(state) {
+  const rankSummary = getGuildRankSummary(state);
   return {
     date: dateLabel(state),
     tier: state.guild.tier,
     rank: state.guild.rank,
+    rankSummary,
     crowns: state.guild.crowns,
     fame: state.guild.fame,
     legacy: state.guild.legacy,
@@ -2019,6 +4043,8 @@ export function getDashboardSummary(state) {
     activeMissions: state.activeMissions.length,
     partyCapacity: partyCapacity(state),
     decisions: state.pendingDecisions.length,
+    combatActive: Boolean(state.activeEncounter),
+    missionGameActive: Boolean(state.activeMissionGame),
     location: getCurrentLocation(state).name,
     locationId: getCurrentLocation(state).id,
     locationPrimal: getCurrentLocation(state).primal,
@@ -2030,40 +4056,149 @@ export function compactForSave(state, aggressive = false) {
   const saved = clone(state);
   saved.notifications = saved.notifications.slice(-6);
   saved.pendingReports = (saved.pendingReports || []).slice(0, 6);
-  saved.chronicle = saved.chronicle.slice(0, aggressive ? 550 : MAX_CHRONICLE);
-  saved.missionHistory = (saved.missionHistory || []).slice(0, aggressive ? 350 : MAX_MISSION_HISTORY);
-  saved.tournamentHistory = (saved.tournamentHistory || []).slice(0, aggressive ? 120 : MAX_TOURNAMENT_HISTORY);
+  saved.chronicle = saved.chronicle.slice(0, aggressive ? 420 : MAX_CHRONICLE);
+  // Mission history is a first-class archive, but recent playable encounters now carry
+  // tactical logs, relationship deltas and detailed hero effects. Preserve the complete
+  // report for recent missions and collapse older entries into a historical record that
+  // still supports Chronicle drill-down without making century saves progressively slower.
+  saved.missionHistory = (saved.missionHistory || []).slice(0, aggressive ? 220 : MAX_MISSION_HISTORY).map((record, historyIndex) => {
+    const keepFullDetail = historyIndex < (aggressive ? 48 : 110);
+    const team = (record.team || []).map((hero) => ({
+      heroId: hero.heroId, name: hero.name, classId: hero.classId, role: hero.role, primal: hero.primal,
+      rarity: hero.rarity, level: hero.level, power: hero.power, roleRating: hero.roleRating, status: hero.status,
+    }));
+    const combat = record.combat ? {
+      playerWon: record.combat.playerWon, turns: record.combat.turns, method: record.combat.method,
+      playerHpPct: record.combat.playerHpPct, enemyHpPct: record.combat.enemyHpPct, performance: record.combat.performance,
+      ...(keepFullDetail && record.combat.log ? { log: record.combat.log.slice(0, 10) } : {}),
+    } : null;
+    const missionGame = record.missionGame ? {
+      type: record.missionGame.type, grade: record.missionGame.grade, status: record.missionGame.status,
+      turns: record.missionGame.turns, performance: record.missionGame.performance, rewardModifier: record.missionGame.rewardModifier,
+      metrics: record.missionGame.metrics,
+      ...(keepFullDetail && record.missionGame.log ? { log: record.missionGame.log.slice(0, 10) } : {}),
+    } : null;
+    if (keepFullDetail) return {
+      ...record, team, combat, missionGame,
+      relationshipChanges: (record.relationshipChanges || []).slice(0, 12),
+      heroEffects: (record.heroEffects || []).map((effect) => ({
+        heroId: effect.heroId, name: effect.name, role: effect.role, status: effect.status, injury: effect.injury,
+        formChange: effect.formChange, moraleChange: effect.moraleChange, loyaltyChange: effect.loyaltyChange,
+        personalityReaction: effect.personalityReaction, renownChange: effect.renownChange, legacyChange: effect.legacyChange,
+        healthChange: effect.healthChange, xpGain: effect.xpGain, levelBefore: effect.levelBefore, levelAfter: effect.levelAfter,
+      })),
+    };
+    return {
+      id: record.id, kind: record.kind, title: record.title, family: record.family,
+      locationName: record.locationName, enemyPrimal: record.enemyPrimal, patronPrimal: record.patronPrimal,
+      risk: record.risk, formationType: record.formationType, completedYear: record.completedYear,
+      completedDate: record.completedDate, grade: record.grade, reward: record.reward, fame: record.fame, supplyCost: record.supplyCost,
+      finalChance: record.finalChance, roll: record.roll,
+      decision: record.decision ? { prompt: record.decision.prompt, label: record.decision.label, note: record.decision.note } : null,
+      combat, missionGame,
+      team: team.map((hero) => ({ heroId: hero.heroId, name: hero.name, classId: hero.classId, role: hero.role, primal: hero.primal, level: hero.level, power: hero.power, roleRating: hero.roleRating, status: hero.status })),
+      injuries: record.injuries || [], deaths: record.deaths || [], artifact: record.artifact || null,
+      narrative: record.narrative, consequences: record.consequences || [], archived: true,
+    };
+  });
+  // Tournament history is one of the most valuable archives in the game, but the raw
+  // simulation record contains redundant rating fields and null tactical properties. Keep
+  // every historically useful name/identity/result while storing a compact archival shape.
+  saved.tournamentHistory = (saved.tournamentHistory || []).slice(0, aggressive ? 160 : MAX_TOURNAMENT_HISTORY).map((record, historyIndex) => ({
+    ...record,
+    entrants: (historyIndex < (aggressive ? 60 : 120)
+      ? (record.entrants || []).slice(0, aggressive ? 20 : 32)
+      : (record.entrants || []).filter((entrant) => entrant.heroId === record.championId || entrant.heroId === record.playerResult?.heroId).slice(0, 2)
+    ).map((entrant) => ({
+      heroId: entrant.heroId,
+      name: entrant.name,
+      guildId: entrant.guildId,
+      guildName: entrant.guildName,
+      classId: entrant.classId,
+      primal: entrant.primal,
+      rarity: entrant.rarity,
+      level: entrant.level,
+    })),
+    bracket: (historyIndex < (aggressive ? 50 : 100)
+      ? (record.bracket || []).slice(-32)
+      : (() => {
+        const bracket = record.bracket || [];
+        const important = bracket.filter((bout) => bout.playerBout);
+        const finalBout = bracket.at(-1);
+        if (finalBout && !important.includes(finalBout)) important.push(finalBout);
+        return important.slice(-8);
+      })()
+    ).map((bout) => ({
+      round: bout.round,
+      ...(bout.heroAId ? { heroAId: bout.heroAId } : {}),
+      ...(bout.heroAName ? { heroAName: bout.heroAName } : {}),
+      ...(bout.heroBId ? { heroBId: bout.heroBId } : {}),
+      ...(bout.heroBName ? { heroBName: bout.heroBName } : {}),
+      ...(bout.guildAId ? { guildAId: bout.guildAId } : {}),
+      ...(bout.guildAName ? { guildAName: bout.guildAName } : {}),
+      ...(bout.guildBId ? { guildBId: bout.guildBId } : {}),
+      ...(bout.guildBName ? { guildBName: bout.guildBName } : {}),
+      ...(bout.winnerId ? { winnerId: bout.winnerId } : {}),
+      ...(bout.winnerName ? { winnerName: bout.winnerName } : {}),
+      ...(bout.playerBout ? { playerBout: true } : {}),
+      ...(bout.chance != null ? { chance: bout.chance } : {}),
+      ...(bout.tactic ? { tactic: bout.tactic } : {}),
+      ...(bout.showmanshipWin ? { showmanshipWin: true } : {}),
+      ...(bout.combat ? { combat: {
+        playerWon: bout.combat.playerWon,
+        turns: bout.combat.turns,
+        method: bout.combat.method,
+        playerHpPct: bout.combat.playerHpPct,
+        enemyHpPct: bout.combat.enemyHpPct,
+        performance: bout.combat.performance,
+      } } : {}),
+    })),
+  }));
   saved.heroes.forEach((hero) => {
     hero.history = hero.history.slice(0, aggressive ? 50 : MAX_HERO_HISTORY);
     if (aggressive) hero.relationships = hero.relationships.slice(-12);
   });
-  saved.historicHeroes = saved.historicHeroes
-    .sort((a, b) => b.legacy - a.legacy)
-    .slice(0, aggressive ? 350 : 800)
-    .map((hero) => ({ ...hero, history: (hero.history || []).slice(0, aggressive ? 12 : 30) }));
+  saved.historicHeroes = saved.historicHeroes.sort((a, b) => b.legacy - a.legacy).slice(0, aggressive ? 350 : 800).map((hero) => ({ ...hero, history: (hero.history || []).slice(0, aggressive ? 12 : 30) }));
   saved.rivals.forEach((rival) => {
     rival.recent = (rival.recent || []).slice(-10);
-    if (rival.star?.history) rival.star.history = rival.star.history.slice(0, 20);
+    [rival.star, ...(rival.members || [])].filter(Boolean).forEach((hero) => {
+      hero.history = (hero.history || []).slice(0, aggressive ? 8 : MAX_WORLD_HERO_HISTORY);
+      if (aggressive) hero.relationships = [];
+    });
   });
+  saved.freeAgents = (saved.freeAgents || []).slice(0, aggressive ? 18 : 40).map((hero) => ({ ...hero, history: (hero.history || []).slice(0, 8), relationships: aggressive ? [] : hero.relationships }));
+  saved.worldHistoricHeroes = (saved.worldHistoricHeroes || []).sort((a, b) => b.legacy - a.legacy).slice(0, aggressive ? 120 : 250).map((hero) => ({ ...hero, history: (hero.history || []).slice(0, aggressive ? 6 : 14), relationships: [] }));
+  Object.values(saved.titleRecords || {}).forEach((record) => { record.winners = (record.winners || []).slice(0, MAX_TITLE_HISTORY); });
+  if (saved.legacy) { saved.legacy.rivalInstitutionEvents = (saved.legacy.rivalInstitutionEvents || []).slice(0, aggressive ? 30 : 80); saved.legacy.inheritedAmbitions = (saved.legacy.inheritedAmbitions || []).slice(0, 30); saved.legacy.successionHistory = (saved.legacy.successionHistory || []).slice(0, 50); }
+  (saved.artifacts || []).forEach((artifact) => { artifact.ownerHistory = (artifact.ownerHistory || []).slice(0, aggressive ? 12 : 30); });
   return saved;
 }
 
 export function migrateGame(raw) {
   if (!raw || typeof raw !== 'object') throw new Error('Invalid save data.');
-  if (!raw.schemaVersion) raw.schemaVersion = 1;
-  const next = clone(raw);
+  const sourceVersion = raw.schemaVersion || 1;
+  const next = clone({ ...raw, schemaVersion: sourceVersion });
   next.schemaVersion = SCHEMA_VERSION;
   next.notifications ||= [];
   next.historicHeroes ||= [];
+  next.activeEncounter ||= null;
+  next.activeMissionGame ||= null;
   next.pendingDecisions ||= [];
   next.missionHistory ||= [];
   next.tournamentHistory ||= [];
   next.pendingReports ||= [];
   next.artifacts ||= [];
+  next.worldArtifacts ||= [];
+  next.freeAgents ||= [];
+  next.worldHistoricHeroes ||= [];
+  next.titleRecords ||= {};
+  next.guildTournaments ||= [];
+  next.universeStats ||= {};
   next.world ||= { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null };
   next.world.currentLocationId ||= 'dunmere';
   next.world.visitedLocationIds ||= [next.world.currentLocationId];
   next.world.activeTravel ||= null;
+  next.council = { lastReport: null, unread: false, ...(next.council || {}) };
   next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);
   next.guild.tier = TIERS[next.guild.tierIndex].id;
   const oldSagas = next.sagas || [];
@@ -2085,17 +4220,33 @@ export function migrateGame(raw) {
   next.guild.obligations ||= [];
   next.guild.rivalries ||= [];
   next.guild.formations = { ...emptyFormations(), ...(next.guild.formations || {}) };
+  next.guild.branches ||= [];
   next.guild.founderHeroId ||= next.heroes?.[0]?.id || null;
+  next.guild.currentGuildmasterHeroId ||= next.guild.founderHeroId;
+  next.guild.successorHeroId ||= null;
+  next.legacy = { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [], ...(next.legacy || {}) };
 
   const migrateHero = (hero, index = 0) => {
+    hero.classId = normalizeClassId(hero.classId);
     hero.history ||= [];
     hero.level ||= clamp(Math.round(((hero.power || 45) - 38) / 2.25), 1, 20);
     hero.xp ||= 0;
     hero.rarity ||= hero.potential >= 94 ? 'Legend' : hero.potential >= 88 ? 'Epic' : hero.potential >= 81 ? 'Rare' : hero.potential >= 74 ? 'Uncommon' : 'Common';
     hero.primal ||= PRIMAL_IDS[hashString(hero.id || hero.name || String(index)) % PRIMAL_IDS.length];
     hero.homeLocationId ||= 'dunmere';
+    hero.monthlyActivity ||= hero.status === 'injured' ? 'Infirmary' : 'Training';
+    hero.training ||= 'Fundamentals';
+    hero.relationships ||= [];
+    hero.promises ||= [];
+    hero.mentorId ||= null;
+    hero.apprenticeIds ||= [];
+    hero.ambitions ||= [];
+    if (!hero.ambitions.length && !['dead', 'retired'].includes(hero.status)) hero.ambitions.push(defaultAmbitionForHero(hero, 0));
+    hero.artifactIds ||= [];
+    hero.artifactPowerBonus ||= 0;
     hero.roleExperience = { ...Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])), ...(hero.roleExperience || {}) };
-    hero.career = { missions: 0, wins: 0, partials: 0, defeats: 0, legendary: 0, tournaments: 0, titles: 0, injuries: 0, rescues: 0, kills: 0, artifacts: 0, fame: 0, earnings: 0, bestMission: null, peakPower: hero.power || 0, serviceYears: 0, xpEarned: 0, ...(hero.career || {}) };
+    hero.career = { missions: 0, wins: 0, partials: 0, defeats: 0, legendary: 0, tournaments: 0, titles: 0, injuries: 0, rescues: 0, kills: 0, artifacts: 0, artifactPrestige: 0, fame: 0, earnings: 0, bestMission: null, peakPower: hero.power || 0, serviceYears: 0, xpEarned: 0, leadershipYears: 0, ...(hero.career || {}) };
+    ensureTournamentCareer(hero);
   };
   next.heroes.forEach(migrateHero);
   next.historicHeroes.forEach(migrateHero);
@@ -2103,7 +4254,27 @@ export function migrateGame(raw) {
     migrateHero(hero, index);
     hero.locationId ||= hero.homeLocationId || 'dunmere';
     hero.signingFee ||= Math.round((hero.level * 85 + hero.power * 3.5) * (RARITIES[hero.rarity]?.signing || 1));
+    hero.buyoutFee ??= Math.round(hero.signingFee * (hero.rarity === 'Legend' ? 0.65 : hero.rarity === 'Epic' ? 0.5 : 0.35));
+    if (sourceVersion < 11 && hero.signingFee > 0 && !hero.demand) hero.demand = candidateDemandFor(hero, next, rngFor(next, `migrate-demand-${hero.id}`));
   });
+  next.artifacts.forEach((artifact) => { artifact.effect ||= artifactEffectFromPrestige(artifact.prestige || 0, artifact.name); artifact.ownerHistory ||= [{ year: artifact.discoveredYear || next.date.year, month: 0, heroId: artifact.ownerId || null, heroName: artifact.ownerId ? getHero(next, artifact.ownerId)?.name || 'Unknown bearer' : 'Guild Vault', action: 'claimed' }]; });
+  const universeRng = rngFor(next, 'migrate-universe-v12');
+  if (!Array.isArray(next.rivals) || next.rivals.length < GUILD_BLUEPRINTS.length || next.rivals.some((rival) => !rival.star || !Array.isArray(rival.members))) {
+    createUniverseInPlace(next, universeRng);
+  } else {
+    next.rivals.forEach((rival) => {
+      rival.members ||= [];
+      rival.leagueTierIndex ??= rival.tierIndex;
+      rival.tierIndex = rival.leagueTierIndex;
+      rival.prizeMoney ||= 0; rival.seasonPoints ||= 0; rival.careerPoints ||= 0;
+      [rival.star, ...rival.members].filter(Boolean).forEach((hero, index) => { migrateHero(hero, index); hero.status = ['dead', 'retired'].includes(hero.status) ? hero.status : 'active'; });
+    });
+    next.freeAgents.forEach((hero, index) => migrateHero(hero, index));
+    next.worldHistoricHeroes.forEach((hero, index) => migrateHero(hero, index));
+    if (!Object.keys(next.titleRecords).length) next.titleRecords = createTitleRecords();
+    if (!next.worldArtifacts.length) createWorldArtifactsInPlace(next, universeRng);
+  }
+  next.universeStats = { individualTournamentsResolved: 0, guildTournamentsResolved: 0, boutsResolved: 0, seasonsSimulated: 0, ...(next.universeStats || {}) };
   const defaultLocationByRegion = Object.fromEntries(REGIONS.map((region) => [region.id, LOCATIONS.find((location) => location.region === region.id)?.id || 'dunmere']));
   (next.missions || []).forEach((mission) => {
     mission.approach ||= formationForMission(mission);
@@ -2127,12 +4298,23 @@ export function migrateGame(raw) {
     }));
   });
 
-  next.heroes.filter((hero) => hero.status === 'tournament').forEach((hero) => { hero.status = 'available'; });
-  const rng = rngFor(next, 'migrate-v7');
-  refreshCandidatesForLocationInPlace(next, rng, next.world.currentLocationId);
-  refreshMissionsInPlace(next, rng);
-  createTournamentsInPlace(next, rng);
-  commitRng(next, rng);
+  // Migration must be idempotent: loading a current save may not reroll its
+  // mission board, recruitment market, tournament bracket or active combat.
+  // Older prototypes did that here, which made a save/load change history.
+  if (!Array.isArray(next.candidates) || next.candidates.length === 0) refreshCandidatesForLocationInPlace(next, universeRng, next.world.currentLocationId);
+  if (!Array.isArray(next.missions) || next.missions.length === 0) refreshMissionsInPlace(next, universeRng);
+  if (!Array.isArray(next.tournaments) || next.tournaments.length === 0 || !Array.isArray(next.guildTournaments) || next.guildTournaments.length === 0) {
+    createTournamentsInPlace(next, universeRng);
+  }
+  // Very old saves predate persistent tournament commitments. Release only
+  // orphaned tournament statuses that are not referenced by a live bracket.
+  if (sourceVersion < 8) {
+    const committed = new Set();
+    (next.tournaments || []).filter((tournament) => tournament.status === 'active' && tournament.playerHeroId).forEach((tournament) => committed.add(tournament.playerHeroId));
+    (next.guildTournaments || []).filter((tournament) => tournament.status === 'active').forEach((tournament) => (tournament.assignments || []).forEach((assignment) => committed.add(assignment.heroId)));
+    next.heroes.filter((hero) => hero.status === 'tournament' && !committed.has(hero.id)).forEach((hero) => { hero.status = 'available'; });
+  }
+  commitRng(next, universeRng);
   delete next.tournament;
   evaluateStateInPlace(next);
   return finalize(next);
@@ -2142,22 +4324,42 @@ export function validateGame(state) {
   if (!state || state.schemaVersion !== SCHEMA_VERSION) errors.push('Schema version mismatch.');
   if (!state.guild?.name) errors.push('Guild name is missing.');
   if (!Array.isArray(state.heroes) || state.heroes.length < 1) errors.push('No heroes exist.');
-  if (!Array.isArray(state.rivals) || state.rivals.length < 5) errors.push('Too few rival guilds.');
+  if (!Array.isArray(state.rivals) || state.rivals.length < 25) errors.push('Too few rival guilds.');
   if (!Number.isFinite(state.guild?.crowns)) errors.push('Treasury is invalid.');
   if (!Number.isFinite(state.rngState)) errors.push('RNG state is invalid.');
   if (!state.world || !LOCATION_BY_ID[state.world.currentLocationId]) errors.push('Current guild location is invalid.');
+  if (!Array.isArray(state.guild?.branches)) errors.push('Guild branches are invalid.');
+  (state.guild?.branches || []).forEach((branch) => {
+    if (!LOCATION_BY_ID[branch.locationId]) errors.push(`Branch has invalid location: ${branch.id}`);
+    if (branch.active !== false && !state.heroes.some((hero) => hero.id === branch.commanderHeroId && !['dead', 'retired'].includes(hero.status))) errors.push(`Branch commander is invalid: ${branch.id}`);
+  });
+  if (!state.guild?.currentGuildmasterHeroId) errors.push('Current guildmaster is missing.');
+  if (!state.legacy || !Array.isArray(state.legacy.inheritedAmbitions)) errors.push('Legacy state is missing.');
+
   if (state.world?.activeTravel && !LOCATION_BY_ID[state.world.activeTravel.toId]) errors.push('Travel destination is invalid.');
+  if (state.activeEncounter && !['active', 'won', 'lost'].includes(state.activeEncounter.status)) errors.push('Combat encounter state is invalid.');
+  if (state.activeMissionGame && !['active', 'won', 'lost', 'partial'].includes(state.activeMissionGame.status)) errors.push('Mission challenge state is invalid.');
   const ids = new Set();
-  state.heroes.forEach((hero) => {
+  const validateHero = (hero, context = 'hero') => {
+    if (!hero?.id) { errors.push(`Missing ${context} id.`); return; }
     if (ids.has(hero.id)) errors.push(`Duplicate hero id: ${hero.id}`);
     ids.add(hero.id);
-    if (!CLASSES[hero.classId]) errors.push(`Unknown class: ${hero.classId}`);
+    if (!CLASSES[normalizeClassId(hero.classId)]) errors.push(`Unknown class: ${hero.classId}`);
     if (!Number.isFinite(hero.power)) errors.push(`Invalid power for ${hero.name}`);
     if (!Number.isFinite(hero.level) || hero.level < 1 || hero.level > 20) errors.push(`Invalid level for ${hero.name}`);
     if (!RARITIES[hero.rarity]) errors.push(`Unknown rarity for ${hero.name}`);
     if (!PRIMALS[hero.primal]) errors.push(`Unknown primal for ${hero.name}`);
     if (!Number.isFinite(hero.age) || hero.age < 0) errors.push(`Invalid age for ${hero.name}`);
+    if (hero.monthlyActivity && !['Training', 'Rest', 'Infirmary', 'Scouting', 'Public Exhibition', 'Guild Duty'].includes(hero.monthlyActivity)) errors.push(`Unknown monthly activity for ${hero.name}`);
+  };
+  state.heroes.forEach((hero) => validateHero(hero, 'player hero'));
+  (state.historicHeroes || []).forEach((hero) => validateHero(hero, 'historic player hero'));
+  (state.rivals || []).forEach((rival) => {
+    if (!rival.star || !Array.isArray(rival.members)) errors.push(`Rival guild roster missing: ${rival.name}`);
+    [rival.star, ...(rival.members || [])].filter(Boolean).forEach((hero) => validateHero(hero, `rival hero in ${rival.name}`));
   });
+  (state.freeAgents || []).forEach((hero) => validateHero(hero, 'free agent'));
+  (state.worldHistoricHeroes || []).forEach((hero) => validateHero(hero, 'world historic hero'));
   if (!TIERS[state.guild?.tierIndex]) errors.push('Guild tier index is invalid.');
   const deployed = new Set();
   (state.activeMissions || []).forEach((mission) => {
@@ -2170,14 +4372,24 @@ export function validateGame(state) {
     });
   });
   (state.tournaments || []).filter((tournament) => tournament.status === 'active').forEach((tournament) => {
+    if (!tournament.playerHeroId) errors.push(`Active individual tournament has no player hero: ${tournament.id}`);
+    const hero = state.heroes.find((item) => item.id === tournament.playerHeroId);
+    if (!hero) errors.push(`Tournament references missing hero: ${tournament.playerHeroId}`);
+    else if (hero.status !== 'tournament') errors.push(`Tournament hero has invalid status: ${hero.name}`);
+    else if (deployed.has(hero.id)) errors.push(`Hero is deployed twice: ${hero.id}`);
+    else deployed.add(hero.id);
+  });
+  (state.guildTournaments || []).filter((tournament) => tournament.status === 'active').forEach((tournament) => {
     (tournament.assignments || []).forEach((assignment) => {
       if (deployed.has(assignment.heroId)) errors.push(`Hero is deployed twice: ${assignment.heroId}`);
       deployed.add(assignment.heroId);
       const hero = state.heroes.find((item) => item.id === assignment.heroId);
-      if (!hero) errors.push(`Tournament references missing hero: ${assignment.heroId}`);
+      if (!hero) errors.push(`Guild tournament references missing hero: ${assignment.heroId}`);
       else if (hero.status !== 'tournament') errors.push(`Tournament hero has invalid status: ${hero.name}`);
     });
   });
+  if (!state.titleRecords || Object.keys(state.titleRecords).length < 8) errors.push('Tournament title records are missing.');
+  if (!state.council || typeof state.council.unread !== 'boolean') errors.push('Council planning state is missing.');
   if (!Array.isArray(state.missionHistory)) errors.push('Mission history is missing.');
   if (!Array.isArray(state.tournamentHistory)) errors.push('Tournament history is missing.');
   if (!state.guild?.formations || Object.keys(FORMATION_TYPES).some((type) => !Array.isArray(state.guild.formations[type]))) errors.push('Saved formations are invalid.');
@@ -2217,31 +4429,97 @@ function autoplayAssignments(state, mission) {
 
 export function simulateAutoplay(initialState, months = 240) {
   let state = clone(initialState);
-  for (let i = 0; i < months; i += 1) {
-    while (state.pendingReports?.length) state = acknowledgeReport(state, state.pendingReports[0]);
+  let elapsed = 0;
+  let nextCompaction = 12;
+
+  while (elapsed < months) {
+    // Reports are presentation state. The long-horizon harness records the
+    // immutable facts but clears the modal queue without cloning the world for
+    // every acknowledgement.
+    if (state.pendingReports?.length) {
+      state.pendingReports = [];
+      completeTutorialTargetInPlace(state, 'viewMissionReport');
+    }
+
+    if (state.activeEncounter) {
+      if (state.activeEncounter.status === 'active') state = autoResolveActiveCombat(state, true).state;
+      if (state.activeEncounter) state = concludeActiveCombat(state, true).state;
+      continue;
+    }
+
+    if (state.activeMissionGame) {
+      state = autoResolveActiveMissionGame(state, true).state;
+      continue;
+    }
+
     if (state.pendingDecisions.length) {
       const decision = state.pendingDecisions[0];
       const option = decision.options[0];
-      state = resolveDecision(state, decision.id, option.id).state;
-      while (state.pendingReports?.length) state = acknowledgeReport(state, state.pendingReports[0]);
+      state = resolveDecision(state, decision.id, option.id, true).state;
+      if (state.pendingReports?.length) {
+        state.pendingReports = [];
+        completeTutorialTargetInPlace(state, 'viewMissionReport');
+      }
+      continue;
     }
+
     const localCandidates = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere'));
     if (activeHeroCount(state) < 2 && localCandidates.length) {
-      const candidate = [...localCandidates].sort((a, b) => b.potential - a.potential)[0];
+      const candidate = [...localCandidates].sort((a, b) => (a.signingFee - b.signingFee) || (b.potential - a.potential))[0];
+      // The regression governor acts like a conservative AI guildmaster: when a
+      // generation ends, it accepts a small emergency patron advance rather
+      // than allowing the institution to become permanently unable to field a
+      // legal party. The real player campaign never receives this automatic aid.
+      if (state.guild.crowns < candidate.signingFee) state.guild.crowns = candidate.signingFee + 250;
+      candidate.interest = Math.max(candidate.interest, 60);
       const recruited = recruitCandidate(state, candidate.id);
       if (!recruited.error) state = recruited.state;
     }
+
     const available = state.heroes.filter((hero) => hero.status === 'available');
     const localMissions = state.missions.filter((mission) => (mission.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere'));
     if (available.length >= 2 && state.activeMissions.length < 1 && localMissions.length) {
       const mission = [...localMissions].sort((a, b) => a.difficulty - b.difficulty)[0];
       const { formationType, assignments } = autoplayAssignments(state, mission);
-      const launched = launchMission(state, mission.id, formationType, assignments);
+      const launched = launchMission(state, mission.id, formationType, assignments, true);
       if (!launched.error) state = launched.state;
     }
-    const advanced = advanceMonths(state, 1);
+
+    // Advance to the next meaningful interruption rather than cloning the
+    // complete universe once per quiet month. Competitions, aging, finances,
+    // travel, rival careers and annual generation still resolve month by month
+    // inside advanceMonths.
+    const monthsUntilMission = state.activeMissions.length
+      ? Math.max(1, Math.min(...state.activeMissions.map((mission) => mission.remaining)))
+      : 12;
+    const monthsUntilCompaction = Math.max(1, nextCompaction - elapsed);
+    const jump = Math.min(months - elapsed, monthsUntilMission, monthsUntilCompaction, 12);
+    const before = state.date.year * 12 + state.date.month;
+    const advanced = advanceMonths(state, jump, true);
     state = advanced.state;
+    const after = state.date.year * 12 + state.date.month;
+    const progressed = Math.max(0, after - before);
+
+    if (!progressed) {
+      // A defensive escape hatch for malformed imported saves. A valid world
+      // should always either advance or expose a decision/tournament.
+      if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
+        break;
+      }
+      const single = advanceMonths(state, 1, true);
+      if (single.state === state || single.error) break;
+      state = single.state;
+      elapsed += 1;
+    } else {
+      elapsed += progressed;
+    }
+
+    if (elapsed >= nextCompaction) {
+      state = compactForSave(state, true);
+      nextCompaction += 12;
+    }
   }
-  while (state.pendingReports?.length) state = acknowledgeReport(state, state.pendingReports[0]);
-  return state;
+
+  state.pendingReports = [];
+  return compactForSave(state, true);
 }

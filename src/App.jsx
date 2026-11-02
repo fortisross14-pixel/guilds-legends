@@ -1,21 +1,35 @@
 import React, { Component, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  acknowledgeCouncilReport,
   acknowledgeReport,
   acknowledgeWelcome,
+  autoResolveActiveCombat,
+  autoResolveActiveMissionGame,
   advanceMonths,
   advanceToNextEvent,
   appointHero,
+  assignArtifact,
+  assignBranchCommander,
+  assignMentor,
   chooseAlignment,
+  concludeActiveCombat,
   clearNotifications,
   clone,
   createNewGame,
+  designateSuccessor,
   dismissNotification,
-  enterTournament,
-  fightTournamentRound,
+  enterGuildTournament,
+  foundBranch,
+  enterHeroTournament,
+  fightGuildTournamentRound,
+  fightHeroTournamentRound,
+  performActiveCombatAction,
+  performActiveMissionGameAction,
   getDashboardSummary,
   getHero,
   getReport,
   getNextAction,
+  inheritAmbition,
   inspectGoals,
   inspectHero,
   inspectMission,
@@ -23,12 +37,18 @@ import {
   notePartySelection,
   recruitCandidate,
   releaseHero,
+  renameFounderHero,
+  renameGuild,
   resolveDecision,
   roleRating,
   saveFormation,
+  setHeroMonthlyActivity,
   setHeroTraining,
+  beginGuildTournamentCombat as startGuildTournamentCombat,
+  beginHeroTournamentCombat as startHeroTournamentCombat,
   startTravel,
   updateSettings,
+  upgradeBranch,
   upgradeFacility,
   validateGame,
 } from './game/engine.js';
@@ -41,7 +61,8 @@ import {
   loadGame,
   saveGame,
 } from './game/storage.js';
-import { APPOINTMENTS, CLASSES, MONTHS, TIERS } from './data/content.js';
+import { APPOINTMENTS, CLASSES, FLAW_PROFILES, MONTHS, PERSONALITY_PROFILES, TIERS, normalizeClassId } from './data/content.js';
+import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from './data/activities.js';
 import { FORMATION_TYPES, PARTY_ROLES } from './data/formations.js';
 import { LOCATION_BY_ID, PRIMALS, RARITIES } from './data/world.js';
 import { Badge, Button, Crest, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './components/UI.jsx';
@@ -55,6 +76,11 @@ import RankingsScreen from './screens/RankingsScreen.jsx';
 import ChronicleScreen from './screens/ChronicleScreen.jsx';
 import GoalsScreen from './screens/GoalsScreen.jsx';
 import SettingsScreen from './screens/SettingsScreen.jsx';
+import LegacyScreen from './screens/LegacyScreen.jsx';
+import CouncilReportModal from './components/CouncilReportModal.jsx';
+import CombatArenaModal from './components/CombatArenaModal.jsx';
+import MissionGameModal from './components/MissionGameModal.jsx';
+import MobileMoreModal from './components/MobileMoreModal.jsx';
 
 const NAV_ITEMS = [
   { id: 'hall', label: 'Guild Hall', icon: '◆' },
@@ -65,6 +91,7 @@ const NAV_ITEMS = [
   { id: 'headquarters', label: 'Headquarters', icon: '♜' },
   { id: 'rankings', label: 'Rankings', icon: '✦' },
   { id: 'chronicle', label: 'Chronicle', icon: '▤' },
+  { id: 'legacy', label: 'Legacy', icon: '♛' },
   { id: 'goals', label: 'Goals', icon: '✓' },
   { id: 'settings', label: 'Save & Settings', icon: '⚙' },
 ];
@@ -197,22 +224,27 @@ function DecisionModal({ state, actions }) {
   const decision = state.pendingDecisions[0];
   if (!decision) return null;
   const mission = state.activeMissions.find((item) => item.id === decision.missionId);
+  const combatResolved = Boolean(decision.combatResolved && decision.combatSummary);
+  const missionGameResolved = Boolean(decision.missionGameResolved && decision.missionGameSummary);
+  const lockedResult = combatResolved || missionGameResolved;
   const heroes = mission?.assignments.map((assignment) => ({ ...assignment, hero: getHero(state, assignment.heroId) })).filter((item) => item.hero) || [];
   return (
-    <Modal open title={decision.title} eyebrow="Critical expedition decision · Time paused" preventClose width="wide">
+    <Modal open title={decision.title} eyebrow={lockedResult ? `${combatResolved ? 'Combat' : decision.missionGameSummary.type} resolved · ${decision.forcedGrade} · Choose the aftermath` : "Critical expedition decision · Time paused"} preventClose width="wide">
       <div className="decision-scene">
         <div className="decision-scene__party">{heroes.map(({ hero, role }) => <div key={hero.id}><HeroPortrait hero={hero} size="sm" /><span><strong>{hero.name}</strong><small>{role} · PWR {hero.power}</small></span></div>)}</div>
         <blockquote>{decision.prompt}</blockquote>
+        {combatResolved ? <div className="combat-aftermath-callout"><Badge tone={decision.combatSummary.playerWon ? 'green' : 'red'}>{decision.combatSummary.playerWon ? 'Battle won' : 'Battle lost'}</Badge><div><strong>The tactical result is locked.</strong><p>{decision.combatSummary.turns} turns · you left with {decision.combatSummary.playerHpPct}% field strength · opposition {decision.combatSummary.enemyHpPct}%. Your choice now determines rewards, obligations and what the guild does next—not whether the battle secretly rerolls.</p></div></div> : null}
+        {missionGameResolved ? <div className="combat-aftermath-callout"><Badge tone={decision.missionGameSummary.status === 'won' ? 'green' : decision.missionGameSummary.status === 'partial' ? 'gold' : 'red'}>{decision.missionGameSummary.type} {decision.missionGameSummary.status}</Badge><div><strong>The playable mission result is locked.</strong><p>{decision.missionGameSummary.turns} turns · performance {decision.missionGameSummary.performance} · grade {decision.missionGameSummary.grade}. The aftermath can change rewards, relationships and obligations, but it will not reroll the challenge.</p></div></div> : null}
         <div className="decision-options">
           {decision.options.map((option, index) => (
             <button key={option.id} onClick={() => actions.resolveDecision(decision.id, option.id)}>
               <span className="decision-options__key">{index + 1}</span>
-              <div><h3>{option.label}</h3><p>{option.note}</p><div className="decision-options__effects">{option.power ? <Badge tone={option.power >= 0 ? 'green' : 'red'}>{option.power >= 0 ? '+' : ''}{option.power} mission edge</Badge> : null}{option.fame ? <Badge tone="gold">{option.fame >= 0 ? '+' : ''}{option.fame} narrative fame</Badge> : null}{option.reward ? <Badge tone="blue">{option.reward >= 0 ? '+' : ''}{option.reward} base reward</Badge> : null}{option.artifact ? <Badge tone="purple">Artifact possibility</Badge> : null}</div></div>
+              <div><h3>{option.label}</h3><p>{option.note}</p><div className="decision-options__effects">{!lockedResult && option.power ? <Badge tone={option.power >= 0 ? 'green' : 'red'}>{option.power >= 0 ? '+' : ''}{option.power} mission edge</Badge> : null}{option.fame ? <Badge tone="gold">{option.fame >= 0 ? '+' : ''}{option.fame} narrative fame</Badge> : null}{option.reward ? <Badge tone="blue">{option.reward >= 0 ? '+' : ''}{option.reward} base reward</Badge> : null}{option.artifact ? <Badge tone="purple">Artifact possibility</Badge> : null}</div></div>
               <span className="decision-options__arrow">›</span>
             </button>
           ))}
         </div>
-        <p className="decision-scene__warning">Important choices alter odds and consequences. They do not reveal the final roll.</p>
+        <p className="decision-scene__warning">{lockedResult ? "The decisive gameplay is over. This choice changes consequences, relationships and rewards." : "Important choices alter odds and consequences. They do not reveal the final roll."}</p>
       </div>
     </Modal>
   );
@@ -221,37 +253,56 @@ function DecisionModal({ state, actions }) {
 function ReportModal({ report, onClose, openHero }) {
   if (!report) return null;
   const isMission = report.kind === 'mission';
+  const isIndividual = report.kind === 'individual-tournament';
+  const playerResult = report.playerResult || null;
+  const playerWon = playerResult?.finish === 1;
   const tone = isMission
     ? ['Legendary', 'Great Success', 'Success'].includes(report.grade) ? 'green' : report.grade === 'Partial' ? 'gold' : 'red'
-    : report.champion ? 'green' : 'gold';
+    : playerWon ? 'green' : playerResult ? (playerResult.fameDelta >= 0 ? 'gold' : 'red') : 'purple';
+  const finishText = playerResult ? (playerResult.finish === 1 ? 'Champion' : playerResult.finish === 2 ? 'Runner-up' : `Top ${playerResult.finish}`) : 'World result';
+  const playerHero = isIndividual && playerResult ? report.entrants?.find((entrant) => entrant.heroId === playerResult.heroId) : null;
+  const champion = isIndividual ? report.entrants?.find((entrant) => entrant.heroId === report.championId) : null;
   return (
-    <Modal open title={report.title} eyebrow={isMission ? `${report.completedDate} · Expedition report` : `Year ${report.year} · Tournament report`} onClose={onClose} width="wide">
+    <Modal open title={report.title} eyebrow={isMission ? `${report.completedDate} · Expedition report` : `Year ${report.year} · ${isIndividual ? 'Individual tournament' : 'Guild championship'}`} onClose={onClose} width="wide">
       <div className={`mission-report mission-report--${tone}`}>
         <header className="mission-report__hero">
-          <div className="mission-report__seal">{isMission ? report.grade === 'Legendary' ? '✦' : report.grade === 'Catastrophic' ? '!' : '◆' : report.champion ? '♛' : '⚔'}</div>
-          <div><span className="eyebrow">{isMission ? `${report.family} · ${report.formationType} · ${report.locationName || report.region}` : `${report.division} circuit · ${report.location}`}</span><h2>{isMission ? report.grade : report.champion ? 'Champions' : `Top ${report.finish}`}</h2><p>{report.narrative}</p></div>
+          <div className="mission-report__seal">{isMission ? report.grade === 'Legendary' ? '✦' : report.grade === 'Catastrophic' ? '!' : '◆' : playerWon ? '♛' : '⚔'}</div>
+          <div><span className="eyebrow">{isMission ? `${report.family} · ${report.formationType} · ${report.locationName || report.region}` : `${report.circuit} circuit · ${report.location}`}</span><h2>{isMission ? report.grade : finishText}</h2><p>{report.narrative}</p></div>
         </header>
 
         {isMission ? (
           <>
-            <div className="report-metrics"><div><span>Final chance</span><strong>{report.finalChance}%</strong><small>Roll {report.roll}</small></div><div><span>Treasury</span><strong>+{report.reward}</strong><small>Supplies −{report.supplyCost}</small></div><div><span>Fame</span><strong>{report.fame >= 0 ? '+' : ''}{report.fame}</strong><small>{report.locationName || report.region}</small></div><div><span>Outcome</span><strong>{report.grade}</strong><small>Risk {report.risk}/5</small></div></div>
-            <section className="report-decision"><span className="eyebrow">The decisive moment</span><blockquote>{report.decision?.prompt}</blockquote><div><strong>{report.decision?.label}</strong><p>{report.decision?.note}</p></div></section>
+            <div className="report-metrics"><div><span>{report.combat ? 'Tactical battle' : report.missionGame ? `${report.missionGame.type} challenge` : 'Final chance'}</span><strong>{report.combat ? (report.combat.playerWon ? 'Victory' : 'Defeat') : report.missionGame ? report.missionGame.grade : `${report.finalChance}%`}</strong><small>{report.combat ? `${report.combat.turns} turns · ${report.combat.playerHpPct}% field strength left` : report.missionGame ? `${report.missionGame.turns} turns · performance ${report.missionGame.performance}` : `Roll ${report.roll}`}</small></div><div><span>Treasury</span><strong>+{report.reward}</strong><small>Supplies −{report.supplyCost}</small></div><div><span>Fame</span><strong>{report.fame >= 0 ? '+' : ''}{report.fame}</strong><small>{report.locationName || report.region}</small></div><div><span>Outcome</span><strong>{report.grade}</strong><small>Risk {report.risk}/5</small></div></div>
+            {report.combat ? <section className="report-combat-summary"><span className="eyebrow">Tactical record</span><div><strong>{report.combat.method}</strong><p>Your company dealt {report.combat.playerDamage} damage and received {report.combat.enemyDamage}. Opposition ended at {report.combat.enemyHpPct}% field strength.</p></div><div className="report-combat-log">{(report.combat.log || []).slice(-6).map((entry, index) => <p key={`${entry.turn}-${index}`}><b>{entry.turn ? `T${entry.turn}` : '•'}</b><span>{entry.text}</span></p>)}</div></section> : null}
+            {report.missionGame ? <section className="report-combat-summary"><span className="eyebrow">Playable {report.missionGame.type} record</span><div><strong>{report.missionGame.grade} · performance {report.missionGame.performance}</strong><p>{Object.entries(report.missionGame.metrics || {}).map(([key, value]) => `${key.replace(/([A-Z])/g, ' $1')}: ${typeof value === 'number' ? Math.round(value) : value}`).join(' · ')}</p></div><div className="report-combat-log">{(report.missionGame.log || []).slice(0, 6).map((entry, index) => <p key={`${entry.turn}-${index}`}><b>{entry.turn ? `T${entry.turn}` : '•'}</b><span>{entry.text}</span></p>)}</div></section> : null}
+            <section className="report-decision"><span className="eyebrow">{report.combat || report.missionGame ? 'Aftermath decision' : 'The decisive moment'}</span><blockquote>{report.decision?.prompt}</blockquote><div><strong>{report.decision?.label}</strong><p>{report.decision?.note}</p></div></section>
           </>
         ) : (
-          <div className="report-metrics"><div><span>Finish</span><strong>{report.champion ? '1st' : `Top ${report.finish}`}</strong></div><div><span>Prize</span><strong>{report.reward}</strong></div><div><span>Fame</span><strong>+{report.fame}</strong></div><div><span>Bouts</span><strong>{report.bracket?.length || 0}</strong></div></div>
+          <div className="report-metrics"><div><span>Your finish</span><strong>{playerResult ? finishText : 'Did not enter'}</strong><small>{playerResult ? `Expected top ${playerResult.expectedFinish}` : `Champion: ${report.championName}`}</small></div><div><span>Prize</span><strong>{(playerResult?.prize || 0).toLocaleString()}</strong><small>Champion purse {report.prize?.toLocaleString()}</small></div><div><span>Fame</span><strong>{playerResult ? `${playerResult.fameDelta >= 0 ? '+' : ''}${playerResult.fameDelta}` : '—'}</strong><small>Expectation-adjusted</small></div><div><span>Wins</span><strong>{playerResult?.boutWins || 0}</strong><small>Seed #{playerResult?.initialSeed || '—'}</small></div></div>
         )}
 
-        <section><span className="eyebrow">Company arrangement</span><div className="report-team">{(report.team || []).map((member) => <button key={member.heroId} onClick={() => openHero(member.heroId)}><HeroPortrait hero={{ ...member, id: member.heroId, status: member.status || 'available' }} size="sm" /><div><strong>{member.name}</strong><small>Lv {member.level || 1} · {member.rarity || 'Common'} · {member.primal || 'Fire'} {member.classId} · {member.role}</small><span>Power {member.power} · Role {member.roleRating}</span></div>{isMission ? <i className={report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'dead' ? 'is-dead' : report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'injured' ? 'is-injured' : ''}>{report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status || 'returned'}</i> : null}</button>)}</div></section>
+        {isMission ? <section><span className="eyebrow">Company arrangement</span><div className="report-team">{(report.team || []).map((member) => <button key={member.heroId} onClick={() => openHero(member.heroId)}><HeroPortrait hero={{ ...member, id: member.heroId, status: member.status || 'available' }} size="sm" /><div><strong>{member.name}</strong><small>Lv {member.level || 1} · {member.rarity || 'Common'} · {member.primal || 'Fire'} {member.classId} · {member.role}</small><span>Power {member.power} · Role {member.roleRating}</span></div><i className={report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'dead' ? 'is-dead' : report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status === 'injured' ? 'is-injured' : ''}>{report.heroEffects?.find((effect) => effect.heroId === member.heroId)?.status || 'returned'}</i></button>)}</div></section> : null}
+
+        {!isMission ? (
+          <section className="tournament-report-spotlight"><span className="eyebrow">Champion and challenger</span><div>
+            {champion ? <button onClick={() => openHero(champion.heroId)}><HeroPortrait hero={{ ...champion, id: champion.heroId, status: 'active' }} size="md" /><span><small>Champion</small><strong>{champion.name}</strong><em>{champion.guildName} · {champion.rarity} · Lv {champion.level}</em></span></button> : <div><small>Champion guild</small><strong>{report.championName}</strong></div>}
+            {playerHero && playerHero.heroId !== champion?.heroId ? <button onClick={() => openHero(playerHero.heroId)}><HeroPortrait hero={{ ...playerHero, id: playerHero.heroId, status: 'available' }} size="md" /><span><small>Your entrant</small><strong>{playerHero.name}</strong><em>{finishText} · seed #{playerResult.initialSeed}</em></span></button> : null}
+          </div></section>
+        ) : null}
 
         {isMission ? (
           <div className="report-consequences">
-            <section><span className="eyebrow">Individual consequences</span>{report.heroEffects?.map((effect) => <div key={effect.heroId}><strong>{effect.name}</strong><p>{effect.injury ? effect.injury : effect.status === 'dead' ? 'Killed during the expedition' : 'Returned to active service'} · +{effect.xpGain || 0} XP{effect.levelAfter > effect.levelBefore ? ` · LEVEL ${effect.levelAfter}` : ''} · form {effect.formChange >= 0 ? '+' : ''}{effect.formChange} · renown {effect.renownChange >= 0 ? '+' : ''}{effect.renownChange}</p></div>)}</section>
-            <section><span className="eyebrow">Lasting consequences</span>{report.artifact ? <p><b>Artifact recovered:</b> {report.artifact}</p> : null}{report.consequences?.length ? report.consequences.map((item) => <p key={item}>{item}</p>) : <p>No new political obligation or rivalry was created.</p>}</section>
+            <section><span className="eyebrow">Individual consequences</span>{report.heroEffects?.map((effect) => <div key={effect.heroId}><strong>{effect.name}</strong><p>{effect.injury ? effect.injury : effect.status === 'dead' ? 'Killed during the expedition' : 'Returned to active service'} · +{effect.xpGain || 0} XP{effect.levelAfter > effect.levelBefore ? ` · LEVEL ${effect.levelAfter}` : ''} · form {effect.formChange >= 0 ? '+' : ''}{effect.formChange} · renown {effect.renownChange >= 0 ? '+' : ''}{effect.renownChange} · loyalty {effect.loyaltyChange >= 0 ? '+' : ''}{effect.loyaltyChange || 0}{effect.personalityReaction ? ` · ${effect.personalityReaction}` : ''}</p></div>)}</section>
+            <section><span className="eyebrow">Lasting consequences</span>{report.artifact ? <p><b>Artifact recovered:</b> {report.artifact}</p> : null}{report.consequences?.length ? report.consequences.map((item) => <p key={item}>{item}</p>) : <p>No new political obligation or rivalry was created.</p>}{report.relationshipChanges?.length ? <p><b>Party bonds shifted:</b> {report.relationshipChanges.length} relationship changes were recorded from the expedition.</p> : null}</section>
           </div>
         ) : (
-          <section><span className="eyebrow">Round-by-round record</span><div className="report-bouts">{report.bracket?.map((bout, index) => <article key={`${bout.round}-${index}`}><strong>{bout.round}</strong><span>{bout.won ? 'Victory' : 'Defeat'} vs {bout.opponent}</span><small>{bout.tactic} · {bout.chance}% estimate · {bout.opponentPrimal || 'Unknown'} opponent · primal {(bout.primalEdge || 0) >= 0 ? '+' : ''}{bout.primalEdge || 0} · {bout.teamPower} vs {bout.opponentPower}</small></article>)}</div></section>
+          <section><span className="eyebrow">Round-by-round bracket</span><div className="report-bouts report-bouts--universe">{report.bracket?.map((bout, index) => {
+            const sideA = bout.heroAName || bout.guildAName;
+            const sideB = bout.heroBName || bout.guildBName;
+            return <article key={`${bout.round}-${index}`} className={bout.playerBout ? 'is-player' : ''}><strong>{bout.round}</strong><span>{sideA} <b>vs</b> {sideB}</span><small>Winner: {bout.winnerName}{bout.playerBout && bout.combat ? ` · ${bout.combat.turns} tactical turns · ${bout.combat.method} · ${bout.combat.playerHpPct}% HP left` : bout.playerBout && bout.chance ? ` · Your estimate ${bout.chance}% · ${bout.tactic}` : ''}</small></article>;
+          })}</div></section>
         )}
-        <Button variant="primary" size="lg" onClick={onClose}>{isMission ? 'Seal report in the Chronicle' : 'Return to the circuit'}</Button>
+        <Button variant="primary" size="lg" onClick={onClose}>{isMission ? 'Seal report in the Chronicle' : 'Return to the tournament universe'}</Button>
       </div>
     </Modal>
   );
@@ -260,8 +311,11 @@ function ReportModal({ report, onClose, openHero }) {
 function HeroDetailModal({ state, heroId, onClose, actions }) {
   const hero = heroId ? getHero(state, heroId) : null;
   if (!hero) return null;
-  const classInfo = CLASSES[hero.classId];
+  const classInfo = CLASSES[normalizeClassId(hero.classId)];
   const active = !['retired', 'dead'].includes(hero.status) && state.heroes.some((item) => item.id === hero.id);
+  const mentor = hero.mentorId ? getHero(state, hero.mentorId) : null;
+  const apprentices = (hero.apprenticeIds || []).map((id) => getHero(state, id)).filter(Boolean);
+  const carriedArtifacts = (state.artifacts || []).filter((artifact) => artifact.ownerId === hero.id);
   return (
     <Modal open title={hero.name} eyebrow={`Level ${hero.level || 1} · ${hero.rarity || 'Common'} · ${hero.primal || 'Fire'} ${hero.classId} · Age ${hero.age} · ${hero.status}`} onClose={onClose} width="wide">
       <div className="hero-dossier">
@@ -270,14 +324,20 @@ function HeroDetailModal({ state, heroId, onClose, actions }) {
           <div className="dossier-taxonomy"><Badge tone={hero.status === 'dead' ? 'red' : hero.status === 'retired' ? 'neutral' : 'green'}>{hero.status}</Badge><RarityBadge rarity={hero.rarity || 'Common'} /><PrimalBadge primal={hero.primal || 'Fire'} /></div>
           <p>{hero.hook || `${hero.origin}.`}</p>
           <div className="dossier-tags"><Badge>{hero.personality}</Badge><Badge tone="red">Flaw: {hero.flaw}</Badge><Badge tone="blue">Dream: {hero.dream}</Badge></div>
+          <div className="dossier-character"><p><b>{hero.personality}:</b> {PERSONALITY_PROFILES[hero.personality] || 'Personality influences important field decisions.'}</p><p><b>{hero.flaw}:</b> {FLAW_PROFILES[hero.flaw] || 'A persistent weakness that can surface under pressure.'}</p></div>
           <div className="dossier-legacy"><span>Historical legacy</span><strong>{hero.legacy}</strong><small>{hero.renown} public renown</small></div>
         </aside>
         <div className="hero-dossier__main">
           <div className="dossier-rating-row"><div><span>Level</span><strong>{hero.level || 1}/20</strong><small>{hero.level >= 20 ? 'Maximum' : `${hero.xp || 0} XP`}</small></div><div><span>Power</span><strong>{hero.power}</strong></div><div><span>Potential</span><strong>{hero.potential}</strong></div><div><span>Peak</span><strong>{hero.career?.peakPower || hero.power}</strong></div></div><ProgressBar value={hero.level >= 20 ? 1 : hero.xp || 0} max={hero.level >= 20 ? 1 : (70 + (hero.level || 1) * 30)} label={hero.level >= 20 ? 'Level cap reached' : `Progress to level ${(hero.level || 1) + 1}`} tone="purple" compact />
           <section><span className="eyebrow">Core attributes</span><div className="attribute-grid">{Object.entries(hero.attributes || {}).map(([name, value]) => <div key={name}><ProgressBar value={value} max={100} label={name} tone={name === classInfo?.primary ? 'gold' : name === classInfo?.secondary ? 'blue' : 'neutral'} compact /></div>)}</div></section>
           <section><span className="eyebrow">Party role ratings</span><div className="role-rating-grid">{PARTY_ROLES.map((role) => <div key={role.id}><span>{role.label}</span><strong>{roleRating(hero, role.id)}</strong></div>)}</div></section>
-          <section><span className="eyebrow">Career record</span><div className="career-grid"><div><span>Missions</span><strong>{hero.career?.missions || 0}</strong></div><div><span>Victories</span><strong>{hero.career?.wins || 0}</strong></div><div><span>Legendary</span><strong>{hero.career?.legendary || 0}</strong></div><div><span>Titles</span><strong>{hero.career?.titles || 0}</strong></div><div><span>Injuries</span><strong>{hero.career?.injuries || 0}</strong></div><div><span>Artifacts</span><strong>{hero.career?.artifacts || 0}</strong></div></div></section>
-          {active ? <section className="dossier-controls"><label>Training<select value={hero.training} onChange={(event) => actions.setTraining(hero.id, event.target.value)}><option>Fundamentals</option><option>Role Drills</option><option>Sparring</option><option>Mentorship</option><option>Study</option><option>Rehabilitation</option><option>Public Exhibition</option></select></label><label>Appointment<select value={hero.appointment || ''} onChange={(event) => event.target.value && actions.appointHero(hero.id, event.target.value)}><option value="">No appointment</option>{APPOINTMENTS.map((item) => <option key={item.id} value={item.id}>{item.id}</option>)}</select></label><Button variant="danger" size="sm" disabled={hero.status === 'mission'} onClick={() => actions.releaseHero(hero.id)}>Release / retire</Button></section> : null}
+          <section><span className="eyebrow">Career record</span><div className="career-grid"><div><span>Missions</span><strong>{hero.career?.missions || 0}</strong></div><div><span>Mission wins</span><strong>{hero.career?.wins || 0}</strong></div><div><span>Individual titles</span><strong>{hero.career?.individualTitles || 0}</strong></div><div><span>Guild titles</span><strong>{hero.career?.guildTitles || 0}</strong></div><div><span>Tournament bouts</span><strong>{hero.career?.tournamentBoutWins || 0}/{hero.career?.tournamentBouts || 0}</strong></div><div><span>Prize money</span><strong>{(hero.career?.prizeMoney || 0).toLocaleString()}</strong></div><div><span>Best finish</span><strong>{hero.career?.bestTournamentFinish && hero.career.bestTournamentFinish < 99 ? `Top ${hero.career.bestTournamentFinish}` : '—'}</strong></div><div><span>Artifacts</span><strong>{hero.career?.artifacts || 0}</strong></div></div></section>
+          {hero.promises?.length ? <section><span className="eyebrow">Promises & contract history</span><div className="promise-list">{hero.promises.map((promise) => <article key={promise.id} className={`promise-list__item is-${promise.status}`}><Badge tone={promise.status === 'fulfilled' ? 'green' : promise.status === 'broken' ? 'red' : 'gold'}>{promise.status}</Badge><div><strong>{promise.label}</strong><p>{promise.description}</p><small>{promise.status === 'active' ? `Due ${promise.dueLabel}` : promise.status === 'fulfilled' ? `Fulfilled ${promise.fulfilledLabel || ''}` : `Broken after ${promise.dueLabel}`}</small></div></article>)}</div></section> : null}
+          {(mentor || apprentices.length) ? <section><span className="eyebrow">Lineage</span><div className="lineage-dossier">{mentor ? <article><span>Mentor</span><strong>{mentor.name}</strong><small>Lv {mentor.level || '—'} · {mentor.classId}</small></article> : null}{apprentices.map((apprentice) => <article key={apprentice.id}><span>Apprentice</span><strong>{apprentice.name}</strong><small>Lv {apprentice.level || '—'} · {apprentice.classId}</small></article>)}</div></section> : null}
+          {hero.ambitions?.length ? <section><span className="eyebrow">Ambitions & inherited will</span><div className="ambition-dossier">{hero.ambitions.map((ambition) => <article key={ambition.id} className={ambition.status === 'completed' ? 'is-complete' : ''}><Badge tone={ambition.status === 'completed' ? 'green' : ambition.inheritedFromHeroId ? 'purple' : 'gold'}>{ambition.status === 'completed' ? 'completed' : ambition.inheritedFromHeroId ? 'inherited' : 'personal'}</Badge><div><strong>{ambition.label}</strong>{ambition.inheritedFromHeroName ? <small>Inherited from {ambition.inheritedFromHeroName}</small> : null}</div></article>)}</div></section> : null}
+          {carriedArtifacts.length ? <section><span className="eyebrow">Artifacts in custody</span><div className="artifact-dossier">{carriedArtifacts.map((artifact) => <article key={artifact.id}><span>✦</span><div><strong>{artifact.name}</strong><small>{artifact.prestige} prestige · {artifact.effect?.label || 'Historic artifact'}</small></div></article>)}</div></section> : null}
+          {hero.relationships?.length ? <section><span className="eyebrow">Important relationships</span><div className="relationship-list">{[...hero.relationships].sort((a, b) => Math.abs(b.value || 0) - Math.abs(a.value || 0)).slice(0, 8).map((relation) => { const other = getHero(state, relation.heroId); return <article key={relation.heroId}><span>{relation.value >= 25 ? '◆' : relation.value <= -25 ? '▲' : '◇'}</span><div><strong>{other?.name || 'Former companion'}</strong><small>{relation.lastReason || 'Shared service'}</small></div><b className={relation.value > 0 ? 'is-positive' : relation.value < 0 ? 'is-negative' : ''}>{relation.value > 0 ? '+' : ''}{relation.value}</b></article>; })}</div></section> : null}
+          {active ? <section className="dossier-controls"><label>Monthly assignment<select value={hero.monthlyActivity || (hero.status === 'injured' ? 'Infirmary' : 'Training')} disabled={['mission', 'tournament'].includes(hero.status)} onChange={(event) => actions.setMonthlyActivity(hero.id, event.target.value)}>{MONTHLY_ACTIVITIES.map((item) => <option key={item.id} value={item.id}>{item.icon} {item.label}</option>)}</select></label>{(hero.monthlyActivity || 'Training') === 'Training' && !['mission', 'tournament'].includes(hero.status) ? <label>Training focus<select value={hero.training} onChange={(event) => actions.setTraining(hero.id, event.target.value)}>{TRAINING_FOCI.map((item) => <option key={item}>{item}</option>)}</select></label> : null}<label>Appointment<select value={hero.appointment || ''} onChange={(event) => event.target.value && actions.appointHero(hero.id, event.target.value)}><option value="">No appointment</option>{APPOINTMENTS.map((item) => <option key={item.id} value={item.id}>{item.id}</option>)}</select></label><Button variant="danger" size="sm" disabled={hero.status === 'mission'} onClick={() => actions.releaseHero(hero.id)}>Release / retire</Button></section> : null}
           <section><span className="eyebrow">Career timeline</span><div className="hero-history">{(hero.history || []).slice(0, 40).map((event, index) => <article key={`${event.date}-${index}`}><time>{event.date}</time><div><strong>{event.title}</strong><p>{event.text}</p></div></article>)}</div></section>
         </div>
       </div>
@@ -300,11 +360,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [heroModalId, setHeroModalId] = useState(null);
   const [reportModalRef, setReportModalRef] = useState(null);
   const [message, setMessage] = useState(null);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
   const localMissionCount = state.missions.filter((mission) => mission.locationId === (state.world?.currentLocationId || 'dunmere')).length;
   const nextAction = getNextAction(state);
+  const activeCompetition = [...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active');
 
   const commitState = useCallback((nextState, notice) => {
     const errors = validateGame(nextState);
@@ -365,13 +427,33 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     advance: (months) => applyResult(advanceMonths(state, months)),
     advanceNext: () => applyResult(advanceToNextEvent(state)),
     resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
-    recruit: (id) => applyResult(recruitCandidate(state, id), 'A new hero has joined the banner.'),
+    recruit: (id, negotiation = 'accept') => applyResult(recruitCandidate(state, id, negotiation), 'A new hero has joined the banner.'),
     setTraining: (id, training) => commitState(setHeroTraining(state, id, training)),
+    setMonthlyActivity: (id, activity) => commitState(setHeroMonthlyActivity(state, id, activity)),
+    acknowledgeCouncilReport: () => commitState(acknowledgeCouncilReport(state)),
+    renameGuild: (name) => applyResult(renameGuild(state, name), 'Guild identity updated.'),
+    renameFounder: (name) => applyResult(renameFounderHero(state, name), 'Founder record updated.'),
     appointHero: (heroId, appointmentId) => applyResult(appointHero(state, heroId, appointmentId)),
+    designateSuccessor: (heroId) => applyResult(designateSuccessor(state, heroId), 'Successor designated.'),
+    assignMentor: (mentorId, apprenticeId) => applyResult(assignMentor(state, mentorId, apprenticeId), 'Mentorship established.'),
+    assignBranchCommander: (branchId, heroId) => applyResult(assignBranchCommander(state, branchId, heroId), 'Branch commander assigned.'),
+    foundBranch: (locationId, commanderId) => applyResult(foundBranch(state, locationId, commanderId), 'A new branch has been founded.'),
+    upgradeBranch: (branchId) => applyResult(upgradeBranch(state, branchId), 'Branch expanded.'),
+    assignArtifact: (artifactId, heroId) => applyResult(assignArtifact(state, artifactId, heroId), heroId ? 'Artifact entrusted to a hero.' : 'Artifact returned to the guild vault.'),
+    inheritAmbition: (legacyAmbitionId, heroId) => applyResult(inheritAmbition(state, legacyAmbitionId, heroId), 'An unfinished ambition has found a new bearer.'),
     upgradeFacility: (id) => applyResult(upgradeFacility(state, id), 'Headquarters upgraded.'),
     chooseAlignment: (alignment) => applyResult(chooseAlignment(state, alignment)),
-    enterTournament: (tournamentId, formationType, assignments) => applyResult(enterTournament(state, tournamentId, formationType, assignments)),
-    fightTournamentRound: (tournamentId, tactic) => applyResult(fightTournamentRound(state, tournamentId, tactic)),
+    enterHeroTournament: (tournamentId, heroId) => applyResult(enterHeroTournament(state, tournamentId, heroId)),
+    fightHeroTournamentRound: (tournamentId, tactic) => applyResult(fightHeroTournamentRound(state, tournamentId, tactic)),
+    startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),
+    enterGuildTournament: (tournamentId, formationType, assignments) => applyResult(enterGuildTournament(state, tournamentId, formationType, assignments)),
+    fightGuildTournamentRound: (tournamentId, tactic) => applyResult(fightGuildTournamentRound(state, tournamentId, tactic)),
+    startGuildCombat: (tournamentId) => applyResult(startGuildTournamentCombat(state, tournamentId)),
+    combatAction: (actionId, leadHeroId) => applyResult(performActiveCombatAction(state, actionId, leadHeroId)),
+    autoResolveCombat: () => applyResult(autoResolveActiveCombat(state)),
+    missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
+    autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
+    concludeCombat: () => applyResult(concludeActiveCombat(state)),
     travel: (destinationId) => applyResult(startTravel(state, destinationId)),
     openReport: (reference) => setReportModalRef(reference),
     acknowledgeReport: (reference) => {
@@ -442,6 +524,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     headquarters: <HeadquartersScreen {...screenProps} />,
     rankings: <RankingsScreen {...screenProps} />,
     chronicle: <ChronicleScreen {...screenProps} />,
+    legacy: <LegacyScreen {...screenProps} />,
     goals: <GoalsScreen {...screenProps} />,
     settings: <SettingsScreen {...screenProps} />,
   }[screen] || <HallScreen {...screenProps} />;
@@ -468,12 +551,12 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
           <button className="topbar__mobile-brand" onClick={() => navigate('hall')}><Crest size="xs" /><span>{state.guild.name}</span></button>
           <div className="topbar__date"><span>{MONTHS[state.date.month]}</span><strong>{state.date.year}</strong></div>
           <button className="topbar__location" onClick={() => navigate('world')} title="Current guild location"><i>{summary.travel ? '➜' : (PRIMALS[summary.locationPrimal]?.icon || '⌖')}</i><span>{summary.travel ? `Traveling · ${summary.travel.monthsRemaining}m` : summary.location}</span></button>
-          <div className="topbar__resources"><span title="Treasury"><i>◈</i><b>{summary.crowns.toLocaleString()}</b><small>gold</small></span><span title="Fame"><i>✦</i><b>{summary.fame}</b><small>fame</small></span><span title="Legacy"><i>▤</i><b>{summary.legacy}</b><small>legacy</small></span><span title="Rank"><i>♛</i><b>#{summary.rank}</b><small>rank</small></span></div>
+          <div className="topbar__resources"><span title="Treasury"><i>◈</i><b>{summary.crowns.toLocaleString()}</b><small>gold</small></span><span title="Fame"><i>✦</i><b>{summary.fame}</b><small>fame</small></span><span title="Legacy"><i>▤</i><b>{summary.legacy}</b><small>legacy</small></span><span title={summary.rankSummary.map((item) => `${item.scope} #${item.rank}/${item.total}`).join(" · ")}><i>♛</i><b>#{summary.rank}</b><small>{summary.tier.toLowerCase()}</small></span></div>
           <div className="time-controls">
-            <Button size="sm" onClick={() => actions.advance(1)} disabled={state.pendingDecisions.length > 0}>+1 month</Button>
-            <Button size="sm" onClick={() => actions.advanceNext()} disabled={state.pendingDecisions.length > 0}>Next event</Button>
-            <Button size="sm" onClick={() => actions.advance(3)} disabled={state.pendingDecisions.length > 0}>+Season</Button>
-            <Button size="sm" variant="primary" onClick={() => actions.advance(12)} disabled={state.pendingDecisions.length > 0}>+1 year</Button>
+            <Button size="sm" onClick={() => actions.advance(1)} disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}>+1 month</Button>
+            <Button size="sm" onClick={() => actions.advanceNext()} disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}>Next event</Button>
+            <Button size="sm" onClick={() => actions.advance(3)} disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}>+Season</Button>
+            <Button size="sm" variant="primary" onClick={() => actions.advance(12)} disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}>+1 year</Button>
           </div>
         </header>
         {message ? <button className={`message-bar message-bar--${message.tone}`} onClick={() => setMessage(null)}><span>{message.tone === 'red' ? '!' : message.tone === 'green' ? '✓' : '◆'}</span><p>{message.text}</p><i>×</i></button> : null}
@@ -491,9 +574,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         <main className="screen-container" key={screen}>{renderedScreen}</main>
       </div>
 
-      <nav className="mobile-nav">{NAV_ITEMS.slice(0, 6).map((item) => <button key={item.id} className={screen === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}><span>{item.icon}</span><small>{item.label.split(' ')[0]}</small></button>)}</nav>
+      <nav className="mobile-nav">{NAV_ITEMS.filter((item) => ['hall', 'missions', 'heroes', 'tournaments', 'world'].includes(item.id)).map((item) => <button key={item.id} className={screen === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}><span>{item.icon}</span><small>{item.label.split(' ')[0]}</small></button>)}<button className={['headquarters', 'rankings', 'chronicle', 'legacy', 'goals', 'settings'].includes(screen) ? 'is-active' : ''} onClick={() => setMobileMoreOpen(true)}><span>•••</span><small>More</small></button></nav>
+      <CombatArenaModal encounter={state.activeEncounter} actions={actions} />
+      <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} />
+      <CouncilReportModal state={state} open={Boolean(state.council?.unread && !state.pendingDecisions.length && !activeReport && !state.activeEncounter)} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
+      <MobileMoreModal open={mobileMoreOpen} onClose={() => setMobileMoreOpen(false)} navigate={navigate} active={screen} />
       <HeroDetailModal state={state} heroId={heroModalId} onClose={() => setHeroModalId(null)} actions={actions} />
       <Toasts notifications={state.notifications} onDismiss={actions.dismissNotification} onClear={actions.clearNotifications} />
     </div>
