@@ -15,9 +15,9 @@ import {
 import { FORMATION_TYPES, PARTY_ROLES, emptyFormations, formationForMission } from '../data/formations.js';
 import { LOCATION_BY_ID, LOCATIONS, PRIMALS, PRIMAL_IDS, RARITIES, unlockedLocations } from '../data/world.js';
 import { GUILD_BLUEPRINTS } from '../data/universe.js';
-import { autoResolveEncounter, createPartyEncounter, missionGradeFromCombat, performCombatAction } from './combat.js';
+import { autoResolveEncounter, missionGradeFromCombat, performCombatAction } from './combat.js';
 import { artifactEffectFromPrestige, defaultAmbitionForHero } from './legacy.js';
-import { autoResolveMissionGame, createMissionGame, missionGradeFromMissionGame, performMissionGameAction } from './missionGames.js';
+import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from './missionGames.js';
 import {
   MAX_CHRONICLE,
   MAX_HEROES,
@@ -60,19 +60,11 @@ import {
   calculatePower,
   choosePrimal,
   createHeroFromBase,
-  formationSlotFor,
   generateHero,
-  normalizedFormationType,
   partyEstimate,
   roleRating,
 } from './engine/heroes.js';
-import {
-  candidateDemandFor,
-  fulfillPromisesInPlace,
-  makeCandidate,
-  refreshCandidatesForLocationInPlace,
-  updatePromiseDeadlinesInPlace,
-} from './engine/candidates.js';
+import { candidateDemandFor, makeCandidate, refreshCandidatesForLocationInPlace, updatePromiseDeadlinesInPlace } from './engine/candidates.js';
 import { createTitleRecords, createUniverseInPlace, createWorldArtifactsInPlace, refreshMissionsInPlace } from './engine/universe.js';
 import { getGuildRankSummary } from './engine/rankings.js';
 import {
@@ -94,6 +86,7 @@ import {
   simulateScheduledCompetitionsInPlace,
 } from './engine/guildTournaments.js';
 import { beginGuildTournamentCombat, beginHeroTournamentCombat } from './engine/tournamentEntry.js';
+import { launchMission, missionDecision, queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './engine/missions.js';
 
 function facilityLevels() {
   return Object.fromEntries(
@@ -405,259 +398,6 @@ export function acknowledgeWelcome(state) {
   next.tutorial.acknowledged = true;
   completeTutorialTargetInPlace(next, 'acknowledgeWelcome');
   return finalize(next);
-}
-
-export function inspectMission(state, missionId) {
-  const next = clone(state);
-  const mission = next.missions.find((item) => item.id === missionId);
-  if (mission) {
-    mission.inspected = true;
-    next.flags.firstMissionInspected = true;
-    if (mission.templateId === 'wolves-old-road') completeTutorialTargetInPlace(next, 'inspectMission');
-  }
-  return finalize(next);
-}
-
-export function notePartySelection(state, missionId, formationTypeOrAssignments, maybeAssignments) {
-  const next = clone(state);
-  const mission = next.missions.find((item) => item.id === missionId);
-  const legacyCall = Array.isArray(formationTypeOrAssignments);
-  const formationType = normalizedFormationType(mission, legacyCall ? mission?.formationType || mission?.approach : formationTypeOrAssignments);
-  const assignments = legacyCall ? formationTypeOrAssignments : maybeAssignments || [];
-  const estimate = partyEstimate(next, missionId, formationType, assignments);
-  if (mission?.templateId === 'wolves-old-road' && assignments.length >= 2 && estimate.missingSlots.length === 0) {
-    completeTutorialTargetInPlace(next, 'selectParty');
-  }
-  return finalize(next);
-}
-
-export function saveFormation(state, formationType, assignments) {
-  const next = clone(state);
-  if (!FORMATION_TYPES[formationType]) return { state, error: 'Unknown arrangement type.' };
-  const availableIds = new Set(next.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).map((hero) => hero.id));
-  next.guild.formations ||= emptyFormations();
-  next.guild.formations[formationType] = clone(
-    assignments
-      .filter((assignment) => availableIds.has(assignment.heroId))
-      .map((assignment) => ({
-        slotId: assignment.slotId,
-        role: formationSlotFor(formationType, assignment)?.role || assignment.role,
-        heroId: assignment.heroId,
-      })),
-  );
-  next.notifications.push({
-    id: `formation-${formationType}-${Date.now()}`,
-    tone: 'blue',
-    title: `${FORMATION_TYPES[formationType].label} saved`,
-    text: 'The arrangement can be loaded for future missions and tournaments.',
-  });
-  return { state: finalize(next), error: null };
-}
-
-export function launchMission(state, missionId, formationTypeOrAssignments, maybeAssignments, mutate = false) {
-  const next = mutate ? state : clone(state);
-  const missionIndex = next.missions.findIndex((item) => item.id === missionId);
-  if (missionIndex < 0) return { state, error: 'This contract is no longer available.' };
-  const mission = next.missions[missionIndex];
-  if (
-    next.world?.activeTravel &&
-    !(next.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === (mission.locationId || 'dunmere'))
-  )
-    return { state, error: 'Headquarters is traveling; only established branches can launch new missions until arrival.' };
-  if (!operationalLocationIds(next).has(mission.locationId || 'dunmere')) {
-    return {
-      state,
-      error: `This contract is in ${mission.locationName || LOCATION_BY_ID[mission.locationId]?.name || 'another location'}. Travel there or establish a branch before committing a company.`,
-    };
-  }
-  const legacyCall = Array.isArray(formationTypeOrAssignments);
-  const selectedFormation = normalizedFormationType(mission, legacyCall ? mission?.formationType || mission?.approach : formationTypeOrAssignments);
-  const assignments = legacyCall ? formationTypeOrAssignments : maybeAssignments || [];
-  if (next.activeMissions.length >= partyCapacity(next)) {
-    return { state, error: `Every field company is already deployed (${partyCapacity(next)} maximum at ${next.guild.tier} tier).` };
-  }
-  const uniqueHeroIds = new Set(assignments.map((assignment) => assignment.heroId));
-  if (assignments.length < 2 || assignments.length > 5 || uniqueHeroIds.size !== assignments.length) {
-    return { state, error: 'Choose between two and five different heroes.' };
-  }
-  const estimate = partyEstimate(next, missionId, selectedFormation, assignments);
-  if (estimate.missingSlots.length)
-    return { state, error: `Fill the required ${estimate.missingSlots.join(' and ')} slot${estimate.missingSlots.length === 1 ? '' : 's'}.` };
-  const unavailable = assignments.map((assignment) => getHero(next, assignment.heroId)).filter((hero) => !hero || hero.status !== 'available');
-  if (unavailable.length) return { state, error: 'Every assigned hero must be available.' };
-  const baseSupplyCost = 25 + mission.risk * 18 + mission.duration * 12 + (selectedFormation === 'Expedition' ? 12 : 0);
-  const supplyCost = Math.max(20, Math.round(baseSupplyCost * (appointmentHolder(next, 'Quartermaster') ? 0.88 : 1)));
-  if (next.guild.crowns < supplyCost) return { state, error: `The guild needs ${supplyCost} crowns for supplies.` };
-
-  next.guild.crowns -= supplyCost;
-  const normalizedAssignments = assignments.map((assignment) => {
-    const slot = formationSlotFor(selectedFormation, assignment);
-    return { heroId: assignment.heroId, slotId: slot.id, role: slot.role };
-  });
-  const active = {
-    ...mission,
-    formationType: selectedFormation,
-    assignments: clone(normalizedAssignments),
-    remaining: mission.duration,
-    startedYear: next.date.year,
-    startedMonth: next.date.month,
-    estimateAtLaunch: estimate.chance,
-    powerAtLaunch: estimate.power,
-    supplyCost,
-  };
-  normalizedAssignments.forEach((assignment) => {
-    const hero = getHero(next, assignment.heroId);
-    hero.status = 'mission';
-    hero.fatigue = clamp(hero.fatigue + 10 + mission.risk * 4, 0, 100);
-    hero.roleExperience[assignment.role] = (hero.roleExperience[assignment.role] || 0) + 1;
-    addHeroHistory(hero, next, {
-      type: 'mission-start',
-      title: `Departed for ${mission.title}`,
-      text: `Assigned as ${assignment.role} in a ${selectedFormation} arrangement.`,
-    });
-    fulfillPromisesInPlace(next, hero, 'mission', { formationType: selectedFormation, missionId: mission.id });
-  });
-  next.activeMissions.push(active);
-  next.missions.splice(missionIndex, 1);
-  addChronicle(next, {
-    type: 'departure',
-    importance: mission.risk >= 3 ? 2 : 1,
-    title: `${mission.title} begins`,
-    text: `${normalizedAssignments.map((assignment) => `${getHero(next, assignment.heroId)?.name} (${assignment.role})`).join(', ')} depart as a ${FORMATION_TYPES[selectedFormation].label}.`,
-    heroIds: normalizedAssignments.map((assignment) => assignment.heroId),
-    tags: [mission.family, selectedFormation],
-  });
-  if (mission.templateId === 'wolves-old-road') completeTutorialTargetInPlace(next, 'launchMission');
-  evaluateStateInPlace(next);
-  return { state: finalize(next), error: null };
-}
-
-function missionDecision(activeMission) {
-  return {
-    id: `decision-${activeMission.id}`,
-    type: 'mission',
-    missionId: activeMission.id,
-    title: activeMission.title,
-    prompt: activeMission.choice.prompt,
-    options: activeMission.choice.options,
-    createdAt: Date.now(),
-  };
-}
-
-function missionEnemyClass(mission) {
-  if (mission.family === 'Monster Hunt') return 'Ranger';
-  if (mission.family === 'War Operation') return 'Guardian';
-  if (mission.family === 'Rescue') return 'Duelist';
-  if (mission.family === 'Escort') return 'Ranger';
-  if (mission.family === 'Dungeon') return 'Guardian';
-  return 'Guardian';
-}
-
-function missionOpponentName(mission) {
-  if (mission.family === 'Monster Hunt') return `${mission.enemyPrimal || 'Wild'} apex beast`;
-  if (mission.family === 'War Operation') return `${mission.locationName || mission.region} warband`;
-  if (mission.family === 'Rescue') return 'Captors and their champion';
-  if (mission.family === 'Escort') return 'Road ambushers';
-  if (mission.family === 'Dungeon') return 'Dungeon guardians';
-  return 'Hostile force';
-}
-
-function missionCombatObjective(mission) {
-  if (mission.family === 'Rescue' || mission.family === 'Escort') return { type: 'protect', target: 6, label: 'Protect the objective until relief arrives' };
-  if (mission.family === 'Dungeon') return { type: 'break', target: 100, label: 'Break the hostile position' };
-  if (mission.family === 'War Operation') return { type: 'hold', target: 7, label: 'Hold the field until relief arrives' };
-  if (mission.family === 'Monster Hunt') return { type: 'eliminate', target: 100, label: 'Bring down the target' };
-  return { type: 'capture', target: 100, label: 'Secure the objective' };
-}
-
-function createMissionCombatEncounterInPlace(state, mission) {
-  const playerHeroes = mission.assignments
-    .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
-    .filter((item) => item.hero && item.hero.status !== 'dead');
-  if (playerHeroes.length < 2) return false;
-  const encounterSeed = (state.rngState ^ hashString(`mission-combat:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
-  const opponentPower = clamp(Math.round(mission.difficulty * 0.84 + mission.risk * 3), 32, 96);
-  const opponentLevel = clamp(Math.round(1 + (mission.difficulty - 28) / 4.5), 1, 20);
-  const objective = missionCombatObjective(mission);
-  state.activeEncounter = createPartyEncounter({
-    id: `combat-${mission.id}`,
-    seed: encounterSeed,
-    sourceType: 'mission',
-    sourceId: mission.id,
-    title: mission.title,
-    roundName: 'Mission engagement',
-    objective: mission.stakes || 'Break the hostile force and secure the mission objective.',
-    playerHeroes,
-    opponentName: missionOpponentName(mission),
-    opponentPrimal: mission.enemyPrimal || LOCATION_BY_ID[mission.locationId]?.primal || 'Iron',
-    opponentClassId: missionEnemyClass(mission),
-    opponentPower,
-    opponentLevel,
-    risk: mission.risk,
-    prestige: mission.fame || 0,
-    objectiveType: objective.type,
-    objectiveTarget: objective.target,
-    objectiveLabel: objective.label,
-  });
-  mission.combatStarted = true;
-  addChronicle(state, {
-    type: 'combat',
-    importance: mission.risk >= 4 ? 3 : 1,
-    title: `Battle joined: ${mission.title}`,
-    text: `${playerHeroes.map((item) => item.hero.name).join(', ')} enter a turn-based engagement against ${state.activeEncounter.enemy.name}.`,
-    heroIds: playerHeroes.map((item) => item.hero.id),
-    tags: ['combat', mission.family, mission.enemyPrimal],
-  });
-  return true;
-}
-
-function queueDueCombatMissionInPlace(state) {
-  if (state.activeEncounter) return false;
-  const mission = state.activeMissions.find(
-    (item) =>
-      item.remaining <= 0 &&
-      item.formationType === 'Combat' &&
-      !item.combatResolved &&
-      !state.pendingDecisions.some((decision) => decision.missionId === item.id),
-  );
-  if (!mission) return false;
-  return createMissionCombatEncounterInPlace(state, mission);
-}
-
-function createPlayableMissionGameInPlace(state, mission) {
-  const playerHeroes = mission.assignments
-    .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
-    .filter((item) => item.hero && item.hero.status !== 'dead');
-  if (playerHeroes.length < 2) return false;
-  const seed = (state.rngState ^ hashString(`mission-game:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
-  const game = createMissionGame({ mission, playerHeroes, seed });
-  if (!game) return false;
-  state.activeMissionGame = game;
-  mission.missionGameStarted = true;
-  addChronicle(state, {
-    type: 'mission-game',
-    importance: mission.risk >= 4 ? 3 : 1,
-    title: `${mission.formationType} challenge: ${mission.title}`,
-    text: `${playerHeroes.map((item) => item.hero.name).join(', ')} reach the decisive ${mission.formationType.toLowerCase()} phase of the mission.`,
-    heroIds: playerHeroes.map((item) => item.hero.id),
-    tags: [mission.formationType, mission.family, 'playable'],
-  });
-  return true;
-}
-
-function queueDueMissionGameInPlace(state) {
-  if (state.activeEncounter || state.activeMissionGame) return false;
-  const mission = state.activeMissions.find(
-    (item) =>
-      item.remaining <= 0 &&
-      item.formationType !== 'Combat' &&
-      !item.missionGameResolved &&
-      !state.pendingDecisions.some((decision) => decision.missionId === item.id),
-  );
-  if (!mission) return false;
-  if (createPlayableMissionGameInPlace(state, mission)) return true;
-  state.pendingDecisions.push(missionDecision(mission));
-  return true;
 }
 
 function resolveMonthlyHeroActivities(state, rng) {
@@ -3029,3 +2769,4 @@ export { getGoalMetric, getPromotionRequirement } from './engine/goals.js';
 export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upgradeFacility } from './engine/economy.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { enterHeroTournament, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
+export { inspectMission, notePartySelection, saveFormation, launchMission } from './engine/missions.js';
