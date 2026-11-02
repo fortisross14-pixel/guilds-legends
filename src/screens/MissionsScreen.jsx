@@ -267,8 +267,8 @@ export default function MissionsScreen({ state, actions, navigate }) {
                 <div className="tactical-combat-intro">
                   <strong>Turn-based engagement</strong>
                   <p>
-                    When the company reaches hostile contact, time pauses. Read enemy tells, manage stamina, select a tactical lead for class Signatures, and
-                    choose whether to attack, guard, feint, recover or press the mission objective.
+                    When the company reaches hostile contact, time pauses for a turn-based battle. Give each hero a command and a target, watch the enemy tell,
+                    use skills and items, or let auto-battle handle routine fights.
                   </p>
                 </div>
               ) : null}

@@ -1,0 +1,55 @@
+/* Wave 3 battle screen, reward moments, shop and equipment. Placeholder styling. */
+
+/* Battle */
+.battle-screen { display: grid; gap: .9rem; }
+.battle-tell { padding: .55rem .8rem; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--panel-2); }
+.battle-tell strong { margin-right: .4rem; color: var(--gold); text-transform: uppercase; font-size: .7rem; letter-spacing: .08em; }
+.battle-tell--danger { border-color: var(--red); }
+.battle-tell--danger strong { color: var(--red-light); }
+.battle-enemies { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; padding: 1rem; border-radius: var(--radius); background: radial-gradient(circle at 50% 40%, var(--panel-3), var(--bg-1)); }
+.battle-enemy { display: grid; justify-items: center; gap: .3rem; width: 150px; padding: .5rem; border: 1px solid transparent; border-radius: var(--radius-sm); background: none; color: var(--text); }
+.battle-enemy:disabled { cursor: default; opacity: 1; }
+.battle-enemy__art { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+.battle-enemy.is-telling { border-color: var(--gold-dark); }
+.battle-enemy.is-targetable, .battle-hero.is-targetable { border-color: var(--gold); cursor: pointer; box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 35%, transparent); }
+.battle-enemy.is-ko, .battle-hero.is-ko { opacity: .4; filter: grayscale(1); }
+.battle-party { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .6rem; }
+.battle-hero { display: flex; gap: .5rem; align-items: flex-start; padding: .55rem; border: 2px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--bg-1); color: var(--text); text-align: left; }
+.battle-hero:disabled { cursor: default; opacity: 1; }
+.battle-hero.is-active { border-color: var(--gold); }
+.battle-hero__info { display: grid; gap: .2rem; flex: 1; min-width: 0; }
+.battle-hero__info small { color: var(--muted); }
+.battle-hero__command { color: var(--gold-light); font-size: .75rem; }
+.battle-unit__statuses { display: flex; flex-wrap: wrap; gap: .2rem; }
+.battle-commands { display: grid; gap: .5rem; padding: .7rem; border: 2px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--bg-1); }
+.battle-commands__who { color: var(--gold); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; }
+.battle-commands__menu, .battle-commands__list, .battle-commands__meta, .battle-commands__prompt { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.battle-commands__meta { justify-content: flex-end; }
+.battle-result { display: grid; gap: .4rem; justify-items: center; padding: 1rem; border-radius: var(--radius-sm); background: var(--panel-2); text-align: center; }
+.battle-result--won h3 { color: var(--gold-light); }
+.battle-result--lost h3 { color: var(--red-light); }
+.battle-log { margin: 0; padding: .5rem .8rem; max-height: 170px; overflow-y: auto; border-radius: var(--radius-sm); background: var(--bg-0); list-style: none; font-size: .8rem; }
+.battle-log__entry--good { color: var(--text); }
+.battle-log__entry--bad { color: var(--red-light); }
+.battle-log__entry--info { color: var(--muted); font-style: italic; }
+
+/* Reward moments */
+.moment { display: grid; gap: .7rem; justify-items: center; text-align: center; }
+.moment__gold { margin: 0; color: var(--gold-light); font-size: 1.4rem; font-family: var(--display); }
+.moment__xp, .moment__stats { display: grid; gap: .2rem; margin: 0; padding: 0; list-style: none; }
+.moment__skills { color: var(--purple); font-weight: 600; }
+.moment__taxonomy { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem; }
+.moment__hook { max-width: 46ch; color: var(--muted); }
+
+/* Shop and equipment */
+.shop, .equipment { display: grid; gap: 1rem; }
+.item-list { display: grid; gap: .4rem; }
+.item-row { display: grid; grid-template-columns: 1fr auto auto; gap: .6rem; align-items: center; padding: .45rem .6rem; border-radius: var(--radius-sm); background: var(--panel-2); }
+.item-row small { display: block; color: var(--muted); }
+.equipment__use-target { display: flex; gap: .5rem; align-items: center; color: var(--muted); }
+.equipment__heroes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.equipment-card__head { display: flex; gap: .6rem; align-items: center; margin-bottom: .5rem; }
+.equipment-slot { display: grid; grid-template-columns: 80px 1fr; gap: .3rem .5rem; align-items: center; padding: .35rem 0; border-top: 1px solid var(--line); }
+.equipment-slot__name { color: var(--muted); text-transform: capitalize; font-size: .8rem; }
+.equipment-slot select, .equipment-slot .button { grid-column: 2; }
+.equipment-card__skills { margin: .5rem 0 0; color: var(--muted); font-size: .8rem; }

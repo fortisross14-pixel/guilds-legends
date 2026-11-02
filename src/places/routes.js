@@ -8,6 +8,7 @@ export const ROUTES = {
   hall: { view: 'town', building: 'guildHall', tab: 'overview' },
   heroes: { view: 'town', building: 'guildHall', tab: 'roster' },
   headquarters: { view: 'town', building: 'guildHall', tab: 'headquarters' },
+  equipment: { view: 'town', building: 'guildHall', tab: 'equipment' },
   tavern: { view: 'town', building: 'tavern' },
   missions: { view: 'town', building: 'noticeBoard' },
   tournaments: { view: 'town', building: 'arena' },

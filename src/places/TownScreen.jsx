@@ -1,16 +1,19 @@
 import React from 'react';
 import { BUILDINGS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
-import { Badge, Button, EmptyState, PrimalBadge, Tabs } from '../components/UI.jsx';
+import { Badge, Button, PrimalBadge, Tabs } from '../components/UI.jsx';
 import HallScreen from '../screens/HallScreen.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import HeadquartersScreen from '../screens/HeadquartersScreen.jsx';
 import MissionsScreen from '../screens/MissionsScreen.jsx';
 import TournamentsScreen from '../screens/TournamentsScreen.jsx';
 import RankingsScreen from '../screens/RankingsScreen.jsx';
+import ShopScreen from '../screens/ShopScreen.jsx';
+import EquipmentScreen from '../screens/EquipmentScreen.jsx';
 
 const GUILD_HALL_TABS = [
   { id: 'overview', label: 'Overview', icon: '◆' },
   { id: 'roster', label: 'Roster', icon: '♟' },
+  { id: 'equipment', label: 'Equipment & items', icon: '⚔' },
   { id: 'headquarters', label: 'Facilities & appointments', icon: '♜' },
 ];
 
@@ -21,13 +24,10 @@ function GuildHall({ props, tab, setTab }) {
       <Tabs active={active} onChange={setTab} items={GUILD_HALL_TABS} />
       {active === 'overview' ? <HallScreen {...props} /> : null}
       {active === 'roster' ? <HeroesScreen {...props} tabs={['roster', 'legends']} /> : null}
+      {active === 'equipment' ? <EquipmentScreen {...props} /> : null}
       {active === 'headquarters' ? <HeadquartersScreen {...props} /> : null}
     </>
   );
-}
-
-function ShopPlaceholder() {
-  return <EmptyState icon="⚖" title="The shop is closed for now" text="Items and equipment arrive in a later update." />;
 }
 
 function buildingBadge(state, buildingId, locationId) {
@@ -103,7 +103,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
           {building === 'tavern' ? <HeroesScreen {...props} tabs={['recruit', 'roster']} /> : null}
           {building === 'noticeBoard' ? <MissionsScreen {...props} /> : null}
           {building === 'arena' ? <TournamentsScreen {...props} /> : null}
-          {building === 'shop' ? <ShopPlaceholder /> : null}
+          {building === 'shop' ? <ShopScreen {...props} /> : null}
           {building === 'herald' ? <RankingsScreen {...props} /> : null}
         </div>
       ) : (

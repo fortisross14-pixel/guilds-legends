@@ -244,7 +244,10 @@ function HeroCircuit({ state, actions, navigate }) {
             </div>
             <div className="tactical-combat-intro">
               <strong>Turn-based duel</strong>
-              <p>Read the opponent's tell, manage stamina, exploit primal matchups and use {playerHero.classId} techniques to earn the round.</p>
+              <p>
+                A one-on-one battle: read the opponent’s tell, exploit primal matchups, and use {playerHero.classId} skills and items to win before the judges
+                call time.
+              </p>
             </div>
             <Button variant="primary" size="lg" disabled={Boolean(state.activeEncounter)} onClick={() => actions.startHeroCombat(selected.id)}>
               {state.activeEncounter?.sourceId === selected.id ? 'Combat in progress' : 'Enter the arena'}
@@ -449,7 +452,9 @@ function GuildChampionships({ state, actions, navigate }) {
           </div>
           <div className="tactical-combat-intro">
             <strong>Company battle</strong>
-            <p>Each exchange uses the whole Combat Company. Choose which hero leads the turn to bring their class Signature into the fight.</p>
+            <p>
+              A full party battle against the opposing company. Each of your heroes acts every round with their own skills; there is no fleeing a championship.
+            </p>
           </div>
           <Button variant="primary" size="lg" disabled={Boolean(state.activeEncounter)} onClick={() => actions.startGuildCombat(selected.id)}>
             {state.activeEncounter?.sourceId === selected.id ? 'Combat in progress' : 'Enter company battle'}

@@ -11,7 +11,6 @@ import {
   assignBranchCommander,
   assignMentor,
   chooseAlignment,
-  concludeActiveCombat,
   clearNotifications,
   clone,
   createNewGame,
@@ -20,8 +19,6 @@ import {
   enterGuildTournament,
   foundBranch,
   enterHeroTournament,
-  fightGuildTournamentRound,
-  fightHeroTournamentRound,
   performActiveCombatAction,
   performActiveMissionGameAction,
   getDashboardSummary,
@@ -49,6 +46,14 @@ import {
   beginGuildTournamentCombat as startGuildTournamentCombat,
   beginHeroTournamentCombat as startHeroTournamentCombat,
   travelTo,
+  concludeCombatAndContinue,
+  fleeActiveCombat,
+  buyItem,
+  sellItem,
+  equipItem,
+  unequipItem,
+  useItemOnHero,
+  acknowledgeMoment,
   continueJourney,
   resolveRoadEvent,
   restAtGuildHall,
@@ -74,6 +79,7 @@ import CombatArenaModal from './components/CombatArenaModal.jsx';
 import MissionGameModal from './components/MissionGameModal.jsx';
 import RoadEventModal from './components/RoadEventModal.jsx';
 import UpcomingStrip from './components/UpcomingStrip.jsx';
+import MomentModal from './components/MomentModal.jsx';
 
 // Three places replace the old 11-item navigation.
 const PLACE_NAV = [
@@ -710,6 +716,11 @@ function ReportModal({ report, onClose, openHero }) {
             </section>
             <section>
               <span className="eyebrow">Lasting consequences</span>
+              {report.loot?.length ? (
+                <p>
+                  <b>Loot:</b> {report.loot.join(', ')}
+                </p>
+              ) : null}
               {report.artifact ? (
                 <p>
                   <b>Artifact recovered:</b> {report.artifact}
@@ -1196,16 +1207,21 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       upgradeFacility: (id) => applyResult(upgradeFacility(state, id), 'Headquarters upgraded.'),
       chooseAlignment: (alignment) => applyResult(chooseAlignment(state, alignment)),
       enterHeroTournament: (tournamentId, heroId) => applyResult(enterHeroTournament(state, tournamentId, heroId)),
-      fightHeroTournamentRound: (tournamentId, tactic) => applyResult(fightHeroTournamentRound(state, tournamentId, tactic)),
       startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),
       enterGuildTournament: (tournamentId, formationType, assignments) => applyResult(enterGuildTournament(state, tournamentId, formationType, assignments)),
-      fightGuildTournamentRound: (tournamentId, tactic) => applyResult(fightGuildTournamentRound(state, tournamentId, tactic)),
       startGuildCombat: (tournamentId) => applyResult(startGuildTournamentCombat(state, tournamentId)),
-      combatAction: (actionId, leadHeroId) => applyResult(performActiveCombatAction(state, actionId, leadHeroId)),
+      combatRound: (commands) => applyResult(performActiveCombatAction(state, commands)),
+      fleeCombat: () => applyResult(fleeActiveCombat(state)),
+      buyItem: (itemId) => applyResult(buyItem(state, itemId)),
+      sellItem: (itemId) => applyResult(sellItem(state, itemId)),
+      equipItem: (heroId, itemId) => applyResult(equipItem(state, heroId, itemId)),
+      unequipItem: (heroId, slot) => applyResult(unequipItem(state, heroId, slot)),
+      useItem: (itemId, heroId) => applyResult(useItemOnHero(state, itemId, heroId)),
+      acknowledgeMoment: () => commitState(acknowledgeMoment(state)),
       autoResolveCombat: () => applyResult(autoResolveActiveCombat(state)),
       missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
       autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
-      concludeCombat: () => applyResult(concludeActiveCombat(state)),
+      concludeCombat: () => applyResult(concludeCombatAndContinue(state)),
       travel: (destinationId) => applyResult(travelTo(state, destinationId)),
       continueJourney: () => applyResult(continueJourney(state)),
       resolveRoadEvent: (optionId) => applyResult(resolveRoadEvent(state, optionId)),
@@ -1425,6 +1441,11 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} />
+      <MomentModal
+        moment={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !activeReport ? state.moments?.[0] : null}
+        state={state}
+        onClose={actions.acknowledgeMoment}
+      />
       <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} />
       <CouncilReportModal
         state={state}
@@ -1435,6 +1456,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             !state.activeEncounter &&
             !state.activeMissionGame &&
             !state.pendingRoadEvent &&
+            !state.moments?.length &&
             !defunct,
         )}
         onClose={actions.acknowledgeCouncilReport}
