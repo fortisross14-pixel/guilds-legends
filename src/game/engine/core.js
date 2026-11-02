@@ -4,7 +4,9 @@ import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
 
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
+
+export const MAX_MOMENTS = 12;
 
 export const MAX_CHRONICLE = 900;
 
@@ -318,4 +320,17 @@ export function finalize(state) {
   state.guild.tier = TIERS[state.guild.tierIndex]?.id || state.guild.tier;
   state.notifications = state.notifications.slice(-12);
   return state;
+}
+
+/**
+ * Queues a reward moment for the UI (victory, levelUp, recruit). Moments are
+ * presentation only; they never block time.
+ */
+export function pushMoment(state, moment) {
+  state.moments ||= [];
+  state.moments.push({
+    id: `moment-${state.date.year}-${state.date.month}-${state.moments.length}-${moment.type}-${moment.heroId || moment.title || ''}`,
+    ...moment,
+  });
+  if (state.moments.length > MAX_MOMENTS) state.moments.splice(0, state.moments.length - MAX_MOMENTS);
 }

@@ -20,6 +20,7 @@ import {
 import { formationSlotFor, normalizedFormationType, partyEstimate } from './heroes.js';
 import { fulfillPromisesInPlace } from './candidates.js';
 import { evaluateStateInPlace } from './goals.js';
+import { battleItems } from './inventory.js';
 
 export function inspectMission(state, missionId) {
   const next = clone(state);
@@ -176,23 +177,15 @@ function missionOpponentName(mission) {
   return 'Hostile force';
 }
 
-function missionCombatObjective(mission) {
-  if (mission.family === 'Rescue' || mission.family === 'Escort') return { type: 'protect', target: 6, label: 'Protect the objective until relief arrives' };
-  if (mission.family === 'Dungeon') return { type: 'break', target: 100, label: 'Break the hostile position' };
-  if (mission.family === 'War Operation') return { type: 'hold', target: 7, label: 'Hold the field until relief arrives' };
-  if (mission.family === 'Monster Hunt') return { type: 'eliminate', target: 100, label: 'Bring down the target' };
-  return { type: 'capture', target: 100, label: 'Secure the objective' };
-}
-
-function createMissionCombatEncounterInPlace(state, mission) {
+export function createMissionCombatEncounterInPlace(state, mission) {
   const playerHeroes = mission.assignments
     .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
     .filter((item) => item.hero && item.hero.status !== 'dead');
   if (playerHeroes.length < 2) return false;
   const encounterSeed = (state.rngState ^ hashString(`mission-combat:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
   const opponentPower = clamp(Math.round(mission.difficulty * 0.84 + mission.risk * 3), 32, 96);
-  const opponentLevel = clamp(Math.round(1 + (mission.difficulty - 28) / 4.5), 1, 20);
-  const objective = missionCombatObjective(mission);
+  // Per-hero combat: enemy level tracks difficulty (Regional contracts ~1-5, Global ~15-20).
+  const opponentLevel = clamp(Math.round((mission.difficulty - 38) / 5), 1, 20);
   state.activeEncounter = createPartyEncounter({
     id: `combat-${mission.id}`,
     seed: encounterSeed,
@@ -209,16 +202,16 @@ function createMissionCombatEncounterInPlace(state, mission) {
     opponentLevel,
     risk: mission.risk,
     prestige: mission.fame || 0,
-    objectiveType: objective.type,
-    objectiveTarget: objective.target,
-    objectiveLabel: objective.label,
+    // Low-risk contracts field weaker enemies than high-risk ones.
+    strength: 0.65 + mission.risk * 0.09,
+    items: battleItems(state),
   });
   mission.combatStarted = true;
   addChronicle(state, {
     type: 'combat',
     importance: mission.risk >= 4 ? 3 : 1,
     title: `Battle joined: ${mission.title}`,
-    text: `${playerHeroes.map((item) => item.hero.name).join(', ')} enter a turn-based engagement against ${state.activeEncounter.enemy.name}.`,
+    text: `${playerHeroes.map((item) => item.hero.name).join(', ')} enter a turn-based engagement against ${state.activeEncounter.enemyName}.`,
     heroIds: playerHeroes.map((item) => item.hero.id),
     tags: ['combat', mission.family, mission.enemyPrimal],
   });

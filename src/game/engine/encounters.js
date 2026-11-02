@@ -1,13 +1,14 @@
 // @ts-check
 // Active combat and mission-game actions, and concluding them.
 import { ONBOARDING_STEPS } from '../../data/content.js';
-import { autoResolveEncounter, missionGradeFromCombat, performCombatAction } from '../combat.js';
+import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
-import { addChronicle, clone, commitRng, completeTutorialTargetInPlace, finalize, rngFor } from './core.js';
+import { addChronicle, clone, commitRng, completeTutorialTargetInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
+import { applyXpInPlace } from './heroes.js';
+import { addItemsInPlace, lootNames, rollLoot, settleBattleItemsInPlace } from './inventory.js';
 import { evaluateStateInPlace } from './goals.js';
 import { completeIndividualTournamentInPlace, resolveIndividualRoundInPlace } from './tournaments.js';
 import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guildTournaments.js';
-import { beginGuildTournamentCombat, beginHeroTournamentCombat } from './tournamentEntry.js';
 import { missionDecision } from './missions.js';
 
 function concludeMissionGameInPlace(state) {
@@ -74,13 +75,65 @@ export function autoResolveActiveMissionGame(state, mutate = false) {
   return { state: finalize(next), error: null };
 }
 
-export function performActiveCombatAction(state, actionId, leadHeroId = null) {
+/** Plays one battle round. commands: { [partyUnitId]: { action, skillId?, itemId?, targetId? } }. */
+export function performActiveCombatAction(state, commands = {}) {
   if (!state.activeEncounter) return { state, error: 'There is no active combat.' };
   if (state.activeEncounter.status !== 'active') return { state, error: 'The combat is over. Conclude the result before issuing another order.' };
   const next = clone(state);
-  const normalizedAction = typeof actionId === 'string' ? actionId.toLowerCase() : actionId;
-  next.activeEncounter = performCombatAction(next.activeEncounter, normalizedAction, leadHeroId);
+  next.activeEncounter = performCombatRound(next.activeEncounter, commands && typeof commands === 'object' ? commands : {});
   return { state: finalize(next), error: null, encounter: next.activeEncounter };
+}
+
+export function fleeActiveCombat(state) {
+  if (!state.activeEncounter || state.activeEncounter.status !== 'active') return { state, error: 'There is no battle to flee.' };
+  if (!state.activeEncounter.canFlee) return { state, error: 'There is no running from this fight.' };
+  const next = clone(state);
+  next.activeEncounter = attemptFlee(next.activeEncounter);
+  return { state: finalize(next), error: null, encounter: next.activeEncounter };
+}
+
+function concludeRoadCombatInPlace(next, encounter, combatResult) {
+  const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
+  const tier = next.guild.tierIndex + 1;
+  const rng = rngFor(next, `road-combat:${encounter.id}`);
+  if (combatResult.playerWon) {
+    const gold = (30 + rng.int(0, 60)) * tier;
+    next.guild.crowns += gold;
+    const xp = fighters.map((hero) => {
+      applyXpInPlace(hero, 25 * tier, next, 'a road ambush');
+      return { heroId: hero.id, name: hero.name, xp: 25 * tier };
+    });
+    const loot = rollLoot(rng, next.guild.tierIndex, 0);
+    addItemsInPlace(next, loot);
+    pushMoment(next, { type: 'victory', title: 'Ambush repelled', grade: 'Victory', gold, xp, loot: lootNames(loot) });
+    addChronicle(next, {
+      type: 'travel',
+      importance: 1,
+      title: 'Bandits driven off',
+      text: `The travellers win the skirmish and take ${gold} gold.`,
+      tags: ['travel', 'road-event', 'combat'],
+    });
+  } else {
+    const lost = Math.min(Math.max(0, next.guild.crowns), rng.int(40, 100) * tier);
+    next.guild.crowns -= lost;
+    fighters
+      .filter((hero) => (combatResult.knockedOut || []).includes(hero.id))
+      .forEach((hero) => {
+        hero.status = 'injured';
+        hero.injury = 'Road wound';
+        hero.injuryMonths = rng.int(1, 2);
+        hero.monthlyActivity = 'Infirmary';
+      });
+    addChronicle(next, {
+      type: 'travel',
+      importance: 1,
+      title: 'Robbed on the road',
+      text: `The bandits win and take ${lost} gold.`,
+      tags: ['travel', 'road-event', 'combat'],
+    });
+    next.notifications.push({ id: `road-loss-${encounter.id}`, tone: 'red', title: 'Robbed on the road', text: `The bandits take ${lost} gold.` });
+  }
+  commitRng(next, rng);
 }
 
 export function autoResolveActiveCombat(state, mutate = false) {
@@ -98,6 +151,14 @@ export function concludeActiveCombat(state, mutate = false) {
   const combatResult = clone(encounter.result);
   let report = null;
   let round = null;
+  settleBattleItemsInPlace(next, combatResult.itemsUsed);
+
+  if (encounter.sourceType === 'road') {
+    concludeRoadCombatInPlace(next, encounter, combatResult);
+    next.activeEncounter = null;
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'road-combat', combat: combatResult } };
+  }
 
   if (encounter.sourceType === 'mission') {
     const mission = next.activeMissions.find((item) => item.id === encounter.sourceId);
@@ -116,6 +177,7 @@ export function concludeActiveCombat(state, mutate = false) {
       enemyHpPct: combatResult.enemyHpPct,
       playerDamage: combatResult.playerDamage,
       enemyDamage: combatResult.enemyDamage,
+      knockedOut: combatResult.knockedOut || [],
       log: encounter.log.slice(-12),
     };
     decision.prompt = `${combatResult.playerWon ? 'The hostile force breaks.' : 'The company is forced back.'} ${decision.prompt}`;
@@ -139,6 +201,8 @@ export function concludeActiveCombat(state, mutate = false) {
     if (!tournament || tournament.status !== 'active') return { state, error: 'The tournament round can no longer be found.' };
     const rng = rngFor(next, `hero-tournament-combat:${tournament.id}:${tournament.currentRoundSize}`);
     round = resolveIndividualRoundInPlace(next, tournament, rng, 'Measured', combatResult);
+    if (combatResult.playerWon)
+      pushMoment(next, { type: 'victory', title: `${tournament.name}: bout won`, grade: combatResult.method, gold: 0, xp: [], loot: [] });
     if (round.playerLost) report = completeIndividualTournamentInPlace(next, tournament, rng, round.roundSize);
     else if (tournament.activeEntrants.length === 1) report = completeIndividualTournamentInPlace(next, tournament, rng, 1);
     commitRng(next, rng);
@@ -157,25 +221,4 @@ export function concludeActiveCombat(state, mutate = false) {
   next.activeEncounter = null;
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null, result: round, report };
-}
-
-// The tactic argument is kept for API compatibility; rounds now resolve through tactical combat.
-export function fightHeroTournamentRound(state, tournamentId, _tactic = 'Measured') {
-  const begun = beginHeroTournamentCombat(state, tournamentId);
-  if (begun.error) return begun;
-  const resolved = autoResolveActiveCombat(begun.state);
-  if (resolved.error) return resolved;
-  return concludeActiveCombat(resolved.state);
-}
-
-export function fightGuildTournamentRound(state, tournamentId, _tactic = 'Measured') {
-  const begun = beginGuildTournamentCombat(state, tournamentId);
-  if (begun.error) return begun;
-  const resolved = autoResolveActiveCombat(begun.state);
-  if (resolved.error) return resolved;
-  return concludeActiveCombat(resolved.state);
-}
-
-export function fightTournamentRound(state, tournamentId, tactic = 'Measured') {
-  return fightGuildTournamentRound(state, tournamentId, tactic);
 }

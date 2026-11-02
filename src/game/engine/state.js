@@ -105,6 +105,8 @@ export function createNewGame(options = {}) {
     },
     world: { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null, roadEvents: [] },
     pendingRoadEvent: null,
+    inventory: { potion: 3, antidote: 1 },
+    moments: [],
     council: { lastReport: null, unread: false },
     heroes: [],
     historicHeroes: [],

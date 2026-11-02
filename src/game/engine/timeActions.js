@@ -3,11 +3,13 @@
 // journey, resting at the Guild Hall, and sending companies out.
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
-import { addChronicle, clamp, clone, commitRng, finalize, partyCapacity, rngFor, uid } from './core.js';
-import { applyXpInPlace } from './heroes.js';
+import { createPartyEncounter } from '../combat.js';
+import { addChronicle, clamp, clone, commitRng, finalize, hashString, partyCapacity, rngFor, uid } from './core.js';
+import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
 import { launchMission } from './missions.js';
+import { concludeActiveCombat } from './encounters.js';
 import { advanceMonths, advanceToNextEvent } from './time.js';
 
 export const MAX_REST_MONTHS = 3;
@@ -77,20 +79,32 @@ export function resolveRoadEvent(state, optionId) {
 
   if (event.type === 'ambush' && optionId === 'fight') {
     const fighters = [...party].sort((a, b) => b.power - a.power).slice(0, 4);
-    const strength = fighters.reduce((sum, hero) => sum + hero.power, 0);
-    const threat = 60 + next.guild.tierIndex * 90;
-    const winChance = fighters.length ? clamp(0.35 + (strength - threat) / 200, 0.1, 0.92) : 0;
-    if (rng.chance(winChance)) {
-      const loot = rng.int(30, 90) * tier;
-      next.guild.crowns += loot;
-      fighters.forEach((hero) => applyXpInPlace(hero, 25, next, 'road ambush'));
-      result = `The bandits scatter. +${loot} gold and +25 XP for ${fighters.length} fighter${fighters.length === 1 ? '' : 's'}.`;
-    } else {
+    if (!fighters.length) {
       const lost = Math.min(Math.max(0, next.guild.crowns), rng.int(40, 100) * tier);
       next.guild.crowns -= lost;
-      const hurt = fighters.length ? rng.pick(fighters) : null;
-      if (hurt && rng.chance(0.4)) woundInPlace(hurt, rng);
-      result = `The bandits win the skirmish and take ${lost} gold.${hurt?.status === 'injured' ? ` ${hurt.name} is wounded.` : ''}`;
+      result = `With nobody fit to fight, the bandits take ${lost} gold.`;
+    } else {
+      const locationId = travel?.toId || next.world.currentLocationId;
+      next.activeEncounter = createPartyEncounter({
+        id: `road-${event.id}`,
+        seed: (next.rngState ^ hashString(`road-ambush:${event.id}`)) >>> 0,
+        sourceType: 'road',
+        sourceId: event.id,
+        title: 'Ambush on the road',
+        roundName: 'Road ambush',
+        objective: 'Drive off the bandits.',
+        playerHeroes: fighters.map((hero) => ({ hero, role: 'Fighter' })),
+        opponentName: 'Bandits',
+        opponentPrimal: LOCATION_BY_ID[locationId]?.primal || 'Iron',
+        opponentClassId: 'Rogue',
+        opponentPower: 40 + next.guild.tierIndex * 18,
+        opponentLevel: 1 + next.guild.tierIndex * 5,
+        enemyCount: clamp(fighters.length, 1, 4),
+        risk: 2,
+        canFlee: true,
+        items: battleItems(next),
+      });
+      result = 'Steel is drawn on the road.';
     }
   } else if (event.type === 'ambush' && optionId === 'pay') {
     const toll = 40 * tier;
@@ -101,14 +115,12 @@ export function resolveRoadEvent(state, optionId) {
     const gain = rng.int(40, 90) * tier;
     next.guild.crowns += gain;
     result = `The merchant pays ${gain} gold for your spare gear.`;
-  } else if (event.type === 'merchant' && optionId === 'provisions') {
-    const cost = 30 * tier;
-    if (next.guild.crowns < cost) return { state, error: `Provisions cost ${cost} gold.` };
+  } else if (event.type === 'merchant' && optionId === 'buy') {
+    const cost = 25 * tier;
+    if (next.guild.crowns < cost) return { state, error: `Two potions cost ${cost} gold.` };
     next.guild.crowns -= cost;
-    party.forEach((hero) => {
-      hero.fatigue = clamp(hero.fatigue - 15, 0, 100);
-    });
-    result = `You spend ${cost} gold on provisions. The travellers feel rested.`;
+    addItemsInPlace(next, { potion: 2 });
+    result = `You buy two potions for ${cost} gold.`;
   } else if (event.type === 'recruit' && optionId === 'invite') {
     const locationId = travel?.toId || next.world.currentLocationId;
     const candidate = makeCandidate(next, rng, null, locationId);
@@ -165,4 +177,15 @@ export function launchExpedition(state, missionId, formationType, assignments) {
   if (launched.error) return launched;
   if (launched.state.activeMissions.length < partyCapacity(launched.state)) return launched;
   return advanceToNextEvent(launched.state);
+}
+
+/** Conclude a finished battle; if it interrupted a journey, keep travelling. */
+export function concludeCombatAndContinue(state) {
+  const concluded = concludeActiveCombat(state);
+  if (concluded.error) return concluded;
+  const next = concluded.state;
+  if (next.world?.activeTravel && !next.pendingDecisions.length && !next.activeEncounter && !next.activeMissionGame && !next.pendingRoadEvent) {
+    return advanceMonths(next, next.world.activeTravel.monthsRemaining, true);
+  }
+  return concluded;
 }

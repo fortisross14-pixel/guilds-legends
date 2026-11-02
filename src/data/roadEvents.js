@@ -5,7 +5,7 @@ export const ROAD_EVENTS = {
     title: 'Ambush on the road',
     text: 'Bandits block the road and demand a toll.',
     options: [
-      { id: 'fight', label: 'Fight them off', note: 'An auto-resolved skirmish. Win coin and experience, or lose gold and risk a wound.' },
+      { id: 'fight', label: 'Fight them off', note: 'A battle. Win coin, experience and loot, or lose gold and risk wounds.' },
       { id: 'pay', label: 'Pay the toll', note: 'Lose some gold. Nobody gets hurt.' },
     ],
   },
@@ -14,7 +14,7 @@ export const ROAD_EVENTS = {
     text: 'A merchant shares your campfire and offers a trade.',
     options: [
       { id: 'sell', label: 'Sell spare gear', note: 'Gain some gold.' },
-      { id: 'provisions', label: 'Buy good provisions', note: 'Spend a little gold. The travellers shake off fatigue.' },
+      { id: 'buy', label: 'Buy two potions', note: 'A cheap bundle of potions for the road.' },
       { id: 'ignore', label: 'Keep moving', note: 'Nothing happens.' },
     ],
   },

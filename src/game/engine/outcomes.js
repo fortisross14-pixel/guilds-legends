@@ -20,11 +20,13 @@ import {
   rngFor,
   tierIndexByName,
   uid,
+  pushMoment,
 } from './core.js';
 import { adjustRelationshipInPlace, applyXpInPlace, partyEstimate, roleRating } from './heroes.js';
 import { offerInheritedAmbitionsInPlace, transferArtifactsFromHeroInPlace } from './institution.js';
 import { evaluateStateInPlace } from './goals.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
+import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -302,7 +304,8 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     }
     let policyInjuryRisk = next.guild.policies.retreat === 'Never retreat' ? 0.04 : next.guild.policies.retreat === 'Protect the wounded' ? -0.03 : 0;
     if (next.guild.policies.retreat === 'Preserve the stars') policyInjuryRisk += hero.id === protectedStar?.id ? -0.045 : 0.015;
-    const injury = injureHero(next, hero, mission, grade, rng, (option.injury || 0) + policyInjuryRisk);
+    const knockedOutRisk = (decision.combatSummary?.knockedOut || []).includes(hero.id) ? 0.08 : 0;
+    const injury = injureHero(next, hero, mission, grade, rng, (option.injury || 0) + policyInjuryRisk + knockedOutRisk);
     if (injury.injured) injuries.push(hero.name);
     if (injury.died) deaths.push(hero.name);
     if (!injury.died && hero.status !== 'injured') hero.status = 'available';
@@ -338,6 +341,11 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   );
 
   next.guild.crowns += reward;
+  // Loot uses a derived RNG so it does not shift the campaign's main stream.
+  const loot = cleanSuccess
+    ? rollLoot(rngFor(next, `loot:${mission.id}`), next.guild.tierIndex, grade === 'Legendary' ? 2 : grade === 'Great Success' ? 1 : 0)
+    : {};
+  addItemsInPlace(next, loot);
   next.guild.fame = Math.max(0, next.guild.fame + fame);
   next.guild.legacy += Math.max(
     0,
@@ -455,6 +463,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     injuries,
     deaths,
     artifact: artifactName && cleanSuccess ? artifactName : null,
+    loot: lootNames(loot),
     narrative,
     consequences: [
       option.obligation ? `Obligation: ${option.obligation}` : null,
@@ -465,6 +474,16 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   next.missionHistory.unshift(record);
   if (next.missionHistory.length > MAX_MISSION_HISTORY) next.missionHistory.length = MAX_MISSION_HISTORY;
   next.pendingReports.unshift({ kind: 'mission', id: record.id });
+  if (decision.combatResolved && cleanSuccess) {
+    pushMoment(next, {
+      type: 'victory',
+      title: mission.title,
+      grade,
+      gold: reward,
+      xp: heroEffects.map((effect) => ({ heroId: effect.heroId, name: effect.name, xp: effect.xpGain })),
+      loot: lootNames(loot),
+    });
+  }
 
   addChronicle(next, {
     type: cleanSuccess ? 'victory' : grade === 'Partial' ? 'mixed' : 'defeat',

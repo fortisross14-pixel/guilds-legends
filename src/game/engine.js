@@ -35,11 +35,9 @@ export {
   performActiveMissionGameAction,
   autoResolveActiveMissionGame,
   performActiveCombatAction,
+  fleeActiveCombat,
   autoResolveActiveCombat,
   concludeActiveCombat,
-  fightHeroTournamentRound,
-  fightGuildTournamentRound,
-  fightTournamentRound,
 } from './engine/encounters.js';
 export { advanceMonths, advanceToNextEvent } from './engine/time.js';
 export {
@@ -69,3 +67,6 @@ export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
 export { MAX_REST_MONTHS, planRoadEvents, travelTo, continueJourney, resolveRoadEvent, restAtGuildHall, launchExpedition } from './engine/timeActions.js';
+export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero } from './engine/inventory.js';
+export { acknowledgeMoment } from './engine/dashboard.js';
+export { concludeCombatAndContinue } from './engine/timeActions.js';

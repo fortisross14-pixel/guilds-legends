@@ -7,6 +7,7 @@ import { formationSlotFor } from './heroes.js';
 import { fulfillPromisesInPlace } from './candidates.js';
 import { expectedFinishForSeed, getTournamentAccess, guildTournamentRating, heroTournamentRating, seedEntrants } from './tournaments.js';
 import { tournamentTeamEstimate } from './guildTournaments.js';
+import { battleItems } from './inventory.js';
 
 export function enterHeroTournament(state, tournamentId, heroId) {
   const next = clone(state);
@@ -94,6 +95,7 @@ export function beginHeroTournamentCombat(state, tournamentId) {
   if (!player || !opponent) return { state, error: 'The next tournament opponent could not be prepared.' };
   const roundName = individualRoundLabel(tournament.currentRoundSize || tournament.activeEntrants.length);
   next.activeEncounter = createDuelEncounter({
+    items: battleItems(next),
     id: `duel-${tournament.id}-${tournament.currentRoundSize}`,
     seed: (next.rngState ^ hashString(`duel:${tournament.id}:${tournament.currentRoundSize}:${player.id}:${opponent.id}`)) >>> 0,
     sourceType: 'hero-tournament',
@@ -127,6 +129,8 @@ export function beginGuildTournamentCombat(state, tournamentId) {
   if (playerHeroes.length < 2 || opponentRoster.length < 2) return { state, error: 'Both companies need at least two active heroes.' };
   const roundName = guildRoundLabel(tournament.currentRoundSize || tournament.activeEntrants.length);
   next.activeEncounter = createPartyEncounter({
+    items: battleItems(next),
+    canFlee: false,
     id: `guild-battle-${tournament.id}-${tournament.currentRoundSize}`,
     seed: (next.rngState ^ hashString(`guild-battle:${tournament.id}:${tournament.currentRoundSize}:${opponent.id}`)) >>> 0,
     sourceType: 'guild-tournament',
@@ -143,8 +147,6 @@ export function beginGuildTournamentCombat(state, tournamentId) {
     opponentRoster,
     risk: tournament.circuit === 'Global' ? 5 : 4,
     prestige: tournament.prestige,
-    objectiveType: 'eliminate',
-    objectiveLabel: 'Break the opposing company',
   });
   next.activeEncounter.sourceMeta = { opponentGuildId: opponent.id, tournamentId: tournament.id };
   return { state: finalize(next), error: null, encounter: next.activeEncounter };

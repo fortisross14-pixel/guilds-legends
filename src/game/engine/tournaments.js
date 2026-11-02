@@ -14,8 +14,10 @@ import {
   getHero,
   getHeroGuildName,
   getWorldHeroes,
+  rngFor,
 } from './core.js';
 import { applyXpInPlace } from './heroes.js';
+import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
 
 function tournamentDefinition(tournament) {
   const source = tournament.kind === 'guild' ? GUILD_TOURNAMENT_DEFINITIONS : INDIVIDUAL_TOURNAMENT_DEFINITIONS;
@@ -463,6 +465,11 @@ function finishPlayerIndividualTournamentInPlace(state, tournament, actualFinish
   ensureTournamentCareer(hero);
   hero.status = 'available';
   hero.career.bestTournamentFinish = Math.min(hero.career.bestTournamentFinish || 99, actualFinish);
+  if (actualFinish <= 2) {
+    const prize = rollLoot(rngFor(state, `prize:${tournament.id}`), tournamentRequirements(tournament).tierIndex || 0, actualFinish === 1 ? 2 : 1);
+    addItemsInPlace(state, prize);
+    tournament.playerLoot = lootNames(prize);
+  }
   if (actualFinish === 2) hero.career.runnerUps += 1;
   if (actualFinish === 4) hero.career.semifinals += 1;
   const fameDelta = tournamentFameDelta(

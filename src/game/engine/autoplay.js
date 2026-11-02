@@ -53,6 +53,8 @@ export function simulateAutoplay(initialState, months = 240) {
       continue;
     }
 
+    if (state.moments?.length) state.moments = [];
+
     if (state.pendingRoadEvent) {
       state = resolveRoadEvent(state, ROAD_EVENTS[state.pendingRoadEvent.type].options.at(-1).id).state;
       continue;

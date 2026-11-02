@@ -18,6 +18,8 @@ import {
 } from './core.js';
 import { relationshipEntry } from './heroes.js';
 import { refreshCandidatesForLocationInPlace } from './candidates.js';
+import { ARTIFACT_PREFIX, artifactAccessoryStats } from '../../data/items.js';
+import { addItemsInPlace } from './inventory.js';
 
 export function designateSuccessor(state, heroId) {
   const next = clone(state);
@@ -188,6 +190,10 @@ export function assignArtifact(state, artifactId, heroId = null) {
   if (previous) {
     previous.artifactIds = (previous.artifactIds || []).filter((id) => id !== artifact.id);
     previous.artifactPowerBonus = Math.max(0, (previous.artifactPowerBonus || 0) - (artifact.effect?.bonus || 0));
+    if (previous.gear?.accessory === ARTIFACT_PREFIX + artifact.id) {
+      previous.gear.accessory = null;
+      previous.artifactStats = null;
+    }
   }
   artifact.ownerHistory ||= [];
   if (!heroId) {
@@ -203,6 +209,12 @@ export function assignArtifact(state, artifactId, heroId = null) {
   hero.artifactIds ||= [];
   if (!hero.artifactIds.includes(artifact.id)) hero.artifactIds.push(artifact.id);
   hero.artifactPowerBonus = (hero.artifactPowerBonus || 0) + artifact.effect.bonus;
+  // The artifact is worn in the accessory slot; a regular accessory goes back to the inventory.
+  hero.gear ||= { weapon: null, armor: null, accessory: null };
+  const worn = hero.gear.accessory;
+  if (worn && !worn.startsWith(ARTIFACT_PREFIX)) addItemsInPlace(next, { [worn]: 1 });
+  hero.gear.accessory = ARTIFACT_PREFIX + artifact.id;
+  hero.artifactStats = artifactAccessoryStats(artifact.prestige || 0);
   if (!hasOwnedBefore) {
     hero.career.artifacts = (hero.career.artifacts || 0) + 1;
     hero.career.artifactPrestige = (hero.career.artifactPrestige || 0) + Math.round((artifact.prestige || 0) * 0.1);

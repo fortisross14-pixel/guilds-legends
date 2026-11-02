@@ -16,7 +16,14 @@ import {
   createNewGame,
   designateSuccessor,
   enterHeroTournament,
-  fightHeroTournamentRound,
+  buyItem,
+  sellItem,
+  equipItem,
+  unequipItem,
+  shopStock,
+  useItemOnHero,
+  acknowledgeMoment,
+  assignArtifact as assignArtifactForGear,
   foundBranch,
   getGuildmaster,
   getGuildRankings,
@@ -64,7 +71,9 @@ import {
 import { MISSION_TEMPLATES, TIERS } from '../src/data/content.js';
 import { LOCATIONS, PRIMALS, RARITIES, locationBuildings, unlockedLocations } from '../src/data/world.js';
 import { exportGame, importGame } from '../src/game/storage.js';
-import { combatActionDefinition, createDuelEncounter, createPartyEncounter, performCombatAction as performEncounterAction } from '../src/game/combat.js';
+import { autoCommands, autoResolveEncounter, createPartyEncounter, performCombatRound } from '../src/game/combat.js';
+import { skillsForLevel } from '../src/data/skills.js';
+import { ITEMS } from '../src/data/items.js';
 import {
   autoResolveMissionGame,
   createMissionGame,
@@ -72,6 +81,12 @@ import {
   missionGradeFromMissionGame,
   performMissionGameAction,
 } from '../src/game/missionGames.js';
+
+function fightRound(state, tournamentId) {
+  const begun = beginHeroTournamentCombat(state, tournamentId);
+  if (begun.error) return begun;
+  return concludeActiveCombat(autoResolveActiveCombat(begun.state).state);
+}
 
 function tutorialMission(state) {
   return state.missions.find((mission) => mission.templateId === 'wolves-old-road');
@@ -178,7 +193,7 @@ test('v1.4-style saves migrate into council planning without losing the campaign
     delete hero.monthlyActivity;
   });
   const migrated = migrateGame(old);
-  assert.equal(migrated.schemaVersion, 14);
+  assert.equal(migrated.schemaVersion, 15);
   assert.equal(migrated.guild.name, 'Legacy Lantern');
   assert.equal(migrated.council.unread, false);
   assert.ok(migrated.heroes.every((hero) => hero.monthlyActivity));
@@ -365,7 +380,7 @@ test('a player hero enters a live bracket, gains experience and receives a detai
   assert.equal(state.tournaments.find((event) => event.id === tournament.id).initialEntrants.length, 16);
   let report = null;
   for (let round = 0; round < 4 && state.tournaments.find((event) => event.id === tournament.id).status === 'active'; round += 1) {
-    const result = fightHeroTournamentRound(state, tournament.id, 'Measured');
+    const result = fightRound(state, tournament.id);
     assert.equal(result.error, null);
     state = result.state;
     report = result.report || report;
@@ -396,7 +411,7 @@ test('famous champions are punished for an early exit in a modest local tourname
   state = enterHeroTournament(state, tournament.id, hero.id).state;
   let report = null;
   while (state.tournaments.find((event) => event.id === tournament.id).status === 'active') {
-    const result = fightHeroTournamentRound(state, tournament.id, 'Measured');
+    const result = fightRound(state, tournament.id);
     state = result.state;
     report = result.report || report;
   }
@@ -417,7 +432,8 @@ test('turn-based duels expose readable intent and tactical actions before bracke
   assert.equal(state.activeEncounter.status, 'active');
   assert.ok(state.activeEncounter.enemyIntent?.label);
   const beforeTurn = state.activeEncounter.turn;
-  const action = performActiveCombatAction(state, 'guard');
+  const hero0 = state.activeEncounter.party[0];
+  const action = performActiveCombatAction(state, { [hero0.id]: { action: 'defend' } });
   assert.equal(action.error, null);
   state = action.state;
   assert.ok(state.activeEncounter.turn > beforeTurn || state.activeEncounter.status !== 'active');
@@ -437,112 +453,16 @@ test('tactical combat is deterministic for the same campaign state and actions',
   base = enterHeroTournament(base, tournament.id, hero.id).state;
   const a0 = beginHeroTournamentCombat(base, tournament.id).state;
   const b0 = beginHeroTournamentCombat(base, tournament.id).state;
-  const sequence = ['guard', 'feint', 'attack', 'signature', 'recover', 'attack'];
+  const heroUnit = a0.activeEncounter.party[0].id;
+  const sequence = [{ [heroUnit]: { action: 'defend' } }, {}, { [heroUnit]: { action: 'attack' } }, {}, {}, {}];
   let a = a0;
   let b = b0;
-  for (const command of sequence) {
+  for (const commands of sequence) {
     if (a.activeEncounter.status !== 'active' || b.activeEncounter.status !== 'active') break;
-    a = performActiveCombatAction(a, command).state;
-    b = performActiveCombatAction(b, command).state;
+    a = performActiveCombatAction(a, commands).state;
+    b = performActiveCombatAction(b, commands).state;
   }
   assert.deepEqual(a.activeEncounter, b.activeEncounter);
-});
-
-test('reading tells and using class signatures materially beats blind attack spam', () => {
-  const hero = (id, name, classId, primal) => ({
-    id,
-    name,
-    classId,
-    primal,
-    rarity: 'Rare',
-    level: 8,
-    power: 67,
-    attributes: { Might: 65, Finesse: 70, Mind: 58, Spirit: 60, Presence: 64, Endurance: 66 },
-  });
-  const player = hero('qa-player', 'Tactical Hero', 'Duelist', 'Water');
-  const opponent = hero('qa-opponent', 'Arena Rival', 'Guardian', 'Iron');
-  const run = (seed, policy) => {
-    let encounter = createDuelEncounter({
-      id: `qa-${seed}`,
-      seed,
-      sourceType: 'qa',
-      sourceId: 'qa',
-      title: 'QA Duel',
-      roundName: 'Final',
-      playerHero: player,
-      opponentHero: opponent,
-    });
-    while (encounter.status === 'active') encounter = performEncounterAction(encounter, policy(encounter), player.id);
-    return encounter.result;
-  };
-  const smartPolicy = (encounter) => {
-    const intent = encounter.enemyIntent?.actionId;
-    const signature = combatActionDefinition(encounter, 'signature', player.id);
-    if (encounter.player.stamina < 18) return 'recover';
-    if (intent === 'guard') return 'feint';
-    if (intent === 'recover' || intent === 'objective' || intent === 'feint') return 'attack';
-    if (intent === 'attack' || intent === 'signature') return signature.disabled ? 'guard' : 'signature';
-    return 'attack';
-  };
-  let smartWins = 0;
-  let spamWins = 0;
-  let smartPerformance = 0;
-  let spamPerformance = 0;
-  for (let seed = 1; seed <= 80; seed += 1) {
-    const smart = run(seed, smartPolicy);
-    const spam = run(seed, () => 'attack');
-    smartWins += smart.playerWon ? 1 : 0;
-    spamWins += spam.playerWon ? 1 : 0;
-    smartPerformance += smart.performance;
-    spamPerformance += spam.performance;
-  }
-  assert.ok(smartWins >= spamWins + 8, `smart ${smartWins} vs spam ${spamWins}`);
-  assert.ok(smartPerformance > spamPerformance + 600, `performance ${smartPerformance} vs ${spamPerformance}`);
-});
-
-test('party combat makes formation roles and objective actions mechanically relevant', () => {
-  const mk = (id, name, classId, primal, role) => ({
-    hero: {
-      id,
-      name,
-      classId,
-      primal,
-      rarity: 'Rare',
-      level: 6,
-      power: 62,
-      attributes: { Might: 60, Finesse: 62, Mind: 66, Spirit: 63, Presence: 65, Endurance: 61 },
-    },
-    role,
-  });
-  let encounter = createPartyEncounter({
-    id: 'qa-party',
-    seed: 4455,
-    sourceType: 'qa',
-    sourceId: 'qa',
-    title: 'Vault Breach',
-    roundName: 'Engagement',
-    objective: 'Secure the sealed vault before the defenders regroup.',
-    playerHeroes: [
-      mk('c', 'Commander', 'Duelist', 'Water', 'Commander'),
-      mk('f', 'Fighter', 'Guardian', 'Iron', 'Fighter'),
-      mk('s', 'Specialist', 'Artificer', 'Psychic', 'Combat Support'),
-    ],
-    opponentName: 'Vault Guard',
-    opponentPrimal: 'Fire',
-    opponentClassId: 'Guardian',
-    opponentPower: 60,
-    opponentLevel: 6,
-    risk: 3,
-    objectiveType: 'break',
-    objectiveTarget: 100,
-    objectiveLabel: 'Breach the vault',
-  });
-  const before = encounter.objectiveState.progress;
-  encounter = performEncounterAction(encounter, 'objective', 's');
-  assert.ok(encounter.objectiveState.progress > before);
-  assert.ok(encounter.log.some((entry) => /objective/i.test(entry.text)));
-  const signature = combatActionDefinition(encounter, 'signature', 's');
-  assert.equal(signature.label, 'Flash Charge');
 });
 
 test('Regional promotion thresholds lead to National reach', () => {
@@ -572,60 +492,6 @@ test('exported campaign backups import cleanly', () => {
   assert.deepEqual(validateGame(restored), []);
   assert.equal(restored.guild.name, original.guild.name);
   assert.equal(restored.world.currentLocationId, original.world.currentLocationId);
-});
-
-test('Feint is a real tactical counter to a telegraphed Guard', () => {
-  const state = createNewGame({ seed: 8811, founderName: 'Tessa', founderClass: 'Duelist', founderPrimal: 'Water' });
-  const player = state.heroes[0];
-  const opponent = { ...structuredClone(player), id: 'opponent-guard', name: 'Guard Captain', classId: 'Guardian', primal: 'Fire', level: 2, power: 54 };
-  let encounter = createDuelEncounter({
-    id: 'counter-test',
-    seed: 91,
-    sourceType: 'test',
-    sourceId: 'test',
-    title: 'Counter Test',
-    roundName: 'Exhibition',
-    playerHero: player,
-    opponentHero: opponent,
-  });
-  encounter.enemyIntent = { actionId: 'guard', label: 'Disciplined guard', telegraph: 'They settle behind a disciplined guard.', confidence: 1 };
-  encounter = performEncounterAction(encounter, 'feint');
-  assert.ok(encounter.enemy.exposed > 0, 'feint should create an opening against guard');
-  assert.ok(encounter.player.focus >= 1, 'successful feint should build tactical focus');
-  assert.ok(encounter.log.some((entry) => /breaks the defense|opens the defense|creates an opening/i.test(entry.text)));
-});
-
-test('party combat supports non-elimination objectives and selectable signature leads', () => {
-  let state = createNewGame({ seed: 8822, founderName: 'Mara', founderClass: 'Duelist', founderPrimal: 'Water' });
-  state = hireFirstCompanion(state);
-  const heroes = state.heroes.slice(0, 2);
-  let encounter = createPartyEncounter({
-    id: 'protect-test',
-    seed: 99,
-    sourceType: 'test',
-    sourceId: 'protect',
-    title: 'Protect the Envoy',
-    roundName: 'Road Battle',
-    objective: 'Keep the envoy alive until relief arrives.',
-    objectiveType: 'protect',
-    objectiveTarget: 6,
-    playerHeroes: [
-      { hero: heroes[0], role: 'Commander' },
-      { hero: heroes[1], role: 'Fighter' },
-    ],
-    opponentName: 'Ash Raiders',
-    opponentPrimal: 'Fire',
-    opponentClassId: 'Berserker',
-    opponentPower: 52,
-    opponentLevel: 2,
-    risk: 2,
-  });
-  assert.equal(encounter.objectiveState.id, 'protect');
-  const leadId = heroes[1].id;
-  encounter = performEncounterAction(encounter, 'guard', leadId);
-  assert.equal(encounter.player.leadHeroId, leadId);
-  assert.equal(encounter.objectiveState.progress, 1);
-  assert.ok(encounter.objectiveState.protectedIntegrity > 0);
 });
 
 test('current saves preserve an active tactical encounter and tournament bracket across migration', () => {
@@ -1179,7 +1045,9 @@ test('every location has a Guild Hall, a Tavern and a Notice Board; tournament h
     const buildings = locationBuildings(location.id);
     ['guildHall', 'tavern', 'noticeBoard'].forEach((id) => assert.ok(buildings.includes(id), `${location.id} lacks ${id}`));
   });
-  state.tournaments.forEach((tournament) => assert.ok(locationBuildings(tournament.locationId).includes('arena'), `${tournament.locationId} hosts without an arena`));
+  state.tournaments.forEach((tournament) =>
+    assert.ok(locationBuildings(tournament.locationId).includes('arena'), `${tournament.locationId} hosts without an arena`),
+  );
 });
 
 test('v13 saves migrate to v14 with road-event state', () => {
@@ -1190,5 +1058,220 @@ test('v13 saves migrate to v14 with road-event state', () => {
   const migrated = migrateGame(old);
   assert.equal(migrated.pendingRoadEvent, null);
   assert.deepEqual(migrated.world.roadEvents, []);
+  assert.deepEqual(validateGame(migrated), []);
+});
+
+// ---------------------------------------------------------------- Wave 3: combat, skills, items
+
+function testHero(id, classId, level, stat, extra = {}) {
+  const attributes = Object.fromEntries(['Might', 'Finesse', 'Mind', 'Spirit', 'Presence', 'Endurance'].map((key) => [key, stat]));
+  return { id, name: id, classId, primal: 'Iron', level, power: stat, attributes, gear: { weapon: null, armor: null, accessory: null }, ...extra };
+}
+
+function partyBattle({ seed = 11, heroes, power = 45, level = 2, count = 2, items = {} }) {
+  return createPartyEncounter({
+    id: `test-${seed}`,
+    seed,
+    sourceType: 'mission',
+    sourceId: 'm',
+    title: 'Test',
+    roundName: 'Test',
+    playerHeroes: heroes.map((hero) => ({ hero, role: 'Fighter' })),
+    opponentName: 'Wolves',
+    opponentPrimal: 'Animal',
+    opponentPower: power,
+    opponentLevel: level,
+    enemyCount: count,
+    items,
+  });
+}
+
+test('battles are deterministic for the same seed and commands', () => {
+  const make = () => partyBattle({ seed: 99, heroes: [testHero('a', 'Guardian', 3, 50), testHero('b', 'Mage', 3, 50)] });
+  let x = make();
+  let y = make();
+  assert.deepEqual(x, y);
+  for (let round = 0; round < 5 && x.status === 'active'; round += 1) {
+    const commands = { 'party-a': { action: 'attack', targetId: x.enemies[0].id }, 'party-b': { action: 'skill', skillId: 'bolt', targetId: x.enemies[0].id } };
+    x = performCombatRound(x, commands);
+    y = performCombatRound(y, commands);
+  }
+  assert.deepEqual(x, y);
+  assert.ok(x.party.every((unit) => Number.isFinite(unit.hp) && unit.hp <= unit.maxHp));
+});
+
+test('each hero and enemy has its own HP, MP and stats, and turn order follows speed', () => {
+  const fast = testHero('fast', 'Rogue', 3, 50, { attributes: { Might: 50, Finesse: 95, Mind: 50, Spirit: 50, Presence: 50, Endurance: 50 } });
+  const slow = testHero('slow', 'Guardian', 3, 50, { attributes: { Might: 50, Finesse: 20, Mind: 50, Spirit: 50, Presence: 50, Endurance: 50 } });
+  const battle = partyBattle({ seed: 5, heroes: [slow, fast], power: 30, count: 1 });
+  assert.equal(battle.party.length, 2);
+  assert.ok(battle.party.every((unit) => unit.maxHp > 0 && unit.maxMp > 0 && unit.atk > 0 && unit.def >= 0 && unit.spd > 0));
+  assert.ok(battle.enemies[0].sprite?.key?.startsWith('enemy_'));
+  assert.ok(battle.enemyIntent?.telegraph, 'the strongest enemy shows a tell');
+  const next = performCombatRound(battle, { 'party-fast': { action: 'attack' }, 'party-slow': { action: 'attack' } });
+  const firstPartyAction = next.log.find((entry) => entry.turn === 1 && /attacks/.test(entry.text) && /^(fast|slow) /.test(entry.text));
+  assert.match(firstPartyAction.text, /^fast /);
+});
+
+test('targeting: heals land on allies, attacks on enemies, taunt draws enemy attacks', () => {
+  const cleric = testHero('c', 'Cleric', 9, 55);
+  const guard = testHero('g', 'Guardian', 3, 55);
+  let battle = partyBattle({ seed: 21, heroes: [guard, cleric], power: 40, count: 2 });
+  battle.party[0].hp = 10;
+  battle = performCombatRound(battle, {
+    'party-c': { action: 'skill', skillId: 'cure', targetId: 'party-g' },
+    'party-g': { action: 'skill', skillId: 'taunt' },
+  });
+  assert.ok(battle.party[0].hp > 10 || battle.party[0].ko === false, 'Cure healed the Guardian');
+  assert.ok(battle.log.some((entry) => /uses Cure: g \+/.test(entry.text)));
+  assert.ok(battle.party[0].status.taunt > 0, 'Taunt is active');
+  if (battle.status === 'active') {
+    const plans = Object.values(battle.enemyPlans).filter((plan) => plan.targetId);
+    assert.ok(
+      plans.every((plan) => plan.targetId === 'party-g'),
+      'enemies target the taunting Guardian',
+    );
+  }
+  // An attack aimed at an ally is ignored: attacks always resolve against an enemy.
+  const fresh = partyBattle({ seed: 22, heroes: [testHero('d', 'Duelist', 3, 55)], power: 40, count: 1 });
+  const after = performCombatRound(fresh, { 'party-d': { action: 'attack', targetId: 'party-d' } });
+  assert.ok(after.enemies[0].hp < fresh.enemies[0].hp);
+});
+
+test('class skills unlock by level and level-ups announce new skills', () => {
+  assert.deepEqual(
+    skillsForLevel('Cleric', 1).map((skill) => skill.id),
+    ['cure'],
+  );
+  assert.ok(skillsForLevel('Cleric', 9).some((skill) => skill.id === 'raise'));
+  assert.ok(['Guardian', 'Duelist', 'Ranger', 'Rogue', 'Cleric', 'Mage', 'Scholar', 'Artificer'].every((classId) => skillsForLevel(classId, 20).length >= 4));
+  let state = createNewGame({ seed: 40001, founderClass: 'Cleric' });
+  const founder = state.heroes[0];
+  const before = state.moments.length;
+  state = structuredClone(state);
+  state.heroes[0].xp = xpForNextLevel(1) + xpForNextLevel(2) - 1;
+  state = restAtGuildHall(state, 1).state;
+  const levelUp = state.moments.slice(before).find((moment) => moment.type === 'levelUp' && moment.heroId === founder.id);
+  assert.ok(levelUp, 'a level-up moment is queued');
+  assert.ok(levelUp.levelAfter >= 3);
+  assert.ok(levelUp.newSkills.includes('Purify'));
+  state = acknowledgeMoment(state);
+  assert.equal(state.moments.length, Math.max(0, before));
+});
+
+test('items: potions heal, ethers restore MP, phoenix feathers revive, bombs hit every enemy', () => {
+  let battle = partyBattle({
+    seed: 31,
+    heroes: [testHero('a', 'Guardian', 3, 50), testHero('b', 'Mage', 3, 50)],
+    power: 30,
+    count: 3,
+    items: { potion: 1, ether: 1, 'phoenix-feather': 1, 'fire-bomb': 1 },
+  });
+  battle.party[0].hp = 5;
+  battle.party[1].mp = 0;
+  battle = performCombatRound(battle, {
+    'party-a': { action: 'item', itemId: 'potion', targetId: 'party-a' },
+    'party-b': { action: 'item', itemId: 'ether', targetId: 'party-b' },
+  });
+  assert.equal(battle.items.potion, 0);
+  assert.ok(battle.log.some((entry) => /uses Potion: a \+\d+ HP/.test(entry.text)));
+  assert.ok(battle.log.some((entry) => /uses Ether: b \+25 MP/.test(entry.text)));
+  battle.party[1].ko = true;
+  battle.party[1].hp = 0;
+  battle = performCombatRound(battle, { 'party-a': { action: 'item', itemId: 'phoenix-feather', targetId: 'party-b' } });
+  assert.ok(battle.log.some((entry) => /b revived/.test(entry.text)));
+  assert.equal(battle.items['phoenix-feather'], 0);
+  const thrower = testHero('t', 'Rogue', 5, 50, { attributes: { Might: 50, Finesse: 99, Mind: 50, Spirit: 50, Presence: 50, Endurance: 99 } });
+  const fresh = partyBattle({ seed: 32, heroes: [thrower], power: 30, count: 3, items: { 'fire-bomb': 1 } });
+  const bombed = performCombatRound(fresh, { 'party-t': { action: 'item', itemId: 'fire-bomb' } });
+  const line = bombed.log.find((entry) => entry.text.includes('uses Fire Bomb'));
+  assert.ok(line, 'the bomb was thrown');
+  assert.equal(line.text.split('−').length - 1, 3, 'all three enemies were hit');
+});
+
+test('equipment adds stats, respects class restrictions, and artifacts are worn as accessories', () => {
+  let state = createNewGame({ seed: 40002, founderClass: 'Guardian' });
+  const id = state.heroes[0].id;
+  state.inventory = { 'iron-sword': 1, 'oak-staff': 1, 'chain-mail': 1 };
+  const bare = partyBattle({ seed: 1, heroes: [state.heroes[0]] }).party[0];
+  assert.match(equipItem(state, id, 'oak-staff').error, /cannot use/);
+  state = equipItem(state, id, 'iron-sword').state;
+  state = equipItem(state, id, 'chain-mail').state;
+  assert.equal(state.heroes[0].gear.weapon, 'iron-sword');
+  assert.equal(state.inventory['iron-sword'], undefined);
+  const geared = partyBattle({ seed: 1, heroes: [state.heroes[0]] }).party[0];
+  assert.equal(geared.atk, bare.atk + ITEMS['iron-sword'].stats.atk);
+  assert.equal(geared.def, bare.def + ITEMS['chain-mail'].stats.def);
+  state = unequipItem(state, id, 'weapon').state;
+  assert.equal(state.inventory['iron-sword'], 1);
+  state.artifacts = [{ id: 'art-1', name: 'Old Crown', prestige: 50, ownerId: null, ownerHistory: [] }];
+  state = assignArtifactForGear(state, 'art-1', id).state;
+  assert.equal(state.heroes[0].gear.accessory, 'artifact:art-1');
+  assert.ok(state.heroes[0].artifactStats.atk > 0);
+  assert.deepEqual(validateGame(state), []);
+});
+
+test('shops sell by town tier, buy costs gold, selling returns half', () => {
+  let state = createNewGame({ seed: 40003 });
+  const stock = shopStock('dunmere');
+  assert.ok(stock.includes('potion'));
+  assert.ok(stock.every((id) => ITEMS[id].tier === 1));
+  assert.deepEqual(shopStock('windmere'), [], 'villages have no shop');
+  const gold = state.guild.crowns;
+  state = buyItem(state, 'potion', 2).state;
+  assert.equal(state.guild.crowns, gold - 40);
+  assert.equal(state.inventory.potion, 5);
+  state = sellItem(state, 'potion', 1).state;
+  assert.equal(state.guild.crowns, gold - 30);
+  assert.ok(buyItem(state, 'hi-potion').error, 'tier 2 items are not sold in a Regional town');
+  state.heroes[0].health = 50;
+  state = useItemOnHero(state, 'potion', state.heroes[0].id).state;
+  assert.equal(state.heroes[0].health, 80);
+});
+
+test('combat missions drop loot and queue a victory moment', () => {
+  let state = createNewGame({ seed: 20260726 });
+  state = acknowledgeWelcome(state);
+  state = hireFirstCompanion(state);
+  const opening = tutorialMission(state);
+  state = launchMission(state, opening.id, 'Combat', combatPair(state)).state;
+  state = advanceMonths(state, 1).state;
+  state = autoResolveActiveCombat(state).state;
+  assert.equal(state.activeEncounter.result.playerWon, true, 'the opening fight is winnable on auto');
+  state = concludeActiveCombat(state).state;
+  const decision = state.pendingDecisions[0];
+  state = resolveDecision(state, decision.id, decision.options[0].id).state;
+  const record = state.missionHistory[0];
+  assert.ok(Array.isArray(record.loot));
+  assert.ok(state.moments.some((moment) => moment.type === 'victory'));
+  assert.ok(
+    state.moments.some((moment) => moment.type === 'recruit'),
+    'hiring queued a recruit card',
+  );
+  assert.deepEqual(validateGame(state), []);
+});
+
+test('auto-battle wins easy fights and loses impossible ones', () => {
+  const strong = [testHero('a', 'Guardian', 10, 75), testHero('b', 'Cleric', 10, 75)];
+  const easy = autoResolveEncounter(partyBattle({ seed: 3, heroes: strong, power: 30, level: 1, count: 2 }));
+  assert.equal(easy.result.playerWon, true);
+  const weak = [testHero('a', 'Guardian', 1, 25), testHero('b', 'Cleric', 1, 25)];
+  const impossible = autoResolveEncounter(partyBattle({ seed: 3, heroes: weak, power: 95, level: 20, count: 4 }));
+  assert.equal(impossible.result.playerWon, false);
+  assert.ok(Object.keys(autoCommands(partyBattle({ seed: 4, heroes: strong }))).length === 2);
+});
+
+test('v14 saves migrate to v15 with an inventory, gear slots and no stale battle', () => {
+  const old = createNewGame({ seed: 40004 });
+  old.schemaVersion = 14;
+  delete old.inventory;
+  delete old.moments;
+  old.heroes.forEach((hero) => delete hero.gear);
+  old.activeEncounter = { id: 'old', mode: 'duel', status: 'active', sourceType: 'hero-tournament', player: {}, enemy: {} };
+  const migrated = migrateGame(old);
+  assert.deepEqual(migrated.inventory, {});
+  assert.deepEqual(migrated.moments, []);
+  assert.deepEqual(migrated.heroes[0].gear, { weapon: null, armor: null, accessory: null });
+  assert.equal(migrated.activeEncounter, null);
   assert.deepEqual(validateGame(migrated), []);
 });

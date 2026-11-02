@@ -286,3 +286,10 @@ export function getUpcomingEvents(state, limit = 8) {
     );
   return items.sort((a, b) => a.monthsAway - b.monthsAway).slice(0, limit);
 }
+
+/** Dismiss the oldest reward moment (victory, level-up, recruit card). */
+export function acknowledgeMoment(state) {
+  const next = clone(state);
+  next.moments = (next.moments || []).slice(1);
+  return finalize(next);
+}

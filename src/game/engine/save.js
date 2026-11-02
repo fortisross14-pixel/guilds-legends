@@ -27,10 +27,12 @@ import { createTitleRecords, createUniverseInPlace, createWorldArtifactsInPlace,
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
 import { facilityLevels, initialStats } from './state.js';
+import { createMissionCombatEncounterInPlace } from './missions.js';
 
 export function compactForSave(state, aggressive = false) {
   const saved = clone(state);
   saved.notifications = saved.notifications.slice(-6);
+  saved.moments = (saved.moments || []).slice(-6);
   saved.pendingReports = (saved.pendingReports || []).slice(0, 6);
   saved.chronicle = saved.chronicle.slice(0, aggressive ? 420 : MAX_CHRONICLE);
   // Mission history is a first-class archive, but recent playable encounters now carry
@@ -258,6 +260,8 @@ export function migrateGame(raw) {
   next.world.activeTravel ||= null;
   next.world.roadEvents ||= [];
   next.pendingRoadEvent ??= null;
+  next.inventory ||= {};
+  next.moments ||= [];
   next.council = { lastReport: null, unread: false, ...(next.council || {}) };
   next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);
   next.guild.tier = TIERS[next.guild.tierIndex].id;
@@ -312,6 +316,7 @@ export function migrateGame(raw) {
     if (!hero.ambitions.length && !['dead', 'retired'].includes(hero.status)) hero.ambitions.push(defaultAmbitionForHero(hero, 0));
     hero.artifactIds ||= [];
     hero.artifactPowerBonus ||= 0;
+    hero.gear ||= { weapon: null, armor: null, accessory: null };
     hero.roleExperience = { ...Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])), ...(hero.roleExperience || {}) };
     hero.career = {
       missions: 0,
@@ -432,6 +437,14 @@ export function migrateGame(raw) {
       .forEach((hero) => {
         hero.status = 'available';
       });
+  }
+  // v15 replaced the shared-HP combat model. An in-progress old battle is
+  // rebuilt for missions; a tournament bout is simply started again.
+  if (next.activeEncounter && !Array.isArray(next.activeEncounter.party)) {
+    const old = next.activeEncounter;
+    next.activeEncounter = null;
+    const mission = old.sourceType === 'mission' ? next.activeMissions.find((item) => item.id === old.sourceId) : null;
+    if (mission) createMissionCombatEncounterInPlace(next, mission);
   }
   commitRng(next, universeRng);
   delete next.tournament;

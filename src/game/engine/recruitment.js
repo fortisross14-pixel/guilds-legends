@@ -18,6 +18,7 @@ import {
   operationalLocationIds,
   rngFor,
   uid,
+  pushMoment,
 } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { candidateDemandFor, refreshCandidatesForLocationInPlace } from './candidates.js';
@@ -67,6 +68,17 @@ export function refoundGuild(state, options = {}) {
   const recruit = generateHero(next, rng, 'normal', { homeLocationId: locationId });
   recruit.loyalty = Math.max(recruit.loyalty, 60);
   next.heroes.push(founder, recruit);
+  pushMoment(next, {
+    type: 'recruit',
+    heroId: recruit.id,
+    name: recruit.name,
+    classId: recruit.classId,
+    primal: recruit.primal,
+    rarity: recruit.rarity,
+    level: recruit.level,
+    personality: recruit.personality,
+    hook: recruit.hook,
+  });
   addHeroHistory(founder, next, {
     type: 'founding',
     title: `Refounded ${next.guild.name}`,
@@ -156,6 +168,17 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept') {
   });
   const wasFoundingSolo = activeHeroCount(next) === 1 && !next.flags.firstCompanionHired;
   next.heroes.push(hero);
+  pushMoment(next, {
+    type: 'recruit',
+    heroId: hero.id,
+    name: hero.name,
+    classId: hero.classId,
+    primal: hero.primal,
+    rarity: hero.rarity,
+    level: hero.level,
+    personality: hero.personality,
+    hook: hero.hook,
+  });
   next.candidates.splice(index, 1);
   if (wasFoundingSolo) {
     next.flags.firstCompanionHired = true;

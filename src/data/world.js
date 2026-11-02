@@ -316,7 +316,7 @@ export const BUILDINGS = {
   tavern: { id: 'tavern', name: 'Tavern', icon: '🍺', description: 'Meet local recruits, hire them, or let heroes go.' },
   noticeBoard: { id: 'noticeBoard', name: 'Notice Board', icon: '📜', description: 'Local contracts and the party builder.' },
   arena: { id: 'arena', name: 'Arena', icon: '⚔', description: 'Tournaments hosted here and the guild championships.' },
-  shop: { id: 'shop', name: 'Shop', icon: '⚖', description: 'Items and equipment (opens in a later update).' },
+  shop: { id: 'shop', name: 'Shop', icon: '⚖', description: 'Buy potions and equipment; sell what you do not need.' },
   herald: { id: 'herald', name: 'Herald', icon: '📯', description: 'Rankings, the guild directory and the almanac.' },
 };
 

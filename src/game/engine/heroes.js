@@ -1,9 +1,10 @@
 // @ts-check
 // Hero generation, XP and levels, relationships, party role ratings and estimates.
+import { skillLabel, skillsUnlockedBetween } from '../../data/skills.js';
 import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
-import { addHeroHistory, appointmentHolder, clamp, getHero, uid } from './core.js';
+import { addHeroHistory, appointmentHolder, clamp, getHero, uid, pushMoment } from './core.js';
 
 export function xpForNextLevel(level) {
   return level >= 20 ? 0 : 70 + level * 30;
@@ -44,6 +45,8 @@ export function choosePrimal(rng, locationId) {
 export function applyXpInPlace(hero, amount, state, source = 'experience') {
   if (!hero || hero.level >= 20 || amount <= 0) return [];
   const gains = [];
+  const levelBefore = hero.level;
+  const attributesBefore = { ...hero.attributes };
   hero.xp = (hero.xp || 0) + Math.round(amount);
   while (hero.level < 20) {
     const needed = xpForNextLevel(hero.level);
@@ -72,6 +75,23 @@ export function applyXpInPlace(hero, amount, state, source = 'experience') {
         text: `${hero.rarity} ${hero.classId} · power ${hero.power}`,
       });
     }
+  }
+  if (state && gains.length && hero.guildId === 'player') {
+    const statGains = Object.fromEntries(
+      Object.keys(hero.attributes)
+        .map((key) => [key, hero.attributes[key] - (attributesBefore[key] || 0)])
+        .filter(([, delta]) => delta),
+    );
+    pushMoment(state, {
+      type: 'levelUp',
+      heroId: hero.id,
+      name: hero.name,
+      classId: hero.classId,
+      levelBefore,
+      levelAfter: hero.level,
+      statGains,
+      newSkills: skillsUnlockedBetween(normalizeClassId(hero.classId), levelBefore, hero.level).map((skill) => skillLabel(skill, hero.primal)),
+    });
   }
   return gains;
 }
@@ -180,6 +200,7 @@ export function createHeroFromBase(base, state, rng, options = {}) {
     ambitions: base.ambitions || [],
     artifactIds: base.artifactIds || [],
     artifactPowerBonus: base.artifactPowerBonus || 0,
+    gear: base.gear || { weapon: null, armor: null, accessory: null },
     promises: base.promises || [],
     history: [],
   };
