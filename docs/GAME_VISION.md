@@ -1,4 +1,4 @@
-# Guilds of Legend — Game Vision (Waves 2–4)
+# Guilds of Legend — Game Vision (Waves 2–7)
 
 This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code split) are done; see the audit and `CHANGELOG.md`.
 
@@ -7,6 +7,9 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave 2 — The world is the game (map, towns, time) | ✅ Done (2026-11-02) |
 | Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) | ✅ Done (2026-11-02) |
 | Wave 4 — Rankings as the hook, and the scripted opening | ✅ Done (2026-11-02) |
+| Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | In progress |
+| Wave 6 — Recruitment depth | Not started |
+| Wave 7 — Specialization and rivalries | Not started |
 
 ## The goal: turn a stack of menus into a game
 
@@ -167,6 +170,71 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - Scripted opening: the first contract (Wolves on the Old Road) is local to Dunmere, so the "travel to it" step is a march out of town. A guaranteed peddler event (two free potions) fires when the company sets out, then time runs to the battle. In the first battle heroes can't drop below 1 HP, the enemies are weakened, and a timeout counts as a win. The contract's XP is raised so the founder always levels up.
 - Known effect for the balance pass: the autoplay governor never enters tournaments, so with Official-based promotion the simulated guild stays Regional (`npm run sim`).
 - Removed: the composite guild score and the old 10-step menu tutorial.
+
+## Wave 5 — Your team, your time
+
+The problem: the team is invisible (three clicks deep), assigning heroes to train, rest or recover isn't discoverable, and time has no calendar. Wave 5 makes the team and the calendar always present, and keeps the "menus become places" idea.
+
+1. **Party bar (always visible).**
+   - A compact strip on every screen (bottom on desktop, collapsible on mobile) with one card per active hero: portrait, name, level, HP bar, fatigue, a status icon (available, training, resting, infirmary, injured, on mission, in tournament, traveling, branch duty) and a small "main party" marker.
+   - Clicking a card opens that hero's status screen.
+   - A warning dot when a hero needs attention: injured but not in the Infirmary, high fatigue, low loyalty, or a promise due soon.
+2. **Guild Hall as rooms.** Replace the Guild Hall tabs with a room view. Each room is a tile showing how many heroes are inside. Opening a room shows who is there and lets you move heroes in or out. Rooms map onto the existing monthly activities:
+   - Training Grounds (training, with a training focus dropdown), Infirmary (injured heroes go here automatically), Barracks (resting), Scouts' Table (scouting), Courtyard (public exhibitions), Council Chamber (guild duty and appointments).
+   - War Room (main party, up to 4, and saved formations), Treasury (income vs upkeep, loan and debt, the last council report), Armory (equipment and items), Facilities (headquarters upgrades).
+   - Quick actions: "Send all idle heroes here" (Training Grounds, Barracks, Infirmary) and "Auto-assign" (injured to the Infirmary, fatigue over 60 to the Barracks, everyone else to the Training Grounds).
+   - Heroes on missions, in tournaments, traveling or on branch duty show as "away" and can't be moved. The old Overview/Roster/Equipment/Facilities tabs go away; the guild summary sits in a slim header.
+3. **Hero status screen (JRPG style).** One screen per hero, opened from anywhere (party bar, rooms, rankings, reports). It replaces the hero dossier modal. Sections:
+   - portrait, name, class, primal, rarity, level and XP bar
+   - HP, MP and core stats
+   - equipment slots with equip/unequip
+   - skills, unlocked and locked (with unlock level)
+   - current room, with a dropdown to move the hero
+   - personality, flaw, dream and promises
+   - relationships
+   - career record and history
+   - actions: main party, mentor, appoint, release
+
+   Next/previous buttons flip through the roster.
+4. **Weekly time and a calendar.**
+   - The time unit becomes weeks: `date = { year, month, week }`, 4 weeks per month.
+   - Monthly systems (wages and upkeep, council activity resolution, rival seasons, candidate refresh, the annual cycle) still run once per month, on week 1.
+   - Travel and mission durations are in weeks: trips take 1–6 weeks, missions 1–4.
+   - Tournaments have a fixed month and week. Injuries count down in weeks. Road events still trigger per journey.
+   - Time controls in the top bar: **+1 week**, **+1 month**, and **Wait until…** (opens the calendar). Advancing stops early when a decision, battle, mission game or tournament needs the player. The council report summarizes the whole advance.
+   - Calendar page: a month grid with weeks as rows and previous/next month buttons. Entries:
+     - enterable tournaments (clearly marked), and locked ones (greyed out)
+     - mission returns, travel arrival, promise deadlines
+     - wage/upkeep day, loan due dates
+     - season end (rankings update)
+
+     Clicking an entry shows its details and "Advance to this date".
+   - The Upcoming strip shrinks to the next 3 events the player can act on, links to the calendar, and drops unenterable tournaments.
+5. **Main party.**
+   - Up to 4 heroes, saved in state, picked in the War Room or from the status screen.
+   - Mission party building and tournament entry pre-fill with the main party, filling roles automatically where possible. Injured or away members are flagged, with a suggested substitute.
+6. **Quest log** (menu, plus a party-bar shortcut).
+   - Lists active contracts (title, location, heroes, weeks remaining), open promises with deadlines, and current objectives.
+   - Clicking a contract shows it on the world map with a pin.
+7. **Small fixes.**
+   - Clear old-tutorial notifications when the opening is skipped or completed.
+   - Make the world map the first thing visible, and move its intro text into a "?" tooltip.
+   - The Upcoming strip no longer lists tournaments the guild can't enter.
+
+`simulateAutoplay` and `npm run sim` move to weeks, but only enough to keep running.
+
+## Wave 6 — Recruitment depth (not started)
+
+- Contracts with length and salary, expiry and renewal talks.
+- Candidate stats shown as ranges until narrowed by scouting.
+- Released or expired heroes become free agents who can join rivals.
+- Poaching both ways, driven by loyalty.
+
+## Wave 7 — Specialization and rivalries (not started)
+
+- Reputation per mission family (Combat/Diplomacy/Expedition/Intrigue) and per region, with perks.
+- Declined contracts go to rivals.
+- 1–2 rival guilds become nemeses, with head-to-head records and challenge matches.
 
 ## End of each wave
 
