@@ -39,7 +39,7 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
     >
       <div className="hero-portrait__halo" />
       <div className="hero-portrait__frame" />
-      <img className="hero-portrait__art" src={`/art/portraits/${artKey}.png`} alt="" loading="lazy" />
+      <img className="hero-portrait__art" src={`${import.meta.env.BASE_URL}art/portraits/${artKey}.png`} alt="" loading="lazy" />
       <span className="hero-portrait__glyph">{info.glyph}</span>
       {showStatus && hero.status && hero.status !== 'available' ? <span className={`status-dot status-dot--${hero.status}`} title={hero.status} /> : null}
     </div>
@@ -49,7 +49,7 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
 export function HeroSprite({ hero, size = 'md', enemy = false }) {
   const artKey = heroArtKey(hero);
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
-  return <div className={`hero-sprite hero-sprite--${size} ${enemy ? 'hero-sprite--enemy' : ''}`} style={{ '--sprite-glow': primal.color }}><img src={`/art/sprites/${artKey}.png`} alt="" loading="lazy" /></div>;
+  return <div className={`hero-sprite hero-sprite--${size} ${enemy ? 'hero-sprite--enemy' : ''}`} style={{ '--sprite-glow': primal.color }}><img src={`${import.meta.env.BASE_URL}art/sprites/${artKey}.png`} alt="" loading="lazy" /></div>;
 }
 
 
