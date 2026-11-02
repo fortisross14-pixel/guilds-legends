@@ -2,7 +2,17 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 1 (AI-friendly codebase, no behavior changes)
+## Unreleased — Wave 2 (the world is the game)
+
+- The world map is the home screen, with a "You are here" marker, routes, locked tiers, and the guild's position while travelling.
+- Towns have buildings: Guild Hall, Tavern, Notice Board, Arena, Shop (placeholder) and Herald. Each opens the existing functionality.
+- Navigation is now Map / Town / Menu (Settings, Chronicle, Codex). The top bar shows date, location, gold and the three guild ranks.
+- Time moves with actions. Travelling runs the journey's months, "Wait / rest at the Guild Hall" runs 1–3 months, and sending out your last free company runs time until it returns. The +1 month, +Season and +1 year buttons are gone.
+- Road events: 0–2 seeded events per journey (ambush, merchant, wandering recruit, shortcut, storm delay).
+- A calendar strip lists upcoming tournaments with entry requirements, deployed companies, the journey and promise deadlines.
+- Save schema v14.
+
+## Wave 1 (AI-friendly codebase, no behavior changes)
 
 - Split the 6,000-line `src/game/engine.js` into 21 modules in `src/game/engine/` (126–582 lines each), layered so there are no circular imports. `engine.js` is now an explicit re-export barrel with the same 86 exports as before.
 - JSDoc types in `src/game/types.js`, `// @ts-check` on every engine module, and `npm run typecheck` (TypeScript, no emit).

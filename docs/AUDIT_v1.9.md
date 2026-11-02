@@ -115,6 +115,8 @@ Target navigation is 7 items: **Guild Hall, World/Map, Missions, Roster, Tournam
 
 ## 5. Improvement waves
 
+> **Note (2026-11-02):** Waves 2–6 below are replaced by [GAME_VISION.md](GAME_VISION.md). Waves 0–1 stand as written.
+
 Each wave is sized so one person with AI help can ship it in roughly 1–3 weeks. **Don't start a wave until the previous one's tests pass.**
 
 ### Wave 0: Stabilize (1–3 days) — ✅ Done (2026-11-02)

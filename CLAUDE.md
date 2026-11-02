@@ -2,7 +2,7 @@
 
 `CLAUDE.md` and `AGENTS.md` have the same content. If you change one, change the other too.
 
-A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation engine is pure and deterministic. The UI is a thin layer on top of it. The current plan is in `docs/AUDIT_v1.9.md`.
+A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation engine is pure and deterministic. The UI is a thin layer on top of it. The game direction and current waves are in [`docs/GAME_VISION.md`](docs/GAME_VISION.md) (it replaces waves 2–6 of `docs/AUDIT_v1.9.md`).
 
 ## Ground rules
 
@@ -56,9 +56,10 @@ npm run build       # production build to dist/ (not committed)
 ## File map
 
 ```text
-src/App.jsx               Shell: save slots, nav, modals, the `actions` object (UI → engine)
+src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
+src/places/               MapScreen (home), TownScreen (building tiles → building content), MenuScreen, routes.js
 src/components/           UI primitives (UI.jsx) and modals (combat, mission game, council)
-src/screens/              One component per nav screen
+src/screens/              Building/page content rendered inside places (Hall, Missions, Heroes, …)
 src/data/                 Static content: classes, missions, formations, world map, rival universe
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
@@ -82,6 +83,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   dashboard.js            UI read models (getNextAction, getDashboardSummary), small UI actions
   state.js                createNewGame and default state pieces
   save.js                 compactForSave, migrateGame, validateGame
+  timeActions.js          travelTo + road events, continueJourney, restAtGuildHall, launchExpedition
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
 src/game/combat.js        Deterministic duel and party combat
