@@ -256,6 +256,8 @@ export function migrateGame(raw) {
   next.world.currentLocationId ||= 'dunmere';
   next.world.visitedLocationIds ||= [next.world.currentLocationId];
   next.world.activeTravel ||= null;
+  next.world.roadEvents ||= [];
+  next.pendingRoadEvent ??= null;
   next.council = { lastReport: null, unread: false, ...(next.council || {}) };
   next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);
   next.guild.tier = TIERS[next.guild.tierIndex].id;

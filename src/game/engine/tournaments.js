@@ -22,7 +22,7 @@ function tournamentDefinition(tournament) {
   return source.find((definition) => definition.id === tournament.definitionId) || null;
 }
 
-function tournamentRequirements(tournament) {
+export function tournamentRequirements(tournament) {
   const definition = tournamentDefinition(tournament) || tournament;
   return {
     fame: definition.minFame || 0,

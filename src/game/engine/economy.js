@@ -72,7 +72,7 @@ export function startTravel(state, destinationId) {
     id: `travel-${destinationId}-${next.date.year}-${next.date.month}`,
     tone: 'blue',
     title: `Journey to ${quote.destination.name}`,
-    text: `${quote.months} month${quote.months === 1 ? '' : 's'} remaining. Advance time to travel.`,
+    text: `${quote.months} month${quote.months === 1 ? '' : 's'} on the road.`,
   });
   return { state: finalize(next), error: null };
 }
@@ -81,6 +81,14 @@ export function progressTravelInPlace(state, rng) {
   const travel = state.world?.activeTravel;
   if (!travel) return;
   travel.monthsRemaining -= 1;
+  // Road events planned at departure fire on their month (one per month).
+  const elapsed = travel.totalMonths - travel.monthsRemaining;
+  const roadEvents = state.world.roadEvents || [];
+  const due = roadEvents.find((event) => event.month <= elapsed);
+  if (due) {
+    state.world.roadEvents = roadEvents.filter((event) => event !== due);
+    state.pendingRoadEvent = { ...due, fromId: travel.fromId, toId: travel.toId };
+  }
   state.heroes
     .filter((hero) => hero.status === 'available')
     .forEach((hero) => {

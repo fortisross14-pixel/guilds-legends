@@ -4,7 +4,7 @@ import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
 
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 export const MAX_CHRONICLE = 900;
 

@@ -67,3 +67,5 @@ export {
 export { createNewGame } from './engine/state.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
+export { getUpcomingEvents } from './engine/dashboard.js';
+export { MAX_REST_MONTHS, planRoadEvents, travelTo, continueJourney, resolveRoadEvent, restAtGuildHall, launchExpedition } from './engine/timeActions.js';

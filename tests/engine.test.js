@@ -49,6 +49,11 @@ import {
   setHeroMonthlyActivity,
   simulateAutoplay,
   startTravel,
+  travelTo,
+  resolveRoadEvent,
+  restAtGuildHall,
+  planRoadEvents,
+  makeRng,
   takePatronLoan,
   upgradeFacility,
   upgradeBranch,
@@ -57,7 +62,7 @@ import {
   xpForNextLevel,
 } from '../src/game/engine.js';
 import { MISSION_TEMPLATES, TIERS } from '../src/data/content.js';
-import { LOCATIONS, PRIMALS, RARITIES, unlockedLocations } from '../src/data/world.js';
+import { LOCATIONS, PRIMALS, RARITIES, locationBuildings, unlockedLocations } from '../src/data/world.js';
 import { exportGame, importGame } from '../src/game/storage.js';
 import { combatActionDefinition, createDuelEncounter, createPartyEncounter, performCombatAction as performEncounterAction } from '../src/game/combat.js';
 import {
@@ -173,7 +178,7 @@ test('v1.4-style saves migrate into council planning without losing the campaign
     delete hero.monthlyActivity;
   });
   const migrated = migrateGame(old);
-  assert.equal(migrated.schemaVersion, 13);
+  assert.equal(migrated.schemaVersion, 14);
   assert.equal(migrated.guild.name, 'Legacy Lantern');
   assert.equal(migrated.council.unread, false);
   assert.ok(migrated.heroes.every((hero) => hero.monthlyActivity));
@@ -1115,4 +1120,75 @@ test('a guild with no active heroes is detected and can be refounded', () => {
   assert.notEqual(getNextAction(state).action, 'refound');
   assert.deepEqual(validateGame(state), []);
   assert.deepEqual(validateGame(advanceMonths(state, 3).state), []);
+});
+
+function travelAll(state, destinationId) {
+  let result = travelTo(state, destinationId);
+  assert.equal(result.error, null);
+  let next = result.state;
+  const events = [];
+  while (next.pendingRoadEvent) {
+    events.push(next.pendingRoadEvent.type);
+    const option = next.pendingRoadEvent.type === 'ambush' ? 'fight' : 'ignore';
+    const choice = ['shortcut', 'delay'].includes(next.pendingRoadEvent.type) ? (next.pendingRoadEvent.type === 'delay' ? 'wait' : 'safe') : option;
+    result = resolveRoadEvent(next, choice);
+    assert.equal(result.error, null);
+    next = result.state;
+  }
+  return { state: next, events };
+}
+
+test('travel moves the guild and advances time by the journey length', () => {
+  let state = createNewGame({ seed: 30001 });
+  state = hireFirstCompanion(state);
+  const months = getTravelQuote(state, 'ironford').months;
+  const before = state.date.year * 12 + state.date.month;
+  const { state: arrived, events } = travelAll(state, 'ironford');
+  const delays = events.filter((type) => type === 'delay').length;
+  assert.equal(arrived.world.currentLocationId, 'ironford');
+  assert.equal(arrived.world.activeTravel, null);
+  assert.equal(arrived.date.year * 12 + arrived.date.month - before, months + delays);
+  assert.deepEqual(validateGame(arrived), []);
+});
+
+test('road events are seeded: the same journey yields the same events', () => {
+  const run = () => travelAll(hireFirstCompanion(createNewGame({ seed: 30002 })), 'windmere');
+  assert.deepEqual(run().events, run().events);
+  const planned = (seed) => planRoadEvents(makeRng(seed), 3);
+  assert.deepEqual(planned(7), planned(7));
+  for (let seed = 1; seed < 60; seed += 1) {
+    const events = planned(seed);
+    assert.ok(events.length <= 2);
+    assert.equal(new Set(events.map((event) => event.month)).size, events.length);
+  }
+});
+
+test('resting at the Guild Hall runs the monthly council resolution', () => {
+  let state = hireFirstCompanion(createNewGame({ seed: 30003 }));
+  assert.ok(restAtGuildHall(state, 4).error);
+  const rested = restAtGuildHall(state, 2);
+  assert.equal(rested.error, null);
+  assert.equal(rested.state.date.month, state.date.month + 2);
+  assert.equal(rested.state.council.lastReport.advancedMonths, 2);
+  assert.ok(rested.state.council.lastReport.activities.length >= 2);
+});
+
+test('every location has a Guild Hall, a Tavern and a Notice Board; tournament hosts have an Arena', () => {
+  const state = createNewGame({ seed: 30004 });
+  LOCATIONS.forEach((location) => {
+    const buildings = locationBuildings(location.id);
+    ['guildHall', 'tavern', 'noticeBoard'].forEach((id) => assert.ok(buildings.includes(id), `${location.id} lacks ${id}`));
+  });
+  state.tournaments.forEach((tournament) => assert.ok(locationBuildings(tournament.locationId).includes('arena'), `${tournament.locationId} hosts without an arena`));
+});
+
+test('v13 saves migrate to v14 with road-event state', () => {
+  const old = createNewGame({ seed: 30005 });
+  old.schemaVersion = 13;
+  delete old.pendingRoadEvent;
+  delete old.world.roadEvents;
+  const migrated = migrateGame(old);
+  assert.equal(migrated.pendingRoadEvent, null);
+  assert.deepEqual(migrated.world.roadEvents, []);
+  assert.deepEqual(validateGame(migrated), []);
 });

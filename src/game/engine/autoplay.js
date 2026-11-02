@@ -1,5 +1,7 @@
 // @ts-check
 // Autonomous campaign simulation used by long tests and the sim script.
+import { ROAD_EVENTS } from '../../data/roadEvents.js';
+import { resolveRoadEvent } from './timeActions.js';
 import { FORMATION_TYPES, formationForMission } from '../../data/formations.js';
 import { activeHeroCount, clone, completeTutorialTargetInPlace } from './core.js';
 import { roleRating } from './heroes.js';
@@ -48,6 +50,11 @@ export function simulateAutoplay(initialState, months = 240) {
     if (state.activeEncounter) {
       if (state.activeEncounter.status === 'active') state = autoResolveActiveCombat(state, true).state;
       if (state.activeEncounter) state = concludeActiveCombat(state, true).state;
+      continue;
+    }
+
+    if (state.pendingRoadEvent) {
+      state = resolveRoadEvent(state, ROAD_EVENTS[state.pendingRoadEvent.type].options.at(-1).id).state;
       continue;
     }
 

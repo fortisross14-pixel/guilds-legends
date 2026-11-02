@@ -320,6 +320,7 @@ export function advanceMonths(state, count = 1, mutate = false) {
   if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
   if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
   if (state.pendingDecisions.length) return { state, error: 'Resolve the critical decision before advancing time.' };
+  if (state.pendingRoadEvent) return { state, error: 'Deal with the event on the road before advancing time.' };
   if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
     return { state, error: 'Finish the active tournament before advancing time.' };
   }
@@ -327,7 +328,7 @@ export function advanceMonths(state, count = 1, mutate = false) {
   let advancedCount = 0;
   let latestCouncilMonth = null;
   for (let step = 0; step < count; step += 1) {
-    if (next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame) break;
+    if (next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame || next.pendingRoadEvent) break;
     const rng = rngFor(next, `advance-${step}`);
     const upkeep = monthlyUpkeep(next);
     const monthLabel = `${MONTHS[next.date.month]} ${next.date.year}`;
@@ -396,6 +397,7 @@ export function advanceToNextEvent(state) {
   if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
   if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
   if (state.pendingDecisions.length) return { state, error: 'Resolve the critical decision before advancing time.' };
+  if (state.pendingRoadEvent) return { state, error: 'Deal with the event on the road before advancing time.' };
   if (!state.activeMissions.length) return advanceMonths(state, 1);
   const months = Math.max(1, Math.min(...state.activeMissions.map((mission) => mission.remaining)));
   return advanceMonths(state, months);

@@ -1,6 +1,9 @@
 // @ts-check
 // Read models for the UI (next action, summary) and small UI-state actions.
-import { ONBOARDING_STEPS } from '../../data/content.js';
+import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
+import { LOCATION_BY_ID } from '../../data/world.js';
+import { tournamentRequirements } from './tournaments.js';
+import { campaignMonthSerial } from './core.js';
 import {
   activeHeroCount,
   clone,
@@ -78,6 +81,9 @@ export function getNextAction(state) {
       screen: 'missions',
       action: 'mission-game',
     };
+  }
+  if (state.pendingRoadEvent) {
+    return { kind: 'critical', title: 'Something happens on the road', body: 'Choose how the travellers respond.', screen: 'map', action: 'road-event' };
   }
   if (isGuildDefunct(state)) {
     return {
@@ -215,4 +221,68 @@ export function getDashboardSummary(state) {
     locationPrimal: getCurrentLocation(state).primal,
     travel: state.world?.activeTravel || null,
   };
+}
+
+/**
+ * Calendar strip: upcoming tournaments (with entry requirements), deployed
+ * companies, the current journey and promise deadlines, soonest first.
+ */
+export function getUpcomingEvents(state, limit = 8) {
+  const now = campaignMonthSerial(state);
+  const items = [];
+  [...(state.tournaments || []), ...(state.guildTournaments || [])]
+    .filter((tournament) => tournament.status !== 'completed' && tournament.year * 12 + tournament.month >= now)
+    .forEach((tournament) => {
+      const req = tournamentRequirements(tournament);
+      const needs = [
+        req.tierIndex ? `${TIERS[req.tierIndex]?.id} tier` : null,
+        req.level ? `Lv ${req.level}+` : null,
+        req.fame ? `${req.fame} fame` : null,
+        req.combatWins ? `${req.combatWins} combat wins` : null,
+      ].filter(Boolean);
+      items.push({
+        kind: 'tournament',
+        id: tournament.id,
+        title: tournament.name,
+        monthsAway: tournament.year * 12 + tournament.month - now,
+        date: `${MONTHS[tournament.month]} ${tournament.year}`,
+        detail: `${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location || ''} · ${needs.length ? needs.join(', ') : 'open entry'}`,
+        active: tournament.status === 'active',
+      });
+    });
+  (state.activeMissions || []).forEach((mission) => {
+    items.push({
+      kind: 'mission',
+      id: mission.id,
+      title: mission.title,
+      monthsAway: Math.max(0, mission.remaining),
+      detail: `Company returns in ${mission.remaining} month${mission.remaining === 1 ? '' : 's'}`,
+    });
+  });
+  const travel = state.world?.activeTravel;
+  if (travel) {
+    items.push({
+      kind: 'travel',
+      id: 'travel',
+      title: `Journey to ${LOCATION_BY_ID[travel.toId]?.name || travel.toId}`,
+      monthsAway: travel.monthsRemaining,
+      detail: `${travel.monthsRemaining} month${travel.monthsRemaining === 1 ? '' : 's'} on the road`,
+    });
+  }
+  state.heroes
+    .filter((hero) => !['dead', 'retired'].includes(hero.status))
+    .forEach((hero) =>
+      (hero.promises || [])
+        .filter((promise) => promise.status === 'active')
+        .forEach((promise) => {
+          items.push({
+            kind: 'promise',
+            id: promise.id,
+            title: `Promise to ${hero.name}`,
+            monthsAway: Math.max(0, (promise.dueSerial ?? now) - now),
+            detail: `${promise.label} · due ${promise.dueLabel}`,
+          });
+        }),
+    );
+  return items.sort((a, b) => a.monthsAway - b.monthsAway).slice(0, limit);
 }

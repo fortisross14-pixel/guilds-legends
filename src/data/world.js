@@ -308,3 +308,44 @@ export function travelDuration(fromId, toId) {
   const distanceBand = Math.ceil((dx + dy) / 34);
   return Math.max(1, Math.min(5, Math.max(from.travel, to.travel, distanceBand)));
 }
+
+// Town buildings. The Guild Hall is the guild's own headquarters and appears in
+// whichever town the guild is based; the rest depend on the town.
+export const BUILDINGS = {
+  guildHall: { id: 'guildHall', name: 'Guild Hall', icon: '♜', description: 'Your headquarters: roster, assignments, training, facilities and rest.' },
+  tavern: { id: 'tavern', name: 'Tavern', icon: '🍺', description: 'Meet local recruits, hire them, or let heroes go.' },
+  noticeBoard: { id: 'noticeBoard', name: 'Notice Board', icon: '📜', description: 'Local contracts and the party builder.' },
+  arena: { id: 'arena', name: 'Arena', icon: '⚔', description: 'Tournaments hosted here and the guild championships.' },
+  shop: { id: 'shop', name: 'Shop', icon: '⚖', description: 'Items and equipment (opens in a later update).' },
+  herald: { id: 'herald', name: 'Herald', icon: '📯', description: 'Rankings, the guild directory and the almanac.' },
+};
+
+const TOWN = ['tavern', 'noticeBoard', 'shop', 'herald'];
+const ARENA_TOWN = ['tavern', 'noticeBoard', 'arena', 'shop', 'herald'];
+const VILLAGE = ['tavern', 'noticeBoard'];
+
+export const LOCATION_BUILDINGS = {
+  dunmere: ARENA_TOWN,
+  greenhollow: ['tavern', 'noticeBoard', 'arena', 'shop'],
+  ironford: ARENA_TOWN,
+  windmere: VILLAGE,
+  tidecross: ARENA_TOWN,
+  sunspire: ARENA_TOWN,
+  thornwatch: VILLAGE,
+  skyreach: TOWN,
+  mooncourt: ARENA_TOWN,
+  brasshaven: TOWN,
+  'coral-crown': ARENA_TOWN,
+  beaststeppe: VILLAGE,
+  'ashen-caldera': ARENA_TOWN,
+  'verdant-citadel': TOWN,
+  'starfall-archive': TOWN,
+  irondeep: TOWN,
+  'cloud-monastery': ['tavern', 'noticeBoard', 'arena', 'shop'],
+  'far-veil': VILLAGE,
+};
+
+/** Buildings available in a town, Guild Hall first. */
+export function locationBuildings(locationId) {
+  return ['guildHall', ...(LOCATION_BUILDINGS[locationId] || VILLAGE)];
+}
