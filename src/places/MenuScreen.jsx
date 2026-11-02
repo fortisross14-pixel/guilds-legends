@@ -6,7 +6,7 @@ import GoalsScreen from '../screens/GoalsScreen.jsx';
 import LegacyScreen from '../screens/LegacyScreen.jsx';
 
 const PAGES = [
-  { id: 'settings', name: 'Save & Settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
+  { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
   { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline, field reports, eras and the hall of fame.' },
   { id: 'codex', name: 'Codex', icon: '✓', description: 'Goals, promotion path, achievements, and the legacy office.' },
 ];
@@ -25,8 +25,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
       <div className="screen screen--menu">
         <header className="town-header">
           <div>
-            <span className="eyebrow">Away from the road</span>
-            <h1>Menu</h1>
+            <h1>The Chronicle</h1>
           </div>
         </header>
         <div className="building-grid">
@@ -46,7 +45,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
   return (
     <div className={`menu-page menu-page--${page.id}`}>
       <button className="town-header__back menu-page__back" onClick={() => setPlace({ view: 'menu', page: null })}>
-        ← Menu
+        ← Chronicle
       </button>
       {page.id === 'settings' ? <SettingsScreen {...props} /> : null}
       {page.id === 'chronicle' ? <ChronicleScreen {...props} /> : null}

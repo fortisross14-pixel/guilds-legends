@@ -60,7 +60,7 @@ import {
   LADDER_LABELS,
   continueJourney,
   resolveRoadEvent,
-  restAtGuildHall,
+  advanceWeeks,
   takePatronLoan,
   updateSettings,
   upgradeBranch,
@@ -84,12 +84,13 @@ import MissionGameModal from './components/MissionGameModal.jsx';
 import RoadEventModal from './components/RoadEventModal.jsx';
 import UpcomingStrip from './components/UpcomingStrip.jsx';
 import MomentModal from './components/MomentModal.jsx';
+import PartyRail from './components/PartyRail.jsx';
 
 // Three places replace the old 11-item navigation.
 const PLACE_NAV = [
-  { id: 'map', label: 'World Map', icon: '◉' },
-  { id: 'town', label: 'Town', icon: '♜' },
-  { id: 'menu', label: 'Menu', icon: '☰' },
+  { id: 'map', label: 'World', glyph: 'world' },
+  { id: 'town', label: 'Guild', glyph: 'guild' },
+  { id: 'menu', label: 'Chronicle', glyph: 'chronicle' },
 ];
 
 class ErrorBoundary extends Component {
@@ -1211,7 +1212,9 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       },
       launchMission: (id, formationType, assignments) => applyResult(launchExpedition(state, id, formationType, assignments), 'The company has set out.'),
       saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
-      rest: (months) => applyResult(restAtGuildHall(state, months)),
+      // The calendar is week-based; the Hall still speaks in months for the
+      // player-facing rest affordance.
+      rest: (months) => applyResult(advanceWeeks(state, Math.max(1, Number(months) || 1) * 4)),
       waitForCompany: () => applyResult(advanceToNextEvent(state)),
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept') => applyResult(recruitCandidate(state, id, negotiation), 'A new hero has joined the banner.'),
@@ -1377,8 +1380,8 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         <nav>
           {PLACE_NAV.map((item) => (
             <button key={item.id} className={place.view === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
-              <span>{item.icon}</span>
-              <strong>{item.id === 'town' ? townName : item.label}</strong>
+              <span className={`place-glyph place-glyph--${item.glyph}`} aria-hidden="true" />
+              <strong>{item.id === 'town' ? `Guild · ${townName}` : item.label}</strong>
               {item.id === 'town' && state.pendingDecisions.length ? <i className="nav-alert">{state.pendingDecisions.length}</i> : null}
             </button>
           ))}
@@ -1480,11 +1483,12 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <nav className="mobile-nav">
         {PLACE_NAV.map((item) => (
           <button key={item.id} className={place.view === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
-            <span>{item.icon}</span>
-            <small>{item.id === 'town' ? townName : item.label}</small>
+            <span className={`place-glyph place-glyph--${item.glyph}`} aria-hidden="true" />
+            <small>{item.label}</small>
           </button>
         ))}
       </nav>
+      <PartyRail state={state} onOpenHero={actions.openHero} />
       <CombatArenaModal encounter={state.activeEncounter} actions={actions} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />

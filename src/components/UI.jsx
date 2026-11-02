@@ -179,7 +179,7 @@ export function EmptyState({ icon = '◇', title, text, action = null }) {
   );
 }
 
-export function Modal({ open, title, eyebrow = undefined, children, onClose = undefined, width = 'wide', preventClose = false }) {
+export function Modal({ open, title, eyebrow = undefined, children, onClose = undefined, width = 'wide', preventClose = false, className = '' }) {
   const closeRef = useRef(null);
   const dialogRef = useRef(null);
   const previousFocusRef = useRef(null);
@@ -224,7 +224,7 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
         if (event.target === event.currentTarget && !preventClose) onClose?.();
       }}
     >
-      <div ref={dialogRef} className={`modal modal--${width}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
+      <div ref={dialogRef} className={`modal modal--${width} ${className}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
         <header className="modal__header">
           <div>
             {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}

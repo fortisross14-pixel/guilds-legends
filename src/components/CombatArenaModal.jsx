@@ -121,7 +121,7 @@ export default function CombatArenaModal({ encounter, actions }) {
   const intent = encounter.enemyIntent;
 
   return (
-    <Modal open title={encounter.title || 'Battle'} eyebrow={`${encounter.roundName || 'Battle'} · Round ${encounter.turn}`} preventClose width="wide">
+    <Modal open title={encounter.title || 'Battle'} eyebrow={`${encounter.roundName || 'Battle'} · Round ${encounter.turn}`} preventClose width="wide" className="battle-modal">
       <div className={`battle-screen battle-screen--${encounter.mode}`}>
         {encounter.guaranteed && !finished && !hintsHidden ? (
           <aside className="battle-hints">
