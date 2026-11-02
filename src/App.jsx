@@ -29,6 +29,7 @@ import {
   getHero,
   getReport,
   getNextAction,
+  hashString,
   inheritAmbition,
   inspectGoals,
   inspectHero,
@@ -51,6 +52,7 @@ import {
   upgradeBranch,
   upgradeFacility,
   validateGame,
+  xpForNextLevel,
 } from './game/engine.js';
 import {
   deleteGame,
@@ -328,7 +330,7 @@ function HeroDetailModal({ state, heroId, onClose, actions }) {
           <div className="dossier-legacy"><span>Historical legacy</span><strong>{hero.legacy}</strong><small>{hero.renown} public renown</small></div>
         </aside>
         <div className="hero-dossier__main">
-          <div className="dossier-rating-row"><div><span>Level</span><strong>{hero.level || 1}/20</strong><small>{hero.level >= 20 ? 'Maximum' : `${hero.xp || 0} XP`}</small></div><div><span>Power</span><strong>{hero.power}</strong></div><div><span>Potential</span><strong>{hero.potential}</strong></div><div><span>Peak</span><strong>{hero.career?.peakPower || hero.power}</strong></div></div><ProgressBar value={hero.level >= 20 ? 1 : hero.xp || 0} max={hero.level >= 20 ? 1 : (70 + (hero.level || 1) * 30)} label={hero.level >= 20 ? 'Level cap reached' : `Progress to level ${(hero.level || 1) + 1}`} tone="purple" compact />
+          <div className="dossier-rating-row"><div><span>Level</span><strong>{hero.level || 1}/20</strong><small>{hero.level >= 20 ? 'Maximum' : `${hero.xp || 0} XP`}</small></div><div><span>Power</span><strong>{hero.power}</strong></div><div><span>Potential</span><strong>{hero.potential}</strong></div><div><span>Peak</span><strong>{hero.career?.peakPower || hero.power}</strong></div></div><ProgressBar value={hero.level >= 20 ? 1 : hero.xp || 0} max={hero.level >= 20 ? 1 : xpForNextLevel(hero.level || 1)} label={hero.level >= 20 ? 'Level cap reached' : `Progress to level ${(hero.level || 1) + 1}`} tone="purple" compact />
           <section><span className="eyebrow">Core attributes</span><div className="attribute-grid">{Object.entries(hero.attributes || {}).map(([name, value]) => <div key={name}><ProgressBar value={value} max={100} label={name} tone={name === classInfo?.primary ? 'gold' : name === classInfo?.secondary ? 'blue' : 'neutral'} compact /></div>)}</div></section>
           <section><span className="eyebrow">Party role ratings</span><div className="role-rating-grid">{PARTY_ROLES.map((role) => <div key={role.id}><span>{role.label}</span><strong>{roleRating(hero, role.id)}</strong></div>)}</div></section>
           <section><span className="eyebrow">Career record</span><div className="career-grid"><div><span>Missions</span><strong>{hero.career?.missions || 0}</strong></div><div><span>Mission wins</span><strong>{hero.career?.wins || 0}</strong></div><div><span>Individual titles</span><strong>{hero.career?.individualTitles || 0}</strong></div><div><span>Guild titles</span><strong>{hero.career?.guildTitles || 0}</strong></div><div><span>Tournament bouts</span><strong>{hero.career?.tournamentBoutWins || 0}/{hero.career?.tournamentBouts || 0}</strong></div><div><span>Prize money</span><strong>{(hero.career?.prizeMoney || 0).toLocaleString()}</strong></div><div><span>Best finish</span><strong>{hero.career?.bestTournamentFinish && hero.career.bestTournamentFinish < 99 ? `Top ${hero.career.bestTournamentFinish}` : '—'}</strong></div><div><span>Artifacts</span><strong>{hero.career?.artifacts || 0}</strong></div></div></section>
@@ -644,7 +646,7 @@ export default function App() {
     if (!slot) return;
     setBusy(true);
     try {
-      const seed = options.seedText ? options.seedText.split('').reduce((sum, char) => ((sum << 5) - sum + char.charCodeAt(0)) | 0, 0) >>> 0 : undefined;
+      const seed = options.seedText ? hashString(options.seedText) : undefined;
       const next = createNewGame({ ...options, seed });
       const result = await saveGame(slot, next);
       if (!result.ok) throw new Error(result.error);
