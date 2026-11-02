@@ -60,7 +60,13 @@ import { MISSION_TEMPLATES, TIERS } from '../src/data/content.js';
 import { LOCATIONS, PRIMALS, RARITIES, unlockedLocations } from '../src/data/world.js';
 import { exportGame, importGame } from '../src/game/storage.js';
 import { combatActionDefinition, createDuelEncounter, createPartyEncounter, performCombatAction as performEncounterAction } from '../src/game/combat.js';
-import { autoResolveMissionGame, createMissionGame, missionGameActionPreview, missionGradeFromMissionGame, performMissionGameAction } from '../src/game/missionGames.js';
+import {
+  autoResolveMissionGame,
+  createMissionGame,
+  missionGameActionPreview,
+  missionGradeFromMissionGame,
+  performMissionGameAction,
+} from '../src/game/missionGames.js';
 
 function tutorialMission(state) {
   return state.missions.find((mission) => mission.templateId === 'wolves-old-road');
@@ -94,12 +100,11 @@ test('new campaign starts Regional with a level-one player and four reachable se
   assert.equal(one.heroes[0].xp, 0);
   assert.equal(unlockedLocations(one.guild.tierIndex).length, 4);
   assert.equal(one.candidates.length, 3);
-  assert.deepEqual(one.candidates.map((candidate) => [candidate.name, candidate.level, candidate.rarity]), two.candidates.map((candidate) => [candidate.name, candidate.level, candidate.rarity]));
+  assert.deepEqual(
+    one.candidates.map((candidate) => [candidate.name, candidate.level, candidate.rarity]),
+    two.candidates.map((candidate) => [candidate.name, candidate.level, candidate.rarity]),
+  );
 });
-
-
-
-
 
 test('opening candidates are deliberately primal-diverse instead of all mirroring Dunmere', () => {
   for (let seed = 1; seed <= 40; seed += 1) {
@@ -160,13 +165,13 @@ test('guild and founder can be renamed without losing historical identity', () =
   assert.deepEqual(validateGame(state), []);
 });
 
-
-
 test('v1.4-style saves migrate into council planning without losing the campaign', () => {
   const old = structuredClone(createNewGame({ seed: 3333, guildName: 'Legacy Lantern' }));
   old.schemaVersion = 8;
   delete old.council;
-  old.heroes.forEach((hero) => { delete hero.monthlyActivity; });
+  old.heroes.forEach((hero) => {
+    delete hero.monthlyActivity;
+  });
   const migrated = migrateGame(old);
   assert.equal(migrated.schemaVersion, 13);
   assert.equal(migrated.guild.name, 'Legacy Lantern');
@@ -176,7 +181,10 @@ test('v1.4-style saves migrate into council planning without losing the campaign
 });
 
 test('the content supports three social scales, seven primals and long-term missions', () => {
-  assert.deepEqual(TIERS.map((tier) => tier.id), ['Regional', 'National', 'Global']);
+  assert.deepEqual(
+    TIERS.map((tier) => tier.id),
+    ['Regional', 'National', 'Global'],
+  );
   assert.equal(Object.keys(PRIMALS).length, 7);
   assert.equal(Object.keys(RARITIES).length, 5);
   assert.equal(LOCATIONS.filter((location) => location.tier === 'Regional').length, 4);
@@ -229,9 +237,13 @@ test('primal combat matchups materially change mission estimates', () => {
   const party = combatPair(state);
 
   const advantaged = structuredClone(state);
-  advantaged.heroes.forEach((hero) => { hero.primal = 'Water'; });
+  advantaged.heroes.forEach((hero) => {
+    hero.primal = 'Water';
+  });
   const disadvantaged = structuredClone(state);
-  disadvantaged.heroes.forEach((hero) => { hero.primal = 'Plant'; });
+  disadvantaged.heroes.forEach((hero) => {
+    hero.primal = 'Plant';
+  });
 
   const good = partyEstimate(advantaged, mission.id, 'Combat', party);
   const bad = partyEstimate(disadvantaged, mission.id, 'Combat', party);
@@ -300,8 +312,6 @@ test('tournament licenses, hero level and physical location are separate require
   assert.equal(nationalAccess.locationMet, false);
 });
 
-
-
 test('the opening universe contains rival rosters, free agents, historic champions and three guild ladders', () => {
   const state = createNewGame({ seed: 8181 });
   assert.equal(state.rivals.length, 30);
@@ -313,8 +323,14 @@ test('the opening universe contains rival rosters, free agents, historic champio
   assert.equal(state.titleRecords['dunmere-harvest-melee'].recordWins, 4);
   assert.equal(state.titleRecords['sunspire-royal-arena'].recordWins, 6);
   const summary = getGuildRankSummary(state);
-  assert.deepEqual(summary.map((row) => row.scope), ['Regional', 'National', 'Global']);
-  assert.deepEqual(summary.map((row) => row.total), [13, 23, 31]);
+  assert.deepEqual(
+    summary.map((row) => row.scope),
+    ['Regional', 'National', 'Global'],
+  );
+  assert.deepEqual(
+    summary.map((row) => row.total),
+    [13, 23, 31],
+  );
   assert.equal(getGuildRankings(state, 'Regional').filter((guild) => guild.player).length, 1);
   assert.ok(getHeroRankings(state).length >= activeWorldHeroes);
   assert.deepEqual(validateGame(state), []);
@@ -367,7 +383,9 @@ test('famous champions are punished for an early exit in a modest local tourname
   hero.level = 20;
   hero.power = 40;
   hero.form = 30;
-  Object.keys(hero.attributes).forEach((key) => { hero.attributes[key] = 22; });
+  Object.keys(hero.attributes).forEach((key) => {
+    hero.attributes[key] = 22;
+  });
   state.guild.fame = 500;
   const tournament = state.tournaments.find((event) => event.definitionId === 'dunmere-harvest-melee');
   state = enterHeroTournament(state, tournament.id, hero.id).state;
@@ -381,8 +399,6 @@ test('famous champions are punished for an early exit in a modest local tourname
   assert.ok(report.playerResult.finish > report.playerResult.expectedFinish, `finish was ${report.playerResult.finish}`);
   assert.ok(report.playerResult.fameDelta < 0);
 });
-
-
 
 test('turn-based duels expose readable intent and tactical actions before bracket resolution', () => {
   let state = createNewGame({ seed: 6060 });
@@ -427,16 +443,30 @@ test('tactical combat is deterministic for the same campaign state and actions',
   assert.deepEqual(a.activeEncounter, b.activeEncounter);
 });
 
-
 test('reading tells and using class signatures materially beats blind attack spam', () => {
   const hero = (id, name, classId, primal) => ({
-    id, name, classId, primal, rarity: 'Rare', level: 8, power: 67,
+    id,
+    name,
+    classId,
+    primal,
+    rarity: 'Rare',
+    level: 8,
+    power: 67,
     attributes: { Might: 65, Finesse: 70, Mind: 58, Spirit: 60, Presence: 64, Endurance: 66 },
   });
   const player = hero('qa-player', 'Tactical Hero', 'Duelist', 'Water');
   const opponent = hero('qa-opponent', 'Arena Rival', 'Guardian', 'Iron');
   const run = (seed, policy) => {
-    let encounter = createDuelEncounter({ id: `qa-${seed}`, seed, sourceType: 'qa', sourceId: 'qa', title: 'QA Duel', roundName: 'Final', playerHero: player, opponentHero: opponent });
+    let encounter = createDuelEncounter({
+      id: `qa-${seed}`,
+      seed,
+      sourceType: 'qa',
+      sourceId: 'qa',
+      title: 'QA Duel',
+      roundName: 'Final',
+      playerHero: player,
+      opponentHero: opponent,
+    });
     while (encounter.status === 'active') encounter = performEncounterAction(encounter, policy(encounter), player.id);
     return encounter.result;
   };
@@ -467,15 +497,40 @@ test('reading tells and using class signatures materially beats blind attack spa
 
 test('party combat makes formation roles and objective actions mechanically relevant', () => {
   const mk = (id, name, classId, primal, role) => ({
-    hero: { id, name, classId, primal, rarity: 'Rare', level: 6, power: 62, attributes: { Might: 60, Finesse: 62, Mind: 66, Spirit: 63, Presence: 65, Endurance: 61 } },
+    hero: {
+      id,
+      name,
+      classId,
+      primal,
+      rarity: 'Rare',
+      level: 6,
+      power: 62,
+      attributes: { Might: 60, Finesse: 62, Mind: 66, Spirit: 63, Presence: 65, Endurance: 61 },
+    },
     role,
   });
   let encounter = createPartyEncounter({
-    id: 'qa-party', seed: 4455, sourceType: 'qa', sourceId: 'qa', title: 'Vault Breach', roundName: 'Engagement',
+    id: 'qa-party',
+    seed: 4455,
+    sourceType: 'qa',
+    sourceId: 'qa',
+    title: 'Vault Breach',
+    roundName: 'Engagement',
     objective: 'Secure the sealed vault before the defenders regroup.',
-    playerHeroes: [mk('c', 'Commander', 'Duelist', 'Water', 'Commander'), mk('f', 'Fighter', 'Guardian', 'Iron', 'Fighter'), mk('s', 'Specialist', 'Artificer', 'Psychic', 'Combat Support')],
-    opponentName: 'Vault Guard', opponentPrimal: 'Fire', opponentClassId: 'Guardian', opponentPower: 60, opponentLevel: 6,
-    risk: 3, objectiveType: 'break', objectiveTarget: 100, objectiveLabel: 'Breach the vault',
+    playerHeroes: [
+      mk('c', 'Commander', 'Duelist', 'Water', 'Commander'),
+      mk('f', 'Fighter', 'Guardian', 'Iron', 'Fighter'),
+      mk('s', 'Specialist', 'Artificer', 'Psychic', 'Combat Support'),
+    ],
+    opponentName: 'Vault Guard',
+    opponentPrimal: 'Fire',
+    opponentClassId: 'Guardian',
+    opponentPower: 60,
+    opponentLevel: 6,
+    risk: 3,
+    objectiveType: 'break',
+    objectiveTarget: 100,
+    objectiveLabel: 'Breach the vault',
   });
   const before = encounter.objectiveState.progress;
   encounter = performEncounterAction(encounter, 'objective', 's');
@@ -514,12 +569,20 @@ test('exported campaign backups import cleanly', () => {
   assert.equal(restored.world.currentLocationId, original.world.currentLocationId);
 });
 
-
 test('Feint is a real tactical counter to a telegraphed Guard', () => {
   const state = createNewGame({ seed: 8811, founderName: 'Tessa', founderClass: 'Duelist', founderPrimal: 'Water' });
   const player = state.heroes[0];
   const opponent = { ...structuredClone(player), id: 'opponent-guard', name: 'Guard Captain', classId: 'Guardian', primal: 'Fire', level: 2, power: 54 };
-  let encounter = createDuelEncounter({ id: 'counter-test', seed: 91, sourceType: 'test', sourceId: 'test', title: 'Counter Test', roundName: 'Exhibition', playerHero: player, opponentHero: opponent });
+  let encounter = createDuelEncounter({
+    id: 'counter-test',
+    seed: 91,
+    sourceType: 'test',
+    sourceId: 'test',
+    title: 'Counter Test',
+    roundName: 'Exhibition',
+    playerHero: player,
+    opponentHero: opponent,
+  });
   encounter.enemyIntent = { actionId: 'guard', label: 'Disciplined guard', telegraph: 'They settle behind a disciplined guard.', confidence: 1 };
   encounter = performEncounterAction(encounter, 'feint');
   assert.ok(encounter.enemy.exposed > 0, 'feint should create an opening against guard');
@@ -532,10 +595,25 @@ test('party combat supports non-elimination objectives and selectable signature 
   state = hireFirstCompanion(state);
   const heroes = state.heroes.slice(0, 2);
   let encounter = createPartyEncounter({
-    id: 'protect-test', seed: 99, sourceType: 'test', sourceId: 'protect', title: 'Protect the Envoy', roundName: 'Road Battle',
-    objective: 'Keep the envoy alive until relief arrives.', objectiveType: 'protect', objectiveTarget: 6,
-    playerHeroes: [{ hero: heroes[0], role: 'Commander' }, { hero: heroes[1], role: 'Fighter' }],
-    opponentName: 'Ash Raiders', opponentPrimal: 'Fire', opponentClassId: 'Berserker', opponentPower: 52, opponentLevel: 2, risk: 2,
+    id: 'protect-test',
+    seed: 99,
+    sourceType: 'test',
+    sourceId: 'protect',
+    title: 'Protect the Envoy',
+    roundName: 'Road Battle',
+    objective: 'Keep the envoy alive until relief arrives.',
+    objectiveType: 'protect',
+    objectiveTarget: 6,
+    playerHeroes: [
+      { hero: heroes[0], role: 'Commander' },
+      { hero: heroes[1], role: 'Fighter' },
+    ],
+    opponentName: 'Ash Raiders',
+    opponentPrimal: 'Fire',
+    opponentClassId: 'Berserker',
+    opponentPower: 52,
+    opponentLevel: 2,
+    risk: 2,
   });
   assert.equal(encounter.objectiveState.id, 'protect');
   const leadId = heroes[1].id;
@@ -556,19 +634,40 @@ test('current saves preserve an active tactical encounter and tournament bracket
   const migrated = migrateGame(compactForSave(state, false));
   assert.deepEqual(migrated.activeEncounter, beforeEncounter);
   assert.deepEqual(migrated.tournaments.find((event) => event.id === tournament.id).activeEntrants, beforeEntrants);
-  assert.deepEqual(migrated.missions.map((mission) => mission.id), beforeMissionIds);
+  assert.deepEqual(
+    migrated.missions.map((mission) => mission.id),
+    beforeMissionIds,
+  );
   assert.equal(migrated.heroes[0].status, 'tournament');
   assert.deepEqual(validateGame(migrated), []);
 });
 
-
 test('Phase 3 mission games are deterministic and personality meaningfully changes action fit', () => {
   const hero = (id, personality) => ({
-    id, name: id, classId: 'Bard', primal: 'Air', rarity: 'Rare', level: 7, power: 64,
-    personality, flaw: 'Greed', dream: 'Save a kingdom', role: 'Negotiation Lead',
+    id,
+    name: id,
+    classId: 'Bard',
+    primal: 'Air',
+    rarity: 'Rare',
+    level: 7,
+    power: 64,
+    personality,
+    flaw: 'Greed',
+    dream: 'Save a kingdom',
+    role: 'Negotiation Lead',
     attributes: { Might: 50, Finesse: 58, Mind: 70, Spirit: 68, Presence: 76, Endurance: 55 },
   });
-  const mission = { id: 'diplomacy-qa', title: 'The Ash Accord', family: 'Political', formationType: 'Diplomacy', locationName: 'Dunmere', difficulty: 58, risk: 3, patronPrimal: 'Air', enemyPrimal: 'Fire' };
+  const mission = {
+    id: 'diplomacy-qa',
+    title: 'The Ash Accord',
+    family: 'Political',
+    formationType: 'Diplomacy',
+    locationName: 'Dunmere',
+    difficulty: 58,
+    risk: 3,
+    patronPrimal: 'Air',
+    enemyPrimal: 'Fire',
+  };
   const patientGame = createMissionGame({ mission, playerHeroes: [{ hero: hero('patient', 'Patient'), role: 'Negotiation Lead' }], seed: 9001 });
   const restlessGame = createMissionGame({ mission, playerHeroes: [{ hero: hero('restless', 'Restless'), role: 'Negotiation Lead' }], seed: 9001 });
   const patientPreview = missionGameActionPreview(patientGame, 'listen', 'patient');
@@ -581,7 +680,13 @@ test('Phase 3 mission games are deterministic and personality meaningfully chang
 });
 
 test('Expedition discoveries need verification for elite outcomes', () => {
-  const base = { type: 'Expedition', status: 'won', requiresVerification: true, rewardModifier: 1, metrics: { progress: 110, evidence: 85, certainty: 10, supplies: 70, hazard: 12 } };
+  const base = {
+    type: 'Expedition',
+    status: 'won',
+    requiresVerification: true,
+    rewardModifier: 1,
+    metrics: { progress: 110, evidence: 85, certainty: 10, supplies: 70, hazard: 12 },
+  };
   assert.equal(missionGradeFromMissionGame(base), 'Partial');
   const verified = structuredClone(base);
   verified.metrics.certainty = 82;
@@ -590,11 +695,30 @@ test('Expedition discoveries need verification for elite outcomes', () => {
 
 test('Intrigue cannot simply extract before securing the objective', () => {
   const rogue = {
-    id: 'rogue', name: 'Sable', classId: 'Rogue', primal: 'Psychic', rarity: 'Rare', level: 8, power: 68,
-    personality: 'Cautious', flaw: 'Greed', dream: 'Expose a tyrant', role: 'Mastermind',
+    id: 'rogue',
+    name: 'Sable',
+    classId: 'Rogue',
+    primal: 'Psychic',
+    rarity: 'Rare',
+    level: 8,
+    power: 68,
+    personality: 'Cautious',
+    flaw: 'Greed',
+    dream: 'Expose a tyrant',
+    role: 'Mastermind',
     attributes: { Might: 48, Finesse: 82, Mind: 76, Spirit: 55, Presence: 64, Endurance: 66 },
   };
-  const mission = { id: 'intrigue-qa', title: 'The Sealed Ledger', family: 'Espionage', formationType: 'Intrigue', locationName: 'Dunmere', difficulty: 60, risk: 3, patronPrimal: 'Iron', enemyPrimal: 'Fire' };
+  const mission = {
+    id: 'intrigue-qa',
+    title: 'The Sealed Ledger',
+    family: 'Espionage',
+    formationType: 'Intrigue',
+    locationName: 'Dunmere',
+    difficulty: 60,
+    risk: 3,
+    patronPrimal: 'Iron',
+    enemyPrimal: 'Fire',
+  };
   let game = createMissionGame({ mission, playerHeroes: [{ hero: rogue, role: 'Mastermind' }], seed: 7007 });
   const heatBefore = game.metrics.heat;
   game = performMissionGameAction(game, 'extract', rogue.id).game;
@@ -609,8 +733,11 @@ test('non-combat contracts pause for their playable mission game and preserve it
   state = hireFirstCompanion(state);
   state.guild.crowns = 5000;
   state.heroes.forEach((hero) => {
-    hero.level = 10; hero.power = 78;
-    Object.keys(hero.attributes).forEach((key) => { hero.attributes[key] = 78; });
+    hero.level = 10;
+    hero.power = 78;
+    Object.keys(hero.attributes).forEach((key) => {
+      hero.attributes[key] = 78;
+    });
   });
   const mission = tutorialMission(state);
   mission.family = 'Investigation';
@@ -631,7 +758,10 @@ test('non-combat contracts pause for their playable mission game and preserve it
   assert.ok(state.missionHistory[0].missionGame);
   assert.equal(state.missionHistory[0].formationType, 'Expedition');
   assert.ok(state.missionHistory[0].team.length >= 2);
-  assert.ok(state.heroes.some((hero) => hero.relationships?.length), 'shared success should begin relationship history');
+  assert.ok(
+    state.heroes.some((hero) => hero.relationships?.length),
+    'shared success should begin relationship history',
+  );
 });
 
 test('recruits can demand career promises or accept a more expensive unconditional contract', () => {
@@ -650,7 +780,8 @@ test('recruits can demand career promises or accept a more expensive uncondition
   let bought = createNewGame({ seed: 1 });
   bought = hireFirstCompanion(bought);
   bought.guild.crowns = 5000;
-  const buyCandidate = bought.candidates.find((candidate) => candidate.demand && candidate.name === offered.name) || bought.candidates.find((candidate) => candidate.demand);
+  const buyCandidate =
+    bought.candidates.find((candidate) => candidate.demand && candidate.name === offered.name) || bought.candidates.find((candidate) => candidate.demand);
   const buyCost = buyCandidate.signingFee + buyCandidate.buyoutFee;
   const buyResult = recruitCandidate(bought, buyCandidate.id, 'buyout');
   assert.equal(buyResult.error, null);
@@ -798,7 +929,10 @@ test('formal mentorship accelerates apprentice training without granting free le
   base.heroes[0].age = 35;
   base.heroes[1].level = 2;
   base.heroes[1].age = 20;
-  base.heroes.forEach((hero) => { hero.monthlyActivity = 'Training'; hero.training = 'Fundamentals'; });
+  base.heroes.forEach((hero) => {
+    hero.monthlyActivity = 'Training';
+    hero.training = 'Fundamentals';
+  });
   const plain = structuredClone(base);
   const mentoredResult = assignMentor(base, base.heroes[0].id, base.heroes[1].id);
   assert.equal(mentoredResult.error, null);
@@ -811,7 +945,16 @@ test('formal mentorship accelerates apprentice training without granting free le
 
 test('artifact custody has history and cannot farm prestige through repeated reassignment', () => {
   let state = createNewGame({ seed: 18005 });
-  state.artifacts.push({ id: 'qa-relic', name: 'QA Crown', discoveredYear: state.date.year, originMission: 'QA', ownerId: null, legend: 'A test relic.', prestige: 80, ownerHistory: [] });
+  state.artifacts.push({
+    id: 'qa-relic',
+    name: 'QA Crown',
+    discoveredYear: state.date.year,
+    originMission: 'QA',
+    ownerId: null,
+    legend: 'A test relic.',
+    prestige: 80,
+    ownerHistory: [],
+  });
   const heroId = state.heroes[0].id;
   state = assignArtifact(state, 'qa-relic', heroId).state;
   const first = state.heroes[0];
@@ -950,7 +1093,9 @@ test('a guild with no active heroes is detected and can be refounded', () => {
   state = hireFirstCompanion(state);
   assert.equal(isGuildDefunct(state), false);
   assert.ok(refoundGuild(state, { founderName: 'Mara' }).error);
-  state.heroes.forEach((hero) => { hero.status = 'dead'; });
+  state.heroes.forEach((hero) => {
+    hero.status = 'dead';
+  });
   state = advanceMonths(state, 1).state;
   assert.equal(isGuildDefunct(state), true);
   const next = getNextAction(state);

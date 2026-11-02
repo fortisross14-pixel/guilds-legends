@@ -1,7 +1,7 @@
 import { primalDiplomacyModifier } from '../data/world.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-const clone = (value) => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+const clone = (value) => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)));
 
 function hashString(text) {
   let hash = 2166136261;
@@ -52,7 +52,12 @@ export const MISSION_GAME_ACTIONS = {
     { id: 'listen', label: 'Listen & Probe', icon: '◇', hint: 'Learn what actually matters. Builds insight and usually improves trust.' },
     { id: 'appeal', label: 'Make the Case', icon: '♛', hint: 'Use presence and cultural affinity to move the room toward agreement.' },
     { id: 'evidence', label: 'Present Evidence', icon: '▤', hint: 'Turn insight and preparation into a hard argument.' },
-    { id: 'concede', label: 'Offer Concession', icon: '⚖', hint: 'Give something away to gain trust and agreement. Too many concessions weaken the final result.' },
+    {
+      id: 'concede',
+      label: 'Offer Concession',
+      icon: '⚖',
+      hint: 'Give something away to gain trust and agreement. Too many concessions weaken the final result.',
+    },
     { id: 'pressure', label: 'Apply Pressure', icon: '▲', hint: 'Force movement quickly, but risk destroying trust.' },
   ],
   Expedition: [
@@ -142,20 +147,32 @@ function skillFor(hero, gameType, actionId, patronPrimal = null) {
   let skill = hero.power * 0.18 + (hero.level || 1) * 1.35 + roleBonus(hero, gameType);
   if (gameType === 'Diplomacy') {
     const actionWeights = {
-      listen: ['Mind', 'Presence'], appeal: ['Presence', 'Spirit'], evidence: ['Mind', 'Presence'], concede: ['Spirit', 'Presence'], pressure: ['Presence', 'Might'],
+      listen: ['Mind', 'Presence'],
+      appeal: ['Presence', 'Spirit'],
+      evidence: ['Mind', 'Presence'],
+      concede: ['Spirit', 'Presence'],
+      pressure: ['Presence', 'Might'],
     };
     const [a, b] = actionWeights[actionId] || ['Presence', 'Mind'];
     skill += attr(hero, a) * 0.42 + attr(hero, b) * 0.22;
     skill += primalDiplomacyModifier(hero.primal, patronPrimal) * 0.55;
   } else if (gameType === 'Expedition') {
     const actionWeights = {
-      survey: ['Mind', 'Finesse'], push: ['Endurance', 'Might'], search: ['Finesse', 'Mind'], verify: ['Mind', 'Spirit'], camp: ['Endurance', 'Spirit'],
+      survey: ['Mind', 'Finesse'],
+      push: ['Endurance', 'Might'],
+      search: ['Finesse', 'Mind'],
+      verify: ['Mind', 'Spirit'],
+      camp: ['Endurance', 'Spirit'],
     };
     const [a, b] = actionWeights[actionId] || ['Mind', 'Finesse'];
     skill += attr(hero, a) * 0.4 + attr(hero, b) * 0.24;
   } else {
     const actionWeights = {
-      observe: ['Mind', 'Finesse'], infiltrate: ['Finesse', 'Mind'], distract: ['Presence', 'Finesse'], exploit: ['Mind', 'Finesse'], extract: ['Endurance', 'Finesse'],
+      observe: ['Mind', 'Finesse'],
+      infiltrate: ['Finesse', 'Mind'],
+      distract: ['Presence', 'Finesse'],
+      exploit: ['Mind', 'Finesse'],
+      extract: ['Endurance', 'Finesse'],
     };
     const [a, b] = actionWeights[actionId] || ['Finesse', 'Mind'];
     skill += attr(hero, a) * 0.4 + attr(hero, b) * 0.24;
@@ -212,7 +229,11 @@ export function createMissionGame({ mission, playerHeroes, seed }) {
       patience: 8,
       concessions: 0,
     };
-    addLog(common, `The delegation enters the room. The other side values ${common.disposition.toLowerCase()}, but its exact priorities are still unclear.`, 'blue');
+    addLog(
+      common,
+      `The delegation enters the room. The other side values ${common.disposition.toLowerCase()}, but its exact priorities are still unclear.`,
+      'blue',
+    );
   } else if (gameType === 'Expedition') {
     common.maxTurns = 10;
     common.requiresVerification = Boolean(mission.artifact || ['Investigation', 'Legend Quest', 'Artifact Hunt'].includes(mission.family));
@@ -243,7 +264,11 @@ function resolveDiplomacy(game, actionId, hero) {
     const gain = clamp(quality + insightBonus, 5, 28);
     m.agreement = clamp(m.agreement + gain, 0, 120);
     m.trust = clamp(m.trust + (margin >= 0 ? 3 : -3), 0, 100);
-    addLog(game, `${hero.name} makes the guild’s case. Agreement +${gain}${margin < 0 ? ', but the argument strains trust.' : '.'}`, margin >= 0 ? 'green' : 'gold');
+    addLog(
+      game,
+      `${hero.name} makes the guild’s case. Agreement +${gain}${margin < 0 ? ', but the argument strains trust.' : '.'}`,
+      margin >= 0 ? 'green' : 'gold',
+    );
   } else if (actionId === 'evidence') {
     const preparation = Math.round(m.insight * 0.12);
     const gain = clamp(5 + quality + preparation, 5, 34);
@@ -406,7 +431,8 @@ export function missionGamePerformance(game) {
   if (!game) return 0;
   const m = game.metrics || {};
   if (game.type === 'Diplomacy') return Math.round((m.agreement || 0) + (m.trust || 0) * 0.42 + (m.insight || 0) * 0.08 - (m.concessions || 0) * 8);
-  if (game.type === 'Expedition') return Math.round((m.progress || 0) + (m.evidence || 0) * 0.18 + (m.certainty || 0) * 0.28 + (m.supplies || 0) * 0.08 - (m.hazard || 0) * 0.22);
+  if (game.type === 'Expedition')
+    return Math.round((m.progress || 0) + (m.evidence || 0) * 0.18 + (m.certainty || 0) * 0.28 + (m.supplies || 0) * 0.08 - (m.hazard || 0) * 0.22);
   return Math.round((m.progress || 0) + (m.intel || 0) * 0.16 + (100 - (m.heat || 100)) * 0.28 + (m.exitReady ? 18 : 0));
 }
 
@@ -454,7 +480,10 @@ function chooseAutoAction(game) {
 }
 
 function bestLeadForAction(game, actionId) {
-  return [...game.roster].sort((a, b) => skillFor(b, game.type, actionId, game.patronPrimal) - skillFor(a, game.type, actionId, game.patronPrimal))[0]?.id || game.leadHeroId;
+  return (
+    [...game.roster].sort((a, b) => skillFor(b, game.type, actionId, game.patronPrimal) - skillFor(a, game.type, actionId, game.patronPrimal))[0]?.id ||
+    game.leadHeroId
+  );
 }
 
 export function autoResolveMissionGame(gameInput) {

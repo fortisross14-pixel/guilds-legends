@@ -25,7 +25,13 @@ test('long-run tournament balance favors elite rarity but preserves rare upsets 
   const eliteWins = (rarityCounts.Legend || 0) + (rarityCounts.Epic || 0);
   assert.ok(eliteWins / individual.length >= 0.7, `elite win share was ${eliteWins}/${individual.length}`);
   assert.ok((rarityCounts.Rare || 0) >= 1, 'Rare heroes never produced an upset champion');
-  assert.ok(Math.max(...Object.values(state.titleRecords).filter((record) => record.kind === 'individual').map((record) => record.recordWins)) <= 8);
+  assert.ok(
+    Math.max(
+      ...Object.values(state.titleRecords)
+        .filter((record) => record.kind === 'individual')
+        .map((record) => record.recordWins),
+    ) <= 8,
+  );
   assert.deepEqual(validateGame(state), []);
 });
 

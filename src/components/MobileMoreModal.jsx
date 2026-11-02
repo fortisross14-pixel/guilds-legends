@@ -15,8 +15,20 @@ export default function MobileMoreModal({ open, onClose, navigate, active }) {
     <Modal open={open} title="More" eyebrow="Guild management" onClose={onClose} width="compact">
       <div className="mobile-more-grid">
         {MORE_ITEMS.map((item) => (
-          <button key={item.id} className={active === item.id ? 'is-active' : ''} onClick={() => { navigate(item.id); onClose(); }}>
-            <span>{item.icon}</span><div><strong>{item.label}</strong><small>{item.text}</small></div><i>›</i>
+          <button
+            key={item.id}
+            className={active === item.id ? 'is-active' : ''}
+            onClick={() => {
+              navigate(item.id);
+              onClose();
+            }}
+          >
+            <span>{item.icon}</span>
+            <div>
+              <strong>{item.label}</strong>
+              <small>{item.text}</small>
+            </div>
+            <i>›</i>
           </button>
         ))}
       </div>

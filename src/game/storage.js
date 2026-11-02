@@ -54,9 +54,7 @@ async function withStore(mode, callback) {
 export async function listSaveSlots() {
   try {
     const records = await withStore('readonly', (store) => requestPromise(store.getAll()));
-    return records
-      .map((record) => record.meta)
-      .sort((a, b) => a.slot - b.slot);
+    return records.map((record) => record.meta).sort((a, b) => a.slot - b.slot);
   } catch (error) {
     console.warn('Could not list save slots:', error);
     return [];

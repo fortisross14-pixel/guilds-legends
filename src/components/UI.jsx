@@ -34,7 +34,12 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
   return (
     <div
       className={`hero-portrait hero-portrait--${size}`}
-      style={{ '--portrait-hue': 0, '--portrait-frame': rarity.color, '--portrait-primal': primal.color, '--portrait-bg': PRIMAL_BACKGROUNDS[primal.id] || PRIMAL_BACKGROUNDS.Fire }}
+      style={{
+        '--portrait-hue': 0,
+        '--portrait-frame': rarity.color,
+        '--portrait-primal': primal.color,
+        '--portrait-bg': PRIMAL_BACKGROUNDS[primal.id] || PRIMAL_BACKGROUNDS.Fire,
+      }}
       aria-label={`${hero.name}, ${classId}`}
     >
       <div className="hero-portrait__halo" />
@@ -49,31 +54,69 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
 export function HeroSprite({ hero, size = 'md', enemy = false }) {
   const artKey = heroArtKey(hero);
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
-  return <div className={`hero-sprite hero-sprite--${size} ${enemy ? 'hero-sprite--enemy' : ''}`} style={{ '--sprite-glow': primal.color }}><img src={`${import.meta.env.BASE_URL}art/sprites/${artKey}.png`} alt="" loading="lazy" /></div>;
+  return (
+    <div className={`hero-sprite hero-sprite--${size} ${enemy ? 'hero-sprite--enemy' : ''}`} style={{ '--sprite-glow': primal.color }}>
+      <img src={`${import.meta.env.BASE_URL}art/sprites/${artKey}.png`} alt="" loading="lazy" />
+    </div>
+  );
 }
-
 
 export function PrimalBadge({ primal, compact = false }) {
   const info = PRIMALS[primal] || { icon: '◇', color: '#8f99a5', id: primal || 'Unknown' };
-  return <span className={`primal-badge ${compact ? 'primal-badge--compact' : ''}`} style={{ '--primal-color': info.color }} title={`${info.id}: strong against ${info.beats || '—'}, weak to ${info.weakTo || '—'}`}><i>{info.icon}</i>{compact ? null : <span>{info.id}</span>}</span>;
+  return (
+    <span
+      className={`primal-badge ${compact ? 'primal-badge--compact' : ''}`}
+      style={{ '--primal-color': info.color }}
+      title={`${info.id}: strong against ${info.beats || '—'}, weak to ${info.weakTo || '—'}`}
+    >
+      <i>{info.icon}</i>
+      {compact ? null : <span>{info.id}</span>}
+    </span>
+  );
 }
 
 export function RarityBadge({ rarity }) {
   const info = RARITIES[rarity] || { color: '#8f99a5', id: rarity || 'Common' };
-  return <span className="rarity-badge" style={{ '--rarity-color': info.color }}>{info.id}</span>;
+  return (
+    <span className="rarity-badge" style={{ '--rarity-color': info.color }}>
+      {info.id}
+    </span>
+  );
 }
 
 export function LevelBadge({ hero, showXp = false }) {
   const level = hero?.level || 1;
-  return <span className="level-badge" title={showXp && level < 20 ? `${hero.xp || 0} XP toward the next level` : level >= 20 ? 'Maximum level' : `Level ${level}`}><small>LV</small><strong>{level}</strong>{showXp && level < 20 ? <em>{hero.xp || 0} XP</em> : null}</span>;
+  return (
+    <span className="level-badge" title={showXp && level < 20 ? `${hero.xp || 0} XP toward the next level` : level >= 20 ? 'Maximum level' : `Level ${level}`}>
+      <small>LV</small>
+      <strong>{level}</strong>
+      {showXp && level < 20 ? <em>{hero.xp || 0} XP</em> : null}
+    </span>
+  );
 }
 
 export function ProgressBar({ value, max = 100, label = undefined, tone = 'gold', compact = false }) {
   const pct = max <= 0 ? 0 : Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div className={`progress ${compact ? 'progress--compact' : ''}`}>
-      {label ? <div className="progress__label"><span>{label}</span><strong>{Math.round(value)}/{Math.round(max)}</strong></div> : null}
-      <div className="progress__track" role="progressbar" aria-label={label || 'Progress'} aria-valuemin={0} aria-valuemax={Math.round(max)} aria-valuenow={Math.round(value)}><span className={`progress__fill progress__fill--${tone}`} style={{ width: `${pct}%` }} /></div>
+      {label ? (
+        <div className="progress__label">
+          <span>{label}</span>
+          <strong>
+            {Math.round(value)}/{Math.round(max)}
+          </strong>
+        </div>
+      ) : null}
+      <div
+        className="progress__track"
+        role="progressbar"
+        aria-label={label || 'Progress'}
+        aria-valuemin={0}
+        aria-valuemax={Math.round(max)}
+        aria-valuenow={Math.round(value)}
+      >
+        <span className={`progress__fill progress__fill--${tone}`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
@@ -82,13 +125,21 @@ export function Stat({ label, value, sub = undefined, icon = undefined, tone = '
   return (
     <div className={`stat stat--${tone}`}>
       {icon ? <span className="stat__icon">{icon}</span> : null}
-      <div><span className="stat__label">{label}</span><strong className="stat__value">{value}</strong>{sub ? <span className="stat__sub">{sub}</span> : null}</div>
+      <div>
+        <span className="stat__label">{label}</span>
+        <strong className="stat__value">{value}</strong>
+        {sub ? <span className="stat__sub">{sub}</span> : null}
+      </div>
     </div>
   );
 }
 
 export function Badge({ children, tone = 'neutral', title = undefined }) {
-  return <span className={`badge badge--${tone}`} title={title}>{children}</span>;
+  return (
+    <span className={`badge badge--${tone}`} title={title}>
+      {children}
+    </span>
+  );
 }
 
 export function Button({ children, variant = 'secondary', size = 'md', icon = undefined, className = '', ...props }) {
@@ -103,9 +154,12 @@ export function Button({ children, variant = 'secondary', size = 'md', icon = un
 export function Panel({ title = undefined, eyebrow = undefined, action = null, children, className = '', tone = 'default' }) {
   return (
     <section className={`panel panel--${tone} ${className}`}>
-      {(title || eyebrow || action) ? (
+      {title || eyebrow || action ? (
         <header className="panel__header">
-          <div>{eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}{title ? <h2>{title}</h2> : null}</div>
+          <div>
+            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
+            {title ? <h2>{title}</h2> : null}
+          </div>
           {action ? <div className="panel__action">{action}</div> : null}
         </header>
       ) : null}
@@ -138,12 +192,21 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
         return;
       }
       if (event.key !== 'Tab') return;
-      const focusable = [...(dialogRef.current?.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])') || [])];
+      const focusable = [
+        ...(dialogRef.current?.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) || []),
+      ];
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
     window.requestAnimationFrame(() => (closeRef.current || dialogRef.current?.querySelector('button, input, select, textarea'))?.focus());
@@ -154,13 +217,24 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
   }, [open, onClose, preventClose]);
   if (!open) return null;
   return (
-    <div className="modal-layer" role="presentation" onMouseDown={(event) => {
-      if (event.target === event.currentTarget && !preventClose) onClose?.();
-    }}>
+    <div
+      className="modal-layer"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !preventClose) onClose?.();
+      }}
+    >
       <div ref={dialogRef} className={`modal modal--${width}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
         <header className="modal__header">
-          <div>{eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}<h2>{title}</h2></div>
-          {!preventClose ? <button ref={closeRef} className="icon-button" onClick={onClose} aria-label="Close">×</button> : null}
+          <div>
+            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
+            <h2>{title}</h2>
+          </div>
+          {!preventClose ? (
+            <button ref={closeRef} className="icon-button" onClick={onClose} aria-label="Close">
+              ×
+            </button>
+          ) : null}
         </header>
         <div className="modal__body">{children}</div>
       </div>
@@ -172,15 +246,33 @@ export function Tabs({ items, active, onChange, ariaLabel = 'Sections' }) {
   const onKeyDown = (event) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const current = Math.max(0, items.findIndex((item) => item.id === active));
-    const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : event.key === 'ArrowRight' ? (current + 1) % items.length : (current - 1 + items.length) % items.length;
+    const current = Math.max(
+      0,
+      items.findIndex((item) => item.id === active),
+    );
+    const nextIndex =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? items.length - 1
+          : event.key === 'ArrowRight'
+            ? (current + 1) % items.length
+            : (current - 1 + items.length) % items.length;
     onChange(items[nextIndex].id);
   };
   return (
     <div className="tabs" role="tablist" aria-label={ariaLabel} onKeyDown={onKeyDown}>
       {items.map((item) => (
-        <button key={item.id} role="tab" aria-selected={active === item.id} tabIndex={active === item.id ? 0 : -1} className={active === item.id ? 'is-active' : ''} onClick={() => onChange(item.id)}>
-          {item.icon ? <span>{item.icon}</span> : null}{item.label}
+        <button
+          key={item.id}
+          role="tab"
+          aria-selected={active === item.id}
+          tabIndex={active === item.id ? 0 : -1}
+          className={active === item.id ? 'is-active' : ''}
+          onClick={() => onChange(item.id)}
+        >
+          {item.icon ? <span>{item.icon}</span> : null}
+          {item.label}
         </button>
       ))}
     </div>
@@ -203,7 +295,13 @@ export function Sparkline({ values = [], label = undefined }) {
 }
 
 export function RiskPips({ risk }) {
-  return <span className="risk-pips" aria-label={`Risk ${risk} of 5`}>{[1, 2, 3, 4, 5].map((value) => <i key={value} className={value <= risk ? 'is-filled' : ''} />)}</span>;
+  return (
+    <span className="risk-pips" aria-label={`Risk ${risk} of 5`}>
+      {[1, 2, 3, 4, 5].map((value) => (
+        <i key={value} className={value <= risk ? 'is-filled' : ''} />
+      ))}
+    </span>
+  );
 }
 
 export function Divider({ label = undefined }) {
@@ -212,5 +310,10 @@ export function Divider({ label = undefined }) {
 
 export function NumberDelta({ value }) {
   const positive = value >= 0;
-  return <span className={positive ? 'delta delta--positive' : 'delta delta--negative'}>{positive ? '+' : ''}{value}</span>;
+  return (
+    <span className={positive ? 'delta delta--positive' : 'delta delta--negative'}>
+      {positive ? '+' : ''}
+      {value}
+    </span>
+  );
 }

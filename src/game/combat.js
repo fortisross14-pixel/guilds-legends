@@ -2,7 +2,7 @@ import { primalCombatModifier } from '../data/world.js';
 import { normalizeClassId } from '../data/content.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-const clone = (value) => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+const clone = (value) => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)));
 
 function hashString(text) {
   let hash = 2166136261;
@@ -36,18 +36,39 @@ export const COMBAT_ACTIONS = [
   { id: 'guard', label: 'Guard', icon: '◆', cost: 7, hint: 'Brace against a telegraphed attack or dangerous Signature.', modes: ['duel', 'party'] },
   { id: 'feint', label: 'Feint', icon: '◈', cost: 20, hint: 'Break defensive play and leave the opponent exposed.', modes: ['duel', 'party'] },
   { id: 'recover', label: 'Recover', icon: '✚', cost: 0, hint: 'Restore stamina and a little health, but invite pressure.', modes: ['duel', 'party'] },
-  { id: 'objective', label: 'Press Objective', icon: '⌖', cost: 16, hint: 'Advance the mission goal instead of maximizing damage this exchange.', modes: ['party'] },
+  {
+    id: 'objective',
+    label: 'Press Objective',
+    icon: '⌖',
+    cost: 16,
+    hint: 'Advance the mission goal instead of maximizing damage this exchange.',
+    modes: ['party'],
+  },
   { id: 'signature', label: 'Signature', icon: '✦', cost: 22, hint: 'Use the selected hero’s class technique.', modes: ['duel', 'party'] },
 ];
 
 export const CLASS_SIGNATURES = {
-  Guardian: { name: 'Shield Bash', icon: '◆', cost: 20, cooldown: 2, text: 'Strike while raising guard; may stagger an aggressive opponent.', mode: 'guard-hit' },
+  Guardian: {
+    name: 'Shield Bash',
+    icon: '◆',
+    cost: 20,
+    cooldown: 2,
+    text: 'Strike while raising guard; may stagger an aggressive opponent.',
+    mode: 'guard-hit',
+  },
   Duelist: { name: 'Riposte', icon: '✦', cost: 18, cooldown: 2, text: 'Set a counter. Direct attacks are answered with a precision strike.', mode: 'riposte' },
   Ranger: { name: 'Pinning Shot', icon: '➶', cost: 20, cooldown: 2, text: 'Accurate ranged pressure that exposes an attacking opponent.', mode: 'pin' },
   Rogue: { name: 'Shadowstep', icon: '◈', cost: 22, cooldown: 2, text: 'Devastating against an exposed target; otherwise creates evasion.', mode: 'shadow' },
   Cleric: { name: 'Radiant Ward', icon: '✚', cost: 20, cooldown: 3, text: 'Heal the line, raise guard and punish reckless pressure.', mode: 'ward' },
   Mage: { name: 'Arc Burst', icon: '✧', cost: 28, cooldown: 3, text: 'Heavy magical damage that ignores much of the target’s guard.', mode: 'burst' },
-  Scholar: { name: 'Tactical Reading', icon: '▣', cost: 14, cooldown: 2, text: 'Recover stamina, gain focus and improve the read on the next exchange.', mode: 'verse' },
+  Scholar: {
+    name: 'Tactical Reading',
+    icon: '▣',
+    cost: 14,
+    cooldown: 2,
+    text: 'Recover stamina, gain focus and improve the read on the next exchange.',
+    mode: 'verse',
+  },
   Artificer: { name: 'Flash Charge', icon: '⚙', cost: 22, cooldown: 2, text: 'Strip guard and disrupt the opponent’s next action.', mode: 'flash' },
 };
 
@@ -68,10 +89,18 @@ function heroSnapshot(hero, role = null) {
 function syntheticHero({ id, name, classId, primal, level, power, role }) {
   const p = clamp(Math.round(power || 50), 30, 98);
   const classBias = {
-    Guardian: ['Might', 'Endurance'], Duelist: ['Finesse', 'Presence'], Ranger: ['Finesse', 'Mind'], Rogue: ['Finesse', 'Mind'], Cleric: ['Spirit', 'Presence'],
-    Mage: ['Mind', 'Spirit'], Scholar: ['Mind', 'Presence'], Artificer: ['Mind', 'Endurance'],
+    Guardian: ['Might', 'Endurance'],
+    Duelist: ['Finesse', 'Presence'],
+    Ranger: ['Finesse', 'Mind'],
+    Rogue: ['Finesse', 'Mind'],
+    Cleric: ['Spirit', 'Presence'],
+    Mage: ['Mind', 'Spirit'],
+    Scholar: ['Mind', 'Presence'],
+    Artificer: ['Mind', 'Endurance'],
   }[classId] || ['Might', 'Endurance'];
-  const attributes = Object.fromEntries(['Might', 'Finesse', 'Mind', 'Spirit', 'Presence', 'Endurance'].map((key) => [key, clamp(p + (classBias.includes(key) ? 7 : -3), 28, 99)]));
+  const attributes = Object.fromEntries(
+    ['Might', 'Finesse', 'Mind', 'Spirit', 'Presence', 'Endurance'].map((key) => [key, clamp(p + (classBias.includes(key) ? 7 : -3), 28, 99)]),
+  );
   return { id, name, classId: normalizeClassId(classId), primal, rarity: 'Uncommon', level: level || 1, power: p, role, attributes };
 }
 
@@ -112,12 +141,42 @@ function duelSide(hero, nameOverride = null) {
 
 function intentDefinition(actionId, signature = null) {
   const definitions = {
-    attack: { label: 'Direct pressure', icon: '⚔', description: 'A committed attack is coming.', telegraph: 'They shift forward and prepare a direct attack.' },
-    guard: { label: 'Disciplined guard', icon: '◆', description: 'They intend to absorb your pressure and build control.', telegraph: 'They settle behind a disciplined guard.' },
-    feint: { label: 'Feint', icon: '◈', description: 'They are trying to open your defense rather than trade cleanly.', telegraph: 'Their stance is deliberately loose — a feint is coming.' },
-    recover: { label: 'Recovery', icon: '✚', description: 'They are sacrificing initiative to restore stamina.', telegraph: 'They give ground and try to recover stamina.' },
-    objective: { label: 'Objective push', icon: '⌖', description: 'They are prioritizing mission progress over direct damage.', telegraph: 'They are ignoring you long enough to press the objective.' },
-    signature: { label: signature?.name || 'Signature', icon: signature?.icon || '✦', description: 'A class-defining technique is being prepared.', telegraph: `They are preparing ${signature?.name || 'a class Signature'}.` },
+    attack: {
+      label: 'Direct pressure',
+      icon: '⚔',
+      description: 'A committed attack is coming.',
+      telegraph: 'They shift forward and prepare a direct attack.',
+    },
+    guard: {
+      label: 'Disciplined guard',
+      icon: '◆',
+      description: 'They intend to absorb your pressure and build control.',
+      telegraph: 'They settle behind a disciplined guard.',
+    },
+    feint: {
+      label: 'Feint',
+      icon: '◈',
+      description: 'They are trying to open your defense rather than trade cleanly.',
+      telegraph: 'Their stance is deliberately loose — a feint is coming.',
+    },
+    recover: {
+      label: 'Recovery',
+      icon: '✚',
+      description: 'They are sacrificing initiative to restore stamina.',
+      telegraph: 'They give ground and try to recover stamina.',
+    },
+    objective: {
+      label: 'Objective push',
+      icon: '⌖',
+      description: 'They are prioritizing mission progress over direct damage.',
+      telegraph: 'They are ignoring you long enough to press the objective.',
+    },
+    signature: {
+      label: signature?.name || 'Signature',
+      icon: signature?.icon || '✦',
+      description: 'A class-defining technique is being prepared.',
+      telegraph: `They are preparing ${signature?.name || 'a class Signature'}.`,
+    },
   };
   return { actionId, ...(definitions[actionId] || definitions.attack) };
 }
@@ -153,7 +212,13 @@ function supportRating(side) {
 }
 
 function objectiveRating(side, lead) {
-  return avgRoster(side, 'Mind') * 0.22 + avgRoster(side, 'Finesse') * 0.2 + attr(lead, 'Presence', lead?.power || 50) * 0.14 + roleCount(side, 'Commander') * 5 + roleCount(side, 'Combat Support') * 2;
+  return (
+    avgRoster(side, 'Mind') * 0.22 +
+    avgRoster(side, 'Finesse') * 0.2 +
+    attr(lead, 'Presence', lead?.power || 50) * 0.14 +
+    roleCount(side, 'Commander') * 5 +
+    roleCount(side, 'Combat Support') * 2
+  );
 }
 
 function signatureFor(hero) {
@@ -173,7 +238,7 @@ function chooseEnemyIntent(encounter) {
     if (player.guard > 0.35) options.push('feint', 'feint');
     if (player.exposed > 0) options.push('attack', 'signature');
     if (encounter.mode === 'party' && encounter.objectiveState?.id !== 'eliminate') options.push('objective');
-    if (side.hp / side.maxHp < 0.35) options.push('recover', ['Cleric','Scholar'].includes(normalizeClassId(lead?.classId)) ? 'signature' : 'guard');
+    if (side.hp / side.maxHp < 0.35) options.push('recover', ['Cleric', 'Scholar'].includes(normalizeClassId(lead?.classId)) ? 'signature' : 'guard');
 
     // Opponents learn obvious habits. The tell remains honest, so a player who reads it can still counter.
     const pattern = encounter.playerPattern || {};
@@ -237,23 +302,43 @@ export function createDuelEncounter({ id, seed, sourceType, sourceId, title, rou
 }
 
 export function createPartyEncounter({
-  id, seed, sourceType, sourceId, title, roundName, objective,
-  playerHeroes, opponentName, opponentPrimal, opponentClassId = 'Guardian', opponentPower = 55, opponentLevel = 5, opponentRoster = null,
-  prestige = 0, risk = 2, objectiveType = 'eliminate', objectiveTarget = null, objectiveLabel = null,
+  id,
+  seed,
+  sourceType,
+  sourceId,
+  title,
+  roundName,
+  objective,
+  playerHeroes,
+  opponentName,
+  opponentPrimal,
+  opponentClassId = 'Guardian',
+  opponentPower = 55,
+  opponentLevel = 5,
+  opponentRoster = null,
+  prestige = 0,
+  risk = 2,
+  objectiveType = 'eliminate',
+  objectiveTarget = null,
+  objectiveLabel = null,
 }) {
   const playerRoster = playerHeroes.map(({ hero, role }) => heroSnapshot(hero, role));
   const desiredEnemySize = Math.max(2, Math.min(5, opponentRoster?.length || playerRoster.length || 2));
   const enemyRoster = opponentRoster?.length
-    ? opponentRoster.slice(0, desiredEnemySize).map((hero, index) => heroSnapshot(hero, index === 0 ? 'Commander' : index === desiredEnemySize - 1 ? 'Combat Support' : 'Fighter'))
-    : Array.from({ length: desiredEnemySize }, (_, index) => syntheticHero({
-      id: `enemy-${id}-${index}`,
-      name: index === 0 ? `${opponentName} captain` : `${opponentName} ${index + 1}`,
-      classId: index === 0 ? opponentClassId : index === desiredEnemySize - 1 && desiredEnemySize >= 4 ? 'Cleric' : index % 2 ? 'Duelist' : opponentClassId,
-      primal: opponentPrimal,
-      level: clamp(opponentLevel + (index === 0 ? 1 : 0), 1, 20),
-      power: clamp(opponentPower + (index === 0 ? 4 : randomInt({ seed: seed >>> 0 || 1, turn: 0, rngStep: index }, -5, 3, `enemy-${index}`)), 30, 98),
-      role: index === 0 ? 'Commander' : index === desiredEnemySize - 1 && desiredEnemySize >= 4 ? 'Combat Support' : 'Fighter',
-    }));
+    ? opponentRoster
+        .slice(0, desiredEnemySize)
+        .map((hero, index) => heroSnapshot(hero, index === 0 ? 'Commander' : index === desiredEnemySize - 1 ? 'Combat Support' : 'Fighter'))
+    : Array.from({ length: desiredEnemySize }, (_, index) =>
+        syntheticHero({
+          id: `enemy-${id}-${index}`,
+          name: index === 0 ? `${opponentName} captain` : `${opponentName} ${index + 1}`,
+          classId: index === 0 ? opponentClassId : index === desiredEnemySize - 1 && desiredEnemySize >= 4 ? 'Cleric' : index % 2 ? 'Duelist' : opponentClassId,
+          primal: opponentPrimal,
+          level: clamp(opponentLevel + (index === 0 ? 1 : 0), 1, 20),
+          power: clamp(opponentPower + (index === 0 ? 4 : randomInt({ seed: seed >>> 0 || 1, turn: 0, rngStep: index }, -5, 3, `enemy-${index}`)), 30, 98),
+          role: index === 0 ? 'Commander' : index === desiredEnemySize - 1 && desiredEnemySize >= 4 ? 'Combat Support' : 'Fighter',
+        }),
+      );
   const encounter = {
     id,
     mode: 'party',
@@ -404,7 +489,8 @@ function applySignature(encounter, actor, target, lead, targetActionId) {
   } else if (sig.mode === 'riposte') {
     actor.guard = Math.max(actor.guard, 0.28);
     actor.riposte = 2;
-    if (!['attack', 'signature'].includes(targetActionId)) damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.7, 'riposte-probe'), { label: sig.name });
+    if (!['attack', 'signature'].includes(targetActionId))
+      damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.7, 'riposte-probe'), { label: sig.name });
   } else if (sig.mode === 'pin') {
     damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 1.05, 'pin'), { ignoreGuard: 0.2, label: sig.name });
     if (['attack', 'signature'].includes(targetActionId)) target.exposed = Math.max(target.exposed, 2);
@@ -419,8 +505,13 @@ function applySignature(encounter, actor, target, lead, targetActionId) {
   } else if (sig.mode === 'ward') {
     const restored = heal(actor, Math.round(actor.maxHp * 0.09 + supportRating(actor) * 0.08));
     actor.guard = Math.max(actor.guard, 0.44);
-    if (['attack', 'signature'].includes(targetActionId)) damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.55, 'radiant'), { ignoreGuard: 0.15, label: sig.name });
-    encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${lead.name} raises Radiant Ward and restores ${restored} health.` });
+    if (['attack', 'signature'].includes(targetActionId))
+      damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.55, 'radiant'), { ignoreGuard: 0.15, label: sig.name });
+    encounter.log.push({
+      turn: encounter.turn,
+      tone: actor === encounter.player ? 'good' : 'bad',
+      text: `${lead.name} raises Radiant Ward and restores ${restored} health.`,
+    });
   } else if (sig.mode === 'burst') {
     damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 1.42, 'arc-burst'), { ignoreGuard: 0.58, label: sig.name });
   } else if (sig.mode === 'breaker') {
@@ -437,11 +528,26 @@ function applySignature(encounter, actor, target, lead, targetActionId) {
     target.staggered = 1;
   } else if (sig.mode === 'twin') {
     const first = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.72, 'twin-a'), { label: sig.name });
-    const second = target.hp <= 0 ? 0 : applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, target.hp / target.maxHp < 0.4 ? 0.95 : 0.7, 'twin-b'), { label: sig.name });
+    const second =
+      target.hp <= 0
+        ? 0
+        : applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, target.hp / target.maxHp < 0.4 ? 0.95 : 0.7, 'twin-b'), {
+            label: sig.name,
+          });
     damage = first + second;
   }
-  if (damage > 0) encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${lead.name} uses ${sig.name} for ${damage} damage.` });
-  else if (sig.mode === 'verse') encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${lead.name} uses ${sig.name}; the whole side finds a new rhythm.` });
+  if (damage > 0)
+    encounter.log.push({
+      turn: encounter.turn,
+      tone: actor === encounter.player ? 'good' : 'bad',
+      text: `${lead.name} uses ${sig.name} for ${damage} damage.`,
+    });
+  else if (sig.mode === 'verse')
+    encounter.log.push({
+      turn: encounter.turn,
+      tone: actor === encounter.player ? 'good' : 'bad',
+      text: `${lead.name} uses ${sig.name}; the whole side finds a new rhythm.`,
+    });
   return true;
 }
 
@@ -462,14 +568,27 @@ function executeAction(encounter, actor, target, actionId, targetActionId, lead)
     const critChance = 0.04 + attr(lead, 'Finesse', 50) / 1200 + actor.focus * 0.015;
     const crit = random(encounter, `crit-${actor.name}`) < critChance;
     if (crit) mult *= 1.35;
-    const damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, mult, 'attack'), { label: crit ? 'critical attack' : 'attack' });
+    const damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, mult, 'attack'), {
+      label: crit ? 'critical attack' : 'attack',
+    });
     actor.style += crit ? 2 : 0;
-    encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${lead.name} attacks for ${damage}${crit ? ' — critical hit.' : '.'}` });
+    encounter.log.push({
+      turn: encounter.turn,
+      tone: actor === encounter.player ? 'good' : 'bad',
+      text: `${lead.name} attacks for ${damage}${crit ? ' — critical hit.' : '.'}`,
+    });
     if (targetActionId === 'guard' && target.guard >= 0.28 && target.hp > 0 && actor.hp > 0) {
       const counterLead = leadHero(target);
-      const counterDamage = applyDamage(encounter, target, actor, rawDamage(encounter, target, actor, counterLead, 0.92, 'guard-counter'), { ignoreGuard: 0.12, label: 'guard counter' });
+      const counterDamage = applyDamage(encounter, target, actor, rawDamage(encounter, target, actor, counterLead, 0.92, 'guard-counter'), {
+        ignoreGuard: 0.12,
+        label: 'guard counter',
+      });
       target.style += 1;
-      encounter.log.push({ turn: encounter.turn, tone: target === encounter.player ? 'good' : 'bad', text: `${counterLead.name} turns the guarded blow into a ${counterDamage}-damage counter.` });
+      encounter.log.push({
+        turn: encounter.turn,
+        tone: target === encounter.player ? 'good' : 'bad',
+        text: `${counterLead.name} turns the guarded blow into a ${counterDamage}-damage counter.`,
+      });
     }
   } else if (actionId === 'feint') {
     spend(actor, def.cost);
@@ -478,20 +597,35 @@ function executeAction(encounter, actor, target, actionId, targetActionId, lead)
       target.exposed = Math.max(target.exposed, 2);
       actor.focus = clamp(actor.focus + 2, 0, 5);
       actor.style += 2;
-      const punish = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.62, 'feint-break'), { ignoreGuard: 0.85, label: 'feint break' });
-      encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${lead.name} sells the feint, opens the defense and lands ${punish} damage.` });
+      const punish = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.62, 'feint-break'), {
+        ignoreGuard: 0.85,
+        label: 'feint break',
+      });
+      encounter.log.push({
+        turn: encounter.turn,
+        tone: actor === encounter.player ? 'good' : 'bad',
+        text: `${lead.name} sells the feint, opens the defense and lands ${punish} damage.`,
+      });
     } else {
       const damage = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.48, 'feint'), { label: 'feint' });
       target.exposed = Math.max(target.exposed, 1);
       actor.focus = clamp(actor.focus + 1, 0, 5);
-      encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${lead.name} creates an opening and clips the opposition for ${damage}.` });
+      encounter.log.push({
+        turn: encounter.turn,
+        tone: actor === encounter.player ? 'good' : 'bad',
+        text: `${lead.name} creates an opening and clips the opposition for ${damage}.`,
+      });
     }
   } else if (actionId === 'objective') {
     spend(actor, def.cost);
     const bonus = targetActionId === 'guard' || targetActionId === 'recover' ? 1.28 : targetActionId === 'attack' || targetActionId === 'signature' ? 0.82 : 1;
     const gain = addObjectiveProgress(encounter, actor, lead, bonus);
     const chip = applyDamage(encounter, actor, target, rawDamage(encounter, actor, target, lead, 0.28, 'objective-chip'), { label: 'objective pressure' });
-    encounter.log.push({ turn: encounter.turn, tone: actor === encounter.player ? 'good' : 'bad', text: `${actor.name} presses the objective (+${gain}) while dealing ${chip} pressure damage.` });
+    encounter.log.push({
+      turn: encounter.turn,
+      tone: actor === encounter.player ? 'good' : 'bad',
+      text: `${actor.name} presses the objective (+${gain}) while dealing ${chip} pressure damage.`,
+    });
   } else if (actionId === 'signature') {
     applySignature(encounter, actor, target, lead, targetActionId);
   }
@@ -537,7 +671,18 @@ function outcomeScore(encounter) {
   const obj = encounter.objectiveState;
   const playerObjective = obj && obj.target ? obj.progress / obj.target : 0;
   const enemyObjective = obj && obj.target ? obj.enemyProgress / obj.target : 0;
-  return clamp(Math.round(50 + (playerHpPct - enemyHpPct) * 0.4 + (encounter.player.damageDealt - encounter.enemy.damageDealt) * 0.12 + (playerObjective - enemyObjective) * 24 + encounter.player.style * 2 + encounter.player.focus * 1.5), 0, 100);
+  return clamp(
+    Math.round(
+      50 +
+        (playerHpPct - enemyHpPct) * 0.4 +
+        (encounter.player.damageDealt - encounter.enemy.damageDealt) * 0.12 +
+        (playerObjective - enemyObjective) * 24 +
+        encounter.player.style * 2 +
+        encounter.player.focus * 1.5,
+    ),
+    0,
+    100,
+  );
 }
 
 function finishEncounter(encounter, playerWon, method) {
@@ -565,7 +710,8 @@ function evaluateEnd(encounter) {
   if (encounter.mode === 'party' && obj) {
     if (['break', 'capture', 'escape'].includes(obj.id) && obj.progress >= obj.target) return finishEncounter(encounter, true, obj.label.toLowerCase());
     if (obj.id === 'protect' && obj.protectedIntegrity <= 0) return finishEncounter(encounter, false, 'protected target lost');
-    if (['hold', 'protect'].includes(obj.id) && obj.progress >= obj.target) return finishEncounter(encounter, true, obj.id === 'hold' ? 'field held until relief' : 'protected target survived');
+    if (['hold', 'protect'].includes(obj.id) && obj.progress >= obj.target)
+      return finishEncounter(encounter, true, obj.id === 'hold' ? 'field held until relief' : 'protected target survived');
     if (obj.enemyProgress >= obj.target) return finishEncounter(encounter, false, 'enemy completed its objective');
   }
   if (encounter.turn >= encounter.maxTurns) {
@@ -598,7 +744,9 @@ export function performCombatAction(encounterInput, actionId, leadHeroId = null)
     };
     const preferred = baitMap[enemyAction] || 'attack';
     const candidates = [preferred, 'attack', 'guard', 'feint', encounter.mode === 'party' ? 'objective' : 'recover'];
-    const shifted = candidates.find((candidate) => candidate !== enemyAction && !actionDefinitionForSide(encounter, encounter.enemy, candidate, enemyLead?.id).disabled);
+    const shifted = candidates.find(
+      (candidate) => candidate !== enemyAction && !actionDefinitionForSide(encounter, encounter.enemy, candidate, enemyLead?.id).disabled,
+    );
     if (shifted) {
       encounter.log.push({ turn: encounter.turn, tone: 'info', text: `${enemyLead.name} sold a false tell — ${enemyAction} becomes ${shifted}.` });
       enemyAction = shifted;
@@ -609,22 +757,51 @@ export function performCombatAction(encounterInput, actionId, leadHeroId = null)
 
   setupAction(encounter, encounter.player, playerAction, combatActionDefinition(encounter, playerAction, playerLead?.id), playerLead);
   setupAction(encounter, encounter.enemy, enemyAction, actionDefinitionForSide(encounter, encounter.enemy, enemyAction, enemyLead?.id), enemyLead);
-  encounter.log.push({ turn: encounter.turn, tone: 'neutral', text: `${playerLead.name}: ${combatActionDefinition(encounter, playerAction, playerLead.id).label}. ${enemyLead.name}: ${actionDefinitionForSide(encounter, encounter.enemy, enemyAction, enemyLead.id).label}.` });
+  encounter.log.push({
+    turn: encounter.turn,
+    tone: 'neutral',
+    text: `${playerLead.name}: ${combatActionDefinition(encounter, playerAction, playerLead.id).label}. ${enemyLead.name}: ${actionDefinitionForSide(encounter, encounter.enemy, enemyAction, enemyLead.id).label}.`,
+  });
 
   const turns = [
-    { actor: encounter.player, target: encounter.enemy, actionId: playerAction, targetActionId: enemyAction, lead: playerLead, initiative: priority(encounter.player, playerAction, playerLead) + random(encounter, 'player-init') },
-    { actor: encounter.enemy, target: encounter.player, actionId: enemyAction, targetActionId: playerAction, lead: enemyLead, initiative: priority(encounter.enemy, enemyAction, enemyLead) + random(encounter, 'enemy-init') },
+    {
+      actor: encounter.player,
+      target: encounter.enemy,
+      actionId: playerAction,
+      targetActionId: enemyAction,
+      lead: playerLead,
+      initiative: priority(encounter.player, playerAction, playerLead) + random(encounter, 'player-init'),
+    },
+    {
+      actor: encounter.enemy,
+      target: encounter.player,
+      actionId: enemyAction,
+      targetActionId: playerAction,
+      lead: enemyLead,
+      initiative: priority(encounter.enemy, enemyAction, enemyLead) + random(encounter, 'enemy-init'),
+    },
   ].sort((a, b) => b.initiative - a.initiative);
 
   for (const exchange of turns) {
     if (exchange.actor.hp <= 0 || exchange.target.hp <= 0) continue;
-    if (!['guard', 'recover'].includes(exchange.actionId)) executeAction(encounter, exchange.actor, exchange.target, exchange.actionId, exchange.targetActionId, exchange.lead);
+    if (!['guard', 'recover'].includes(exchange.actionId))
+      executeAction(encounter, exchange.actor, exchange.target, exchange.actionId, exchange.targetActionId, exchange.lead);
     if (exchange.target.riposte && ['attack', 'signature'].includes(exchange.actionId) && exchange.target.hp > 0) {
       exchange.target.riposte = 0;
       const counterLead = leadHero(exchange.target);
-      const damage = applyDamage(encounter, exchange.target, exchange.actor, rawDamage(encounter, exchange.target, exchange.actor, counterLead, 0.88, 'riposte-counter'), { ignoreGuard: 0.25, label: 'riposte' });
+      const damage = applyDamage(
+        encounter,
+        exchange.target,
+        exchange.actor,
+        rawDamage(encounter, exchange.target, exchange.actor, counterLead, 0.88, 'riposte-counter'),
+        { ignoreGuard: 0.25, label: 'riposte' },
+      );
       exchange.target.style += 2;
-      encounter.log.push({ turn: encounter.turn, tone: exchange.target === encounter.player ? 'good' : 'bad', text: `${counterLead.name} answers with a riposte for ${damage}.` });
+      encounter.log.push({
+        turn: encounter.turn,
+        tone: exchange.target === encounter.player ? 'good' : 'bad',
+        text: `${counterLead.name} answers with a riposte for ${damage}.`,
+      });
     }
   }
 

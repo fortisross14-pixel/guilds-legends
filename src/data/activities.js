@@ -37,12 +37,6 @@ export const MONTHLY_ACTIVITIES = [
   },
 ];
 
-export const TRAINING_FOCI = [
-  'Fundamentals',
-  'Role Drills',
-  'Sparring',
-  'Mentorship',
-  'Study',
-];
+export const TRAINING_FOCI = ['Fundamentals', 'Role Drills', 'Sparring', 'Mentorship', 'Study'];
 
 export const ACTIVITY_BY_ID = Object.fromEntries(MONTHLY_ACTIVITIES.map((activity) => [activity.id, activity]));

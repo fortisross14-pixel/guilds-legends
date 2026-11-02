@@ -29,9 +29,7 @@ export default [
     // The simulation engine must stay deterministic: all randomness goes through the seeded RNG.
     files: ['src/game/**/*.js'],
     rules: {
-      'no-restricted-properties': ['error',
-        { object: 'Math', property: 'random', message: 'Use the seeded RNG (rngFor/commitRng) in engine code.' },
-      ],
+      'no-restricted-properties': ['error', { object: 'Math', property: 'random', message: 'Use the seeded RNG (rngFor/commitRng) in engine code.' }],
     },
   },
   {
