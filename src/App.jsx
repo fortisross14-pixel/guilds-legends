@@ -60,16 +60,15 @@ import {
 import {
   deleteGame,
   exportGame,
-  getLastSlot,
   importGame,
   listSaveSlots,
   loadGame,
   saveGame,
 } from './game/storage.js';
-import { APPOINTMENTS, CLASSES, FLAW_PROFILES, MONTHS, PERSONALITY_PROFILES, TIERS, normalizeClassId } from './data/content.js';
+import { APPOINTMENTS, CLASSES, FLAW_PROFILES, MONTHS, PERSONALITY_PROFILES, normalizeClassId } from './data/content.js';
 import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from './data/activities.js';
-import { FORMATION_TYPES, PARTY_ROLES } from './data/formations.js';
-import { LOCATION_BY_ID, PRIMALS, RARITIES } from './data/world.js';
+import { PARTY_ROLES } from './data/formations.js';
+import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
 import { Badge, Button, Crest, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './components/UI.jsx';
 import HallScreen from './screens/HallScreen.jsx';
 import MissionsScreen from './screens/MissionsScreen.jsx';

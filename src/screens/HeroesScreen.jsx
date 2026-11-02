@@ -37,6 +37,8 @@ export default function HeroesScreen({ state, actions, navigate }) {
     .sort((a, b) => candidateValue(b) - candidateValue(a)), [state.candidates, activeMarketId]);
   const remoteCandidates = useMemo(() => state.candidates
     .filter((candidate) => !operationalIds.includes(candidate.locationId || 'dunmere'))
+    // operationalIds is rebuilt each render; its joined value is the stable dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     .sort((a, b) => candidateValue(b) - candidateValue(a)), [state.candidates, operationalIds.join('|')]);
 
   const legends = useMemo(() => [...state.heroes.filter((hero) => ['retired', 'dead'].includes(hero.status)), ...state.historicHeroes]

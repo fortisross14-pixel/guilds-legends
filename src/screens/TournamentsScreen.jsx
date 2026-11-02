@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { FORMATION_TYPES } from '../data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
 import { getHero, getTournamentAccess, roleRating } from '../game/engine.js';
-import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, Tabs } from '../components/UI.jsx';
+import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, RarityBadge, Tabs } from '../components/UI.jsx';
 
 
 function ordinal(finish) {
@@ -45,7 +45,6 @@ function HeroCircuit({ state, actions, navigate }) {
   const [heroId, setHeroId] = useState('');
   const selected = state.tournaments?.find((event) => event.id === selectedId) || state.tournaments?.[0];
   const record = selected ? state.titleRecords?.[selected.definitionId] : null;
-  const location = selected ? LOCATION_BY_ID[selected.locationId] : null;
   const playerHero = selected?.playerHeroId ? getHero(state, selected.playerHeroId) : null;
   const chosenHero = heroId ? getHero(state, heroId) : null;
   const access = selected ? getTournamentAccess(state, selected, heroId || selected.playerHeroId) : null;

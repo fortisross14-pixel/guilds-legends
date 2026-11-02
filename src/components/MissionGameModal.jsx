@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MISSION_GAME_ACTIONS, missionGameActionPreview, PERSONALITY_GAME_NOTES } from '../game/missionGames.js';
 import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar } from './UI.jsx';
 
+const NO_ACTIONS = [];
+
 function Metric({ label, value, max = 100, tone = 'blue', inverse = false, detail = null }) {
   const display = Math.max(0, Math.round(value ?? 0));
   const barValue = inverse ? Math.max(0, max - display) : display;
@@ -51,7 +53,7 @@ export default function MissionGameModal({ game, actions }) {
     if (!game.roster.some((hero) => hero.id === leadHeroId)) setLeadHeroId(game.leadHeroId || game.roster[0]?.id || null);
   }, [game, leadHeroId]);
   const lead = game?.roster?.find((hero) => hero.id === leadHeroId) || game?.roster?.[0];
-  const actionsList = MISSION_GAME_ACTIONS[game?.type] || [];
+  const actionsList = MISSION_GAME_ACTIONS[game?.type] || NO_ACTIONS;
   const previews = useMemo(() => Object.fromEntries(actionsList.map((action) => [action.id, missionGameActionPreview(game, action.id, leadHeroId)])), [game, actionsList, leadHeroId]);
   if (!game) return null;
 

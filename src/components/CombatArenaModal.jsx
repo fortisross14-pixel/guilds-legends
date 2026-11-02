@@ -197,6 +197,8 @@ export default function CombatArenaModal({ encounter, actions }) {
   const [leadHeroId, setLeadHeroId] = useState(encounter?.player?.leadHeroId || encounter?.player?.roster?.[0]?.id || '');
   useEffect(() => {
     setLeadHeroId(encounter?.player?.leadHeroId || encounter?.player?.roster?.[0]?.id || '');
+    // Reset the chosen lead only when a new encounter starts, not on every turn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [encounter?.id]);
   if (!encounter) return null;
   const active = encounter.status === 'active';

@@ -1,7 +1,6 @@
 import React from 'react';
-import { normalizeClassId } from '../data/content.js';
 import { branchCapacity, getDashboardSummary, getGoalMetric, getGuildmaster, getNextAction, getPatronLoanOffer, getPromotionRequirement } from '../game/engine.js';
-import { MONTHS, ONBOARDING_STEPS, TIERS } from '../data/content.js';
+import { MONTHS, ONBOARDING_STEPS } from '../data/content.js';
 import { Badge, Button, Crest, EmptyState, HeroPortrait, Panel, PrimalBadge, ProgressBar, RiskPips, Stat } from '../components/UI.jsx';
 import CouncilPlanner from '../components/CouncilPlanner.jsx';
 

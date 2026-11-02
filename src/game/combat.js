@@ -383,11 +383,6 @@ function setupAction(encounter, side, actionId, actionDef, lead) {
   }
 }
 
-function actionPriority(side, actionId, lead) {
-  const base = { guard: 5, feint: 4, signature: 3.2, attack: 2.5, objective: 1.5, recover: 0 }[actionId] ?? 2;
-  return base + attr(lead, 'Finesse', lead?.power || 50) * 0.025 + attr(lead, 'Presence', lead?.power || 50) * 0.008;
-}
-
 function addObjectiveProgress(encounter, side, lead, amountMultiplier = 1) {
   if (!encounter.objectiveState || encounter.objectiveState.id === 'eliminate') return 0;
   const rating = objectiveRating(side, lead);

@@ -15,7 +15,6 @@ import {
   ORIGINS,
   PERSONALITIES,
   REGIONS,
-  RIVAL_ARCHETYPES,
   SAGA_DEFINITIONS,
   STARTING_HEROES,
   TIERS,
@@ -24,7 +23,6 @@ import {
 import {
   FORMATION_TYPES,
   PARTY_ROLES,
-  TOURNAMENT_DIVISIONS,
   emptyFormations,
   formationForMission,
 } from '../data/formations.js';
@@ -34,7 +32,6 @@ import {
   PRIMALS,
   PRIMAL_IDS,
   RARITIES,
-  RARITY_IDS,
   primalCombatModifier,
   primalDiplomacyModifier,
   travelDuration,
@@ -55,7 +52,6 @@ import {
   performCombatAction,
 } from './combat.js';
 import {
-  AMBITION_TEMPLATES,
   BRANCH_RULES,
   ambitionMetric,
   artifactEffectFromPrestige,
@@ -3702,7 +3698,8 @@ export function concludeActiveCombat(state, mutate = false) {
   return { state: finalize(next), error: null, result: round, report };
 }
 
-export function fightHeroTournamentRound(state, tournamentId, tactic = 'Measured') {
+// The tactic argument is kept for API compatibility; rounds now resolve through tactical combat.
+export function fightHeroTournamentRound(state, tournamentId, _tactic = 'Measured') {
   const begun = beginHeroTournamentCombat(state, tournamentId);
   if (begun.error) return begun;
   const resolved = autoResolveActiveCombat(begun.state);
@@ -3893,7 +3890,7 @@ function completeGuildTournamentInPlace(state, tournament, rng, playerFinish = n
   return recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult);
 }
 
-export function fightGuildTournamentRound(state, tournamentId, tactic = 'Measured') {
+export function fightGuildTournamentRound(state, tournamentId, _tactic = 'Measured') {
   const begun = beginGuildTournamentCombat(state, tournamentId);
   if (begun.error) return begun;
   const resolved = autoResolveActiveCombat(begun.state);
