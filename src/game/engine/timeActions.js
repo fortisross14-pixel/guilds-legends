@@ -4,7 +4,7 @@
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
-import { addChronicle, clamp, clone, commitRng, finalize, hashString, partyCapacity, rngFor, uid } from './core.js';
+import { addChronicle, clamp, clone, commitRng, completeTutorialTargetInPlace, finalize, hashString, partyCapacity, rngFor, uid } from './core.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
@@ -77,7 +77,10 @@ export function resolveRoadEvent(state, optionId) {
   const travel = next.world.activeTravel;
   let result = 'You move on.';
 
-  if (event.type === 'ambush' && optionId === 'fight') {
+  if (event.type === 'peddler') {
+    if (optionId === 'accept') addItemsInPlace(next, { potion: 2 });
+    result = optionId === 'accept' ? 'The peddler hands over two potions.' : 'You thank the peddler and march on.';
+  } else if (event.type === 'ambush' && optionId === 'fight') {
     const fighters = [...party].sort((a, b) => b.power - a.power).slice(0, 4);
     if (!fighters.length) {
       const lost = Math.min(Math.max(0, next.guild.crowns), rng.int(40, 100) * tier);
@@ -154,6 +157,11 @@ export function resolveRoadEvent(state, optionId) {
   commitRng(next, rng);
   addChronicle(next, { type: 'travel', importance: 1, title: definition.title, text: result, tags: ['travel', 'road-event', event.type] });
   next.notifications.push({ id: `road-${event.id}`, tone: 'blue', title: definition.title, text: result });
+  if (event.scripted) {
+    // The opening march: after the road event, time runs until the wolves.
+    completeTutorialTargetInPlace(next, 'roadEvent');
+    return advanceToNextEvent(next);
+  }
   if (next.world.activeTravel && !next.pendingDecisions.length && !next.activeEncounter && !next.activeMissionGame) {
     return advanceMonths(next, next.world.activeTravel.monthsRemaining, true);
   }
@@ -173,8 +181,15 @@ export function restAtGuildHall(state, months = 1) {
  * until the next company comes back (a mission "runs").
  */
 export function launchExpedition(state, missionId, formationType, assignments) {
+  const mission = state.missions.find((item) => item.id === missionId);
   const launched = launchMission(state, missionId, formationType, assignments);
   if (launched.error) return launched;
+  // Scripted opening: a guaranteed easy road event on the way to the first contract.
+  if (mission?.templateId === 'wolves-old-road' && !launched.state.tutorial.completed && !launched.state.flags.openingPeddler) {
+    launched.state.flags.openingPeddler = true;
+    launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', month: 0, scripted: true, toId: mission.locationId };
+    return launched;
+  }
   if (launched.state.activeMissions.length < partyCapacity(launched.state)) return launched;
   return advanceToNextEvent(launched.state);
 }

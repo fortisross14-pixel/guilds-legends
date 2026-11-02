@@ -22,11 +22,12 @@ import {
   uid,
   pushMoment,
 } from './core.js';
-import { adjustRelationshipInPlace, applyXpInPlace, partyEstimate, roleRating } from './heroes.js';
+import { adjustRelationshipInPlace, applyXpInPlace, partyEstimate, roleRating, xpForNextLevel } from './heroes.js';
 import { offerInheritedAmbitionsInPlace, transferArtifactsFromHeroInPlace } from './institution.js';
 import { evaluateStateInPlace } from './goals.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
+import { addMissionLegacyInPlace } from './rankings.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -295,7 +296,9 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     if (grade === 'Legendary') hero.career.legendary += 1;
     hero.career.fame += Math.max(0, Math.round(fame / mission.assignments.length));
     const xpMultiplier = { Legendary: 1.7, 'Great Success': 1.35, Success: 1, Partial: 0.78, Defeat: 0.52, Catastrophic: 0.34 }[grade] || 0.5;
-    const xpGain = Math.round((42 + mission.risk * 18 + mission.duration * 8) * xpMultiplier);
+    let xpGain = Math.round((42 + mission.risk * 18 + mission.duration * 8) * xpMultiplier);
+    // The scripted first contract always ends with a level-up moment.
+    if (mission.templateId === 'wolves-old-road' && !next.tutorial.completed) xpGain = Math.max(xpGain, xpForNextLevel(hero.level) - (hero.xp || 0));
     const levelBefore = hero.level;
     applyXpInPlace(hero, xpGain, next, `${mission.title} (${grade.toLowerCase()})`);
     hero.career.xpEarned = (hero.career.xpEarned || 0) + xpGain;
@@ -341,6 +344,12 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   );
 
   next.guild.crowns += reward;
+  addMissionLegacyInPlace(
+    next,
+    mission,
+    grade,
+    mission.assignments.map((assignment) => assignment.heroId),
+  );
   // Loot uses a derived RNG so it does not shift the campaign's main stream.
   const loot = cleanSuccess
     ? rollLoot(rngFor(next, `loot:${mission.id}`), next.guild.tierIndex, grade === 'Legendary' ? 2 : grade === 'Great Success' ? 1 : 0)

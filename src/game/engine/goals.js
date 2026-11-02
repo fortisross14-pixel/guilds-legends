@@ -3,7 +3,7 @@
 import { REGIONS, TIERS } from '../../data/content.js';
 import { addChronicle, commitRng, dateLabel, rngFor, tierIndexByName } from './core.js';
 import { refreshMissionsInPlace } from './universe.js';
-import { guildRankings } from './rankings.js';
+import { getPlayerRanks, updateStatusTitleInPlace } from './rankings.js';
 import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace } from './institution.js';
 
 export function getGoalMetric(state, metric) {
@@ -113,7 +113,8 @@ export function promotionRequirement(state) {
     target,
     fame: { current: state.guild.fame, target: threshold.fame, met: state.guild.fame >= threshold.fame },
     contracts: { current: state.guild.contractsCompleted, target: threshold.contracts, met: state.guild.contractsCompleted >= threshold.contracts },
-    rank: { current: rank, target: threshold.rank, met: rank <= threshold.rank },
+    // Promotion needs an Official-ladder rank (tournament points from the last 12 months).
+    rank: { current: rank, target: threshold.rank, met: rank <= threshold.rank && (state.guild.officialPoints || 0) > 0 },
     feat: { current: state.stats.signatureFeats, target: current + 1, met: state.stats.signatureFeats >= current + 1 },
     time: { current: state.stats.yearsPlayed, target: target.minYears || 0, met: state.stats.yearsPlayed >= (target.minYears || 0) },
   };
@@ -158,11 +159,13 @@ function evaluatePromotionInPlace(state) {
 }
 
 export function evaluateStateInPlace(state) {
-  const rankings = guildRankings(state, TIERS[state.guild.tierIndex]?.id || 'Regional');
-  state.guild.rank = rankings.find((row) => row.id === 'player')?.rank || state.guild.rank;
+  const official = getPlayerRanks(state).official;
+  state.guild.rank = official.rank;
+  state.guild.officialPoints = official.value;
   evaluateGoalsInPlace(state);
   evaluateAchievementsInPlace(state);
   evaluatePromotionInPlace(state);
+  updateStatusTitleInPlace(state);
   ensureGuildmasterInPlace(state);
   evaluateHeroAmbitionsInPlace(state);
   state.stats.highestPower = Math.max(state.stats.highestPower, ...state.heroes.map((hero) => hero.power));

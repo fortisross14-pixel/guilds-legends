@@ -19,6 +19,9 @@ test('create a campaign, visit every place and building, rest for a year', async
   await page.getByRole('button', { name: 'Create campaign' }).first().click();
   await page.getByRole('button', { name: 'Raise the banner' }).click();
   await expect(page.locator('.game-shell')).toBeVisible();
+  // The scripted opening starts with an intro card; skip it for the smoke run.
+  page.on('dialog', (dialog) => dialog.accept());
+  await page.locator('.intro-card').getByRole('button', { name: 'Skip tutorial' }).click();
   await closeModals(page);
 
   // World map is home.

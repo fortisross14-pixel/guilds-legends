@@ -28,6 +28,7 @@ import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace } from './econom
 import { createTournamentsInPlace, simulateScheduledCompetitionsInPlace } from './guildTournaments.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
+import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings.js';
 
 function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
@@ -384,6 +385,8 @@ export function advanceMonths(state, count = 1, mutate = false) {
     commitRng(next, rng);
     if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'advanceMonth') completeTutorialTargetInPlace(next, 'advanceMonth');
     evaluateStateInPlace(next);
+    recordRankSnapshotInPlace(next);
+    if (next.date.month % 3 === 0) pushRankingsMomentInPlace(next, 'Season rankings', next.rankHistory.at(-4) || null);
   }
   if (advancedCount > 0 && latestCouncilMonth) {
     next.council ||= { lastReport: null, unread: false };

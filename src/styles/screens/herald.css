@@ -1,0 +1,39 @@
+/* Wave 4: three ladders, status titles, rank movement, intro card, battle hints. Placeholder styling. */
+.rank-change { margin-left: .25rem; font-size: .7rem; font-weight: 700; }
+.rank-change--up { color: var(--green); }
+.rank-change--down { color: var(--red-light); }
+.rank-change--flat { color: var(--faint); }
+.topbar__status { padding: .2rem .55rem; border: 1px solid var(--gold-dark); border-radius: 999px; background: var(--panel-2); color: var(--gold-light); font-size: .72rem; white-space: nowrap; cursor: pointer; }
+
+.status-banner { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; padding: .8rem 1rem; border: 1px solid var(--gold-dark); border-radius: var(--radius); background: var(--panel); }
+.status-banner__title { font-family: var(--display); font-size: 1.4rem; color: var(--gold-light); }
+.status-banner__ranks { display: flex; flex-wrap: wrap; gap: 1rem; margin-left: auto; }
+.status-banner__ranks small { color: var(--muted); }
+.ladder-picker, .scope-picker { display: flex; flex-wrap: wrap; gap: .4rem; }
+.ladder-picker button, .scope-picker button { padding: .4rem .8rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel-2); color: var(--text); cursor: pointer; }
+.ladder-picker button.is-selected, .scope-picker button.is-selected { border-color: var(--gold); color: var(--gold-light); }
+.points-to-pass { margin: 0 0 .6rem; color: var(--gold-light); font-weight: 600; }
+.ladder-table { display: grid; gap: .3rem; }
+.ladder-row { display: grid; grid-template-columns: 2.4rem auto 1fr auto auto; gap: .6rem; align-items: center; width: 100%; padding: .4rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm); background: var(--panel-2); color: var(--text); text-align: left; }
+article.ladder-row { grid-template-columns: 2.4rem 1fr auto auto; }
+.ladder-row.is-player { border-color: var(--gold); }
+.ladder-row__name { display: grid; min-width: 0; }
+.ladder-row__name small { color: var(--muted); }
+.ladder-row__value { white-space: nowrap; }
+.ladder-row__value small { color: var(--muted); font-weight: 400; }
+
+.moment__ladders { display: grid; gap: .3rem; width: 100%; margin: 0; padding: 0; list-style: none; }
+.moment__ladders li { display: grid; grid-template-columns: 1fr auto auto auto; gap: .5rem; align-items: center; padding: .35rem .6rem; border-radius: var(--radius-sm); background: var(--panel-2); text-align: left; }
+.moment__ladders small { color: var(--muted); }
+.moment__fanfare { margin: 0; font-size: 3rem; color: var(--gold-light); }
+.moment--status-down .moment__fanfare { color: var(--red-light); }
+
+.intro-card { display: grid; gap: .8rem; justify-items: center; text-align: center; }
+.intro-card p { max-width: 50ch; margin: 0; color: var(--muted); }
+
+.battle-hints { padding: .6rem .8rem; border: 1px dashed var(--gold-dark); border-radius: var(--radius-sm); background: var(--panel-2); font-size: .82rem; }
+.battle-hints ol { margin: .3rem 0 .5rem; padding-left: 1.2rem; }
+@media (max-width: 720px) {
+  .ladder-row, article.ladder-row { grid-template-columns: 2rem 1fr auto; }
+  .ladder-row .ranking-star, .ladder-row .hero-portrait { display: none; }
+}

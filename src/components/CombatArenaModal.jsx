@@ -50,6 +50,7 @@ export default function CombatArenaModal({ encounter, actions }) {
   const [commands, setCommands] = useState({});
   const [pending, setPending] = useState(null);
   const [menu, setMenu] = useState('root');
+  const [hintsHidden, setHintsHidden] = useState(false);
   const turnKey = encounter ? `${encounter.id}:${encounter.turn}:${encounter.status}` : null;
 
   useEffect(() => {
@@ -122,6 +123,20 @@ export default function CombatArenaModal({ encounter, actions }) {
   return (
     <Modal open title={encounter.title || 'Battle'} eyebrow={`${encounter.roundName || 'Battle'} · Round ${encounter.turn}`} preventClose width="wide">
       <div className={`battle-screen battle-screen--${encounter.mode}`}>
+        {encounter.guaranteed && !finished && !hintsHidden ? (
+          <aside className="battle-hints">
+            <strong>First battle</strong>
+            <ol>
+              <li>The highlighted window is the hero choosing now. Pick a command for each hero.</li>
+              <li>Attack and most skills need a target: click an enemy.</li>
+              <li>Someone hurt? Use Item → Potion (or a healing skill) and click the ally.</li>
+              <li>The Tell shows the strongest enemy’s next move. Defend against big ones, or stun them first.</li>
+            </ol>
+            <Button size="sm" variant="secondary" onClick={() => setHintsHidden(true)}>
+              Hide hints
+            </Button>
+          </aside>
+        ) : null}
         {!finished && intent ? (
           <div className={`battle-tell ${intent.big ? 'battle-tell--danger' : ''}`}>
             <strong>Tell</strong> {intent.telegraph}

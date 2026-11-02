@@ -182,6 +182,7 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
     .filter((item) => item.hero && item.hero.status !== 'dead');
   if (playerHeroes.length < 2) return false;
+  const scripted = mission.templateId === 'wolves-old-road' && !state.tutorial.completed;
   const encounterSeed = (state.rngState ^ hashString(`mission-combat:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
   const opponentPower = clamp(Math.round(mission.difficulty * 0.84 + mission.risk * 3), 32, 96);
   // Per-hero combat: enemy level tracks difficulty (Regional contracts ~1-5, Global ~15-20).
@@ -203,7 +204,8 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     risk: mission.risk,
     prestige: mission.fame || 0,
     // Low-risk contracts field weaker enemies than high-risk ones.
-    strength: 0.65 + mission.risk * 0.09,
+    strength: scripted ? 0.6 : 0.65 + mission.risk * 0.09,
+    guaranteed: scripted,
     items: battleItems(state),
   });
   mission.combatStarted = true;

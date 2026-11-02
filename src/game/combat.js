@@ -191,6 +191,7 @@ export function createPartyEncounter({
   prestige = 0,
   risk = 2,
   canFlee = true,
+  guaranteed = false,
   items = {},
 }) {
   const party = playerHeroes.map(({ hero, role }) => makeCombatant(hero, 'party', { role }));
@@ -204,7 +205,8 @@ export function createPartyEncounter({
     objective: objective || 'Defeat every enemy.',
     seed,
     maxTurns: 20,
-    canFlee,
+    canFlee: canFlee && !guaranteed,
+    guaranteed,
     prestige,
     risk,
     enemyName: opponentName,
@@ -280,7 +282,8 @@ function dealDamage(encounter, actor, target, { power = 1, physical = true, flat
   }
   if (target.status.guard) damage *= 0.5;
   const amount = Math.max(1, Math.round(damage));
-  target.hp = Math.max(0, target.hp - amount);
+  // Scripted battles can't be lost unfairly: heroes hold on at 1 HP.
+  target.hp = Math.max(encounter.guaranteed && target.side === 'party' ? 1 : 0, target.hp - amount);
   if (actor) actor.damageDealt += amount;
   if (target.hp <= 0) knockOut(encounter, target);
   return amount;
@@ -639,7 +642,7 @@ export function performCombatRound(encounterInput, commands = {}) {
     const enemies = hpPct(encounter.enemies);
     finish(
       encounter,
-      party > enemies,
+      encounter.guaranteed || party > enemies,
       encounter.mode === 'duel' ? `judges’ decision (${party}% vs ${enemies}% HP)` : `time ran out (${party}% vs ${enemies}% HP)`,
     );
     return encounter;

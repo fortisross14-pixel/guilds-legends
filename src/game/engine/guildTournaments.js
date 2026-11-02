@@ -14,6 +14,7 @@ import {
   tournamentFameDelta,
   updateGuildTitleRecordInPlace,
 } from './tournaments.js';
+import { pushRankingsMomentInPlace, recordOfficialResultsInPlace } from './rankings.js';
 
 function buildGuildTournamentField(state, tournament) {
   const eligible = state.rivals
@@ -268,7 +269,11 @@ function recordGuildTournamentInPlace(state, tournament, championGuildId, player
   state.tournamentHistory.unshift(record);
   state.tournamentHistory = state.tournamentHistory.slice(0, MAX_TOURNAMENT_HISTORY);
   state.universeStats.guildTournamentsResolved = (state.universeStats.guildTournamentsResolved || 0) + 1;
-  if (playerResult) state.pendingReports.unshift({ kind: 'tournament', id: record.id });
+  recordOfficialResultsInPlace(state, tournament, 'guild');
+  if (playerResult) {
+    state.pendingReports.unshift({ kind: 'tournament', id: record.id });
+    pushRankingsMomentInPlace(state, `Rankings after the ${tournament.name}`);
+  }
   addChronicle(state, {
     type: 'tournament',
     importance: championGuildId === 'player' || tournament.circuit === 'Global' ? 5 : 3,

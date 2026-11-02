@@ -42,7 +42,9 @@ export default function HallScreen({ state, navigate, actions }) {
           <p>{state.guild.motto}</p>
           <div className="hall-hero__badges">
             <Badge tone="gold">{state.guild.tier} Guild</Badge>
-            <Badge tone="blue">Rank #{state.guild.rank}</Badge>
+            <Badge tone="blue">
+              {state.guild.statusTitle || 'Unknown'} · Official #{state.guild.rank}
+            </Badge>
             <Badge tone={state.guild.alignment === 'Undeclared' ? 'neutral' : 'purple'}>{state.guild.alignment}</Badge>
             <Badge tone="blue">{summary.travel ? `Traveling to ${summary.travel.toId}` : summary.location}</Badge>
             <PrimalBadge primal={summary.locationPrimal} />

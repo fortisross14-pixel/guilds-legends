@@ -18,6 +18,7 @@ import {
 } from './core.js';
 import { applyXpInPlace } from './heroes.js';
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
+import { pushRankingsMomentInPlace, recordOfficialResultsInPlace } from './rankings.js';
 
 function tournamentDefinition(tournament) {
   const source = tournament.kind === 'guild' ? GUILD_TOURNAMENT_DEFINITIONS : INDIVIDUAL_TOURNAMENT_DEFINITIONS;
@@ -337,7 +338,11 @@ function recordIndividualTournamentInPlace(state, tournament, championId, player
   state.tournamentHistory.unshift(record);
   state.tournamentHistory = state.tournamentHistory.slice(0, MAX_TOURNAMENT_HISTORY);
   state.universeStats.individualTournamentsResolved = (state.universeStats.individualTournamentsResolved || 0) + 1;
-  if (playerResult) state.pendingReports.unshift({ kind: 'tournament', id: record.id });
+  recordOfficialResultsInPlace(state, tournament, 'individual');
+  if (playerResult) {
+    state.pendingReports.unshift({ kind: 'tournament', id: record.id });
+    pushRankingsMomentInPlace(state, `Rankings after the ${tournament.name}`);
+  }
   addChronicle(state, {
     type: 'tournament',
     importance: playerResult?.finish === 1 || tournament.circuit === 'Global' ? 5 : playerResult ? 2 : tournament.prestige >= 100 ? 4 : 2,

@@ -317,3 +317,9 @@ export function NumberDelta({ value }) {
     </span>
   );
 }
+
+/** Rank movement arrow: positive = moved up. */
+export function RankChange({ change }) {
+  if (!change) return <span className="rank-change rank-change--flat">–</span>;
+  return <span className={`rank-change rank-change--${change > 0 ? 'up' : 'down'}`}>{change > 0 ? `▲${change}` : `▼${-change}`}</span>;
+}

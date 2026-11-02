@@ -28,6 +28,7 @@ export function simulateRivals(state, rng) {
         rival.wins += 1;
         rival.seasonPoints += 3 + rival.tierIndex;
         rival.careerPoints += 2 + rival.tierIndex;
+        rival.legacyPoints = (rival.legacyPoints ?? rival.careerPoints ?? 0) + Math.round(difficulty);
         rival.form = clamp(rival.form + rng.int(1, 4), 35, 90);
         participant.renown += rng.int(1, 3);
         participant.career.wins += 1;
@@ -197,6 +198,7 @@ export function simulateRivalInstitutionsInPlace(state, rng) {
           prizeMoney: 0,
           seasonPoints: 0,
           careerPoints: 0,
+          legacyPoints: 0,
           hostility: rng.int(15, 55),
           relationship: 0,
           star: leader,

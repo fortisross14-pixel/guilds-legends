@@ -47,7 +47,10 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
   const missing = place.building && !available.includes(place.building) ? BUILDINGS[place.building] : null;
   const building = place.building && !missing ? place.building : null;
   const props = { state, actions, navigate, slot };
-  const openBuilding = (id) => setPlace({ view: 'town', building: id, tab: null });
+  const openBuilding = (id) => {
+    if (id === 'herald') actions.noteTutorial('visitHerald');
+    setPlace({ view: 'town', building: id, tab: null });
+  };
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>

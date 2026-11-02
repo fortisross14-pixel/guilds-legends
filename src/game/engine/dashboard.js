@@ -20,6 +20,7 @@ import {
 import { getGuildRankSummary } from './rankings.js';
 import { getGoalMetric, promotionRequirement } from './goals.js';
 import { getPatronLoanOffer, monthlyUpkeep } from './economy.js';
+import { getPlayerRanks, getRankMovement, getStatusTitle } from './rankings.js';
 
 export function acknowledgeWelcome(state) {
   const next = clone(state);
@@ -95,7 +96,17 @@ export function getNextAction(state) {
     };
   }
   if (!state.tutorial.completed) {
-    return { kind: 'tutorial', ...ONBOARDING_STEPS[state.tutorial.step], step: state.tutorial.step + 1, total: ONBOARDING_STEPS.length };
+    const step = ONBOARDING_STEPS[state.tutorial.step];
+    let body = step?.body;
+    if (step?.target === 'finishTutorial') {
+      const melee = (state.tournaments || []).find((event) => event.definitionId === 'dunmere-harvest-melee' && event.status !== 'completed');
+      const months = melee ? melee.year * 12 + melee.month - (state.date.year * 12 + state.date.month) : null;
+      body =
+        months !== null && months >= 0
+          ? `Enter the Dunmere Harvest Melee in ${months} month${months === 1 ? '' : 's'}. The calendar strip keeps count. Finish the tutorial when you are ready.`
+          : step.body;
+    }
+    return { kind: 'tutorial', ...step, body, step: state.tutorial.step + 1, total: ONBOARDING_STEPS.length };
   }
   if (state.pendingDecisions.length) {
     return { kind: 'critical', title: 'A critical decision is waiting', body: state.pendingDecisions[0].prompt, screen: 'hall', action: 'resolve' };
@@ -175,12 +186,12 @@ export function getNextAction(state) {
     const checks = [
       ['fame', requirement.fame],
       ['successful contracts', requirement.contracts],
-      ['guild rank', requirement.rank],
+      ['official rank', requirement.rank],
       ['signature achievements', requirement.feat],
       ['campaign years', requirement.time],
     ];
     const [label, missing] = checks.find(([, item]) => !item.met) || checks[0];
-    const display = label === 'guild rank' ? `rank #${missing.current}; need #${missing.target} or better` : `${missing.current}/${missing.target} ${label}`;
+    const display = label === 'official rank' ? `rank #${missing.current}; need #${missing.target} or better` : `${missing.current}/${missing.target} ${label}`;
     return {
       kind: 'promotion',
       title: `Path to ${requirement.target.id}`,
@@ -203,6 +214,9 @@ export function getDashboardSummary(state) {
     tier: state.guild.tier,
     rank: state.guild.rank,
     rankSummary,
+    ranks: getPlayerRanks(state),
+    movement: getRankMovement(state),
+    statusTitle: getStatusTitle(state),
     crowns: state.guild.crowns,
     fame: state.guild.fame,
     legacy: state.guild.legacy,
@@ -291,5 +305,25 @@ export function getUpcomingEvents(state, limit = 8) {
 export function acknowledgeMoment(state) {
   const next = clone(state);
   next.moments = (next.moments || []).slice(1);
+  return finalize(next);
+}
+
+const UI_TUTORIAL_TARGETS = ['visitHerald', 'finishTutorial'];
+
+/** Completes a tutorial step that is triggered from the UI (visiting the Herald, finishing). */
+export function noteTutorialStep(state, target) {
+  if (state.tutorial.completed || !UI_TUTORIAL_TARGETS.includes(target)) return state;
+  const next = clone(state);
+  completeTutorialTargetInPlace(next, target);
+  return finalize(next);
+}
+
+/** For returning players: skip the scripted opening entirely. */
+export function skipTutorial(state) {
+  const next = clone(state);
+  next.tutorial.completed = true;
+  next.tutorial.acknowledged = true;
+  next.tutorial.step = ONBOARDING_STEPS.length;
+  next.flags.openingPeddler = true;
   return finalize(next);
 }

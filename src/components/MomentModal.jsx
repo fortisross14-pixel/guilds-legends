@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge, Button, HeroPortrait, Modal, PrimalBadge, RarityBadge } from './UI.jsx';
+import { Badge, Button, HeroPortrait, Modal, PrimalBadge, RankChange, RarityBadge } from './UI.jsx';
 
 // Reward moments: victory screen, level-up screen and recruit introduction card.
 export default function MomentModal({ moment, state, onClose }) {
@@ -49,6 +49,54 @@ export default function MomentModal({ moment, state, onClose }) {
           ) : null}
           <Button variant="primary" onClick={onClose}>
             Continue
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (moment.type === 'rankings') {
+    return (
+      <Modal open title="Rankings update" eyebrow={moment.title} onClose={onClose} width="medium">
+        <div className="moment moment--rankings">
+          <Badge tone="gold">{moment.statusTitle}</Badge>
+          <ul className="moment__ladders">
+            {moment.ladders.map((entry) => (
+              <li key={entry.ladder}>
+                <span>{entry.label}</span>
+                <strong>
+                  #{entry.rank}
+                  <small>/{entry.total}</small>
+                </strong>
+                <RankChange change={entry.change} />
+                <small>
+                  {entry.value.toLocaleString()} {entry.ladder === 'strength' ? 'power' : 'pts'}
+                </small>
+              </li>
+            ))}
+          </ul>
+          <p className="muted">{moment.scope} ladders. The Herald has the full tables.</p>
+          <Button variant="primary" onClick={onClose}>
+            Continue
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (moment.type === 'statusTitle') {
+    return (
+      <Modal open title={moment.promoted ? `${moment.to}!` : `Now: ${moment.to}`} eyebrow="Status title" onClose={onClose} width="medium">
+        <div className={`moment moment--status ${moment.promoted ? 'moment--status-up' : 'moment--status-down'}`}>
+          <p className="moment__fanfare">{moment.promoted ? '♛' : '▼'}</p>
+          <p>
+            {moment.from} → <strong>{moment.to}</strong>
+          </p>
+          <p className="muted">
+            {moment.promoted ? 'The official ladder names your guild among the powers of its tier.' : 'Official points from older tournaments have expired.'}
+          </p>
+          <Button variant="primary" onClick={onClose}>
+            {moment.promoted ? 'Raise the banner' : 'Continue'}
           </Button>
         </div>
       </Modal>

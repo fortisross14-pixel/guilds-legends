@@ -70,3 +70,16 @@ export { MAX_REST_MONTHS, planRoadEvents, travelTo, continueJourney, resolveRoad
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
+export {
+  LADDERS,
+  LADDER_LABELS,
+  STATUS_TITLES,
+  getGuildLadder,
+  getHeroLadder,
+  getPlayerRanks,
+  getPointsToPass,
+  getRankMovement,
+  getStatusTitle,
+  officialPointsFor,
+} from './engine/rankings.js';
+export { noteTutorialStep, skipTutorial } from './engine/dashboard.js';

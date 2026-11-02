@@ -262,6 +262,8 @@ export function migrateGame(raw) {
   next.pendingRoadEvent ??= null;
   next.inventory ||= {};
   next.moments ||= [];
+  next.officialLedger ||= [];
+  next.rankHistory ||= [];
   next.council = { lastReport: null, unread: false, ...(next.council || {}) };
   next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);
   next.guild.tier = TIERS[next.guild.tierIndex].id;

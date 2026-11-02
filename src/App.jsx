@@ -54,6 +54,10 @@ import {
   unequipItem,
   useItemOnHero,
   acknowledgeMoment,
+  noteTutorialStep,
+  skipTutorial,
+  LADDERS,
+  LADDER_LABELS,
   continueJourney,
   resolveRoadEvent,
   restAtGuildHall,
@@ -69,7 +73,7 @@ import { APPOINTMENTS, CLASSES, FLAW_PROFILES, MONTHS, PERSONALITY_PROFILES, nor
 import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from './data/activities.js';
 import { PARTY_ROLES } from './data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './components/UI.jsx';
+import { Badge, Button, Crest, HeroPortrait, Modal, PrimalBadge, ProgressBar, RankChange, RarityBadge } from './components/UI.jsx';
 import MapScreen from './places/MapScreen.jsx';
 import TownScreen from './places/TownScreen.jsx';
 import MenuScreen from './places/MenuScreen.jsx';
@@ -348,6 +352,28 @@ function RefoundModal({ state, open, onRefound, onReturnHome }) {
             Refound the guild
           </Button>
           <Button onClick={onReturnHome}>Return to save slots</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function IntroModal({ state, actions }) {
+  if (state.tutorial.completed || state.tutorial.step !== 0) return null;
+  return (
+    <Modal open title="The Broken Lantern" eyebrow={`Dunmere · Year ${state.date.year}`} preventClose width="medium">
+      <div className="intro-card">
+        <Crest size="xl" />
+        <p>The old guild of the Broken Lantern marched into the Blackwood and never came back. All that is left is its banner, and you, its new founder.</p>
+        <p>
+          Hire a companion at the Tavern, take a contract from the Notice Board, and win your first fight. Then the rankings will start to notice{' '}
+          {state.guild.name}.
+        </p>
+        <div className="save-actions">
+          <Button variant="primary" size="lg" onClick={actions.acknowledgeWelcome}>
+            Raise the banner
+          </Button>
+          <Button onClick={actions.skipTutorial}>Skip tutorial</Button>
         </div>
       </div>
     </Modal>
@@ -1218,6 +1244,14 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       unequipItem: (heroId, slot) => applyResult(unequipItem(state, heroId, slot)),
       useItem: (itemId, heroId) => applyResult(useItemOnHero(state, itemId, heroId)),
       acknowledgeMoment: () => commitState(acknowledgeMoment(state)),
+      noteTutorial: (target) => {
+        const next = noteTutorialStep(state, target);
+        if (next !== state) commitState(next);
+      },
+      finishTutorial: () => commitState(noteTutorialStep(state, 'finishTutorial')),
+      skipTutorial: () => {
+        if (window.confirm('Skip the tutorial? You can play freely from here.')) commitState(skipTutorial(state));
+      },
       autoResolveCombat: () => applyResult(autoResolveActiveCombat(state)),
       missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
       autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
@@ -1378,13 +1412,21 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               <b>{summary.crowns.toLocaleString()}</b>
               <small>gold</small>
             </span>
-            {summary.rankSummary.map((item) => (
-              <span key={item.scope} className="topbar__rank" title={`${item.scope} ladder: #${item.rank} of ${item.total}`}>
-                <i>♛</i>
-                <b>#{item.rank}</b>
-                <small>{item.scope.toLowerCase()}</small>
+            {LADDERS.map((ladder) => (
+              <span
+                key={ladder}
+                className="topbar__rank"
+                title={`${LADDER_LABELS[ladder]} ladder (${summary.tier}): #${summary.ranks[ladder].rank} of ${summary.ranks[ladder].total}`}
+              >
+                <i>{ladder === 'strength' ? '⚔' : ladder === 'legacy' ? '▤' : '♛'}</i>
+                <b>#{summary.ranks[ladder].rank}</b>
+                <RankChange change={summary.movement[ladder]} />
+                <small>{LADDER_LABELS[ladder].toLowerCase()}</small>
               </span>
             ))}
+            <button className="topbar__status" onClick={() => navigate('rankings')} title="Status title from the Official ladder">
+              {summary.statusTitle}
+            </button>
           </div>
         </header>
         {message ? (
@@ -1416,12 +1458,18 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               onClick={() => {
                 if (nextAction.target === 'acknowledgeWelcome') {
                   actions.acknowledgeWelcome();
-                  navigate('hall');
-                } else navigate(nextAction.screen || 'hall');
+                  navigate('town');
+                } else if (nextAction.target === 'finishTutorial') actions.finishTutorial();
+                else navigate(nextAction.screen || 'hall');
               }}
             >
-              {nextAction.kind === 'critical' ? 'Resolve now' : 'Go to task'}
+              {nextAction.kind === 'critical' ? 'Resolve now' : nextAction.target === 'finishTutorial' ? 'Finish tutorial' : 'Go to task'}
             </Button>
+            {nextAction.kind === 'tutorial' ? (
+              <Button size="sm" variant="secondary" onClick={actions.skipTutorial}>
+                Skip tutorial
+              </Button>
+            ) : null}
           </aside>
         ) : null}
         <main className="screen-container" key={`${place.view}-${place.building || ''}-${place.page || ''}`}>
@@ -1440,6 +1488,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <CombatArenaModal encounter={state.activeEncounter} actions={actions} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
+      <IntroModal state={state} actions={actions} />
       <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} />
       <MomentModal
         moment={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !activeReport ? state.moments?.[0] : null}
