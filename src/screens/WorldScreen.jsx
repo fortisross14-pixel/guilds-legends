@@ -6,6 +6,23 @@ import { Badge, Button, EmptyState, Panel, PrimalBadge, ProgressBar, RiskPips } 
 
 const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
 
+// Road network as chains of location ids. Paths are built from each location's
+// x/y (percent of the map), so routes always meet the nodes.
+const MAP_ROUTES = [
+  { dim: false, chain: ['dunmere', 'greenhollow', 'ironford', 'windmere', 'tidecross', 'sunspire', 'mooncourt', 'thornwatch', 'skyreach', 'beaststeppe', 'irondeep'] },
+  { dim: true, chain: ['tidecross', 'brasshaven', 'coral-crown', 'cloud-monastery', 'ashen-caldera', 'starfall-archive', 'far-veil'] },
+  { dim: true, chain: ['thornwatch', 'verdant-citadel', 'irondeep'] },
+  { dim: true, chain: ['skyreach', 'ashen-caldera', 'cloud-monastery'] },
+];
+
+function routePath(chain) {
+  return chain
+    .map((id) => LOCATION_BY_ID[id])
+    .filter(Boolean)
+    .map((location, index) => `${index ? 'L' : 'M'}${location.x} ${location.y}`)
+    .join(' ');
+}
+
 export default function WorldScreen({ state, actions, navigate }) {
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
   const [selectedId, setSelectedId] = useState(currentLocationId);
@@ -42,10 +59,8 @@ export default function WorldScreen({ state, actions, navigate }) {
       <div className="world-layout world-layout--locations">
         <section className="world-map world-map--locations" aria-label="Fictional world travel map">
           <div className="world-map__mist" />
-          <svg viewBox="0 0 100 90" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
-            <path className="map-route" d="M18 48 L31 28 L40 56 L27 70 L53 72 L66 62 L55 42 L44 24 L72 36 L70 16 L58 4" />
-            <path className="map-route map-route--dim" d="M53 72 L62 82 L83 72 L88 52 L80 48 L91 28 L96 12" />
-            <path className="map-route map-route--dim" d="M44 24 L51 10 L58 4 M72 36 L80 48 L88 52" />
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
+            {MAP_ROUTES.map((route) => <path key={route.chain.join('-')} className={`map-route${route.dim ? ' map-route--dim' : ''}`} d={routePath(route.chain)} vectorEffect="non-scaling-stroke" />)}
           </svg>
           {LOCATIONS.map((location) => {
             const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
