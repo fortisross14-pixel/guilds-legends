@@ -1,0 +1,45 @@
+/* Headquarters */
+/* HQ */
+.hq-blueprint { display: grid; grid-template-columns: 300px 1fr; gap: 1rem; margin-bottom: 1rem; }
+.hq-blueprint__hall { position: sticky; top: 77px; align-self: start; min-height: 420px; padding: 1.2rem; border: 1px solid rgba(211,166,77,.25); border-radius: 15px; background: radial-gradient(circle at 50% 0, rgba(166,66,78,.25), transparent 35%), linear-gradient(155deg, #1a2634, #0d141c); box-shadow: var(--shadow); }
+.hq-blueprint__hall h2 { font-size: 2rem; }
+.hq-ledger { display: grid; margin-top: 1.2rem; border-top: 1px solid var(--line); }
+.hq-ledger span { display: flex; justify-content: space-between; padding: .6rem 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .68rem; }
+.hq-ledger strong { color: #e4e8ed; }
+.hq-blueprint__rooms { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .7rem; }
+.facility-room { min-height: 175px; display: grid; grid-template-columns: auto 1fr; grid-template-rows: 1fr auto; gap: .7rem; padding: .85rem; border: 1px solid var(--line); border-radius: 11px; background: linear-gradient(145deg, #1a2635, #111820); }
+.facility-room.is-locked { opacity: .5; }
+.facility-room__icon { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid rgba(211,166,77,.28); border-radius: 10px; background: rgba(211,166,77,.07); color: var(--gold-light); font-size: 1.25rem; }
+.facility-room__title { display: flex; justify-content: space-between; gap: .5rem; }
+.facility-room__title h3 { margin: 0; }
+.facility-room p { margin: .25rem 0; font-size: .66rem; }
+.facility-room__effect { display: block; margin-bottom: .5rem; color: #b7d9c8; font-size: .63rem; }
+.facility-room > .button { grid-column: 1 / -1; }
+.dashboard-grid--hq { grid-template-columns: 1.25fr .75fr; }
+.dashboard-grid--hq > .panel:last-child { grid-column: 1 / -1; }
+.appointment-layout { display: grid; grid-template-columns: 260px 1fr; gap: 1rem; }
+.appointment-list { display: grid; gap: .35rem; }
+.appointment-list button { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .5rem; padding: .45rem; border: 1px solid transparent; border-radius: 8px; background: transparent; text-align: left; }
+.appointment-list button.is-selected { border-color: rgba(211,166,77,.3); background: rgba(211,166,77,.07); }
+.appointment-list button > span > i { width: 38px; height: 38px; display: grid; place-items: center; border: 1px dashed var(--line-strong); border-radius: 50%; color: var(--faint); font-style: normal; }
+.appointment-list button > div { display: grid; }
+.appointment-list strong { font-size: .68rem; }
+.appointment-list small { font-size: .58rem; }
+.appointment-dossier { padding: 1rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(5,9,14,.25); }
+.appointment-dossier p { font-size: .7rem; }
+.current-appointee { display: flex; align-items: center; gap: .65rem; margin: .8rem 0; padding: .6rem; border: 1px solid var(--line); border-radius: 8px; }
+.current-appointee > div { display: grid; }
+.policy-stack, .settings-form { display: grid; gap: 1rem; }
+.policy-stack select { margin-top: .2rem; }
+.alignment-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; }
+.alignment-grid button { padding: 1rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(5,9,14,.24); text-align: left; }
+.alignment-grid button:hover { border-color: var(--gold); }
+.alignment-grid button > span { font-size: 1.5rem; color: var(--gold); }
+.alignment-grid button strong { display: block; margin: .5rem 0 .25rem; }
+.alignment-grid button p { margin: 0; font-size: .67rem; }
+.alignment-chosen { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid rgba(211,166,77,.3); border-radius: 10px; background: rgba(211,166,77,.07); }
+.alignment-chosen > span { font-size: 2.2rem; color: var(--gold); }
+.alignment-chosen h3 { margin: 0; }
+.alignment-chosen p { margin: .2rem 0 0; }
+.obligation-list { display: flex; gap: .4rem; align-items: center; margin-top: 1rem; }
+.obligation-list > span { margin-right: .4rem; color: var(--muted); font-size: .65rem; }

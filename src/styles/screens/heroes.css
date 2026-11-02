@@ -1,0 +1,51 @@
+/* Heroes */
+/* Heroes */
+.hero-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; }
+.hero-card { position: relative; border: 1px solid var(--line); border-radius: 13px; background: linear-gradient(150deg, #1b2838, #101720); box-shadow: var(--shadow-soft); overflow: hidden; }
+.hero-card--injured { border-color: rgba(208,106,116,.4); }
+.hero-card--mission, .hero-card--tournament { border-color: rgba(211,166,77,.35); }
+.hero-card__identity { width: 100%; display: grid; grid-template-columns: auto 1fr; gap: .8rem; padding: .9rem; border: 0; background: transparent; text-align: left; }
+.hero-card__identity > div:last-child { min-width: 0; }
+.hero-card__name { display: flex; justify-content: space-between; gap: .5rem; }
+.hero-card__name h3 { margin: 0; }
+.hero-card__identity p { margin: .1rem 0 .25rem; font-size: .7rem; }
+.hero-card__identity small { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: .65rem; }
+.hero-card__ratings { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.hero-card__ratings > div { display: grid; padding: .55rem; border-right: 1px solid var(--line); text-align: center; }
+.hero-card__ratings > div:last-child { border-right: 0; }
+.hero-card__ratings span { color: var(--muted); font-size: .58rem; text-transform: uppercase; }
+.hero-card__ratings strong { font-family: var(--display); font-size: 1.12rem; }
+.hero-card__bars { display: grid; grid-template-columns: repeat(3,1fr); gap: .7rem; padding: .7rem .9rem; }
+.hero-card__tags { display: flex; gap: .35rem; flex-wrap: wrap; padding: 0 .9rem .7rem; }
+.hero-card__footer { display: grid; grid-template-columns: minmax(140px,1fr) auto auto; align-items: end; gap: .6rem; padding: .7rem .9rem; border-top: 1px solid var(--line); background: rgba(3,7,11,.24); }
+.hero-card__footer select { padding: .45rem; }
+.availability { padding: .35rem .5rem; border-radius: 999px; background: rgba(255,255,255,.05); color: var(--muted); font-size: .62rem; text-transform: capitalize; }
+.availability--available { color: #aee0c4; background: rgba(91,163,127,.12); }
+.availability--injured { color: #ffc3c9; background: rgba(166,66,78,.14); }
+.class-line { display: flex; gap: .55rem; align-items: center; padding: .55rem .9rem; border-top: 1px solid var(--line); color: var(--muted); }
+.class-line span { color: var(--gold); }
+.class-line p { margin: 0; font-size: .62rem; }
+.recruit-layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 1rem; align-items: start; }
+.candidate-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .75rem; }
+.candidate-card { display: grid; gap: .75rem; padding: .85rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(5,9,14,.27); }
+.candidate-card__top { display: flex; gap: .7rem; }
+.candidate-card__top h3 { margin: 0; }
+.candidate-card__top p { margin: 0 0 .25rem; font-size: .7rem; }
+.candidate-card__ratings { display: grid; grid-template-columns: repeat(3,1fr); border: 1px solid var(--line); border-radius: 8px; }
+.candidate-card__ratings span { display: grid; padding: .5rem; text-align: center; border-right: 1px solid var(--line); }
+.candidate-card__ratings span:last-child { border: 0; }
+.candidate-card__ratings small { font-size: .58rem; }
+.candidate-card__ratings strong { font-family: var(--display); font-size: 1.15rem; }
+.candidate-card__hook { min-height: 42px; margin: 0; font-size: .68rem; }
+.candidate-card__conditions { display: grid; gap: .3rem; }
+.candidate-card__conditions span { display: flex; justify-content: space-between; color: var(--muted); font-size: .65rem; }
+.candidate-card__conditions b { color: #dce2e8; }
+.recruit-sidebar { position: sticky; top: 77px; display: grid; gap: 1rem; }
+.insight-list { display: grid; gap: .6rem; margin: 0; padding-left: 1.1rem; color: var(--muted); font-size: .72rem; }
+.legend-list { display: grid; }
+.legend-row { display: grid; grid-template-columns: 32px auto minmax(160px,1fr) 100px 80px 90px; align-items: center; gap: .65rem; padding: .65rem .5rem; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
+.legend-row:hover { background: rgba(255,255,255,.025); }
+.legend-row__rank { color: var(--faint); font-family: var(--display); font-size: 1.1rem; text-align: center; }
+.legend-row > div { display: grid; }
+.legend-row > span:not(.legend-row__rank), .legend-row > b { font-size: .7rem; }
+.legend-row > b { color: var(--gold-light); }

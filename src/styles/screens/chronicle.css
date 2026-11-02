@@ -1,0 +1,40 @@
+/* Chronicle */
+/* Chronicle */
+.chronicle-layout { display: grid; grid-template-columns: minmax(0,1fr) 310px; gap: 1rem; align-items: start; }
+.chronicle-timeline { display: grid; }
+.chronicle-event { display: grid; grid-template-columns: 38px 1fr; gap: .7rem; }
+.chronicle-event__rail { display: grid; grid-template-rows: 28px 1fr; justify-items: center; }
+.chronicle-event__rail span { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; background: #151e2a; color: var(--muted); font-size: .58rem; }
+.chronicle-event__rail i { width: 1px; background: var(--line-strong); }
+.chronicle-event__content { margin-bottom: .7rem; padding: .75rem .85rem; border: 1px solid var(--line); border-radius: 10px; background: linear-gradient(145deg, rgba(25,37,51,.85), rgba(13,20,29,.85)); }
+.chronicle-event--4 .chronicle-event__content, .chronicle-event--5 .chronicle-event__content { border-color: rgba(211,166,77,.35); background: linear-gradient(145deg, rgba(57,44,32,.34), rgba(13,20,29,.9)); }
+.chronicle-event__top { display: flex; justify-content: space-between; }
+.chronicle-event time { color: var(--faint); font-size: .62rem; }
+.chronicle-event h3 { margin: .3rem 0 .2rem; }
+.chronicle-event p { margin: 0; font-size: .7rem; }
+.tag-row { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .55rem; }
+.tag-row span { padding: .15rem .35rem; border-radius: 4px; background: rgba(255,255,255,.04); color: var(--faint); font-size: .55rem; }
+.chronicle-sidebar { position: sticky; top: 77px; display: grid; gap: 1rem; }
+.founder-portraits { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; }
+.founder-portraits button { display: grid; place-items: center; gap: .2rem; padding: .5rem; border: 1px solid var(--line); border-radius: 8px; background: rgba(5,9,14,.2); }
+.founder-portraits strong { font-size: .62rem; text-align: center; }
+.founder-portraits small { font-size: .55rem; }
+.era-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .7rem; }
+.era-grid article { padding: .9rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(5,9,14,.24); }
+.era-year { font-family: var(--display); font-size: 1.8rem; color: var(--gold-light); }
+.era-grid h3 { margin-top: .35rem; }
+.era-grid p { min-height: 64px; font-size: .66rem; }
+.era-grid article > div { display: flex; gap: .35rem; }
+.hall-of-fame { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; }
+.hall-of-fame > button { position: relative; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: .6rem; padding: .65rem; border: 1px solid var(--line); border-radius: 9px; background: rgba(5,9,14,.23); text-align: left; }
+.hall-of-fame > button.podium { grid-column: span 2; padding: 1rem; border-color: rgba(211,166,77,.3); background: radial-gradient(circle at 12% 50%, rgba(211,166,77,.12), transparent 25%), rgba(5,9,14,.28); }
+.hall-of-fame__rank { color: var(--faint); font-family: var(--display); font-size: 1.2rem; }
+.hall-of-fame h3 { margin: 0; }
+.hall-of-fame p { margin: .1rem 0; font-size: .65rem; }
+.hall-of-fame small { font-size: .58rem; }
+.hall-of-fame > button > strong { color: var(--gold-light); font-family: var(--display); font-size: 1.2rem; }
+.record-book { display: grid; grid-template-columns: repeat(3,1fr); gap: .8rem; }
+.record-holder { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .7rem; border: 0; background: transparent; text-align: left; }
+.record-holder h3 { margin: 0; }
+.record-holder p { margin: .1rem 0 0; font-size: .65rem; }
+.record-holder > strong { color: var(--gold-light); font-family: var(--display); font-size: 1.5rem; }

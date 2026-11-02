@@ -1,0 +1,33 @@
+/* Home / save slots */
+/* Home */
+.home-screen { position: relative; min-height: 100vh; overflow: hidden; padding: 4rem 4vw 2rem; background: radial-gradient(circle at 50% -5%, rgba(112,43,54,.32), transparent 34%), radial-gradient(circle at 18% 60%, rgba(63,94,121,.18), transparent 32%), linear-gradient(160deg, #121a25, #080b11 70%); }
+.home-screen::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .25; background-image: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px); background-size: 36px 36px; mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent); }
+.home-screen__mist { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 20% 90%, rgba(110,131,151,.13), transparent 34%), radial-gradient(ellipse at 80% 84%, rgba(153,119,75,.1), transparent 30%); animation: slow-drift 15s ease-in-out infinite; }
+.home-title { position: relative; z-index: 1; max-width: 780px; margin: 0 auto 2.8rem; text-align: center; }
+.home-title .crest { margin: 0 auto 1.1rem; }
+.home-title h1 { font-size: clamp(3.2rem, 7vw, 6.8rem); margin-bottom: .6rem; color: #f2ead7; text-shadow: 0 4px 22px rgba(0,0,0,.48); }
+.home-title p { max-width: 680px; margin: 0 auto; font-family: var(--display); font-size: 1.15rem; color: #c6c8c8; }
+.save-slots { position: relative; z-index: 1; width: min(1180px, 100%); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.save-slot { position: relative; min-height: 390px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(155deg, rgba(28,40,55,.93), rgba(11,17,25,.92)); box-shadow: var(--shadow); text-align: center; overflow: hidden; transition: transform .2s ease, border-color .2s ease; }
+.save-slot:hover { transform: translateY(-3px); border-color: rgba(211,166,77,.38); }
+.save-slot::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.035), transparent 35%); }
+.save-slot__number { position: absolute; top: .85rem; left: 1rem; color: rgba(255,255,255,.18); font-family: var(--display); font-size: 2.4rem; }
+.save-slot__crest { margin-bottom: .5rem; }
+.save-slot h2 { margin: .15rem 0 .25rem; font-size: 1.7rem; }
+.save-slot p { margin-bottom: .9rem; }
+.save-slot time { margin-top: 1rem; color: var(--faint); font-size: .68rem; }
+.save-slot__metrics { display: flex; gap: 2rem; margin: .7rem 0; }
+.save-slot__metrics span { display: grid; }
+.save-slot__metrics small { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; }
+.save-slot__metrics strong { font-family: var(--display); font-size: 1.35rem; }
+.save-slot__actions { display: flex; gap: .5rem; margin-top: 1rem; }
+.save-slot__empty-mark { width: 82px; height: 82px; display: grid; place-items: center; margin-bottom: 1rem; border: 1px dashed rgba(211,166,77,.4); border-radius: 50%; color: var(--gold); font-size: 2rem; }
+.home-footer { position: relative; z-index: 1; display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; color: var(--faint); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; }
+.loading-layer { position: fixed; inset: 0; z-index: 1100; display: grid; place-items: center; align-content: center; gap: 1rem; background: rgba(4,7,11,.86); backdrop-filter: blur(7px); color: var(--gold-light); }
+.home-error { position: fixed; z-index: 1200; left: 50%; bottom: 2rem; transform: translateX(-50%); width: min(560px, calc(100% - 2rem)); display: grid; grid-template-columns: 1fr auto; gap: .2rem 1rem; padding: 1rem; border: 1px solid rgba(208,106,116,.55); border-radius: 10px; background: #31171d; text-align: left; box-shadow: var(--shadow); }
+.home-error strong, .home-error span { grid-column: 1; }
+.home-error i { grid-column: 2; grid-row: 1 / span 2; font-style: normal; font-size: 1.2rem; }
+.new-campaign { display: grid; gap: 1rem; }
+.new-campaign__crest { display: grid; place-items: center; }
+.new-campaign__premise { padding: 1rem; border-left: 3px solid var(--gold); background: rgba(211,166,77,.08); }
+.new-campaign__premise p { margin: .25rem 0 0; }

@@ -1,0 +1,53 @@
+/* World map */
+/* World */
+.world-layout { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(320px,.5fr); gap: 1rem; margin-bottom: 1rem; }
+.world-map { position: relative; min-height: 530px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: radial-gradient(circle at 38% 44%, rgba(54,95,79,.25), transparent 18%), radial-gradient(circle at 68% 42%, rgba(115,73,58,.22), transparent 22%), radial-gradient(circle at 62% 77%, rgba(80,96,122,.22), transparent 20%), linear-gradient(145deg, #162431, #0a1119); box-shadow: var(--shadow); }
+.world-map::before { content: ''; position: absolute; inset: 0; opacity: .32; background-image: radial-gradient(circle at 20% 30%, transparent 0 8%, rgba(255,255,255,.04) 8.2% 8.5%, transparent 8.7%), linear-gradient(27deg, transparent 47%, rgba(255,255,255,.025) 48%, transparent 49%); background-size: 280px 280px, 54px 54px; }
+.world-map__mist { position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 85%, rgba(130,110,152,.18), transparent 22%), linear-gradient(to right, transparent 65%, rgba(5,8,13,.28)); }
+.world-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map-route { fill: none; stroke: rgba(222,200,150,.35); stroke-width: 3; stroke-dasharray: 7 7; }
+.map-route--dim { stroke: rgba(155,171,186,.18); }
+.region-node { position: absolute; z-index: 3; transform: translate(-50%,-50%); width: 128px; min-height: 88px; display: grid; place-items: center; align-content: center; gap: .1rem; padding: .55rem; border: 1px solid var(--line); border-radius: 50% 50% 44% 44%; background: rgba(10,16,23,.9); box-shadow: 0 8px 25px rgba(0,0,0,.35); color: var(--muted); }
+.region-node > span { color: var(--region); font-size: 1.35rem; }
+.region-node strong { font-family: var(--display); font-size: .78rem; color: #e7ebee; }
+.region-node small { font-size: .54rem; text-transform: uppercase; }
+.region-node.is-selected { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(211,166,77,.1), 0 10px 28px rgba(0,0,0,.45); }
+.region-node.is-locked { opacity: .48; filter: grayscale(.8); }
+.map-legend { position: absolute; left: 1rem; bottom: 1rem; display: flex; gap: 1rem; padding: .5rem .65rem; border-radius: 8px; background: rgba(5,9,14,.7); font-size: .62rem; }
+.map-legend span { display: flex; align-items: center; gap: .35rem; color: var(--muted); }
+.legend-dot { width: 22px; height: 2px; background: var(--gold); }
+.legend-dot.is-rumor { background: #66778a; opacity: .5; }
+.region-dossier { border: 1px solid var(--line); border-radius: 15px; background: linear-gradient(155deg, #1a2635, #0d141d); overflow: hidden; box-shadow: var(--shadow-soft); }
+.region-dossier__banner { display: flex; align-items: center; gap: .8rem; padding: 1.1rem; background: linear-gradient(120deg, color-mix(in srgb, var(--region) 35%, #172230), #111823); border-bottom: 1px solid var(--line); }
+.region-dossier__banner > span { width: 55px; height: 55px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; font-size: 1.7rem; }
+.region-dossier__banner h2 { margin: 0; }
+.region-dossier__banner small { color: #d6d7d4; text-transform: uppercase; letter-spacing: .08em; font-size: .57rem; }
+.region-dossier > p, .region-dossier > .dossier-row, .region-dossier > .region-missions, .region-dossier > .button { margin-left: 1rem; margin-right: 1rem; }
+.region-dossier__identity { margin-top: 1rem; font-family: var(--display); color: #e3e0d8; }
+.dossier-row { display: grid; gap: .2rem; padding: .7rem 0; border-top: 1px solid var(--line); }
+.dossier-row span { color: var(--muted); font-size: .62rem; text-transform: uppercase; }
+.dossier-row strong { font-size: .76rem; }
+.region-missions { display: grid; gap: .4rem; margin-bottom: 1rem; }
+.region-missions button { display: flex; justify-content: space-between; align-items: center; padding: .55rem; border: 1px solid var(--line); border-radius: 7px; background: rgba(5,9,14,.25); text-align: left; }
+.region-missions button > div { display: grid; }
+.region-missions strong { font-size: .7rem; }
+.region-missions small { font-size: .58rem; }
+.locked-dossier { display: grid; place-items: center; align-content: center; min-height: 400px; padding: 1.5rem; text-align: center; }
+.locked-dossier > span { font-size: 2.4rem; color: var(--purple); }
+.dashboard-grid--world { grid-template-columns: 1.25fr .75fr; }
+.saga-list { display: grid; gap: .65rem; }
+.saga-card { display: grid; grid-template-columns: auto 1fr; gap: .8rem; padding: .75rem; border: 1px solid var(--line); border-radius: 9px; background: rgba(5,9,14,.24); }
+.saga-card.is-hidden { opacity: .5; }
+.saga-card.is-complete { border-color: rgba(91,163,127,.38); }
+.saga-card__seal { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(140,111,180,.45); border-radius: 50%; color: #d8c6ed; }
+.saga-card__title { display: flex; justify-content: space-between; gap: .7rem; }
+.saga-card h3 { margin: 0; }
+.saga-card p { margin: .25rem 0 .55rem; font-size: .68rem; }
+.rival-briefs { display: grid; }
+.rival-briefs article { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .65rem; padding: .58rem 0; border-bottom: 1px solid var(--line); }
+.rival-briefs article > i { width: 10px; height: 34px; border-radius: 4px; }
+.rival-briefs article > div { display: grid; }
+.rival-briefs strong { font-size: .73rem; }
+.rival-briefs small { font-size: .58rem; }
+.rival-briefs p { margin: .1rem 0 0; font-size: .6rem; }
+.rival-briefs article > span { display: grid; text-align: right; color: var(--muted); font-size: .58rem; }

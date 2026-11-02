@@ -1,0 +1,31 @@
+/* Persistent objective guidance */
+/* Persistent objective guidance */
+.objective-ribbon {
+  position: sticky;
+  top: 64px;
+  z-index: 36;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(120px, 220px) auto;
+  align-items: center;
+  gap: .85rem;
+  padding: .65rem 1.2rem;
+  border-bottom: 1px solid rgba(211,166,77,.24);
+  background: linear-gradient(90deg, rgba(74,34,43,.96), rgba(17,25,36,.96));
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.18);
+}
+.objective-ribbon--critical { background: linear-gradient(90deg, rgba(112,31,44,.98), rgba(28,23,31,.98)); border-color: rgba(208,106,116,.45); }
+.objective-ribbon__mark { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(211,166,77,.48); border-radius: 50%; color: var(--gold-light); background: rgba(7,11,17,.55); font-family: var(--display); font-size: 1rem; }
+.objective-ribbon > div { min-width: 0; display: grid; }
+.objective-ribbon small { color: var(--gold-light); font-size: .61rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.objective-ribbon strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); font-size: 1rem; }
+.objective-ribbon p { overflow: hidden; margin: 0; color: #b8c1cc; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 900px) {
+  .objective-ribbon { top: 58px; grid-template-columns: auto minmax(0,1fr) auto; padding: .6rem .8rem; }
+  .objective-ribbon > .progress { display: none; }
+  .objective-ribbon p { display: none; }
+}
+@media (max-width: 560px) {
+  .objective-ribbon { grid-template-columns: auto minmax(0,1fr); }
+  .objective-ribbon .button { grid-column: 1 / -1; width: 100%; }
+}
