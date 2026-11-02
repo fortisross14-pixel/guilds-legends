@@ -7,12 +7,10 @@ A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation
 ## Ground rules
 
 - **The engine (`src/game/*`) stays pure and deterministic.** Never use `Math.random` or `Date.now` in simulation logic (ESLint blocks `Math.random` there). All randomness goes through the seeded RNG: `const rng = rngFor(state, 'salt')` … `commitRng(state, rng)`. IDs come from `uid(prefix, rng)`.
-- **Every rule change needs a seeded test** in `tests/engine.test.js`.
 - New engine code goes in the right `src/game/engine/*.js` module, and new public functions are added to the `src/game/engine.js` barrel. Never import a later module from an earlier one (see the order in the file map).
 - Engine functions never mutate their input. They `clone(state)`, change the copy, and return `{ state, error }` (a few simple setters return just the new state).
-- Never delete or weaken an existing test to make it pass.
-- Keep existing saves loadable. If the state shape changes, bump `SCHEMA_VERSION`, add defaults in `migrateGame`, and add a migration test.
-- No gameplay or balance changes unless the task asks for them.
+- **Early prototype: no save compatibility.** Old saves may break; don't write migrations or bump `SCHEMA_VERSION` for compatibility. Starting a new campaign is fine.
+- Gameplay changes follow the current wave in `docs/GAME_VISION.md`. No balance tuning yet; that happens after the final wave.
 - Small, focused commits, one logical change each.
 - If a spec or audit item looks wrong or unclear, write it down and skip it. Don't guess.
 
@@ -26,17 +24,15 @@ launchMission: (id, formation, assignments) =>
 
 The UI calls an engine function and gets `{ state, error }`. `applyResult` shows the error, or passes the new state to `commitState`. `commitState` runs `validateGame` and then `setState`, and autosave writes the slot about 0.7 s later. Screens receive `{ state, actions, navigate, slot }` and must not modify `state` directly.
 
-## Testing policy
+## Testing policy (prototype mode, until all GAME_VISION waves are done)
 
-- **Work on `main`. Run the full suite only once, right before pushing.** Pushing to `main` deploys to GitHub Pages, and CI runs lint, the tests and the build.
-- While working, run only the checks that cover your change:
-  - Engine change: the matching tests, e.g. `node --test --test-name-pattern="patron" tests/engine.test.js`
-  - UI-only change: `npm run build`
-  - Pure code moves or refactors: `npm run test:fast`
-- Before pushing: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
-- `npm run test:long` (20–100 year seeded simulations, ~20 s) is part of `npm test`. It is the proof that refactors did not change behavior.
-- The Playwright smoke test (`npm run test:e2e`) is not part of `npm test` or CI. Run it at the end of larger UI work.
-- If a check fails twice in a row, stop and report what is failing. Don't loop on retries.
+- **Do NOT write new tests.** Do NOT run the full suite, long simulations, balance, performance, typecheck or e2e tests. Each wave will rework the previous one, so that effort is wasted now.
+- After a change, only do a quick sanity check:
+  - `npm run build` must succeed.
+  - If you touched engine logic, run `npm run test:fast` once. If old tests break because of an intended design change, delete or update those tests. Don't work around the design to keep them passing.
+- Then commit and push to `main`.
+- Balance, performance, visual, save-compatibility and full regression testing happen once, after the final wave.
+- If the same check fails twice in a row, stop and report what is failing. Don't loop on retries.
 
 ## Commands
 
@@ -116,4 +112,4 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `goals[]`, `achievements[]`, `stats`, `legacy`
 - `tutorial`, `council` (last monthly report), `notifications[]`, `settings`, `flags`
 
-`validateGame(state)` returns a list of invariant violations. It must return an empty list after every engine call.
+`validateGame(state)` returns a list of invariant violations; the UI runs it after every action. Keep it in sync with state shape changes.

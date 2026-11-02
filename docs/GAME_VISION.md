@@ -32,13 +32,9 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 ## How to work
 
 - **Do only the wave named in the request.** When it's done, stop and summarize. Do not start the next wave.
-- Work on main. Follow the ground rules and testing policy in `CLAUDE.md`:
-  - run only the relevant tests during work
-  - run the full suite once at the end of the wave, before pushing
-  - run the Playwright smoke test once at the end
-  - stop after 2 failed attempts at the same check
+- Work on main. Follow the ground rules and the **prototype-mode testing policy** in `CLAUDE.md`: no new tests, no full suite, no balance/performance/e2e runs. Only a quick sanity check (`npm run build`, plus `npm run test:fast` if engine logic changed). Stop after 2 failed attempts at the same check.
 - **Graphics are placeholders.** A separate design pass (with the Impeccable skill) comes later. Keep layout clean and functional. Reuse the existing CSS tokens and the art in `public/art` (portraits, sprites, enemies, effects, scenes). Don't spend time on polish, animations or new art. Do use semantic class names and keep visual styling in CSS, so the later redesign is easy.
-- Keep the engine pure and deterministic, and keep existing saves loading (bump `SCHEMA_VERSION` plus a migration, with a test). Every new rule gets a seeded test.
+- Keep the engine pure and deterministic. This is an early prototype: old saves may break, so no save migrations or compatibility work.
 - Prefer reusing existing systems (missions, recruitment, tournaments, rivals, combat.js) over rewriting them. Remove code that a wave makes obsolete instead of leaving dead paths.
 - If a design detail here is unclear or conflicts with the code, make the simplest reasonable choice and list it in the summary.
 
@@ -69,16 +65,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
    - Remove "+1 month", "+Season" and "+1 year".
    - Time advances when you travel (existing travel durations), when a mission runs, or with "Wait / Rest at the Guild Hall" (choose 1–3 months, which runs the existing monthly council resolution).
    - Add a calendar or "upcoming" strip: next tournaments with dates and entry requirements, active missions with time remaining, promise deadlines.
-   - Keep `simulateAutoplay` working for tests.
 5. **Road events.** Each journey has a seeded chance of 0–2 short events: ambush (an auto-resolved fight for now), merchant (cheap item, once items exist, or gold trade), wandering recruit, shortcut or delay. Use the existing decision-modal pattern.
-6. Tests:
-   - travel advances time correctly
-   - waiting runs the council resolution
-   - road events are deterministic per seed
-   - buildings per location
-   - save migration
-
-   Update the e2e smoke test for the new navigation.
 
 ### Wave 2 notes (choices where the brief was open)
 
@@ -127,16 +114,6 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
    - road ambushes
 
    Non-combat missions (diplomacy, expedition, intrigue) keep their existing mini-games.
-7. Tests:
-   - deterministic battles for the same seed and commands
-   - targeting rules
-   - skill unlocks by level
-   - item effects
-   - equipment bonuses
-   - shop buy/sell
-   - loot drops
-   - auto-battle wins easy fights and loses impossible ones
-   - save migration for inventory and gear
 
 ## Wave 4 — Rankings as the hook, and the scripted opening
 
@@ -164,22 +141,17 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
    8. The calendar points to the first tournament, and the tutorial ends with "Enter the Dunmere Harvest Melee in 3 months".
 
    Hints are skippable, and there's a "Skip tutorial" option for returning players. Use seeded, guaranteed outcomes for the scripted steps so the first battle can't be lost unfairly.
-6. Tests:
-   - points table and 12-month rolling window
-   - ladder ordering and tie-breaks
-   - snapshot size stays bounded over 100 years
-   - status title thresholds
-   - promotion via the Official ladder
-   - the scripted opening completes deterministically from a new game
-
-   Update the e2e smoke test to play through the opening.
 
 ## End of each wave
 
-- Run the full checks once (lint, typecheck, test, build, e2e) and push to main.
+- Quick sanity check only (`npm run build`, plus `npm run test:fast` if engine logic changed), then push to main.
 - Mark the wave done in this file and add a `CHANGELOG.md` entry.
 - Summarize:
   - what changed
   - design choices made where this brief was unclear
   - what was removed
   - what to play-test manually
+
+## After the final wave
+
+Turn the safety net back on: restore the full testing policy in `CLAUDE.md`, add tests for the new systems (combat, items, rankings, opening), and run the balance (`npm run sim`), performance and visual (e2e) passes. Then do the Impeccable design pass.
