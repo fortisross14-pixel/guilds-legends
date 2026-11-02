@@ -597,7 +597,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} />
-      <CouncilReportModal state={state} open={Boolean(state.council?.unread && !state.pendingDecisions.length && !activeReport && !state.activeEncounter)} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
+      <CouncilReportModal state={state} open={Boolean(state.council?.unread && !state.pendingDecisions.length && !activeReport && !state.activeEncounter && !state.activeMissionGame)} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
       <MobileMoreModal open={mobileMoreOpen} onClose={() => setMobileMoreOpen(false)} navigate={navigate} active={screen} />
       <HeroDetailModal state={state} heroId={heroModalId} onClose={() => setHeroModalId(null)} actions={actions} />
       <Toasts notifications={state.notifications} onDismiss={actions.dismissNotification} onClear={actions.clearNotifications} />
