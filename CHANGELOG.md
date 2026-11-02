@@ -2,7 +2,17 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 2 (the world is the game)
+## Unreleased — Wave 3 (real combat)
+
+- Per-hero, turn-based battles. Each hero and enemy has HP, MP, attack, defense, magic, speed and status effects. Each round you pick a command (Attack, Skill, Item, Defend) and a target for every hero. The strongest enemy's next move is shown as a tell, and stuns can interrupt it. Auto-battle and Flee are available.
+- Front-view battle screen with enemy sprites, party HP/MP windows, a command menu, click-to-target and a battle log.
+- 5–6 skills per class, unlocked by level (src/data/skills.js).
+- Items and equipment: consumables, weapon/armor/accessory slots with class limits, a guild inventory, town shops stocked by tier, and loot from missions, ambushes and tournament finishes. Artifacts are worn as accessories.
+- Reward moments: victory screen, level-up screen (stat gains, new skills), recruit introduction card.
+- Road ambushes are real battles, and merchants sell potions.
+- Save schema v15.
+
+## Wave 2 (the world is the game)
 
 - The world map is the home screen, with a "You are here" marker, routes, locked tiers, and the guild's position while travelling.
 - Towns have buildings: Guild Hall, Tavern, Notice Board, Arena, Shop (placeholder) and Herald. Each opens the existing functionality.

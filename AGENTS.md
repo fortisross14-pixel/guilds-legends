@@ -56,11 +56,12 @@ src/App.jsx               Shell: save slots, the three-place nav, top bar, modal
 src/places/               MapScreen (home), TownScreen (building tiles → building content), MenuScreen, routes.js
 src/components/           UI primitives (UI.jsx) and modals (combat, mission game, council)
 src/screens/              Building/page content rendered inside places (Hall, Missions, Heroes, …)
-src/data/                 Static content: classes, missions, formations, world map, rival universe
+src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   core.js                 clone, seeded RNG (rngFor/commitRng), uid, chronicle helpers, roster/guild queries
-  heroes.js               hero generation, XP/levels, relationships, party role ratings and estimates
+  heroes.js               hero generation, XP/levels (level-up moments), relationships, party role ratings and estimates
+  inventory.js            guild inventory, gear, shops, loot, battle item settlement
   candidates.js           recruitment market and recruitment promises
   universe.js             rival guilds, legends, title records, artifacts, contract board
   rankings.js             guild ladders and hero all-time rankings
@@ -82,7 +83,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   timeActions.js          travelTo + road events, continueJourney, restAtGuildHall, launchExpedition
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
-src/game/combat.js        Deterministic duel and party combat
+src/game/combat.js        Per-hero turn-based battles (commands, skills, items, tell, auto-battle)
 src/game/missionGames.js  Playable Diplomacy / Expedition / Intrigue challenges
 src/game/legacy.js        Branch, ambition and artifact definitions
 src/game/storage.js       IndexedDB save slots, export/import
@@ -110,6 +111,9 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `tournaments[]`, `guildTournaments[]`, `tournamentHistory[]`, `titleRecords`
 - `world: { currentLocationId, visitedLocationIds, activeTravel }`
 - `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `goals[]`, `achievements[]`, `stats`, `legacy`
+- `inventory` (itemId → count), each hero's `gear` (weapon/armor/accessory item ids; `artifact:<id>` for a worn artifact)
+- `moments[]`: reward screens queued for the UI (victory, levelUp, recruit); presentation only
+- `world.roadEvents`, `pendingRoadEvent`: planned and current road events
 - `tutorial`, `council` (last monthly report), `notifications[]`, `settings`, `flags`
 
 `validateGame(state)` returns a list of invariant violations; the UI runs it after every action. Keep it in sync with state shape changes.

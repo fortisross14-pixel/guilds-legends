@@ -5,7 +5,7 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave | Status |
 | --- | --- |
 | Wave 2 — The world is the game (map, towns, time) | ✅ Done (2026-11-02) |
-| Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) | Not started |
+| Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) | ✅ Done (2026-11-02) |
 | Wave 4 — Rankings as the hook, and the scripted opening | Not started |
 
 ## The goal: turn a stack of menus into a game
@@ -114,6 +114,20 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
    - road ambushes
 
    Non-combat missions (diplomacy, expedition, intrigue) keep their existing mini-games.
+
+### Wave 3 notes (choices where the brief was open)
+
+- The tell shows the strongest enemy's planned move each round. All enemies plan at the start of the round and follow the plan honestly. A stun landed before they act cancels it ("interrupt"), and Defend halves damage for the round.
+- The game has 8 classes (Guardian, Duelist, Ranger, Rogue, Cleric, Mage, Scholar, Artificer), each with 5–6 skills. The brief's Bard example has no class in the game. The Scholar fills the party-buff role.
+- Mage spells take the caster's primal ("Fire Bolt"), so primal advantage decides elemental matchups.
+- Battle items are a snapshot of the guild's consumables when a battle starts, and usage is written back when it ends. Rogues' Steal can add potions.
+- Mission objectives (protect, hold, capture…) no longer change combat. Every battle is won by defeating the enemies, or by HP when time runs out (20 rounds; 15 in duels). The objective is still shown as flavour.
+- Knocked-out heroes add +8% injury risk in the existing post-mission injury roll. A party wipe is still a Catastrophic grade.
+- Enemy strength now scales with mission risk (risk 1 contracts are easy, risk 5 ones hard). Enemy level follows contract difficulty.
+- Artifacts are worn in the accessory slot and give combat stats from their prestige. A hero wears one artifact at a time.
+- Guild Hall item use: potions restore health and fatigue, ethers restore morale. Other consumables are battle-only.
+- Tournament prizes: the champion gets a better loot roll, the runner-up a normal one. Victory moments appear after combat missions (after the aftermath choice, so XP and gold are final), road ambushes and tournament bouts.
+- Removed: the old tactic-dropdown round path, the shared party HP pool, stances (guard/feint/recover/objective/signature), and their tests.
 
 ## Wave 4 — Rankings as the hook, and the scripted opening
 
