@@ -36,79 +36,58 @@ import { GUILD_BLUEPRINTS, GUILD_TOURNAMENT_DEFINITIONS, HISTORIC_LEGENDS, INDIV
 import { autoResolveEncounter, createDuelEncounter, createPartyEncounter, missionGradeFromCombat, performCombatAction } from './combat.js';
 import { BRANCH_RULES, ambitionMetric, artifactEffectFromPrestige, branchName, defaultAmbitionForHero } from './legacy.js';
 import { autoResolveMissionGame, createMissionGame, missionGradeFromMissionGame, performMissionGameAction } from './missionGames.js';
+import {
+  MAX_CHRONICLE,
+  MAX_HEROES,
+  MAX_HERO_HISTORY,
+  MAX_MISSION_HISTORY,
+  MAX_TITLE_HISTORY,
+  MAX_TOURNAMENT_HISTORY,
+  MAX_WORLD_HERO_HISTORY,
+  SCHEMA_VERSION,
+  activeHeroCount,
+  addChronicle,
+  addHeroHistory,
+  appointmentHolder,
+  branchCapacity,
+  campaignMonthSerial,
+  clamp,
+  clearHeroAppointmentInPlace,
+  clone,
+  commitRng,
+  compactHero,
+  completeTutorialTargetInPlace,
+  dateLabel,
+  ensureTournamentCareer,
+  finalize,
+  getCurrentLocation,
+  getHero,
+  getHeroGuildName,
+  getReport,
+  getWorldHeroes,
+  hashString,
+  headquartersRoomCapacity,
+  heroCapacity,
+  isGuildDefunct,
+  makeRng,
+  operationalLocationIds,
+  partyCapacity,
+  rngFor,
+  tierIndexByName,
+  uid,
+  usedFacilityRooms,
+} from './engine/core.js';
 
-const SCHEMA_VERSION = 13;
 // Debt rules (B2). A patron loan is the way back from an empty treasury.
 const LOAN_INTEREST = 0.25;
+
 const LOAN_TERM_MONTHS = 12;
+
 const DEBT_LOYALTY_LOSS = 3;
+
 const DEBT_WALKOUT_MONTHS = 3;
+
 const DEBT_WALKOUT_LOYALTY = 50;
-const MAX_CHRONICLE = 900;
-const MAX_HERO_HISTORY = 80;
-const MAX_HEROES = 300;
-const MAX_MISSION_HISTORY = 500;
-const MAX_TOURNAMENT_HISTORY = 260;
-const MAX_WORLD_HERO_HISTORY = 18;
-const MAX_TITLE_HISTORY = 120;
-
-export function clone(value) {
-  return typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
-}
-
-export function hashString(text) {
-  let hash = 2166136261;
-  for (let i = 0; i < text.length; i += 1) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-export function makeRng(seed) {
-  let state = seed >>> 0 || 1;
-  return {
-    next() {
-      state += 0x6d2b79f5;
-      let t = state;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    },
-    int(min, max) {
-      return Math.floor(this.next() * (max - min + 1)) + min;
-    },
-    pick(list) {
-      return list[Math.floor(this.next() * list.length)];
-    },
-    chance(probability) {
-      return this.next() < probability;
-    },
-    getState() {
-      return state >>> 0;
-    },
-  };
-}
-
-function rngFor(state, salt = '') {
-  const rng = makeRng((state.rngState ^ hashString(`${salt}:${state.date.year}:${state.date.month}`)) >>> 0);
-  return rng;
-}
-
-function commitRng(state, rng) {
-  state.rngState = rng.getState();
-}
-
-function uid(prefix, rng) {
-  // IDs are RNG-derived so identical campaign seeds stay reproducible across runs.
-  // Keep one RNG draw per ID so identity generation does not alter simulation pacing.
-  const roll = Math.floor(rng.next() * 1e15);
-  return `${prefix}-${roll.toString(36)}`;
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
 
 export function xpForNextLevel(level) {
   return level >= 20 ? 0 : 70 + level * 30;
@@ -179,53 +158,6 @@ function applyXpInPlace(hero, amount, state, source = 'experience') {
     }
   }
   return gains;
-}
-
-function tierIndexByName(name) {
-  const aliases = { Local: 'Regional', Continental: 'Global', World: 'Global', 'Mythic Legacy': 'Global' };
-  const normalized = aliases[name] || name;
-  return Math.max(
-    0,
-    TIERS.findIndex((tier) => tier.id === normalized),
-  );
-}
-
-function dateLabel(state) {
-  return `${MONTHS[state.date.month]} ${state.date.year}`;
-}
-
-function addChronicle(state, event) {
-  const record = {
-    id: event.id || `event-${state.date.year}-${state.date.month}-${state.stats.eventSerial++}`,
-    year: state.date.year,
-    month: state.date.month,
-    date: dateLabel(state),
-    type: event.type || 'news',
-    importance: event.importance ?? 1,
-    title: event.title,
-    facts: event.facts || {},
-    text: event.text || '',
-    heroIds: event.heroIds || [],
-    guildIds: event.guildIds || [],
-    tags: event.tags || [],
-    missionRecordId: event.missionRecordId || null,
-    tournamentRecordId: event.tournamentRecordId || null,
-  };
-  state.chronicle.unshift(record);
-  if (state.chronicle.length > MAX_CHRONICLE) {
-    state.chronicle.length = MAX_CHRONICLE;
-  }
-  return record;
-}
-
-function addHeroHistory(hero, state, entry) {
-  hero.history.unshift({
-    year: state.date.year,
-    month: state.date.month,
-    date: dateLabel(state),
-    ...entry,
-  });
-  if (hero.history.length > MAX_HERO_HISTORY) hero.history.length = MAX_HERO_HISTORY;
 }
 
 function baseAttributes(power, classId, rng) {
@@ -375,10 +307,6 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
   );
 }
 
-function campaignMonthSerial(state) {
-  return state.date.year * 12 + state.date.month;
-}
-
 function promiseDeadlineLabel(serial) {
   const year = Math.floor(serial / 12);
   const month = serial % 12;
@@ -515,24 +443,6 @@ function refreshCandidatesForLocationInPlace(state, rng, locationId = state.worl
   for (let i = current; i < target; i += 1) state.candidates.push(makeCandidate(state, rng, null, locationId));
   state.candidates.sort((a, b) => b.rarity.localeCompare(a.rarity) || b.level - a.level || b.potential - a.potential);
   state.candidates = state.candidates.slice(0, 60);
-}
-
-function ensureTournamentCareer(hero) {
-  hero.career ||= {};
-  hero.career.individualTournaments ||= 0;
-  hero.career.tournamentBouts ||= 0;
-  hero.career.tournamentBoutWins ||= 0;
-  hero.career.individualTitles ||= 0;
-  hero.career.guildTitles ||= 0;
-  hero.career.runnerUps ||= 0;
-  hero.career.semifinals ||= 0;
-  hero.career.bestTournamentFinish ||= 99;
-  hero.career.titleWins ||= {};
-  hero.career.prizeMoney ||= 0;
-  hero.career.tournamentFame ||= 0;
-  hero.career.artifactPrestige ||= 0;
-  hero.specializations ||= { tournament: 0, missions: 0, diplomacy: 0, exploration: 0 };
-  return hero;
 }
 
 function createRival(blueprint, state, rng, index) {
@@ -767,12 +677,6 @@ function createUniverseInPlace(state, rng) {
   state.titleRecords = createTitleRecords();
   createWorldArtifactsInPlace(state, rng);
   state.universeStats = { individualTournamentsResolved: 0, guildTournamentsResolved: 0, boutsResolved: 0, seasonsSimulated: 0 };
-}
-
-export function getWorldHeroes(state, includeHistoric = true) {
-  const active = (state.rivals || []).flatMap((rival) => [rival.star, ...(rival.members || [])]).filter(Boolean);
-  const free = state.freeAgents || [];
-  return includeHistoric ? [...active, ...free, ...(state.worldHistoricHeroes || [])] : [...active, ...free];
 }
 
 function facilityLevels() {
@@ -1079,70 +983,6 @@ function refreshMissionsInPlace(state, rng, initial = false) {
   state.missions = state.missions.filter((mission) => unlockedIds.has(mission.locationId || 'dunmere')).slice(0, 70);
 }
 
-export function getHero(state, heroId) {
-  return (
-    state.heroes.find((hero) => hero.id === heroId) ||
-    state.historicHeroes.find((hero) => hero.id === heroId) ||
-    getWorldHeroes(state, true).find((hero) => hero.id === heroId) ||
-    null
-  );
-}
-
-export function getGuild(state, guildId) {
-  if (guildId === 'player') return { ...state.guild, id: 'player', player: true };
-  return state.rivals.find((guild) => guild.id === guildId) || null;
-}
-
-export function getHeroGuildName(state, hero) {
-  if (!hero) return 'Unknown';
-  if (hero.guildId === 'player' || state.heroes.some((item) => item.id === hero.id) || state.historicHeroes.some((item) => item.id === hero.id))
-    return state.guild.name;
-  const rival = state.rivals.find((guild) => guild.id === hero.guildId);
-  return rival?.name || hero.guildName || 'Free agent';
-}
-
-export function heroCapacity(state) {
-  return 6 + (state.guild.facilities['great-hall'] || 0) * 2 + state.guild.tierIndex * 2;
-}
-
-export function headquartersRoomCapacity(state) {
-  // The rented Regional hall begins with four usable rooms. Social promotion and
-  // investment in the Great Hall expand the physical footprint gradually.
-  const tierRooms = [4, 7, 11][state.guild.tierIndex] || 11;
-  const hallExpansion = Math.max(0, (state.guild.facilities['great-hall'] || 0) - 1);
-  return tierRooms + hallExpansion;
-}
-
-export function usedFacilityRooms(state) {
-  return Object.entries(state.guild.facilities || {}).filter(([, level]) => Number(level) > 0).length;
-}
-
-export function activeHeroCount(state) {
-  return state.heroes.filter((hero) => !['retired', 'dead'].includes(hero.status)).length;
-}
-
-export function branchCapacity(state) {
-  if ((state.guild?.tierIndex || 0) < 1) return 0;
-  return state.guild.tierIndex >= 2 ? BRANCH_RULES.Global.max : BRANCH_RULES.National.max;
-}
-
-export function operationalLocationIds(state) {
-  return new Set([
-    state.world?.currentLocationId || 'dunmere',
-    ...(state.guild?.branches || []).filter((branch) => branch.active !== false).map((branch) => branch.locationId),
-  ]);
-}
-
-export function getGuildmaster(state) {
-  return getHero(state, state.guild?.currentGuildmasterHeroId || state.guild?.founderHeroId);
-}
-
-// True when every player hero is dead or retired: the campaign cannot act
-// until the guild is refounded.
-export function isGuildDefunct(state) {
-  return !state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status));
-}
-
 // Raises a new founder (level 1, the new guildmaster) plus one free local
 // recruit, keeping the guild's name, treasury, history and rankings.
 export function refoundGuild(state, options = {}) {
@@ -1226,15 +1066,6 @@ export function refoundGuild(state, options = {}) {
   commitRng(next, rng);
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null };
-}
-
-// The hero shown as the player's public face: the current guildmaster while
-// active, otherwise the strongest active hero.
-export function getGuildStar(state) {
-  const isActive = (hero) => hero && !['dead', 'retired'].includes(hero.status);
-  const guildmaster = state.heroes.find((hero) => hero.id === state.guild?.currentGuildmasterHeroId);
-  if (isActive(guildmaster)) return guildmaster;
-  return [...state.heroes].filter(isActive).sort((a, b) => b.power - a.power)[0] || null;
 }
 
 export function designateSuccessor(state, heroId) {
@@ -1469,10 +1300,6 @@ export function inheritAmbition(state, legacyAmbitionId, heroId) {
   return { state: finalize(next), error: null };
 }
 
-export function getCurrentLocation(state) {
-  return LOCATION_BY_ID[state.world?.currentLocationId || 'dunmere'] || LOCATION_BY_ID.dunmere;
-}
-
 export function getTravelQuote(state, destinationId) {
   const fromId = state.world?.currentLocationId || 'dunmere';
   const destination = LOCATION_BY_ID[destinationId];
@@ -1552,24 +1379,6 @@ function progressTravelInPlace(state, rng) {
     title: `Arrived in ${destination.name}`,
     text: `${destination.primal} influence shapes the local missions, patrons and recruitment market.`,
   });
-}
-
-export function partyCapacity(state) {
-  const greatHallBonus = (state.guild.facilities['great-hall'] || 0) >= 3 ? 1 : 0;
-  return 1 + Math.min(2, state.guild.tierIndex) + greatHallBonus;
-}
-
-function appointmentHolder(state, appointmentId) {
-  const heroId = state.guild.appointments?.[appointmentId];
-  const hero = heroId ? getHero(state, heroId) : null;
-  return hero && !['dead', 'retired'].includes(hero.status) ? hero : null;
-}
-
-function clearHeroAppointmentInPlace(state, hero) {
-  Object.entries(state.guild.appointments || {}).forEach(([appointmentId, heroId]) => {
-    if (heroId === hero.id) delete state.guild.appointments[appointmentId];
-  });
-  hero.appointment = null;
 }
 
 export function roleRating(hero, roleId) {
@@ -1713,30 +1522,6 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
     warnings,
     breakdown,
   };
-}
-
-function completeTutorialTargetInPlace(state, target) {
-  if (state.tutorial.completed) return;
-  const step = ONBOARDING_STEPS[state.tutorial.step];
-  if (!step || step.target !== target) return;
-  state.guild.crowns += step.reward;
-  state.notifications.push({
-    id: `tutorial-${step.id}`,
-    tone: 'gold',
-    title: `Order completed: ${step.title}`,
-    text: `The guild receives ${step.reward} crowns.`,
-  });
-  state.tutorial.step += 1;
-  if (state.tutorial.step >= ONBOARDING_STEPS.length) {
-    state.tutorial.completed = true;
-    addChronicle(state, {
-      type: 'milestone',
-      importance: 3,
-      title: 'The Broken Lantern stands on its own',
-      text: 'The guildmaster no longer needs the council’s step-by-step orders. The first year is now theirs to shape.',
-      tags: ['tutorial'],
-    });
-  }
 }
 
 export function acknowledgeWelcome(state) {
@@ -2835,38 +2620,6 @@ function archiveOldHeroesInPlace(state) {
   }
 }
 
-function compactHero(hero) {
-  return {
-    id: hero.id,
-    name: hero.name,
-    classId: hero.classId,
-    primal: hero.primal,
-    rarity: hero.rarity,
-    level: hero.level,
-    xp: hero.xp,
-    age: hero.age,
-    status: hero.status,
-    power: hero.power,
-    potential: hero.potential,
-    renown: hero.renown,
-    legacy: hero.legacy,
-    dream: hero.dream,
-    flaw: hero.flaw,
-    origin: hero.origin,
-    relationships: (hero.relationships || []).slice(0, 12),
-    mentorId: hero.mentorId || null,
-    apprenticeIds: (hero.apprenticeIds || []).slice(0, 8),
-    ambitions: (hero.ambitions || []).slice(0, 6),
-    artifactIds: (hero.artifactIds || []).slice(0, 8),
-    artifactPowerBonus: hero.artifactPowerBonus || 0,
-    joinedYear: hero.joinedYear,
-    retiredYear: hero.retiredYear,
-    deathYear: hero.deathYear,
-    career: hero.career,
-    history: hero.history.slice(0, 30),
-  };
-}
-
 export function advanceMonths(state, count = 1, mutate = false) {
   if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
   if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
@@ -3457,15 +3210,6 @@ function resultNarrative(mission, option, grade, reward, fame, injuries, deaths)
   return `${opening}${consequence} The guild receives ${reward} crowns and ${fame} fame.`;
 }
 
-export function getReport(state, reference) {
-  if (!reference) return null;
-  const id = typeof reference === 'string' ? reference : reference.id;
-  const explicitKind = typeof reference === 'string' ? null : reference.kind;
-  if (explicitKind === 'tournament') return state.tournamentHistory?.find((record) => record.id === id) || null;
-  if (explicitKind === 'mission') return state.missionHistory?.find((record) => record.id === id) || null;
-  return state.tournamentHistory?.find((record) => record.id === id) || state.missionHistory?.find((record) => record.id === id) || null;
-}
-
 export function acknowledgeReport(state, reference) {
   const next = clone(state);
   const id = typeof reference === 'string' ? reference : reference?.id;
@@ -3573,6 +3317,7 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept') {
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null };
 }
+
 // Moves a player hero to the free-agent pool. Career and history travel with
 // them, so rivals can sign them later. Used by manual release and debt walkouts.
 function releaseHeroInPlace(state, hero, { title, text, chronicleText }) {
@@ -5311,13 +5056,6 @@ function evaluateStateInPlace(state) {
   state.stats.highestPower = Math.max(state.stats.highestPower, ...state.heroes.map((hero) => hero.power));
 }
 
-function finalize(state) {
-  state.lastPlayedAt = new Date().toISOString();
-  state.guild.tier = TIERS[state.guild.tierIndex]?.id || state.guild.tier;
-  state.notifications = state.notifications.slice(-12);
-  return state;
-}
-
 export function dismissNotification(state, notificationId) {
   const next = clone(state);
   next.notifications = next.notifications.filter((notification) => notification.id !== notificationId);
@@ -5903,6 +5641,7 @@ export function migrateGame(raw) {
   evaluateStateInPlace(next);
   return finalize(next);
 }
+
 export function validateGame(state) {
   const errors = [];
   if (!state || state.schemaVersion !== SCHEMA_VERSION) errors.push('Schema version mismatch.');
@@ -6115,3 +5854,25 @@ export function simulateAutoplay(initialState, months = 240) {
   state.pendingReports = [];
   return compactForSave(state, true);
 }
+
+export {
+  clone,
+  hashString,
+  makeRng,
+  getWorldHeroes,
+  getHero,
+  getGuild,
+  getHeroGuildName,
+  heroCapacity,
+  headquartersRoomCapacity,
+  usedFacilityRooms,
+  activeHeroCount,
+  branchCapacity,
+  operationalLocationIds,
+  getGuildmaster,
+  isGuildDefunct,
+  getGuildStar,
+  getCurrentLocation,
+  partyCapacity,
+  getReport,
+} from './engine/core.js';
