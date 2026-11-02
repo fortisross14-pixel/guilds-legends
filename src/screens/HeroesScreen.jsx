@@ -9,8 +9,10 @@ function candidateValue(candidate) {
   return candidate.level * 70 + candidate.power * 4 + candidate.potential * 2;
 }
 
-export default function HeroesScreen({ state, actions, navigate }) {
-  const [tab, setTab] = useState(state.flags.firstCompanionHired ? 'roster' : 'recruit');
+// tabs: which sections to show. The Tavern shows ['recruit', 'roster'];
+// the Guild Hall shows ['roster', 'legends'].
+export default function HeroesScreen({ state, actions, navigate, tabs = ['roster', 'recruit', 'legends'] }) {
+  const [tab, setTab] = useState(tabs[0]);
   const [sort, setSort] = useState('level');
   const [classFilter, setClassFilter] = useState('All');
   const [primalFilter, setPrimalFilter] = useState('All');
@@ -77,10 +79,10 @@ export default function HeroesScreen({ state, actions, navigate }) {
         active={tab}
         onChange={setTab}
         items={[
-          { id: 'roster', label: 'Active roster', icon: '♟' },
-          { id: 'recruit', label: 'Recruitment market', icon: '✦' },
+          { id: 'roster', label: tabs[0] === 'recruit' ? 'Your company' : 'Active roster', icon: '♟' },
+          { id: 'recruit', label: 'Recruits in town', icon: '✦' },
           { id: 'legends', label: 'Retired & fallen', icon: '▤' },
-        ]}
+        ].filter((item) => tabs.includes(item.id))}
       />
 
       {tab === 'roster' ? (

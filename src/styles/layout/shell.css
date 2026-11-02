@@ -32,7 +32,6 @@
 .topbar__resources { display: flex; gap: 1rem; }
 .topbar__resources span { display: flex; align-items: center; gap: .3rem; color: #d5dbe3; font-size: .74rem; font-weight: 750; }
 .topbar__resources i { color: var(--gold); font-style: normal; }
-.time-controls { display: flex; gap: .35rem; margin-left: auto; }
 .screen-container { min-width: 0; padding: 1.2rem clamp(1rem, 2.3vw, 2rem) 4rem; }
 .screen { max-width: 1540px; margin: 0 auto; animation: rise-in .22s ease; }
 .screen-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin: .8rem 0 1.25rem; }

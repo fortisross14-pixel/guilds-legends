@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { ACTIVITY_BY_ID, MONTHLY_ACTIVITIES, TRAINING_FOCI } from '../data/activities.js';
 import { Badge, Button, HeroPortrait, ProgressBar } from './UI.jsx';
@@ -12,6 +12,7 @@ function effectiveActivity(hero) {
 }
 
 export default function CouncilPlanner({ state, actions, compact = false }) {
+  const [restMonths, setRestMonths] = useState(1);
   const activeHeroes = state.heroes.filter((hero) => !['retired', 'dead', 'candidate'].includes(hero.status));
   const counts = activeHeroes.reduce((result, hero) => {
     const activity = effectiveActivity(hero).id;
@@ -123,16 +124,30 @@ export default function CouncilPlanner({ state, actions, compact = false }) {
           <strong>Assignments persist.</strong>
           <span>Change only what you want; the rest of the company keeps its current routine next month.</span>
         </div>
-        <Button
-          variant="primary"
-          icon="➜"
-          onClick={() => actions.advance(1)}
-          disabled={
-            state.pendingDecisions.length > 0 || [...(state.tournaments || []), ...(state.guildTournaments || [])].some((event) => event.status === 'active')
-          }
-        >
-          Resolve month
-        </Button>
+        <div className="rest-control">
+          <label>
+            Rest for
+            <select value={restMonths} onChange={(event) => setRestMonths(Number(event.target.value))}>
+              {[1, 2, 3].map((months) => (
+                <option key={months} value={months}>
+                  {months} month{months === 1 ? '' : 's'}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button
+            variant="primary"
+            icon="➜"
+            onClick={() => actions.rest(restMonths)}
+            disabled={
+              Boolean(state.world?.activeTravel) ||
+              state.pendingDecisions.length > 0 ||
+              [...(state.tournaments || []), ...(state.guildTournaments || [])].some((event) => event.status === 'active')
+            }
+          >
+            Wait / rest at the Guild Hall
+          </Button>
+        </div>
       </footer>
     </div>
   );

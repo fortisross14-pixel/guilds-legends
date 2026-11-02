@@ -133,9 +133,6 @@
   .topbar__resources span:nth-child(3), .topbar__resources span:nth-child(4) { display: none; }
   .topbar__resources b { font-size: .82rem; }
   .topbar__resources small { font-size: .48rem; }
-  .time-controls { order: 5; width: 100%; display: grid; grid-template-columns: repeat(3,1fr); }
-  .time-controls .button { width: 100%; }
-  .time-controls .button:nth-child(2) { display: none; }
   .objective-ribbon { top: 151px; }
   .message-bar { top: 151px; }
   .hero-card__identity { grid-template-columns: auto minmax(0,1fr); }

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { TIERS } from '../data/content.js';
-import { LOCATIONS, LOCATION_BY_ID, PRIMALS, unlockedLocations } from '../data/world.js';
+import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings, unlockedLocations } from '../data/world.js';
 import { getTravelQuote } from '../game/engine.js';
 import { Badge, Button, EmptyState, Panel, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
 
@@ -26,7 +26,7 @@ function routePath(chain) {
     .join(' ');
 }
 
-export default function WorldScreen({ state, actions, navigate }) {
+export default function MapScreen({ state, actions, navigate }) {
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
   const [selectedId, setSelectedId] = useState(currentLocationId);
   const selected = LOCATION_BY_ID[selectedId] || LOCATION_BY_ID[currentLocationId];
@@ -79,12 +79,17 @@ export default function WorldScreen({ state, actions, navigate }) {
             <h2>
               {LOCATION_BY_ID[travel.fromId]?.name} to {LOCATION_BY_ID[travel.toId]?.name}
             </h2>
-            <p>Recruitment, new deployments and tournament registration are suspended until arrival.</p>
+            <p>The journey was interrupted. Deal with what happened, then continue. Recruitment and new deployments resume on arrival.</p>
           </div>
           <div className="travel-banner__time">
             <strong>{travel.monthsRemaining}</strong>
             <span>month{travel.monthsRemaining === 1 ? '' : 's'} remaining</span>
             <ProgressBar value={travel.totalMonths - travel.monthsRemaining} max={travel.totalMonths} tone="blue" compact />
+            {!state.pendingRoadEvent ? (
+              <Button variant="primary" size="sm" onClick={actions.continueJourney}>
+                Continue journey
+              </Button>
+            ) : null}
           </div>
         </section>
       ) : null}
@@ -101,7 +106,28 @@ export default function WorldScreen({ state, actions, navigate }) {
                 vectorEffect="non-scaling-stroke"
               />
             ))}
+            {travel && LOCATION_BY_ID[travel.fromId] && LOCATION_BY_ID[travel.toId] ? (
+              <>
+                <path
+                  className="map-route map-route--travel"
+                  d={`M${LOCATION_BY_ID[travel.fromId].x} ${LOCATION_BY_ID[travel.fromId].y} L${LOCATION_BY_ID[travel.toId].x} ${LOCATION_BY_ID[travel.toId].y}`}
+                  vectorEffect="non-scaling-stroke"
+                />
+              </>
+            ) : null}
           </svg>
+          {travel && LOCATION_BY_ID[travel.fromId] && LOCATION_BY_ID[travel.toId] ? (
+            <span
+              className="map-party-marker"
+              title="Your guild on the road"
+              style={{
+                left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalMonths - travel.monthsRemaining) / travel.totalMonths)}%`,
+                top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalMonths - travel.monthsRemaining) / travel.totalMonths)}%`,
+              }}
+            >
+              ⚑
+            </span>
+          ) : null}
           {LOCATIONS.map((location) => {
             const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
             const isCurrent = location.id === currentLocationId;
@@ -114,6 +140,7 @@ export default function WorldScreen({ state, actions, navigate }) {
                 onClick={() => setSelectedId(location.id)}
                 aria-label={`${location.name}, ${location.tier}, ${location.primal}`}
               >
+                {isCurrent && !travel ? <em className="location-node__here">You are here</em> : null}
                 <span>{canReach ? location.icon : '⌁'}</span>
                 <strong>{canReach ? location.name : location.tier}</strong>
                 <small>
@@ -190,6 +217,15 @@ export default function WorldScreen({ state, actions, navigate }) {
                 <span>Visited</span>
                 <strong>{visited.has(selected.id) ? 'Yes' : 'Not yet'}</strong>
               </div>
+              <div className="dossier-row location-buildings">
+                <span>Buildings</span>
+                <strong>
+                  {locationBuildings(selected.id)
+                    .filter((id) => id !== 'guildHall')
+                    .map((id) => `${BUILDINGS[id].icon} ${BUILDINGS[id].name}`)
+                    .join(' · ')}
+                </strong>
+              </div>
 
               {selectedBranch ? (
                 <div className="current-location-actions">
@@ -229,11 +265,10 @@ export default function WorldScreen({ state, actions, navigate }) {
                 </div>
               ) : (
                 <div className="current-location-actions">
-                  <Badge tone="green">Current headquarters</Badge>
-                  <Button variant="primary" onClick={() => navigate('missions')}>
-                    Open local contracts
+                  <Badge tone="green">You are here</Badge>
+                  <Button variant="primary" size="lg" onClick={() => navigate('town')}>
+                    Enter {selected.name}
                   </Button>
-                  <Button onClick={() => navigate('heroes')}>Open hiring market</Button>
                   {state.guild.tierIndex >= 1 ? <Button onClick={() => navigate('legacy')}>Manage branches</Button> : null}
                 </div>
               )}

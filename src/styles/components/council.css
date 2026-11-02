@@ -49,13 +49,6 @@
 .identity-settings { align-items: end; }
 .identity-settings .button { width: max-content; }
 
-.mobile-more-grid { display: grid; gap: .45rem; }
-.mobile-more-grid > button { width: 100%; min-height: 62px; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: .65rem; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.025); color: var(--text); text-align: left; }
-.mobile-more-grid > button.is-active { border-color: rgba(211,166,77,.55); background: rgba(211,166,77,.08); }
-.mobile-more-grid > button > span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 9px; background: rgba(211,166,77,.08); color: var(--gold-light); font-size: 1rem; }
-.mobile-more-grid > button > div { display: grid; }
-.mobile-more-grid small { color: var(--muted); font-size: .62rem; }
-.mobile-more-grid i { color: var(--gold-light); font-style: normal; font-size: 1.2rem; }
 
 /* Consistent focus treatment for keyboard users. */
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="tab"]:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }

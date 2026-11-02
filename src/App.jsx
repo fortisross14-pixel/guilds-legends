@@ -5,7 +5,6 @@ import {
   acknowledgeWelcome,
   autoResolveActiveCombat,
   autoResolveActiveMissionGame,
-  advanceMonths,
   advanceToNextEvent,
   appointHero,
   assignArtifact,
@@ -35,7 +34,7 @@ import {
   inspectHero,
   inspectMission,
   isGuildDefunct,
-  launchMission,
+  launchExpedition,
   notePartySelection,
   recruitCandidate,
   refoundGuild,
@@ -49,7 +48,10 @@ import {
   setHeroTraining,
   beginGuildTournamentCombat as startGuildTournamentCombat,
   beginHeroTournamentCombat as startHeroTournamentCombat,
-  startTravel,
+  travelTo,
+  continueJourney,
+  resolveRoadEvent,
+  restAtGuildHall,
   takePatronLoan,
   updateSettings,
   upgradeBranch,
@@ -63,34 +65,21 @@ import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from './data/activities.js';
 import { PARTY_ROLES } from './data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
 import { Badge, Button, Crest, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './components/UI.jsx';
-import HallScreen from './screens/HallScreen.jsx';
-import MissionsScreen from './screens/MissionsScreen.jsx';
-import HeroesScreen from './screens/HeroesScreen.jsx';
-import WorldScreen from './screens/WorldScreen.jsx';
-import HeadquartersScreen from './screens/HeadquartersScreen.jsx';
-import TournamentsScreen from './screens/TournamentsScreen.jsx';
-import RankingsScreen from './screens/RankingsScreen.jsx';
-import ChronicleScreen from './screens/ChronicleScreen.jsx';
-import GoalsScreen from './screens/GoalsScreen.jsx';
-import SettingsScreen from './screens/SettingsScreen.jsx';
-import LegacyScreen from './screens/LegacyScreen.jsx';
+import MapScreen from './places/MapScreen.jsx';
+import TownScreen from './places/TownScreen.jsx';
+import MenuScreen from './places/MenuScreen.jsx';
+import { resolveRoute } from './places/routes.js';
 import CouncilReportModal from './components/CouncilReportModal.jsx';
 import CombatArenaModal from './components/CombatArenaModal.jsx';
 import MissionGameModal from './components/MissionGameModal.jsx';
-import MobileMoreModal from './components/MobileMoreModal.jsx';
+import RoadEventModal from './components/RoadEventModal.jsx';
+import UpcomingStrip from './components/UpcomingStrip.jsx';
 
-const NAV_ITEMS = [
-  { id: 'hall', label: 'Guild Hall', icon: '◆' },
-  { id: 'missions', label: 'Missions', icon: '⌖' },
-  { id: 'heroes', label: 'Heroes', icon: '♟' },
-  { id: 'tournaments', label: 'Tournaments', icon: '♛' },
-  { id: 'world', label: 'World', icon: '◉' },
-  { id: 'headquarters', label: 'Headquarters', icon: '♜' },
-  { id: 'rankings', label: 'Rankings', icon: '✦' },
-  { id: 'chronicle', label: 'Chronicle', icon: '▤' },
-  { id: 'legacy', label: 'Legacy', icon: '♛' },
-  { id: 'goals', label: 'Goals', icon: '✓' },
-  { id: 'settings', label: 'Save & Settings', icon: '⚙' },
+// Three places replace the old 11-item navigation.
+const PLACE_NAV = [
+  { id: 'map', label: 'World Map', icon: '◉' },
+  { id: 'town', label: 'Town', icon: '♜' },
+  { id: 'menu', label: 'Menu', icon: '☰' },
 ];
 
 class ErrorBoundary extends Component {
@@ -1106,17 +1095,14 @@ function Toasts({ notifications, onDismiss, onClear }) {
 }
 
 function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlotsChanged }) {
-  const [screen, setScreen] = useState('hall');
+  const [place, setPlaceState] = useState({ view: 'map' });
   const [heroModalId, setHeroModalId] = useState(null);
   const [reportModalRef, setReportModalRef] = useState(null);
   const [message, setMessage] = useState(null);
-  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
-  const localMissionCount = state.missions.filter((mission) => mission.locationId === (state.world?.currentLocationId || 'dunmere')).length;
   const nextAction = getNextAction(state);
-  const activeCompetition = [...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active');
 
   const commitState = useCallback(
     (nextState, notice) => {
@@ -1186,11 +1172,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         const next = notePartySelection(state, id, formationType, assignments);
         if (next.tutorial.step !== state.tutorial.step) commitState(next);
       },
-      launchMission: (id, formationType, assignments) =>
-        applyResult(launchMission(state, id, formationType, assignments), 'The company has begun its mission.'),
+      launchMission: (id, formationType, assignments) => applyResult(launchExpedition(state, id, formationType, assignments), 'The company has set out.'),
       saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
-      advance: (months) => applyResult(advanceMonths(state, months)),
-      advanceNext: () => applyResult(advanceToNextEvent(state)),
+      rest: (months) => applyResult(restAtGuildHall(state, months)),
+      waitForCompany: () => applyResult(advanceToNextEvent(state)),
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept') => applyResult(recruitCandidate(state, id, negotiation), 'A new hero has joined the banner.'),
       setTraining: (id, training) => commitState(setHeroTraining(state, id, training)),
@@ -1221,7 +1206,9 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
       autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
       concludeCombat: () => applyResult(concludeActiveCombat(state)),
-      travel: (destinationId) => applyResult(startTravel(state, destinationId)),
+      travel: (destinationId) => applyResult(travelTo(state, destinationId)),
+      continueJourney: () => applyResult(continueJourney(state)),
+      resolveRoadEvent: (optionId) => applyResult(resolveRoadEvent(state, optionId)),
       refoundGuild: (options) => applyResult(refoundGuild(state, options), 'The guild has been refounded.'),
       takePatronLoan: () => applyResult(takePatronLoan(state), 'A patron has advanced the guild a loan.'),
       openReport: (reference) => setReportModalRef(reference),
@@ -1297,26 +1284,21 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     [state, setState, slot, commitState, applyResult, saveNow, onReturnHome, onDeleteCurrent, onSlotsChanged],
   );
 
-  const navigate = (id) => {
-    setScreen(id);
-    if (id === 'goals' && !state.flags.goalsInspected) actions.inspectGoals();
+  const setPlace = (next) => {
+    setPlaceState(next);
     window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
   };
+  const navigate = (target) => {
+    const route = resolveRoute(target);
+    setPlace({ ...route });
+    if (route.page === 'codex' && route.tab === 'goals' && !state.flags.goalsInspected) actions.inspectGoals();
+  };
 
-  const screenProps = { state, actions, navigate, slot };
-  const renderedScreen = {
-    hall: <HallScreen {...screenProps} />,
-    missions: <MissionsScreen {...screenProps} />,
-    heroes: <HeroesScreen {...screenProps} />,
-    tournaments: <TournamentsScreen {...screenProps} />,
-    world: <WorldScreen {...screenProps} />,
-    headquarters: <HeadquartersScreen {...screenProps} />,
-    rankings: <RankingsScreen {...screenProps} />,
-    chronicle: <ChronicleScreen {...screenProps} />,
-    legacy: <LegacyScreen {...screenProps} />,
-    goals: <GoalsScreen {...screenProps} />,
-    settings: <SettingsScreen {...screenProps} />,
-  }[screen] || <HallScreen {...screenProps} />;
+  const placeProps = { state, actions, navigate, slot, place, setPlace };
+  const renderedScreen =
+    place.view === 'town' ? <TownScreen {...placeProps} /> : place.view === 'menu' ? <MenuScreen {...placeProps} /> : <MapScreen {...placeProps} />;
+  const onGuildHallOverview = place.view === 'town' && place.building === 'guildHall' && (place.tab || 'overview') === 'overview';
+  const townName = LOCATION_BY_ID[state.world?.currentLocationId]?.name || 'Town';
 
   const activeReportReference = reportModalRef || state.pendingReports?.[0] || null;
   const activeReport = getReport(state, activeReportReference);
@@ -1343,15 +1325,11 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           </div>
         </div>
         <nav>
-          {NAV_ITEMS.map((item) => (
-            <button key={item.id} className={screen === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
+          {PLACE_NAV.map((item) => (
+            <button key={item.id} className={place.view === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
               <span>{item.icon}</span>
-              <strong>{item.label}</strong>
-              {item.id === 'hall' && state.pendingDecisions.length ? (
-                <i className="nav-alert">{state.pendingDecisions.length}</i>
-              ) : item.id === 'missions' && localMissionCount ? (
-                <i>{localMissionCount}</i>
-              ) : null}
+              <strong>{item.id === 'town' ? townName : item.label}</strong>
+              {item.id === 'town' && state.pendingDecisions.length ? <i className="nav-alert">{state.pendingDecisions.length}</i> : null}
             </button>
           ))}
         </nav>
@@ -1366,7 +1344,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
       <div className="game-main">
         <header className="topbar">
-          <button className="topbar__mobile-brand" onClick={() => navigate('hall')}>
+          <button className="topbar__mobile-brand" onClick={() => navigate('town')}>
             <Crest size="xs" />
             <span>{state.guild.name}</span>
           </button>
@@ -1384,52 +1362,13 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               <b>{summary.crowns.toLocaleString()}</b>
               <small>gold</small>
             </span>
-            <span title="Fame">
-              <i>✦</i>
-              <b>{summary.fame}</b>
-              <small>fame</small>
-            </span>
-            <span title="Legacy">
-              <i>▤</i>
-              <b>{summary.legacy}</b>
-              <small>legacy</small>
-            </span>
-            <span title={summary.rankSummary.map((item) => `${item.scope} #${item.rank}/${item.total}`).join(' · ')}>
-              <i>♛</i>
-              <b>#{summary.rank}</b>
-              <small>{summary.tier.toLowerCase()}</small>
-            </span>
-          </div>
-          <div className="time-controls">
-            <Button
-              size="sm"
-              onClick={() => actions.advance(1)}
-              disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}
-            >
-              +1 month
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => actions.advanceNext()}
-              disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}
-            >
-              Next event
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => actions.advance(3)}
-              disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}
-            >
-              +Season
-            </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={() => actions.advance(12)}
-              disabled={state.pendingDecisions.length > 0 || activeCompetition || Boolean(state.activeEncounter) || Boolean(state.activeMissionGame)}
-            >
-              +1 year
-            </Button>
+            {summary.rankSummary.map((item) => (
+              <span key={item.scope} className="topbar__rank" title={`${item.scope} ladder: #${item.rank} of ${item.total}`}>
+                <i>♛</i>
+                <b>#{item.rank}</b>
+                <small>{item.scope.toLowerCase()}</small>
+              </span>
+            ))}
           </div>
         </header>
         {message ? (
@@ -1439,7 +1378,8 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             <i>×</i>
           </button>
         ) : null}
-        {screen !== 'hall' ? (
+        <UpcomingStrip state={state} actions={actions} />
+        {!onGuildHallOverview ? (
           <aside className={`objective-ribbon objective-ribbon--${nextAction.kind}`}>
             <span className="objective-ribbon__mark">{nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}</span>
             <div>
@@ -1464,38 +1404,38 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
                 } else navigate(nextAction.screen || 'hall');
               }}
             >
-              {nextAction.kind === 'critical' ? 'Resolve now' : nextAction.screen === screen ? 'You are here' : 'Go to task'}
+              {nextAction.kind === 'critical' ? 'Resolve now' : 'Go to task'}
             </Button>
           </aside>
         ) : null}
-        <main className="screen-container" key={screen}>
+        <main className="screen-container" key={`${place.view}-${place.building || ''}-${place.page || ''}`}>
           {renderedScreen}
         </main>
       </div>
 
       <nav className="mobile-nav">
-        {NAV_ITEMS.filter((item) => ['hall', 'missions', 'heroes', 'tournaments', 'world'].includes(item.id)).map((item) => (
-          <button key={item.id} className={screen === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
+        {PLACE_NAV.map((item) => (
+          <button key={item.id} className={place.view === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
             <span>{item.icon}</span>
-            <small>{item.label.split(' ')[0]}</small>
+            <small>{item.id === 'town' ? townName : item.label}</small>
           </button>
         ))}
-        <button
-          className={['headquarters', 'rankings', 'chronicle', 'legacy', 'goals', 'settings'].includes(screen) ? 'is-active' : ''}
-          onClick={() => setMobileMoreOpen(true)}
-        >
-          <span>•••</span>
-          <small>More</small>
-        </button>
       </nav>
       <CombatArenaModal encounter={state.activeEncounter} actions={actions} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
+      <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} />
       <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} />
       <CouncilReportModal
         state={state}
         open={Boolean(
-          state.council?.unread && !state.pendingDecisions.length && !activeReport && !state.activeEncounter && !state.activeMissionGame && !defunct,
+          state.council?.unread &&
+            !state.pendingDecisions.length &&
+            !activeReport &&
+            !state.activeEncounter &&
+            !state.activeMissionGame &&
+            !state.pendingRoadEvent &&
+            !defunct,
         )}
         onClose={actions.acknowledgeCouncilReport}
         openHero={actions.openHero}
@@ -1506,7 +1446,6 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         onRefound={actions.refoundGuild}
         onReturnHome={actions.returnHome}
       />
-      <MobileMoreModal open={mobileMoreOpen} onClose={() => setMobileMoreOpen(false)} navigate={navigate} active={screen} />
       <HeroDetailModal state={state} heroId={heroModalId} onClose={() => setHeroModalId(null)} actions={actions} />
       <Toasts notifications={state.notifications} onDismiss={actions.dismissNotification} onClear={actions.clearNotifications} />
     </div>

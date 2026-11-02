@@ -232,7 +232,7 @@ export default function HallScreen({ state, navigate, actions }) {
             </div>
           </Panel>
         ) : null}
-        <Panel title="The next threshold" eyebrow={`Path to ${promotion?.target.id || 'Mythic Legacy'}`}>
+        <Panel title="The next threshold" eyebrow={`Objectives · path to ${promotion?.target.id || 'Mythic Legacy'}`} className="objectives-panel">
           {promotion ? (
             <div className="requirement-list">
               <ProgressBar value={promotion.fame.current} max={promotion.fame.target} label="Fame" tone={promotion.fame.met ? 'green' : 'gold'} />
@@ -268,7 +268,7 @@ export default function HallScreen({ state, navigate, actions }) {
 
         <Panel
           title={currentGoal?.title || 'A living institution'}
-          eyebrow="Current campaign goal"
+          eyebrow="Objectives · current goal"
           action={
             <Button size="sm" onClick={() => navigate('goals')}>
               All goals

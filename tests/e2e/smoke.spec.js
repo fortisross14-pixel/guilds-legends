@@ -8,7 +8,7 @@ async function closeModals(page) {
   }
 }
 
-test('create a campaign, visit every screen, advance a year', async ({ page }) => {
+test('create a campaign, visit every place and building, rest for a year', async ({ page }) => {
   const errors = [];
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
@@ -21,18 +21,40 @@ test('create a campaign, visit every screen, advance a year', async ({ page }) =
   await expect(page.locator('.game-shell')).toBeVisible();
   await closeModals(page);
 
-  const navButtons = page.locator('.sidebar nav button');
-  const count = await navButtons.count();
-  expect(count).toBeGreaterThan(5);
-  for (let i = 0; i < count; i += 1) {
-    await navButtons.nth(i).click();
-    await expect(page.locator('.screen-container')).toBeVisible();
+  // World map is home.
+  await expect(page.locator('.world-map')).toBeVisible();
+  await expect(page.locator('.location-node__here')).toBeVisible();
+
+  // Every building in town.
+  await page.locator('.sidebar nav button', { hasText: 'Dunmere' }).click();
+  const tiles = page.locator('.building-tile');
+  const tileCount = await tiles.count();
+  expect(tileCount).toBeGreaterThanOrEqual(3);
+  for (let i = 0; i < tileCount; i += 1) {
+    await page.locator('.building-tile').nth(i).click();
+    await expect(page.locator('.building')).toBeVisible();
     await closeModals(page);
+    await page.locator('.town-header__back').click();
   }
 
+  // Every menu page.
+  await page.locator('.sidebar nav button', { hasText: 'Menu' }).click();
+  const pages = await page.locator('.building-tile').count();
+  for (let i = 0; i < pages; i += 1) {
+    await page.locator('.building-tile').nth(i).click();
+    await expect(page.locator('.menu-page')).toBeVisible();
+    await page.locator('.menu-page__back').click();
+  }
+
+  // Time moves by resting at the Guild Hall: 4 × 3 months.
+  await page.locator('.sidebar nav button', { hasText: 'Dunmere' }).click();
+  await page.locator('.building-tile--guildHall').click();
   const yearBefore = await page.locator('.topbar__date strong').innerText();
-  await page.getByRole('button', { name: '+1 year' }).click();
-  await closeModals(page);
+  for (let i = 0; i < 4; i += 1) {
+    await page.locator('.rest-control select').selectOption('3');
+    await page.getByRole('button', { name: 'Wait / rest at the Guild Hall' }).click();
+    await closeModals(page);
+  }
   await expect(page.locator('.topbar__date strong')).not.toHaveText(yearBefore);
 
   await expect(page.locator('.fatal-screen')).toHaveCount(0);
