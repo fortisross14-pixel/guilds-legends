@@ -854,3 +854,23 @@ test('the guild star follows the current guildmaster, not the first roster entry
   assert.equal(getGuildmaster(state).id, companion.id);
   assert.equal(getGuildStar(state).id, companion.id);
 });
+
+test('released heroes join the free-agent pool with their career history intact', () => {
+  let state = createNewGame({ seed: 18005 });
+  state = hireFirstCompanion(state);
+  const companion = state.heroes[1];
+  const historyBefore = companion.history.length;
+  const released = releaseHero(state, companion.id);
+  assert.equal(released.error, null);
+  state = released.state;
+  assert.ok(!state.heroes.some((hero) => hero.id === companion.id), 'released hero should leave the player roster');
+  const agent = state.freeAgents.find((hero) => hero.id === companion.id);
+  assert.ok(agent, 'released hero should be a free agent');
+  assert.equal(agent.status, 'free-agent');
+  assert.equal(agent.guildId, null);
+  assert.ok(agent.history.length > historyBefore);
+  assert.ok(agent.history.some((entry) => entry.type === 'joined'));
+  assert.equal(getHero(state, companion.id).id, companion.id);
+  assert.deepEqual(validateGame(state), []);
+  assert.deepEqual(validateGame(advanceMonths(state, 12).state), []);
+});

@@ -2631,25 +2631,50 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept') {
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null };
 }
-export function releaseHero(state, heroId) {
-  const next = clone(state);
-  const hero = getHero(next, heroId);
-  if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status)) return { state, error: 'This hero cannot be released now.' };
-  if (hero.id === next.guild.currentGuildmasterHeroId) return { state, error: 'The current guildmaster cannot be released while leading the institution.' };
-  hero.status = 'retired';
+// Moves a player hero to the free-agent pool. Career and history travel with
+// them, so rivals can sign them later. Used by manual release and debt walkouts.
+function releaseHeroInPlace(state, hero, { title, text, chronicleText }) {
   if (hero.branchId) {
-    const branch = (next.guild.branches || []).find((item) => item.id === hero.branchId);
+    const branch = (state.guild.branches || []).find((item) => item.id === hero.branchId);
     if (branch) branch.active = false;
     hero.branchId = null;
   }
-  clearHeroAppointmentInPlace(next, hero);
-  hero.retiredYear = next.date.year;
-  hero.retirementReason = 'released';
-  next.stats.retirements += 1;
-  transferArtifactsFromHeroInPlace(next, hero);
-  offerInheritedAmbitionsInPlace(next, hero);
-  addHeroHistory(hero, next, { type: 'departure', title: `Released by ${next.guild.name}`, text: 'The hero’s career may continue elsewhere.' });
-  addChronicle(next, { type: 'departure', importance: 1, title: `${hero.name} leaves the guild`, text: `The contract ends after ${hero.career.serviceYears} years of service.`, heroIds: [hero.id], tags: ['departure'] });
+  clearHeroAppointmentInPlace(state, hero);
+  if (state.guild.successorHeroId === hero.id) state.guild.successorHeroId = null;
+  if (hero.mentorId) {
+    const mentor = state.heroes.find((item) => item.id === hero.mentorId);
+    if (mentor) mentor.apprenticeIds = (mentor.apprenticeIds || []).filter((id) => id !== hero.id);
+    hero.mentorId = null;
+  }
+  (hero.apprenticeIds || []).forEach((id) => {
+    const apprentice = state.heroes.find((item) => item.id === id);
+    if (apprentice?.mentorId === hero.id) apprentice.mentorId = null;
+  });
+  hero.apprenticeIds = [];
+  state.stats.retirements += 1;
+  transferArtifactsFromHeroInPlace(state, hero);
+  offerInheritedAmbitionsInPlace(state, hero);
+  addHeroHistory(hero, state, { type: 'departure', title, text });
+  addChronicle(state, { type: 'departure', importance: 1, title: `${hero.name} leaves the guild`, text: chronicleText, heroIds: [hero.id], tags: ['departure', 'free-agent'] });
+  hero.status = 'free-agent';
+  hero.guildId = null;
+  hero.monthlyActivity = 'Training';
+  ensureTournamentCareer(hero);
+  state.heroes = state.heroes.filter((item) => item.id !== hero.id);
+  state.freeAgents ||= [];
+  state.freeAgents.push(hero);
+}
+
+export function releaseHero(state, heroId) {
+  const next = clone(state);
+  const hero = next.heroes.find((item) => item.id === heroId);
+  if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status)) return { state, error: 'This hero cannot be released now.' };
+  if (hero.id === next.guild.currentGuildmasterHeroId) return { state, error: 'The current guildmaster cannot be released while leading the institution.' };
+  releaseHeroInPlace(next, hero, {
+    title: `Released by ${next.guild.name}`,
+    text: 'The hero enters the open circuit as a free agent; the career may continue elsewhere.',
+    chronicleText: `The contract ends after ${hero.career.serviceYears} years of service. ${hero.name} becomes a free agent.`,
+  });
   return { state: finalize(next), error: null };
 }
 
