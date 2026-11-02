@@ -520,7 +520,8 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         setMessage({ tone: 'red', text: `Backup loaded, but saving to slot ${slot} failed: ${result.error}` });
       }
     },
-    deleteCurrent: onDeleteCurrent,
+    // Cancel any pending autosave first so it cannot write the slot back mid-delete.
+    deleteCurrent: () => onDeleteCurrent(() => window.clearTimeout(autosaveTimer.current)),
     dismissNotification: (id) => commitState(dismissNotification(state, id)),
     clearNotifications: () => commitState(clearNotifications(state)),
   }), [state, setState, slot, commitState, applyResult, saveNow, onReturnHome, onDeleteCurrent, onSlotsChanged]);
@@ -667,8 +668,9 @@ export default function App() {
     setBusy(false);
   };
 
-  const deleteCurrent = async () => {
+  const deleteCurrent = async (cancelPendingSave) => {
     if (!window.confirm(`Delete ${state?.guild.name || 'this campaign'} permanently?`)) return;
+    cancelPendingSave?.();
     await deleteGame(activeSlot);
     setState(null);
     setActiveSlot(null);
