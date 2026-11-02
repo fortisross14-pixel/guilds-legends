@@ -20,6 +20,8 @@ npm test           # full suite (fast + long), what CI runs
 npm run test:fast  # everything except the long simulations, a few seconds
 npm run test:long  # 20–100 year seeded simulations, ~20 s
 npm run lint
+npm run typecheck  # JSDoc types over the engine
+npm run test:e2e   # Playwright smoke test, uses installed Chrome
 npm run build      # outputs dist/
 npm run preview    # serve the built dist/
 ```
@@ -36,16 +38,20 @@ src/
   screens/              One component per nav screen (Hall, Missions, Heroes, …)
   data/                 Static content: classes, missions, formations, world, rival universe
   game/
-    engine.js           Campaign simulation: state, economy, missions, tournaments,
-                        rankings, progression, succession, save migration, autoplay
+    engine.js           Public engine API (re-export barrel)
+    engine/             Engine modules: core, heroes, missions, tournaments, rankings,
+                        economy, time, save, autoplay, … (see CLAUDE.md)
+    types.js            JSDoc types for the game state
     combat.js           Deterministic duel and party combat
     missionGames.js     Playable Diplomacy / Expedition / Intrigue challenges
     legacy.js           Branch, ambition and artifact definitions
     storage.js          IndexedDB save slots, export/import
-  styles/index.css      All styles
+  styles/               index.css imports per-area files (base, layout, components, screens)
+scripts/sim.mjs         npm run sim -- --seed 42 --years 20: yearly balance table
 tests/
   engine.test.js        Engine regression tests (test:fast)
   long.test.js          Long-horizon seeded simulations (test:long)
+  e2e/smoke.spec.js     Playwright smoke test (test:e2e)
 docs/AUDIT_v1.9.md      Current audit and improvement plan
 CHANGELOG.md            Version history
 CLAUDE.md / AGENTS.md   Rules for AI assistants working on this repo

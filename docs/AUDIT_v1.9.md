@@ -117,7 +117,9 @@ Target navigation is 7 items: **Guild Hall, World/Map, Missions, Roster, Tournam
 
 Each wave is sized so one person with AI help can ship it in roughly 1–3 weeks. **Don't start a wave until the previous one's tests pass.**
 
-### Wave 0: Stabilize (1–3 days)
+### Wave 0: Stabilize (1–3 days) — ✅ Done (2026-11-02)
+
+> Notes: B10 swaps the UI seed hash for the engine's `hashString`, so a given seed text now generates a different world than v1.9 did (saves are unaffected). Autoplay keeps its "emergency patron advance"; the new B2 test proves recovery without it.
 - Fix B1–B10.
 - Repo hygiene: B11–B12. Delete stray TS/config files and `dist/`, and rewrite the README.
 - Add `CLAUDE.md` / `AGENTS.md` (same content) with:
@@ -127,7 +129,9 @@ Each wave is sized so one person with AI help can ship it in roughly 1–3 weeks
 - Add ESLint and Prettier, and run them in CI.
 - **Done when:** no high bugs remain, CI runs lint, test and build, and the Pages deploy shows portraits.
 
-### Wave 1: Make the codebase AI-friendly (1–2 weeks, no gameplay changes)
+### Wave 1: Make the codebase AI-friendly (1–2 weeks, no gameplay changes) — ✅ Done (2026-11-02)
+
+> Notes: the engine split uses 21 modules instead of the 10 suggested. Many actions call `evaluateStateInPlace`, so goals, rankings and institution internals had to sit below the action modules to avoid cycles. The CSS split kept contiguous ranges in cascade order (the built CSS is byte-identical), so the 3-screen visual comparison was skipped as redundant. Typecheck is wired up, but most values are still implicitly `any`; annotating the public functions with the new typedefs is a follow-up.
 - Split `engine.js` into modules of 300–600 lines each:
   - `state.js` (create/clone/rng)
   - `economy.js`

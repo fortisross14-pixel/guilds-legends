@@ -2,7 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 0 (stabilize)
+## Unreleased — Wave 1 (AI-friendly codebase, no behavior changes)
+
+- Split the 6,000-line `src/game/engine.js` into 21 modules in `src/game/engine/` (126–582 lines each), layered so there are no circular imports. `engine.js` is now an explicit re-export barrel with the same 86 exports as before.
+- JSDoc types in `src/game/types.js`, `// @ts-check` on every engine module, and `npm run typecheck` (TypeScript, no emit).
+- `npm run sim -- --seed 42 --years 20` prints a yearly balance table.
+- Playwright smoke test: `npm run test:e2e` (uses the installed Chrome; not in CI).
+- Split `src/styles/index.css` into 25 per-area files. The built CSS is byte-identical.
+
+## Wave 0 (stabilize)
 
 See docs/AUDIT_v1.9.md for the bug IDs.
 
