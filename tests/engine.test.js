@@ -757,10 +757,11 @@ test('dormant branches can be restored beneath a new commander and upgraded', ()
   state.heroes[2].level = 8;
   state = foundBranch(state, 'greenhollow', state.heroes[1].id).state;
   const branchId = state.guild.branches[0].id;
+  const newCommanderId = state.heroes[2].id;
   state = releaseHero(state, state.heroes[1].id).state;
   assert.equal(state.guild.branches[0].active, false);
   assert.equal(operationalLocationIds(state).has('greenhollow'), false);
-  const reassigned = assignBranchCommander(state, branchId, state.heroes[2].id);
+  const reassigned = assignBranchCommander(state, branchId, newCommanderId);
   assert.equal(reassigned.error, null);
   state = reassigned.state;
   assert.equal(state.guild.branches[0].active, true);
