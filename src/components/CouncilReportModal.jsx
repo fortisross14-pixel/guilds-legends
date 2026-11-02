@@ -14,11 +14,12 @@ export default function CouncilReportModal({ state, open, onClose, openHero }) {
     <Modal open title={`Council report · ${report.label}`} eyebrow={report.advancedMonths > 1 ? `${report.advancedMonths} months advanced · latest month shown` : 'Monthly resolution'} onClose={onClose} width="wide">
       <div className="council-report">
         <div className="council-report__metrics">
-          <div><span>Upkeep</span><strong>−{report.upkeep}</strong><small>{report.crownsBefore.toLocaleString()} → {report.crownsAfter.toLocaleString()} crowns</small></div>
+          <div><span>Upkeep</span><strong>−{report.upkeep + (report.loanPayment || 0)}</strong><small>{report.loanPayment ? `incl. ${report.loanPayment} loan · ` : ''}{report.crownsBefore.toLocaleString()} → {report.crownsAfter.toLocaleString()} crowns</small></div>
           <div><span>Fame</span><strong>{delta(report.fameDelta)}</strong><small>{report.exhibitionFame ? `${report.exhibitionFame} from exhibitions` : 'No exhibition fame'}</small></div>
           <div><span>Legacy</span><strong>{delta(report.legacyDelta)}</strong><small>Institutional growth</small></div>
           <div><span>Scouting</span><strong>{report.scouts || 0}</strong><small>field effort</small></div>
         </div>
+        {report.walkouts?.length ? <p className="council-report__warning"><Badge tone="red">Unpaid wages</Badge> {report.walkouts.join(', ')} walked out and joined the free agents.</p> : null}
         <section>
           <span className="eyebrow">What everyone did</span>
           <div className="council-report__activity-list">

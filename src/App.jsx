@@ -48,6 +48,7 @@ import {
   beginGuildTournamentCombat as startGuildTournamentCombat,
   beginHeroTournamentCombat as startHeroTournamentCombat,
   startTravel,
+  takePatronLoan,
   updateSettings,
   upgradeBranch,
   upgradeFacility,
@@ -457,6 +458,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
     concludeCombat: () => applyResult(concludeActiveCombat(state)),
     travel: (destinationId) => applyResult(startTravel(state, destinationId)),
+    takePatronLoan: () => applyResult(takePatronLoan(state), 'A patron has advanced the guild a loan.'),
     openReport: (reference) => setReportModalRef(reference),
     acknowledgeReport: (reference) => {
       commitState(acknowledgeReport(state, reference));

@@ -24,6 +24,7 @@ import {
   getGuildStar,
   getHero,
   getHeroRankings,
+  getPatronLoanOffer,
   getPromotionRequirement,
   getTournamentAccess,
   getTravelQuote,
@@ -45,6 +46,7 @@ import {
   setHeroMonthlyActivity,
   simulateAutoplay,
   startTravel,
+  takePatronLoan,
   upgradeFacility,
   upgradeBranch,
   usedFacilityRooms,
@@ -163,7 +165,7 @@ test('v1.4-style saves migrate into council planning without losing the campaign
   delete old.council;
   old.heroes.forEach((hero) => { delete hero.monthlyActivity; });
   const migrated = migrateGame(old);
-  assert.equal(migrated.schemaVersion, 12);
+  assert.equal(migrated.schemaVersion, 13);
   assert.equal(migrated.guild.name, 'Legacy Lantern');
   assert.equal(migrated.council.unread, false);
   assert.ok(migrated.heroes.every((hero) => hero.monthlyActivity));
@@ -873,4 +875,68 @@ test('released heroes join the free-agent pool with their career history intact'
   assert.equal(getHero(state, companion.id).id, companion.id);
   assert.deepEqual(validateGame(state), []);
   assert.deepEqual(validateGame(advanceMonths(state, 12).state), []);
+});
+
+test('a broke guild recovers through a patron loan without the autoplay emergency advance', () => {
+  let state = createNewGame({ seed: 20260726 });
+  state = acknowledgeWelcome(state);
+  state = hireFirstCompanion(state);
+  state.guild.crowns = -400;
+  const opening = tutorialMission(state);
+  const party = combatPair(state);
+  assert.match(launchMission(state, opening.id, 'Combat', party).error, /crowns for supplies/);
+  const offer = getPatronLoanOffer(state);
+  assert.equal(offer.available, true);
+  const loaned = takePatronLoan(state);
+  assert.equal(loaned.error, null);
+  state = loaned.state;
+  assert.ok(state.guild.crowns > 0, 'the loan should clear the debt');
+  assert.equal(state.guild.loan.remaining, offer.repayment);
+  const launch = launchMission(state, opening.id, 'Combat', party);
+  assert.equal(launch.error, null);
+  state = advanceMonths(launch.state, 1).state;
+  state = autoResolveActiveCombat(state).state;
+  state = concludeActiveCombat(state).state;
+  const decision = state.pendingDecisions[0];
+  state = resolveDecision(state, decision.id, decision.options[0].id).state;
+  assert.equal(state.stats.missionsCompleted, 1);
+  assert.ok(state.guild.crowns > 0, `treasury should be positive, was ${state.guild.crowns}`);
+  assert.equal(state.guild.unpaidMonths, 0);
+  assert.ok(state.guild.loan.remaining < offer.repayment, 'installments should be paid down monthly');
+  assert.deepEqual(validateGame(state), []);
+});
+
+test('patron loans are refused to a solvent guild', () => {
+  const state = createNewGame({ seed: 18007 });
+  assert.equal(getPatronLoanOffer(state).available, false);
+  assert.ok(takePatronLoan(state).error);
+});
+
+test('unpaid wages cost loyalty each month and eventually drive heroes away', () => {
+  let state = createNewGame({ seed: 18006 });
+  state = hireFirstCompanion(state);
+  const companionId = state.heroes[1].id;
+  state.heroes[1].loyalty = 45;
+  const founderLoyalty = state.heroes[0].loyalty;
+  state.guild.crowns = -2000;
+  state = advanceMonths(state, 1).state;
+  assert.equal(state.guild.unpaidMonths, 1);
+  assert.ok(state.heroes.find((hero) => hero.id === companionId).loyalty < 45);
+  state = advanceMonths(state, 2).state;
+  assert.equal(state.guild.unpaidMonths, 3);
+  assert.ok(!state.heroes.some((hero) => hero.id === companionId), 'an unpaid low-loyalty hero should walk out');
+  assert.ok(state.freeAgents.some((hero) => hero.id === companionId));
+  assert.equal(getGuildmaster(state).loyalty, founderLoyalty, 'the unsalaried founder is not affected');
+  assert.deepEqual(validateGame(state), []);
+});
+
+test('v12 saves migrate to v13 with an empty debt ledger', () => {
+  const old = createNewGame({ seed: 18008 });
+  old.schemaVersion = 12;
+  delete old.guild.loan;
+  delete old.guild.unpaidMonths;
+  const migrated = migrateGame(old);
+  assert.equal(migrated.guild.loan, null);
+  assert.equal(migrated.guild.unpaidMonths, 0);
+  assert.deepEqual(validateGame(migrated), []);
 });

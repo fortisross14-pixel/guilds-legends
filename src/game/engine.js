@@ -69,7 +69,13 @@ import {
   performMissionGameAction,
 } from './missionGames.js';
 
-const SCHEMA_VERSION = 12;
+const SCHEMA_VERSION = 13;
+// Debt rules (B2). A patron loan is the way back from an empty treasury.
+const LOAN_INTEREST = 0.25;
+const LOAN_TERM_MONTHS = 12;
+const DEBT_LOYALTY_LOSS = 3;
+const DEBT_WALKOUT_MONTHS = 3;
+const DEBT_WALKOUT_LOYALTY = 50;
 const MAX_CHRONICLE = 900;
 const MAX_HERO_HISTORY = 80;
 const MAX_HEROES = 300;
@@ -717,6 +723,7 @@ function initialStats() {
     highestPower: 0,
     yearsPlayed: 0,
     bankruptMonths: 0,
+    patronLoans: 0,
   };
 }
 
@@ -737,7 +744,7 @@ export function createNewGame(options = {}) {
     guild: {
       id: 'player', name: options.guildName || 'The Broken Lantern', motto: options.motto || 'No light is lost forever.', crest: options.crest || 'lantern',
       founder: founderName, founderHeroId: 'founder-player', currentGuildmasterHeroId: 'founder-player', successorHeroId: null, tierIndex: 0, tier: 'Regional', fame: 8, legacy: 2, crowns: 720,
-      alignment: 'Undeclared', rank: 18, contractsCompleted: 0, wins: 0, losses: 0, deaths: 0, fallen: false, charter: true,
+      alignment: 'Undeclared', rank: 18, contractsCompleted: 0, wins: 0, losses: 0, deaths: 0, fallen: false, charter: true, loan: null, unpaidMonths: 0,
       facilities: facilityLevels(), appointments: {}, formations: emptyFormations(), branches: [], policies: { retreat: 'Measured', treasure: 'Guild Share', publicity: 'Truthful' }, obligations: [], rivalries: [],
     },
     world: { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null },
@@ -1497,6 +1504,75 @@ function monthlyUpkeep(state) {
   return wages + facilityUpkeep + appointmentUpkeep;
 }
 
+export function getPatronLoanOffer(state) {
+  const upkeep = monthlyUpkeep(state);
+  const crowns = state.guild.crowns;
+  const distressed = crowns < Math.max(100, upkeep * 2);
+  const amount = Math.ceil((300 + upkeep * 2 + Math.max(0, -crowns)) / 10) * 10;
+  const repayment = Math.round(amount * (1 + LOAN_INTEREST));
+  const remaining = (state.guild.loan?.remaining || 0) + repayment;
+  return {
+    available: distressed,
+    amount,
+    repayment,
+    installment: Math.ceil(remaining / LOAN_TERM_MONTHS),
+    months: LOAN_TERM_MONTHS,
+    outstanding: state.guild.loan?.remaining || 0,
+    reason: distressed ? null : 'Patrons only lend to a guild that cannot cover two months of upkeep.',
+  };
+}
+
+export function takePatronLoan(state) {
+  const offer = getPatronLoanOffer(state);
+  if (!offer.available) return { state, error: offer.reason };
+  const next = clone(state);
+  const remaining = offer.outstanding + offer.repayment;
+  next.guild.loan = { remaining, installment: offer.installment, takenYear: next.date.year, takenMonth: next.date.month };
+  next.guild.crowns += offer.amount;
+  next.stats.patronLoans = (next.stats.patronLoans || 0) + 1;
+  addChronicle(next, { type: 'treasury', importance: 2, title: `${next.guild.name} accepts a patron loan`, text: `A patron advances ${offer.amount} crowns. The guild owes ${remaining} crowns, repaid at ${offer.installment} per month.`, tags: ['treasury', 'loan'] });
+  next.notifications.push({ id: `loan-${next.date.year}-${next.date.month}-${next.stats.patronLoans}`, tone: 'gold', title: 'Patron loan accepted', text: `+${offer.amount} crowns now. Repay ${offer.installment} per month until ${remaining} is cleared.` });
+  return { state: finalize(next), error: null };
+}
+
+// Monthly loan installment and the cost of unpaid wages. Deterministic: no RNG.
+function applyDebtInPlace(state) {
+  let loanPayment = 0;
+  const loan = state.guild.loan;
+  if (loan) {
+    loanPayment = Math.min(loan.installment, loan.remaining);
+    state.guild.crowns -= loanPayment;
+    loan.remaining -= loanPayment;
+    if (loan.remaining <= 0) {
+      state.guild.loan = null;
+      addChronicle(state, { type: 'treasury', importance: 1, title: 'The patron loan is repaid', text: `${state.guild.name} clears its debt to its patron.`, tags: ['treasury', 'loan'] });
+    }
+  }
+  const walkouts = [];
+  if (state.guild.crowns >= 0) {
+    state.guild.unpaidMonths = 0;
+    return { loanPayment, walkouts };
+  }
+  state.guild.unpaidMonths = (state.guild.unpaidMonths || 0) + 1;
+  const unpaid = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status) && hero.salary > 0);
+  unpaid.forEach((hero) => { hero.loyalty = clamp(hero.loyalty - DEBT_LOYALTY_LOSS, 0, 100); });
+  if (state.guild.unpaidMonths >= DEBT_WALKOUT_MONTHS) {
+    const leaver = unpaid
+      .filter((hero) => ['available', 'injured'].includes(hero.status) && hero.id !== state.guild.currentGuildmasterHeroId && hero.loyalty < DEBT_WALKOUT_LOYALTY)
+      .sort((a, b) => (a.loyalty - b.loyalty) || a.id.localeCompare(b.id))[0];
+    if (leaver) {
+      walkouts.push(leaver.name);
+      releaseHeroInPlace(state, leaver, {
+        title: `Walked out of ${state.guild.name}`,
+        text: `Unpaid for ${state.guild.unpaidMonths} months, ${leaver.name} leaves to find a paying banner.`,
+        chronicleText: `After ${state.guild.unpaidMonths} months of unpaid wages, ${leaver.name} walks out and becomes a free agent.`,
+      });
+      state.notifications.push({ id: `walkout-${leaver.id}`, tone: 'red', title: `${leaver.name} walked out`, text: 'Unpaid wages drove a hero away. Take a contract or a patron loan to stop the bleeding.' });
+    }
+  }
+  return { loanPayment, walkouts };
+}
+
 function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
   const trainingMaster = appointmentHolder(state, 'Training Master');
@@ -2081,6 +2157,7 @@ export function advanceMonths(state, count = 1, mutate = false) {
       next.stats.bankruptMonths = Math.max(0, next.stats.bankruptMonths - 1);
       if (next.guild.fallen && next.guild.crowns > 300) next.guild.fallen = false;
     }
+    const debt = applyDebtInPlace(next);
     const councilResolution = resolveMonthlyHeroActivities(next, rng);
     const branchResolution = simulateBranchesInPlace(next, rng);
     simulateRivals(next, rng);
@@ -2106,6 +2183,8 @@ export function advanceMonths(state, count = 1, mutate = false) {
       id: `council-${next.date.year}-${next.date.month}-${step}`,
       label: monthLabel,
       upkeep,
+      loanPayment: debt.loanPayment,
+      walkouts: debt.walkouts,
       crownsBefore,
       crownsAfter: next.guild.crowns,
       fameDelta: next.guild.fame - fameBefore,
@@ -4022,6 +4101,10 @@ export function getNextAction(state) {
     return { kind: 'critical', title: report ? `Read the report: ${report.title}` : 'An expedition report is waiting', body: 'Review the full team, formation, odds, rewards and consequences before continuing.', screen: 'chronicle', action: 'report' };
   }
   if (state.guild.crowns < monthlyUpkeep(state) * 1.5) {
+    const loanOffer = getPatronLoanOffer(state);
+    if (state.guild.crowns < 0 && loanOffer.available) {
+      return { kind: 'warning', title: 'The guild is in debt', body: `You have ${state.guild.crowns} crowns and heroes are losing loyalty. A patron will advance ${loanOffer.amount} crowns (repay ${loanOffer.installment}/month).`, screen: 'hall', action: 'patron-loan' };
+    }
     return { kind: 'warning', title: 'Treasury under pressure', body: `You have ${state.guild.crowns} crowns. Monthly upkeep is ${monthlyUpkeep(state)}. Take a contract before expanding.`, screen: 'missions' };
   }
   const activeGoal = state.goals.find((goal) => !goal.completed && tierIndexByName(goal.tier) <= state.guild.tierIndex);
@@ -4072,6 +4155,8 @@ export function getDashboardSummary(state) {
     fame: state.guild.fame,
     legacy: state.guild.legacy,
     upkeep: monthlyUpkeep(state),
+    loan: state.guild.loan || null,
+    unpaidMonths: state.guild.unpaidMonths || 0,
     activeHeroes: activeHeroCount(state),
     capacity: heroCapacity(state),
     activeMissions: state.activeMissions.length,
@@ -4258,6 +4343,8 @@ export function migrateGame(raw) {
   next.guild.founderHeroId ||= next.heroes?.[0]?.id || null;
   next.guild.currentGuildmasterHeroId ||= next.guild.founderHeroId;
   next.guild.successorHeroId ||= null;
+  next.guild.loan ??= null;
+  next.guild.unpaidMonths ??= 0;
   next.legacy = { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [], ...(next.legacy || {}) };
 
   const migrateHero = (hero, index = 0) => {

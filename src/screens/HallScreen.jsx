@@ -1,6 +1,6 @@
 import React from 'react';
 import { normalizeClassId } from '../data/content.js';
-import { branchCapacity, getDashboardSummary, getGoalMetric, getGuildmaster, getNextAction, getPromotionRequirement } from '../game/engine.js';
+import { branchCapacity, getDashboardSummary, getGoalMetric, getGuildmaster, getNextAction, getPatronLoanOffer, getPromotionRequirement } from '../game/engine.js';
 import { MONTHS, ONBOARDING_STEPS, TIERS } from '../data/content.js';
 import { Badge, Button, Crest, EmptyState, HeroPortrait, Panel, PrimalBadge, ProgressBar, RiskPips, Stat } from '../components/UI.jsx';
 import CouncilPlanner from '../components/CouncilPlanner.jsx';
@@ -16,6 +16,7 @@ export default function HallScreen({ state, navigate, actions }) {
   const successor = state.guild.successorHeroId ? state.heroes.find((hero) => hero.id === state.guild.successorHeroId) : null;
   const activeBranches = (state.guild.branches || []).filter((branch) => branch.active !== false);
   const branchCap = branchCapacity(state);
+  const loanOffer = getPatronLoanOffer(state);
 
   return (
     <div className="screen screen--hall">
@@ -51,11 +52,28 @@ export default function HallScreen({ state, navigate, actions }) {
         </div>
         <Button variant="primary" icon="➜" onClick={() => {
           if (nextAction.kind === 'tutorial' && nextAction.target === 'acknowledgeWelcome') actions.acknowledgeWelcome();
+          else if (nextAction.action === 'patron-loan') actions.takePatronLoan();
           else navigate(nextAction.screen || 'missions');
         }}>
-          {nextAction.kind === 'tutorial' && nextAction.target === 'acknowledgeWelcome' ? 'Accept the order' : nextAction.kind === 'critical' ? 'Make the decision' : 'Go there'}
+          {nextAction.kind === 'tutorial' && nextAction.target === 'acknowledgeWelcome' ? 'Accept the order' : nextAction.action === 'patron-loan' ? 'Request patron loan' : nextAction.kind === 'critical' ? 'Make the decision' : 'Go there'}
         </Button>
       </section>
+
+      {summary.loan || loanOffer.available ? (
+        <section className={`next-order next-order--${summary.crowns < 0 ? 'critical' : 'warning'}`}>
+          <div className="next-order__seal">◈</div>
+          <div className="next-order__content">
+            <span className="eyebrow">Treasury{summary.unpaidMonths ? ` · wages unpaid for ${summary.unpaidMonths} month${summary.unpaidMonths === 1 ? '' : 's'}` : ''}</span>
+            <h2>{summary.loan ? `Patron loan: ${summary.loan.remaining} crowns owed` : 'A patron will lend to the guild'}</h2>
+            <p>
+              {summary.loan ? `Repaying ${summary.loan.installment} crowns per month. ` : ''}
+              {loanOffer.available ? `Borrow ${loanOffer.amount} crowns now and repay ${loanOffer.repayment} over ${loanOffer.months} months.` : ''}
+              {summary.crowns < 0 ? ' While in debt, salaried heroes lose loyalty each month, and after 3 unpaid months disloyal heroes walk out.' : ''}
+            </p>
+          </div>
+          {loanOffer.available ? <Button variant="primary" icon="◈" onClick={actions.takePatronLoan}>Request patron loan</Button> : null}
+        </section>
+      ) : null}
 
       <Panel title="Council planning" eyebrow="Assign the month before time advances" className="council-panel">
         <p className="council-intro">Your guild can do several things at once. Deployed heroes stay committed to missions or tournaments; everyone else follows the monthly assignment below when time advances.</p>
