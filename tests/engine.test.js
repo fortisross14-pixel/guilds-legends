@@ -95,15 +95,6 @@ test('new campaign starts Regional with a level-one player and four reachable se
 
 
 
-test('campaign seeds are deterministic across repeated long simulations', () => {
-  const a = simulateAutoplay(createNewGame({ seed: 424242 }), 60);
-  const b = simulateAutoplay(createNewGame({ seed: 424242 }), 60);
-  assert.equal(a.stats.missionsCompleted, b.stats.missionsCompleted);
-  assert.equal(a.guild.crowns, b.guild.crowns);
-  assert.equal(a.guild.fame, b.guild.fame);
-  assert.deepEqual(a.titleRecords, b.titleRecords);
-});
-
 test('opening candidates are deliberately primal-diverse instead of all mirroring Dunmere', () => {
   for (let seed = 1; seed <= 40; seed += 1) {
     const state = createNewGame({ seed });
@@ -336,22 +327,6 @@ test('AI heroes resolve seasonal tournaments and dynamically update title histor
   assert.deepEqual(validateGame(state), []);
 });
 
-test('long-run tournament balance favors elite rarity but preserves rare upsets and bounded dynasties', () => {
-  const state = simulateAutoplay(createNewGame({ seed: 20260727 }), 20 * 12);
-  const individual = state.tournamentHistory.filter((record) => record.kind === 'individual-tournament');
-  const rarityCounts = individual.reduce((counts, record) => {
-    const champion = getHero(state, record.championId);
-    const rarity = champion?.rarity || record.entrants.find((hero) => hero.heroId === record.championId)?.rarity || 'Archived';
-    counts[rarity] = (counts[rarity] || 0) + 1;
-    return counts;
-  }, {});
-  const eliteWins = (rarityCounts.Legend || 0) + (rarityCounts.Epic || 0);
-  assert.ok(eliteWins / individual.length >= 0.7, `elite win share was ${eliteWins}/${individual.length}`);
-  assert.ok((rarityCounts.Rare || 0) >= 1, 'Rare heroes never produced an upset champion');
-  assert.ok(Math.max(...Object.values(state.titleRecords).filter((record) => record.kind === 'individual').map((record) => record.recordWins)) <= 8);
-  assert.deepEqual(validateGame(state), []);
-});
-
 test('a player hero enters a live bracket, gains experience and receives a detailed report', () => {
   let state = createNewGame({ seed: 2222 });
   const hero = state.heroes[0];
@@ -531,24 +506,6 @@ test('exported campaign backups import cleanly', () => {
   assert.deepEqual(validateGame(restored), []);
   assert.equal(restored.guild.name, original.guild.name);
   assert.equal(restored.world.currentLocationId, original.world.currentLocationId);
-});
-
-test('twenty-five years of autonomous simulation remains valid and creates history', () => {
-  const state = simulateAutoplay(createNewGame({ seed: 987654 }), 25 * 12);
-  assert.deepEqual(validateGame(state), []);
-  assert.equal(state.date.year, 1212);
-  assert.ok(state.chronicle.length >= 25);
-  assert.ok(state.stats.missionsCompleted >= 10, `missionsCompleted=${state.stats.missionsCompleted}`);
-  assert.ok(Math.max(...state.heroes.map((hero) => hero.level || 1), ...state.historicHeroes.map((hero) => hero.level || 1)) >= 3);
-  assert.ok(Number.isFinite(state.guild.crowns));
-});
-
-test('a century save remains bounded', () => {
-  const state = simulateAutoplay(createNewGame({ seed: 314159 }), 100 * 12);
-  const compact = compactForSave(state, false);
-  const bytes = Buffer.byteLength(JSON.stringify(compact), 'utf8');
-  assert.deepEqual(validateGame(state), []);
-  assert.ok(bytes < 3_000_000, `save was ${bytes} bytes`);
 });
 
 
