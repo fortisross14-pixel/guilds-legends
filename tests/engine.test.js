@@ -24,12 +24,14 @@ import {
   getGuildStar,
   getHero,
   getHeroRankings,
+  getNextAction,
   getPatronLoanOffer,
   getPromotionRequirement,
   getTournamentAccess,
   getTravelQuote,
   headquartersRoomCapacity,
   inspectMission,
+  isGuildDefunct,
   inheritAmbition,
   launchMission,
   migrateGame,
@@ -39,6 +41,7 @@ import {
   performActiveMissionGameAction,
   performActiveCombatAction,
   recruitCandidate,
+  refoundGuild,
   releaseHero,
   renameFounderHero,
   renameGuild,
@@ -939,4 +942,31 @@ test('v12 saves migrate to v13 with an empty debt ledger', () => {
   assert.equal(migrated.guild.loan, null);
   assert.equal(migrated.guild.unpaidMonths, 0);
   assert.deepEqual(validateGame(migrated), []);
+});
+
+test('a guild with no active heroes is detected and can be refounded', () => {
+  let state = createNewGame({ seed: 18009 });
+  state = hireFirstCompanion(state);
+  assert.equal(isGuildDefunct(state), false);
+  assert.ok(refoundGuild(state, { founderName: 'Mara' }).error);
+  state.heroes.forEach((hero) => { hero.status = 'dead'; });
+  state = advanceMonths(state, 1).state;
+  assert.equal(isGuildDefunct(state), true);
+  const next = getNextAction(state);
+  assert.equal(next.kind, 'critical');
+  assert.equal(next.action, 'refound');
+  assert.ok(refoundGuild(state, { founderName: '  ' }).error);
+  const refounded = refoundGuild(state, { founderName: 'Mara Quell', founderClass: 'Cleric', founderPrimal: 'Water' });
+  assert.equal(refounded.error, null);
+  state = refounded.state;
+  assert.equal(isGuildDefunct(state), false);
+  assert.equal(activeHeroCount(state), 2);
+  const guildmaster = getGuildmaster(state);
+  assert.equal(guildmaster.name, 'Mara Quell');
+  assert.equal(guildmaster.classId, 'Cleric');
+  assert.equal(guildmaster.level, 1);
+  assert.equal(state.stats.refoundings, 1);
+  assert.notEqual(getNextAction(state).action, 'refound');
+  assert.deepEqual(validateGame(state), []);
+  assert.deepEqual(validateGame(advanceMonths(state, 3).state), []);
 });

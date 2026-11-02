@@ -724,6 +724,7 @@ function initialStats() {
     yearsPlayed: 0,
     bankruptMonths: 0,
     patronLoans: 0,
+    refoundings: 0,
   };
 }
 
@@ -912,6 +913,47 @@ export function operationalLocationIds(state) {
 
 export function getGuildmaster(state) {
   return getHero(state, state.guild?.currentGuildmasterHeroId || state.guild?.founderHeroId);
+}
+
+// True when every player hero is dead or retired: the campaign cannot act
+// until the guild is refounded.
+export function isGuildDefunct(state) {
+  return !state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status));
+}
+
+// Raises a new founder (level 1, the new guildmaster) plus one free local
+// recruit, keeping the guild's name, treasury, history and rankings.
+export function refoundGuild(state, options = {}) {
+  if (!isGuildDefunct(state)) return { state, error: 'The guild still has active heroes.' };
+  const founderName = String(options.founderName || '').trim().slice(0, 36);
+  if (!founderName) return { state, error: 'The new founder needs a name.' };
+  const next = clone(state);
+  const rng = rngFor(next, 'refound');
+  const locationId = next.world?.currentLocationId || 'dunmere';
+  const classId = CLASSES[options.founderClass] ? options.founderClass : 'Guardian';
+  const primal = PRIMALS[options.founderPrimal] ? options.founderPrimal : LOCATION_BY_ID[locationId]?.primal || 'Fire';
+  const priorGuildmaster = getHero(next, next.guild.currentGuildmasterHeroId);
+  const founder = createHeroFromBase({
+    id: uid('founder', rng), name: founderName, classId, primal, rarity: 'Rare', level: 1, xp: 0, age: 26,
+    power: 48, potential: 84, personality: 'Determined', flaw: 'Pride', dream: 'Build a guild that outlives me', origin: `Refounder of ${next.guild.name}`,
+    homeLocationId: locationId, loyalty: 100, hook: `${founderName} raised the fallen banner of ${next.guild.name} when no one else remained.`, hiddenTrait: 'None',
+  }, next, rng, { homeLocationId: locationId });
+  founder.salary = 0;
+  const recruit = generateHero(next, rng, 'normal', { homeLocationId: locationId });
+  recruit.loyalty = Math.max(recruit.loyalty, 60);
+  next.heroes.push(founder, recruit);
+  addHeroHistory(founder, next, { type: 'founding', title: `Refounded ${next.guild.name}`, text: `Took up the banner after ${priorGuildmaster?.name || 'the last guildmaster'} and the old company were gone.` });
+  addHeroHistory(recruit, next, { type: 'joined', title: `Joined ${next.guild.name}`, text: `Answered ${founderName}'s call to refound the guild, without a signing fee.` });
+  next.guild.currentGuildmasterHeroId = founder.id;
+  next.guild.successorHeroId = null;
+  next.stats.refoundings = (next.stats.refoundings || 0) + 1;
+  next.legacy ||= { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] };
+  next.legacy.successionHistory.unshift({ year: next.date.year, month: next.date.month, fromHeroId: priorGuildmaster?.id || null, fromName: priorGuildmaster?.name || next.guild.founder, toHeroId: founder.id, toName: founder.name, refounded: true });
+  addChronicle(next, { type: 'founding', importance: 5, title: `${founderName} refounds ${next.guild.name}`, text: `With every hero of the old company gone, ${founderName} and ${recruit.name} raise the banner again in ${LOCATION_BY_ID[locationId]?.name || 'the city'}.`, heroIds: [founder.id, recruit.id], tags: ['founding', 'refounding', 'era'] });
+  next.notifications.push({ id: `refound-${next.date.year}-${next.date.month}`, tone: 'gold', title: 'The banner rises again', text: `${founderName} leads ${next.guild.name}, with ${recruit.name} as the first companion.` });
+  commitRng(next, rng);
+  evaluateStateInPlace(next);
+  return { state: finalize(next), error: null };
 }
 
 // The hero shown as the player's public face: the current guildmaster while
@@ -4089,6 +4131,9 @@ export function getNextAction(state) {
   }
   if (state.activeMissionGame) {
     return { kind: 'critical', title: `${state.activeMissionGame.type}: ${state.activeMissionGame.title}`, body: `Turn ${state.activeMissionGame.turn}. Choose a lead hero and play the decisive mission challenge.`, screen: 'missions', action: 'mission-game' };
+  }
+  if (isGuildDefunct(state)) {
+    return { kind: 'critical', title: 'No active heroes remain', body: 'Every hero of the guild is dead or retired. Refound the guild with a new founder and one free recruit to continue the chronicle.', screen: 'hall', action: 'refound' };
   }
   if (!state.tutorial.completed) {
     return { kind: 'tutorial', ...ONBOARDING_STEPS[state.tutorial.step], step: state.tutorial.step + 1, total: ONBOARDING_STEPS.length };

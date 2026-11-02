@@ -34,9 +34,11 @@ import {
   inspectGoals,
   inspectHero,
   inspectMission,
+  isGuildDefunct,
   launchMission,
   notePartySelection,
   recruitCandidate,
+  refoundGuild,
   releaseHero,
   renameFounderHero,
   renameGuild,
@@ -218,6 +220,30 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
         </div>
         <div className="new-campaign__premise"><strong>The Broken Lantern scenario</strong><p>The previous guild disappeared in the Blackwood. You begin alone in a rented hall. Your first objective is to hire one companion, then prove the new company on the Old Road.</p></div>
         <Button variant="primary" size="lg" disabled={!guildName.trim() || !founderName.trim()} onClick={() => onCreate({ guildName: guildName.trim(), founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText })}>Raise the banner</Button>
+      </div>
+    </Modal>
+  );
+}
+
+function RefoundModal({ state, open, onRefound, onReturnHome }) {
+  const [founderName, setFounderName] = useState('');
+  const [founderClass, setFounderClass] = useState('Guardian');
+  const [founderPrimal, setFounderPrimal] = useState(LOCATION_BY_ID[state.world?.currentLocationId]?.primal || 'Fire');
+  if (!open) return null;
+  const fallen = state.heroes.filter((hero) => ['dead', 'retired'].includes(hero.status)).length;
+  return (
+    <Modal open title="No active heroes remain" eyebrow={`${state.guild.name} · Year ${state.date.year}`} preventClose width="wide">
+      <div className="new-campaign new-campaign--founder refound-modal">
+        <div className="new-campaign__premise"><strong>The banner has fallen</strong><p>All {fallen} heroes of {state.guild.name} are dead or retired. The guild keeps its name, treasury ({state.guild.crowns} crowns), history and rankings. Choose a new founder to carry it forward. One local recruit will join without a fee.</p></div>
+        <div className="new-campaign__fields">
+          <label>New founder's name<input value={founderName} maxLength={36} onChange={(event) => setFounderName(event.target.value)} placeholder="Name the new founder" /></label>
+          <label>Class<select value={founderClass} onChange={(event) => setFounderClass(event.target.value)}>{Object.keys(CLASSES).map((classId) => <option key={classId}>{classId}</option>)}</select></label>
+          <label>Primal<select value={founderPrimal} onChange={(event) => setFounderPrimal(event.target.value)}>{Object.values(PRIMALS).map((primal) => <option key={primal.id} value={primal.id}>{primal.icon} {primal.id}</option>)}</select></label>
+        </div>
+        <div className="save-actions">
+          <Button variant="primary" size="lg" disabled={!founderName.trim()} onClick={() => onRefound({ founderName: founderName.trim(), founderClass, founderPrimal })}>Refound the guild</Button>
+          <Button onClick={onReturnHome}>Return to save slots</Button>
+        </div>
       </div>
     </Modal>
   );
@@ -458,6 +484,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
     concludeCombat: () => applyResult(concludeActiveCombat(state)),
     travel: (destinationId) => applyResult(startTravel(state, destinationId)),
+    refoundGuild: (options) => applyResult(refoundGuild(state, options), 'The guild has been refounded.'),
     takePatronLoan: () => applyResult(takePatronLoan(state), 'A patron has advanced the guild a loan.'),
     openReport: (reference) => setReportModalRef(reference),
     acknowledgeReport: (reference) => {
@@ -553,6 +580,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
   const activeReportReference = reportModalRef || state.pendingReports?.[0] || null;
   const activeReport = getReport(state, activeReportReference);
+  const defunct = isGuildDefunct(state);
   const closeReport = () => {
     if (!activeReportReference) return;
     const isPending = state.pendingReports?.some((item) => item.id === (typeof activeReportReference === 'string' ? activeReportReference : activeReportReference.id));
@@ -601,7 +629,8 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} />
-      <CouncilReportModal state={state} open={Boolean(state.council?.unread && !state.pendingDecisions.length && !activeReport && !state.activeEncounter && !state.activeMissionGame)} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
+      <CouncilReportModal state={state} open={Boolean(state.council?.unread && !state.pendingDecisions.length && !activeReport && !state.activeEncounter && !state.activeMissionGame && !defunct)} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
+      <RefoundModal state={state} open={defunct && !state.activeEncounter && !state.activeMissionGame && !state.pendingDecisions.length && !activeReport} onRefound={actions.refoundGuild} onReturnHome={actions.returnHome} />
       <MobileMoreModal open={mobileMoreOpen} onClose={() => setMobileMoreOpen(false)} navigate={navigate} active={screen} />
       <HeroDetailModal state={state} heroId={heroModalId} onClose={() => setHeroModalId(null)} actions={actions} />
       <Toasts notifications={state.notifications} onDismiss={actions.dismissNotification} onClear={actions.clearNotifications} />
