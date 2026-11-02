@@ -2,7 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 3 (real combat)
+## Unreleased — Wave 4 (rankings and the scripted opening)
+
+- Three ladders, Strength, Legacy and Official (tournament points from the last 12 months), for guilds and heroes. They replace the old blended score.
+- Status titles from Unknown to Global Power. Promotion uses the Official ladder.
+- Rank movement arrows, a rank-history sparkline, and "N points to pass <guild> (#k)". The Herald is the rankings hub, and the top bar shows the three ranks plus the status title.
+- A rankings update screen each season and after your tournaments, and a fanfare when the status title changes.
+- Scripted first ten minutes: intro card, free first hire, the first contract, a guaranteed road event, a guaranteed first battle with hints, victory and level-up screens, the Herald's first rank change, then the first tournament on the calendar. The tutorial can be skipped.
+
+## Wave 3 (real combat)
 
 - Per-hero, turn-based battles. Each hero and enemy has HP, MP, attack, defense, magic, speed and status effects. Each round you pick a command (Attack, Skill, Item, Defend) and a target for every hero. The strongest enemy's next move is shown as a tell, and stuns can interrupt it. Auto-battle and Flee are available.
 - Front-view battle screen with enemy sprites, party HP/MP windows, a command menu, click-to-target and a battle log.

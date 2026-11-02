@@ -64,7 +64,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   inventory.js            guild inventory, gear, shops, loot, battle item settlement
   candidates.js           recruitment market and recruitment promises
   universe.js             rival guilds, legends, title records, artifacts, contract board
-  rankings.js             guild ladders and hero all-time rankings
+  rankings.js             Strength/Legacy/Official ladders, official points ledger, status titles, rank snapshots
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
   goals.js                goals, achievements, promotion, evaluateStateInPlace
   economy.js              upkeep, patron loans and debt, travel, facility upgrades

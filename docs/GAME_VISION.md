@@ -6,7 +6,7 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | --- | --- |
 | Wave 2 — The world is the game (map, towns, time) | ✅ Done (2026-11-02) |
 | Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) | ✅ Done (2026-11-02) |
-| Wave 4 — Rankings as the hook, and the scripted opening | Not started |
+| Wave 4 — Rankings as the hook, and the scripted opening | ✅ Done (2026-11-02) |
 
 ## The goal: turn a stack of menus into a game
 
@@ -155,6 +155,18 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
    8. The calendar points to the first tournament, and the tutorial ends with "Enter the Dunmere Harvest Melee in 3 months".
 
    Hints are skippable, and there's a "Skip tutorial" option for returning players. Use seeded, guaranteed outcomes for the scripted steps so the first battle can't be lost unfairly.
+
+### Wave 4 notes (choices where the brief was open)
+
+- Official points: the winner's points by circuit (Regional 250, National 1000, Global 2000, World Conclave 4000) × a finish share (champion 100%, runner-up 60%, semifinal 36%, quarterfinal 18%, round of 16 9%). Finishes come from bracket wins. Guild championships use the same table. A guild's Official total is its heroes' points plus its championship points from the last 12 months.
+- Legacy: mission difficulty × grade weight (Legendary 2, Great 1.5, Success 1, Partial 0.4) goes to the guild, and half of that to each participant. Titles add 150 (guild), 150 (hero individual title) and 60 (hero guild title). Rivals earn mission Legacy from their own simulated missions, seeded from their earlier career points.
+- Status titles: Unknown with 0 Official points, then Contender. Regional, National and Global Power mean the guild is in the top 5 of that tier's Official ladder and has reached that tier.
+- Promotion: the old composite-rank requirement is now an Official-ladder rank (the same thresholds: top 8 Regional, top 4 National) plus at least some Official points. Fame, contracts, feats and years still apply.
+- The top bar and the Herald show ranks in the guild's current tier. The Herald can switch scope.
+- Rankings moments: one every season (each 3 months, compared with 3 months earlier) and one after every tournament the player entered. A fanfare moment plays when the status title changes.
+- Scripted opening: the first contract (Wolves on the Old Road) is local to Dunmere, so the "travel to it" step is a march out of town. A guaranteed peddler event (two free potions) fires when the company sets out, then time runs to the battle. In the first battle heroes can't drop below 1 HP, the enemies are weakened, and a timeout counts as a win. The contract's XP is raised so the founder always levels up.
+- Known effect for the balance pass: the autoplay governor never enters tournaments, so with Official-based promotion the simulated guild stays Regional (`npm run sim`).
+- Removed: the composite guild score and the old 10-step menu tutorial.
 
 ## End of each wave
 
