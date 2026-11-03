@@ -24,7 +24,7 @@
 .save-indicator--error i { background: var(--dmg); }
 
 /* Status strip. */
-.topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 10px; min-height: var(--strip-h); margin: 12px 0 0; padding: 6px 10px; }
+.topbar { position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: var(--strip-h); margin: 12px 0 0; padding: 6px 10px; }
 .topbar button { font-family: var(--font-pixel); }
 .topbar__mobile-brand { display: none; }
 .topbar__date { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--ink); text-align: left; }
@@ -100,7 +100,7 @@
 .party-rail__title > span { font-size: var(--t-ui); font-weight: 600; }
 .party-rail__title > small { font-size: 12px; }
 .party-rail__tools { display: flex; gap: 4px; }
-.party-rail__tools button { min-height: 32px; padding: 0 8px; border: 1px solid var(--win-line); background: var(--win-deep); color: var(--ink-dim); font-family: var(--font-pixel); font-size: var(--t-label); }
+.party-rail__tools button { white-space: nowrap; min-height: 32px; padding: 0 8px; border: 1px solid var(--win-line); background: var(--win-deep); color: var(--ink-dim); font-family: var(--font-pixel); font-size: var(--t-label); }
 .party-rail__tools button:hover { color: var(--ink); background: var(--win-sel); }
 .party-rail__members { display: flex; gap: 8px; min-width: 0; overflow-x: auto; padding-bottom: 2px; }
 .party-rail__member { position: relative; flex: none; display: grid; grid-template-columns: auto minmax(120px, 1fr); align-items: center; gap: 10px; width: 236px; padding: 6px 8px; text-align: left; }

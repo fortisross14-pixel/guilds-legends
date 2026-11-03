@@ -16,7 +16,7 @@
 /* The ladder table. */
 .ladder-table { display: grid; }
 .ladder-row { display: grid; grid-template-columns: 3ch auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 4px 8px 4px 28px; border: 0; border-bottom: 1px dashed var(--win-line); background: transparent; color: var(--ink); font-family: var(--font-pixel); text-align: left; }
-article.ladder-row { grid-template-columns: 3ch minmax(0, 1fr) minmax(0, 220px) 12ch; }
+article.ladder-row, .ladder-row--head { grid-template-columns: 3ch minmax(0, 1fr) minmax(0, 220px) 12ch; }
 .ladder-row--head { min-height: 32px; border-bottom: 1px solid var(--win-line); color: var(--ink-faint); font-size: var(--t-label); text-transform: uppercase; letter-spacing: .04em; }
 .ladder-row--head > :last-child { text-align: right; }
 .ladder-row.is-player { background: var(--win-sel); }

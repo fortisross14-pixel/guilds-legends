@@ -54,7 +54,7 @@ npm run build       # production build to dist/ (not committed)
 ```text
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
 src/places/               MapScreen (home), TownScreen (buildings), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
-src/components/           UI primitives (UI.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
+src/components/           UI primitives (UI.jsx), pixel icons and crest (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
 src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.

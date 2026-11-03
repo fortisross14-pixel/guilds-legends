@@ -8,7 +8,7 @@
 /* The map window. */
 .world-map { position: relative; padding: 0; overflow: hidden; }
 .world-map__terrain { position: relative; aspect-ratio: 8 / 5; background: #1c3688 var(--overworld) center / 100% 100% no-repeat; image-rendering: pixelated; }
-.world-map svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.world-map > svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .map-route { fill: none; stroke: #f3e7bf; stroke-width: 3; stroke-dasharray: 6 5; shape-rendering: crispEdges; }
 .map-route--under { stroke: #1a1208; stroke-width: 7; stroke-dasharray: none; opacity: .55; }
 .map-route--dim { stroke: #c9c3ad; opacity: .45; }
@@ -175,3 +175,10 @@
   .dashboard-grid--world { grid-template-columns: 1fr; }
   .primal-wheel-list { grid-template-columns: 1fr; }
 }
+
+/* Locked settlements recede: small tiles, labels only when selected or focused. */
+.location-node.is-locked { transform: translate(-50%, -10px); }
+.location-node.is-locked .location-node__icon { width: 24px; height: 24px; }
+.location-node.is-locked .location-node__icon .pixel-icon { width: 12px; height: 12px; }
+.location-node.is-locked strong { display: none; }
+.location-node.is-locked.is-selected strong, .location-node.is-locked:focus-visible strong { display: block; }

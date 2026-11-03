@@ -98,7 +98,7 @@ button.quest-row { padding-left: 28px; padding-right: 8px; }
 .bestiary { display: grid; gap: var(--s4); }
 .bestiary-row { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px dashed var(--win-line); }
 .bestiary-row:first-child { border-top: 0; }
-.bestiary-row img { width: 160px; height: 144px; max-width: none; margin: -62px -30px -4px; image-rendering: pixelated; filter: grayscale(1) brightness(.55); }
+.bestiary-row img { width: 100px; height: auto; aspect-ratio: 10 / 9; object-fit: contain; filter: grayscale(1) brightness(.55); }
 .bestiary-row.is-defeated img { filter: none; }
 .bestiary-row > div { display: grid; gap: 2px; }
 .bestiary-row strong { font-size: 18px; font-weight: 600; }

@@ -80,6 +80,12 @@ function GuildLadders({ state, actions }) {
           <p className="points-to-pass">You lead this ladder.</p>
         )}
         <div className="ladder-table">
+          <div className="ladder-row ladder-row--head" aria-hidden="true">
+            <span>#</span>
+            <span>Guild</span>
+            <span>Star</span>
+            <span>{unit === 'power' ? 'Power' : 'Points'}</span>
+          </div>
           {rows.map((guild) => (
             <article key={guild.id} className={`ladder-row ${guild.player ? 'is-player' : ''}`}>
               <span className="ranking-position">{guild.rank}</span>
@@ -121,7 +127,7 @@ function HeroLadders({ state, actions }) {
     <div className="ladder-view">
       <LadderPicker ladder={ladder} setLadder={setLadder} />
       <Panel title={`Hero ${LADDER_LABELS[ladder]} ladder`} eyebrow={LADDER_COPY[ladder].replace('each guild’s top five heroes', 'hero power')}>
-        <div className="ladder-table">
+        <div className="ladder-table" data-menu>
           {rows.map((hero) => (
             <button key={hero.id} className={`ladder-row ${hero.player ? 'is-player' : ''}`} onClick={() => actions.openHero(hero.id)}>
               <span className="ranking-position">{hero.rank}</span>

@@ -10,7 +10,7 @@ import ShopScreen from '../screens/ShopScreen.jsx';
 import GuildHallRooms from './GuildHallRooms.jsx';
 
 // Pixel scene behind each building's header (town street by default).
-const BUILDING_SCENES = { guildHall: 'scene_03', herald: 'scene_03', shop: 'scene_02', arena: 'scene_04', tavern: 'scene_01', noticeBoard: 'scene_01' };
+const BUILDING_SCENES = { guildHall: 'scene_09', herald: 'scene_03', shop: 'scene_01', arena: 'scene_02', tavern: 'scene_08', noticeBoard: 'scene_10' };
 
 function buildingBadge(state, buildingId, locationId) {
   if (buildingId === 'noticeBoard') return state.missions.filter((mission) => mission.locationId === locationId).length || null;
@@ -36,7 +36,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
-      <header className={`town-header town-scene scene ${building ? 'town-scene--building' : ''}`} style={sceneStyle(BUILDING_SCENES[building] || 'scene_01')}>
+      <header className={`town-header town-scene scene ${building ? 'town-scene--building' : ''}`} style={sceneStyle(BUILDING_SCENES[building] || 'scene_07')}>
         {building ? (
           <Button size="sm" className="town-header__back" onClick={() => setPlace({ view: 'town', building: null })}>
             ◀ {town.name}

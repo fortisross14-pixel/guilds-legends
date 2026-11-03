@@ -189,7 +189,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
       </div>
 
       <div className="mission-layout">
-        <div className="mission-board">
+        <div className="mission-board" data-menu>
           {filtered.map((mission) => {
             const approach = formationForMission(mission);
             const enemyInfo = PRIMALS[mission.enemyPrimal];

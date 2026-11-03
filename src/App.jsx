@@ -154,7 +154,7 @@ function formatPlayed(value) {
 function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
   useMenuKeys();
   return (
-    <div className="home-screen scene" style={sceneStyle('scene_01')}>
+    <div className="home-screen scene" style={sceneStyle('scene_07')}>
       <div className="home-screen__inner">
         <header className="title-logo">
           <Crest size="xl" />
@@ -1304,7 +1304,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         ))}
       </nav>
       <PartyRail state={state} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
-      <CombatArenaModal encounter={state.activeEncounter} actions={actions} />
+      <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       <IntroModal state={state} actions={actions} />

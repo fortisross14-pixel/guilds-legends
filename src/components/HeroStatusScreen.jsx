@@ -53,7 +53,11 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
 
         <section className="hero-status__identity">
           <HeroPortrait hero={hero} size="xl" />
-          <div>
+          <div className="hero-status__vitals">
+            <span className="hero-status__class">
+              Lv {hero.level || 1} {classId}
+              <small>{hero.personality}</small>
+            </span>
             <div className="dossier-taxonomy">
               <Badge tone={hero.status === 'dead' ? 'red' : 'green'}>{own ? status.label : hero.status}</Badge>
               <RarityBadge rarity={hero.rarity || 'Common'} />
@@ -69,23 +73,30 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
               compact
               label={hero.level >= 20 ? 'Level cap reached' : `XP ${hero.xp || 0}/${nextXp} to level ${(hero.level || 1) + 1}`}
             />
+            <ProgressBar value={hero.health ?? 100} max={100} tone={(hero.health ?? 100) >= 50 ? 'green' : 'red'} compact label="Health" />
+            <ProgressBar value={hero.fatigue || 0} max={100} tone={(hero.fatigue || 0) >= 60 ? 'red' : 'gold'} compact label="Fatigue" />
           </div>
+          <dl className="hero-status__grid" aria-label="Battle stats">
+            {[
+              ['HP', stats.maxHp],
+              ['MP', stats.maxMp],
+              ['ATK', stats.atk],
+              ['DEF', stats.def],
+              ['MAG', stats.mag],
+              ['SPD', stats.spd],
+              ['Power', hero.power],
+              ['Loyalty', hero.loyalty ?? '—'],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
         <section className="hero-status__stats">
-          <h3>Stats</h3>
-          <div className="hero-status__grid">
-            <span>HP {stats.maxHp}</span>
-            <span>MP {stats.maxMp}</span>
-            <span>ATK {stats.atk}</span>
-            <span>DEF {stats.def}</span>
-            <span>MAG {stats.mag}</span>
-            <span>SPD {stats.spd}</span>
-            <span>Power {hero.power}</span>
-            <span>Health {hero.health ?? 100}</span>
-            <span>Fatigue {hero.fatigue || 0}</span>
-            <span>Loyalty {hero.loyalty ?? '—'}</span>
-          </div>
+          <h3>Attributes</h3>
           <div className="attribute-grid">
             {Object.entries(hero.attributes || {}).map(([name, value]) => (
               <ProgressBar

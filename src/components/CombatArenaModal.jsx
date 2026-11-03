@@ -6,15 +6,15 @@ import { Badge, Button, HeroSprite, Modal, ProgressBar, artUrl, sceneStyle } fro
 
 // Battle backdrop: the arena for tournaments, otherwise the scene of the
 // location's primal (see DESIGN.md, Components).
-const PRIMAL_SCENES = { Fire: 'scene_10', Plant: 'scene_05', Water: 'scene_09', Air: 'scene_08', Animal: 'scene_05', Psychic: 'scene_07', Iron: 'scene_06' };
+const PRIMAL_SCENES = { Fire: 'scene_12', Plant: 'scene_11', Water: 'scene_04', Air: 'scene_05', Animal: 'scene_11', Psychic: 'scene_06', Iron: 'scene_12' };
 export function battleScene(encounter, locationPrimal) {
-  if (!encounter) return 'scene_04';
-  if (encounter.mode === 'duel' || /tournament|championship|challenge/i.test(encounter.sourceType || '')) return 'scene_04';
-  return PRIMAL_SCENES[locationPrimal] || PRIMAL_SCENES[encounter.enemies?.[0]?.primal] || 'scene_06';
+  if (!encounter) return 'scene_02';
+  if (encounter.mode === 'duel' || /tournament|championship|challenge/i.test(encounter.sourceType || '')) return 'scene_02';
+  return PRIMAL_SCENES[locationPrimal] || PRIMAL_SCENES[encounter.enemies?.[0]?.primal] || 'scene_11';
 }
 
-const HIT_FX = 'effect_01';
-const HEAL_FX = 'effect_11';
+const HIT_FX = 'effect_14';
+const HEAL_FX = 'effect_08';
 
 // Watches unit HP between renders and returns short-lived damage / heal pops.
 function useHpPops(encounter) {
@@ -209,73 +209,70 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
       className="battle-modal"
     >
       <div className={`battle-screen battle-screen--${encounter.mode}`}>
-        {encounter.guaranteed && !finished && !hintsHidden ? (
-          <aside className="battle-hints">
-            <strong>First battle</strong>
-            <ol>
-              <li>The highlighted window is the hero choosing now. Pick a command for each hero.</li>
-              <li>Attack and most skills need a target: click an enemy.</li>
-              <li>Someone hurt? Use Item → Potion (or a healing skill) and click the ally.</li>
-              <li>The Tell shows the strongest enemy’s next move. Defend against big ones, or stun them first.</li>
-            </ol>
-            <Button size="sm" variant="secondary" onClick={() => setHintsHidden(true)}>
-              Hide hints
-            </Button>
-          </aside>
-        ) : null}
-        {!finished && intent ? (
-          <div className={`battle-tell ${intent.big ? 'battle-tell--danger' : ''}`}>
-            <strong>Tell</strong> {intent.telegraph}
-          </div>
-        ) : null}
+        <section className="battle-stage scene" style={sceneStyle(battleScene(encounter, locationPrimal))} aria-label="Battlefield">
+          {encounter.guaranteed && !finished && !hintsHidden ? (
+            <aside className="battle-hints">
+              <strong>First battle</strong>
+              <ol>
+                <li>The highlighted window is the hero choosing now. Pick a command for each hero.</li>
+                <li>Attack and most skills need a target: pick an enemy.</li>
+                <li>Someone hurt? Use Item → Potion (or a healing skill) and pick the ally.</li>
+                <li>The Tell shows the strongest enemy’s next move. Defend against big ones, or stun them first.</li>
+              </ol>
+              <Button size="sm" variant="secondary" onClick={() => setHintsHidden(true)}>
+                Hide hints
+              </Button>
+            </aside>
+          ) : null}
+          {!finished && intent ? (
+            <div className={`battle-tell ${intent.big ? 'battle-tell--danger' : ''}`}>
+              <strong>Tell</strong> {intent.telegraph}
+            </div>
+          ) : (
+            <span />
+          )}
 
-        <section className="battle-enemies" aria-label="Enemies">
-          {encounter.enemies.map((unit) => (
-            <button
-              key={unit.id}
-              className={`battle-enemy ${unit.ko ? 'is-ko' : ''} ${targetable(unit) ? 'is-targetable' : ''} ${intent?.actorId === unit.id ? 'is-telling' : ''}`}
-              onClick={() => pickTarget(unit)}
-              disabled={!targetable(unit)}
-            >
-              <EnemyArt unit={unit} />
-              <strong>{unit.name}</strong>
-              <ProgressBar value={unit.hp} max={unit.maxHp} tone="red" compact label={`${unit.hp}/${unit.maxHp}`} />
-              <Statuses unit={unit} />
-            </button>
-          ))}
-        </section>
-
-        <section className="battle-party" aria-label="Your party">
-          {encounter.party.map((unit) => (
-            <button
-              key={unit.id}
-              className={`battle-hero ${unit.ko ? 'is-ko' : ''} ${active?.id === unit.id && !finished ? 'is-active' : ''} ${targetable(unit) ? 'is-targetable' : ''}`}
-              onClick={() => pickTarget(unit)}
-              disabled={!targetable(unit)}
-            >
-              <HeroSprite hero={unit} size="sm" />
-              <span className="battle-hero__info">
+          <div className="battle-enemies" aria-label="Enemies" data-menu>
+            {encounter.enemies.map((unit) => (
+              <button
+                key={unit.id}
+                className={`battle-enemy ${unit.ko ? 'is-ko' : ''} ${targetable(unit) ? 'is-targetable' : ''} ${intent?.actorId === unit.id ? 'is-telling' : ''}`}
+                onClick={() => pickTarget(unit)}
+                disabled={!targetable(unit)}
+                aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP`}
+              >
+                <EnemyArt unit={unit} />
                 <strong>{unit.name}</strong>
-                <small>
-                  Lv {unit.level} {unit.classId}
-                  {unit.ko ? ' · KO' : ''}
-                </small>
-                <ProgressBar value={unit.hp} max={unit.maxHp} tone="green" compact label={`HP ${unit.hp}/${unit.maxHp}`} />
-                <ProgressBar value={unit.mp} max={unit.maxMp} tone="blue" compact label={`MP ${unit.mp}/${unit.maxMp}`} />
+                <ProgressBar value={unit.hp} max={unit.maxHp} tone="red" compact label={`${unit.hp}/${unit.maxHp}`} />
                 <Statuses unit={unit} />
-                {!finished ? <em className="battle-hero__command">{commandLabel(commands[unit.id], unit)}</em> : null}
-              </span>
-            </button>
-          ))}
+                <UnitPops pops={pops} unitId={unit.id} />
+              </button>
+            ))}
+          </div>
+
+          {finished ? (
+            <section className={`battle-result battle-result--${encounter.result?.playerWon ? 'won' : 'lost'}`}>
+              <h3>{encounter.result?.playerWon ? 'Victory!' : encounter.result?.method === 'withdrew' ? 'You withdrew' : 'Defeat'}</h3>
+              <p>
+                {encounter.result?.method} · {encounter.result?.turns} rounds · party HP {encounter.result?.playerHpPct}%
+                {encounter.result?.knockedOut?.length ? ` · ${encounter.result.knockedOut.length} knocked out (injury risk afterwards)` : ''}
+              </p>
+              <Button variant="primary" size="lg" onClick={actions.concludeCombat}>
+                Continue
+              </Button>
+            </section>
+          ) : null}
         </section>
 
-        {!finished ? (
-          <section className="battle-commands">
-            {pending ? (
+        <div className="battle-hud">
+          <section className="battle-commands" ref={commandsRef} aria-label="Commands">
+            {finished ? (
+              <span className="battle-commands__who">The battle is over</span>
+            ) : pending ? (
               <div className="battle-commands__prompt">
                 <span>
-                  Choose a target for {active?.name}:{' '}
-                  {pending.targetType === 'enemy' ? 'click an enemy' : pending.targetType === 'koAlly' ? 'click a fallen ally' : 'click an ally'}.
+                  {active?.name}: choose a target —{' '}
+                  {pending.targetType === 'enemy' ? 'an enemy' : pending.targetType === 'koAlly' ? 'a fallen ally' : 'an ally'}.
                 </span>
                 <Button size="sm" onClick={() => setPending(null)}>
                   Cancel
@@ -283,9 +280,9 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
               </div>
             ) : active ? (
               <>
-                <span className="battle-commands__who">{active.name}’s command</span>
+                <span className="battle-commands__who">{active.name}</span>
                 {menu === 'root' ? (
-                  <div className="battle-commands__menu">
+                  <div className="battle-commands__menu" data-menu>
                     {COMMANDS.map((command) => (
                       <Button
                         key={command.id}
@@ -299,7 +296,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
                   </div>
                 ) : null}
                 {menu === 'skill' ? (
-                  <div className="battle-commands__list">
+                  <div className="battle-commands__list" data-menu>
                     {active.skills.map((id) => {
                       const skill = SKILLS[id];
                       return (
@@ -315,58 +312,74 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
                       );
                     })}
                     <Button size="sm" variant="secondary" onClick={() => setMenu('root')}>
-                      Back
+                      ◀ Back
                     </Button>
                   </div>
                 ) : null}
                 {menu === 'item' ? (
-                  <div className="battle-commands__list">
+                  <div className="battle-commands__list" data-menu>
                     {itemsLeft.map(([id, count]) => (
                       <Button key={id} size="sm" title={ITEMS[id]?.description} onClick={() => choose({ action: 'item', itemId: id })}>
                         {ITEMS[id]?.name} ×{count}
                       </Button>
                     ))}
                     <Button size="sm" variant="secondary" onClick={() => setMenu('root')}>
-                      Back
+                      ◀ Back
                     </Button>
                   </div>
                 ) : null}
               </>
             ) : null}
-            <div className="battle-commands__meta">
-              <Button size="sm" variant="secondary" onClick={undo} disabled={!Object.keys(commands).length}>
-                Undo
-              </Button>
-              <Button size="sm" onClick={actions.autoResolveCombat}>
-                Auto-battle
-              </Button>
-              {encounter.canFlee ? (
-                <Button size="sm" variant="danger" onClick={actions.fleeCombat}>
-                  Flee
+            {!finished ? (
+              <div className="battle-commands__meta">
+                <Button size="sm" variant="secondary" onClick={undo} disabled={!Object.keys(commands).length}>
+                  Undo
                 </Button>
-              ) : null}
-            </div>
+                <Button size="sm" onClick={actions.autoResolveCombat}>
+                  Auto
+                </Button>
+                {encounter.canFlee ? (
+                  <Button size="sm" variant="danger" onClick={actions.fleeCombat}>
+                    Flee
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </section>
-        ) : (
-          <section className={`battle-result battle-result--${encounter.result?.playerWon ? 'won' : 'lost'}`}>
-            <h3>{encounter.result?.playerWon ? 'Victory!' : encounter.result?.method === 'withdrew' ? 'You withdrew' : 'Defeat'}</h3>
-            <p>
-              {encounter.result?.method} · {encounter.result?.turns} rounds · party HP {encounter.result?.playerHpPct}%
-              {encounter.result?.knockedOut?.length ? ` · ${encounter.result.knockedOut.length} knocked out (injury risk afterwards)` : ''}
-            </p>
-            <Button variant="primary" size="lg" onClick={actions.concludeCombat}>
-              Continue
-            </Button>
-          </section>
-        )}
 
-        <ol className="battle-log">
-          {encounter.log.slice(-8).map((entry, index) => (
-            <li key={`${entry.turn}-${index}`} className={`battle-log__entry battle-log__entry--${entry.tone}`}>
-              {entry.text}
-            </li>
-          ))}
-        </ol>
+          <ol className="battle-log" aria-live="polite" aria-label="Battle messages">
+            {encounter.log.slice(-8).map((entry, index) => (
+              <li key={`${entry.turn}-${index}`} className={`battle-log__entry battle-log__entry--${entry.tone}`}>
+                {entry.text}
+              </li>
+            ))}
+          </ol>
+
+          <section className="battle-party" aria-label="Your party">
+            {encounter.party.map((unit) => (
+              <button
+                key={unit.id}
+                className={`battle-hero ${unit.ko ? 'is-ko' : ''} ${active?.id === unit.id && !finished ? 'is-active' : ''} ${targetable(unit) ? 'is-targetable' : ''}`}
+                onClick={() => pickTarget(unit)}
+                disabled={!targetable(unit)}
+              >
+                <HeroSprite hero={unit} size="sm" />
+                <span className="battle-hero__info">
+                  <strong>{unit.name}</strong>
+                  <small>
+                    Lv {unit.level} {unit.classId}
+                    {unit.ko ? ' · KO' : ''}
+                  </small>
+                  <ProgressBar value={unit.hp} max={unit.maxHp} tone={unit.hp / unit.maxHp > 0.3 ? 'green' : 'red'} compact label={`HP ${unit.hp}/${unit.maxHp}`} />
+                  <ProgressBar value={unit.mp} max={unit.maxMp} tone="blue" compact label={`MP ${unit.mp}/${unit.maxMp}`} />
+                  <Statuses unit={unit} />
+                  {!finished ? <em className="battle-hero__command">{commandLabel(commands[unit.id], unit)}</em> : null}
+                </span>
+                <UnitPops pops={pops} unitId={unit.id} />
+              </button>
+            ))}
+          </section>
+        </div>
       </div>
     </Modal>
   );

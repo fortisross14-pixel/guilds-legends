@@ -9,8 +9,8 @@
 
 .save-menu { padding: 6px; }
 .save-menu .cmd-menu > li { display: flex; align-items: stretch; }
-.save-menu__main { flex: 1; min-width: 0; display: grid; grid-template-columns: 9.5ch minmax(0, 1fr); align-items: center; gap: 2px 12px; padding: 10px 10px 10px 30px; }
-.save-menu__verb { font-size: 20px; font-weight: 600; }
+.save-menu__main { flex: 1; min-width: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 2px 12px; padding: 10px 10px 10px 30px; }
+.save-menu__verb { font-size: 20px; font-weight: 600; white-space: nowrap; }
 .save-slot--empty .save-menu__verb { color: var(--ink-dim); }
 .save-menu__slot { grid-column: 1; grid-row: 2; color: var(--ink-faint); font-size: var(--t-label); }
 .save-menu__meta { grid-column: 2; grid-row: 1 / span 2; display: grid; gap: 2px; min-width: 0; }

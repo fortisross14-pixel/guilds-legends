@@ -77,11 +77,11 @@
   --content-max: 1280px;
 
   /* The window frame: 1px black outline, 3px white edge, chamfered pixel corners (9-slice). */
-  --frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M2 0h8v1H2zM1 1h1v1H1zM10 1h1v1h-1zM0 2h1v8H0zM11 2h1v8h-1zM1 10h1v1H1zM10 10h1v1h-1zM2 11h8v1H2z'/%3E%3Cpath fill='%23f4f1ea' d='M2 1h8v1H2zM1 2h10v2H1zM1 4h3v4H1zM8 4h3v4H8zM1 8h10v2H1zM2 10h8v1H2z'/%3E%3C/svg%3E");
+  --frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M2 0h8v1H2zM1 1h1v1H1zM10 1h1v1h-1zM0 2h1v8H0zM11 2h1v8h-1zM1 10h1v1H1zM10 10h1v1h-1zM2 11h8v1H2z'/%3E%3Cpath fill='%23f4f1ea' d='M2 1h8v1H2zM1 2h10v2H1zM1 4h3v4H1zM8 4h3v4H8zM1 8h10v2H1zM2 10h8v1H2z'/%3E%3C/svg%3E");
   /* A thinner frame for buttons: 1px black, 2px white. */
-  --frame-thin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h7v1H1zM0 1h1v7H0zM8 1h1v7H8zM1 8h7v1H1z'/%3E%3Cpath fill='%23f4f1ea' d='M1 1h7v2H1zM1 3h2v3H1zM6 3h2v3H6zM1 6h7v2H1z'/%3E%3C/svg%3E");
+  --frame-thin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h7v1H1zM0 1h1v7H0zM8 1h1v7H8zM1 8h7v1H1z'/%3E%3Cpath fill='%23f4f1ea' d='M1 1h7v2H1zM1 3h2v3H1zM6 3h2v3H6zM1 6h7v2H1z'/%3E%3C/svg%3E");
   /* A dim frame for disabled buttons. */
-  --frame-dim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h7v1H1zM0 1h1v7H0zM8 1h1v7H8zM1 8h7v1H1z'/%3E%3Cpath fill='%2334489a' d='M1 1h7v2H1zM1 3h2v3H1zM6 3h2v3H6zM1 6h7v2H1z'/%3E%3C/svg%3E");
+  --frame-dim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h7v1H1zM0 1h1v7H0zM8 1h1v7H8zM1 8h7v1H1z'/%3E%3Cpath fill='%2334489a' d='M1 1h7v2H1zM1 3h2v3H1zM6 3h2v3H6zM1 6h7v2H1z'/%3E%3C/svg%3E");
   /* The ▶ cursor, used as a mask so it takes any colour. */
   --cursor-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 9' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v9H0zM1 1h1v7H1zM2 2h1v5H2zM3 3h1v3H3zM4 4h1v1H4z'/%3E%3C/svg%3E");
   /* A small ▼ for selects. */

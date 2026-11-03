@@ -23,9 +23,8 @@
 .battle-enemies { grid-row: 2; align-self: end; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 28px; margin-bottom: 4%; }
 .battle-enemy { --k: 2; position: relative; display: grid; justify-items: center; gap: 4px; padding: 18px 4px 4px; border: 0; background: none; color: var(--ink); font-family: var(--font-pixel); }
 .battle-enemy:disabled { cursor: default; }
-.battle-enemy__art, .battle-enemy .hero-sprite img { width: calc(160px * var(--k)); height: calc(144px * var(--k)); max-width: none; margin: calc(-62px * var(--k)) calc(-30px * var(--k)) calc(-4px * var(--k)); image-rendering: pixelated; }
-.battle-enemy .hero-sprite { width: calc(100px * var(--k)); height: calc(78px * var(--k)); overflow: visible; }
-.battle-enemy .hero-sprite img { margin: calc(-62px * var(--k)) calc(-30px * var(--k)) calc(-4px * var(--k)); }
+.battle-enemy__art { display: block; width: calc(110px * var(--k)); height: auto; aspect-ratio: 10 / 9; object-fit: contain; object-position: center bottom; }
+.battle-enemy .hero-sprite { --w: calc(110px * var(--k)); }
 .battle-enemy > strong { padding: 1px 6px; background: rgba(0, 0, 0, .8); font-size: var(--t-label); font-weight: 500; white-space: nowrap; }
 .battle-enemy .progress { width: calc(80px * var(--k)); max-width: 160px; }
 .battle-enemy .progress__label { display: none; }
@@ -56,7 +55,7 @@
 .battle-hero .dmg-pop { top: 4px; font-size: 22px; }
 .fx-wrap { position: absolute; left: 50%; top: 45%; z-index: 5; transform: translate(-50%, -50%); pointer-events: none; }
 .fx-wrap .fx { position: static; display: block; }
-.battle-enemy .fx-wrap .fx { zoom: 2; }
+.battle-enemy .fx-wrap .fx { width: 160px; }
 
 /* HUD: commands and messages on top, party windows along the bottom. */
 .battle-hud { display: grid; grid-template-columns: 264px minmax(0, 1fr); grid-template-areas: 'cmd log' 'cmd party'; gap: 8px; }
@@ -95,8 +94,7 @@
 .battle-party { grid-area: party; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
 .battle-hero { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 8px; color: var(--ink); font-family: var(--font-pixel); text-align: left; }
 .battle-hero:disabled { cursor: default; }
-.battle-hero .hero-sprite { width: 56px; height: 64px; }
-.battle-hero .hero-sprite img { margin: -68px 0 0 -52px; }
+.battle-hero .hero-sprite { --w: 72px; }
 .battle-hero.is-active { background-color: var(--win-sel); }
 .battle-hero.is-active .battle-hero__info > strong::after { content: ' ◂'; color: var(--warn); }
 .battle-hero.is-targetable { cursor: pointer; }
@@ -156,4 +154,12 @@
   .battle-log { height: 88px; padding: 6px 10px; }
   .battle-log__entry { font-size: 14px; }
   .dmg-pop { font-size: 22px; }
+}
+
+/* Phone: keep every enemy on one row. */
+@media (max-width: 759px) {
+  .battle-enemies { flex-wrap: nowrap; gap: 2px; }
+  .battle-enemy { --k: .74; min-width: 0; }
+  .battle-enemy > strong { max-width: 92px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; }
+  .battle-enemy .progress { width: 72px; }
 }

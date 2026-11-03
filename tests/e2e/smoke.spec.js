@@ -16,7 +16,7 @@ test('create a campaign, visit every place and building, rest for a year', async
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Create campaign' }).first().click();
+  await page.getByRole('button', { name: /New Game/ }).first().click();
   await page.getByRole('button', { name: 'Raise the banner' }).click();
   await expect(page.locator('.game-shell')).toBeVisible();
   // The scripted opening starts with an intro card; skip it for the smoke run.

@@ -1,7 +1,7 @@
 /* Shell breakpoints. Screen files carry their own layout breakpoints.
    Desktop ≥ 1100px: labelled dock. Tablet 760–1099px: icon dock. Phone < 760px: bottom dock. */
 
-@media (max-width: 1360px) {
+@media (max-width: 1700px) {
   .topbar__rank small { display: none; }
 }
 
@@ -36,7 +36,7 @@
   .game-main { padding: 0 8px; }
 
   .topbar { top: 0; margin-top: 8px; gap: 4px 6px; padding: 4px 6px; }
-  .topbar__mobile-brand { display: flex; align-items: center; min-height: 44px; padding: 0 4px; border: 0; background: none; }
+  .topbar__mobile-brand { display: none; }
   .topbar__mobile-brand span { display: none; }
   .topbar__date { margin-right: auto; padding: 0 4px; gap: 6px; }
   .topbar__date .pixel-icon { display: none; }
@@ -92,3 +92,7 @@
 
 .compact-mode .panel__body { padding: 8px 10px; }
 .compact-mode .screen-container { padding-top: 8px; }
+
+@media (max-width: 759px) {
+  .topbar__location { flex: 1 1 110px; }
+}

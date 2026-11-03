@@ -18,7 +18,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 a { color: var(--mp); text-underline-offset: 3px; }
-img { image-rendering: pixelated; }
 h1, h2, h3 { margin: 0 0 var(--s2); font-family: var(--font-pixel); font-weight: 600; letter-spacing: .01em; line-height: 1.15; text-wrap: balance; }
 h1 { font-size: var(--t-h1); }
 h2 { font-size: var(--t-h2); }
@@ -554,3 +553,6 @@ label { display: grid; gap: 6px; color: var(--ink-dim); font-size: var(--t-label
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
+
+/* Command labels never wrap mid-label. */
+.button, .tabs button, .badge { white-space: nowrap; }

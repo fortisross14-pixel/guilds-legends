@@ -4,7 +4,7 @@
 
 ## Direction
 
-**16-bit JRPG.** The game should read like Final Fantasy III/VI and early Dragon Quest on a modern screen. Every panel is a window: a solid deep-blue fill inside a crisp white pixel frame. Menus are short vertical command lists with a ▶ cursor. Numbers, names and commands are set in a pixel face; only longer reading text uses a clean prose face. Pixel art (portraits, sprites, enemies, scenes, effects) is shown at whole-number scales with `image-rendering: pixelated`, never smoothed.
+**16-bit JRPG.** The game should read like Final Fantasy III/VI and early Dragon Quest on a modern screen. Every panel is a window: a solid deep-blue fill inside a crisp white pixel frame. Menus are short vertical command lists with a ▶ cursor. Numbers, names and commands are set in a pixel face; only longer reading text uses a clean prose face. Interface pixel art (frames, cursor, icons, crest, overworld) is drawn on a pixel grid and always rendered with `image-rendering: pixelated`. The character and scene art in `public/art/` is a detailed HD-2D pack (see `public/ART_LIBRARY_PLAN.md`): shown at 1× or larger it stays crisp; shrunk for avatars it is smoothed, because nearest-neighbour downscaling of detailed art drops pixels.
 
 What it refuses: glass, blur, soft drop shadows, gradients on panels, pill buttons, card grids of equal tiles, eyebrow labels above headings, and gold used as decoration.
 
@@ -63,15 +63,16 @@ One frame for everything: `.win` (and the component classes that share it, such 
 
 ## Components
 
-- `HeroPortrait`: square pixel frame. Frame colour = rarity, ground = flat primal tint. Sizes are whole multiples of the art's 64px grid: xs 32, sm/md 64, lg/xl 128.
-- `HeroSprite` and enemy art: native 160×144 sprites shown at 1× or 2×, cropped to the figure with negative margins (never `object-fit` scaling).
-- Scenes (`public/art/scenes`, 160×72 art stored at 4×): backgrounds sized in multiples of 160×72 (`--scene-k`), anchored bottom-centre. Battle uses the location's primal scene (arena for tournaments), towns use the street, the shop the market, the Guild Hall and Herald the throne room.
+- `HeroPortrait`: square frame in the rarity colour, the primal ground image (`art/primals/<primal>.png`) behind the class medallion. Sizes: xs 36, sm/md 68, lg/xl 132 (frame included).
+- `HeroSprite` and enemy art: 320×288 full figures in a 10:9 box, `object-fit: contain`, anchored bottom. Enemies are 220px wide on desktop, 160px on tablet and about 80px on phone.
+- Scenes (`public/art/scenes`, 1280×576): `.scene` sets them with `background-size: cover` and a focal point (`--focus-x`, `--focus-y`). Assignments: title and town square = 07 fountain; Guild Hall = 09 strategy hall; Herald = 03 throne hall; shop = 01 harbor market; tavern = 08; notice board = 10; arena and tournament battles = 02 stone arena; other battles by the location's primal (Fire/Iron 12 frontier camp, Plant/Animal 11 forest road, Water 04 waterfall temple, Air 05 sky ruins, Psychic 06 crystal caverns).
 - `ProgressBar`: 8px pixel bar, black track, solid fill, 1px highlight; width changes in steps.
 - Status strip (top bar): date, time commands, location, gold, three rank arrows and status title, each a cell in one window.
 - Command dock: World / Guild / Chronicle. Left column on desktop, icon column on tablet, bottom bar on phone.
 - Party bar: each hero is a small status window (portrait, name, Lv, HP and fatigue bars, status icon).
 - Battle: front view. Scene backdrop with enemies centred, tell window on top, command window (▶ cursor) and message window at the bottom, party status windows along the bottom. Damage and heal numbers pop over the unit; effect sprites flash on hits and heals.
 - Moments (victory, level up, recruit, rank up, rankings, council, event cards): centred windows. Story beats are dialogue boxes with a speaker tab.
+- Effects: hits flash `effect_14` (slash), heals `effect_08`, rewards `effect_12`.
 - Pixel icons (`PixelIcon` in `src/components/PixelIcon.jsx`): 12×12 one-colour bitmaps drawn as SVG rects with `shape-rendering: crispEdges`, used for navigation, buildings, rooms, Chronicle pages and status-strip resources.
 
 ## Motion

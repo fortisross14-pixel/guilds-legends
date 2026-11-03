@@ -38,6 +38,7 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
       style={{
         '--portrait-frame': `var(--r-${rarity.id.toLowerCase()})`,
         '--portrait-primal': `var(--p-${primal.id.toLowerCase()})`,
+        '--portrait-ground': `url(${artUrl(`art/primals/${primal.id.toLowerCase()}.png`)})`,
       }}
       role="img"
       aria-label={`${hero.name}, ${rarity.id} ${classId}`}

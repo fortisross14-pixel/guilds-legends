@@ -1,8 +1,12 @@
-/* Pixel art: portraits, sprites, enemies, scenes, effects and the crest.
-   Portraits are 64px art stored at 160px, so they render at 32 / 64 / 128.
-   Sprites and enemies are native 160×144 with the figure in the lower middle.
-   Scenes are 160×72 art stored at 4×, so backgrounds use multiples of 160×72. */
+/* Art: portraits, sprites, enemies, scenes, effects and the crest.
+   The art pack (public/art, see public/ART_LIBRARY_PLAN.md) is HD-2D pixel art:
+   portraits 320×320 medallions, sprites/enemies 320×288 full figures, effects
+   152×130, scenes 1280×576. Shown at 1× or larger it stays pixelated; shrunk
+   for avatars it is smoothed (`auto`), because nearest-neighbour downscaling of
+   detailed art drops pixels. Interface icons, the crest and the overworld are
+   true pixel art and are always pixelated. */
 
+/* Portrait: primal ground image + class medallion, square frame in rarity colour. */
 .hero-portrait {
   --size: 64px;
   position: relative;
@@ -11,14 +15,13 @@
   height: var(--size);
   border: 2px solid var(--portrait-frame, var(--r-common));
   outline: 1px solid #000;
-  background: color-mix(in srgb, var(--portrait-primal, var(--p-iron)) 30%, #0a1030);
+  background: color-mix(in srgb, var(--portrait-primal, var(--p-iron)) 30%, #0a1030) var(--portrait-ground, none) center / cover no-repeat;
   overflow: hidden;
 }
 .hero-portrait--xs { --size: 36px; }
 .hero-portrait--sm, .hero-portrait--md { --size: 68px; }
 .hero-portrait--lg, .hero-portrait--xl { --size: 132px; }
-.hero-portrait__art { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-.hero-portrait__frame, .hero-portrait__halo, .hero-portrait__glyph { display: none; }
+.hero-portrait__art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
 .status-dot {
   position: absolute;
   right: 0;
@@ -34,30 +37,25 @@
 .status-dot--dead { background: #000; outline-color: var(--ink-faint); }
 .status-dot--retired { background: var(--ink-dim); }
 
-/* Sprites: a 1× or 2× window onto the figure, cropped with negative margins. */
-.hero-sprite { --k: 1; position: relative; display: block; flex: none; width: calc(84px * var(--k)); height: calc(80px * var(--k)); overflow: hidden; }
-.hero-sprite img { display: block; width: calc(160px * var(--k)); height: calc(144px * var(--k)); max-width: none; margin: calc(-60px * var(--k)) 0 0 calc(-38px * var(--k)); image-rendering: pixelated; }
-.hero-sprite--lg, .hero-sprite--xl { --k: 2; }
+/* Sprites fill their 320×288 canvas, so a box with the same 10:9 ratio shows the whole figure. */
+.hero-sprite { --w: 80px; position: relative; display: block; flex: none; width: var(--w); aspect-ratio: 10 / 9; }
+.hero-sprite img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; image-rendering: auto; }
+.hero-sprite--md { --w: 120px; }
+.hero-sprite--lg, .hero-sprite--xl { --w: 160px; }
 .hero-sprite--enemy img { transform: scaleX(-1); }
 
-/* Scene backdrops: set --scene (url) inline, pick the scale with --scene-k. */
+/* Scene backdrops (1280×576): set --scene inline; cover with a focal point. */
 .scene {
-  --scene-k: 3;
   background-color: var(--ground);
   background-image: var(--scene);
   background-repeat: no-repeat;
-  background-position: center bottom;
-  background-size: calc(160px * var(--scene-k)) calc(72px * var(--scene-k));
-  image-rendering: pixelated;
+  background-position: var(--focus-x, 50%) var(--focus-y, 70%);
+  background-size: cover;
 }
-@media (min-width: 560px) { .scene { --scene-k: 5; } }
-@media (min-width: 900px) { .scene { --scene-k: 7; } }
-@media (min-width: 1200px) { .scene { --scene-k: 9; } }
-@media (min-width: 1500px) { .scene { --scene-k: 11; } }
 
 /* Effect sprites (hits, heals, rewards). */
-.fx { position: absolute; z-index: 3; width: auto; height: auto; pointer-events: none; image-rendering: pixelated; animation: flash-fx 420ms steps(6) both; }
-.fx-badge { display: block; margin: 0 auto; zoom: 2; image-rendering: pixelated; animation: fanfare 600ms steps(6) both; }
+.fx { position: absolute; z-index: 3; width: 112px; height: auto; pointer-events: none; animation: flash-fx 420ms steps(6) both; }
+.fx-badge { display: block; width: 152px; height: auto; margin: -24px auto -12px; animation: fanfare 600ms steps(6) both; }
 
 /* The crest (pixel shield). */
 .crest { display: grid; place-items: center; flex: none; }

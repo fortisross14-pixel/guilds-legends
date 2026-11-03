@@ -1,3 +1,4 @@
+/* global document */
 // Paints the pixel overworld behind the World map (public/ui/overworld.png).
 // Seeded and deterministic: land grows around the real location coordinates,
 // and each area takes the terrain of its nearest settlement's primal.
