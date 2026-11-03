@@ -114,6 +114,10 @@ export function createNewGame(options = {}) {
       activeTravel: null,
       roadEvents: [],
       knowledge: { locations: { dunmere: 'visited' }, events: {}, sources: {} },
+      // Walkable scenes: the wild area the guild is in (null = in town), and
+      // per-scene positions, discoveries, conversations and wild-area state.
+      wildAreaId: null,
+      exploration: { positions: {}, discovered: {}, talked: {}, npcs: {}, wild: {} },
     },
     pendingRoadEvent: null,
     inventory: { potion: 3, antidote: 1 },
@@ -168,6 +172,8 @@ export function createNewGame(options = {}) {
       opening: { phase: 'house', choices: [] },
       oldRoadIntroduced: false,
       harvestMeleeIntroduced: false,
+      // Flags set by dialogue choices (src/data/dialogue).
+      dialogue: {},
       firstMissionInspected: false,
       firstHeroInspected: false,
       goalsInspected: false,

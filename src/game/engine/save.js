@@ -4,6 +4,7 @@ import { APPOINTMENTS, CHAPTER_GOALS, CLASSES, normalizeClassId, REGIONS, SAGA_D
 import { FORMATION_TYPES, PARTY_ROLES, emptyFormations, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, LOCATIONS, PRIMALS, PRIMAL_IDS, RARITIES } from '../../data/world.js';
 import { GUILD_BLUEPRINTS } from '../../data/universe.js';
+import { WILD_AREAS } from '../../data/wilds/index.js';
 import { artifactEffectFromPrestige, defaultAmbitionForHero } from '../legacy.js';
 import {
   MAX_CHRONICLE,
@@ -484,6 +485,7 @@ export function validateGame(state) {
   if (!state.legacy || !Array.isArray(state.legacy.inheritedAmbitions)) errors.push('Legacy state is missing.');
 
   if (state.world?.activeTravel && !LOCATION_BY_ID[state.world.activeTravel.toId]) errors.push('Travel destination is invalid.');
+  if (state.world?.wildAreaId && (!WILD_AREAS[state.world.wildAreaId] || state.world.activeTravel)) errors.push('Wild area state is invalid.');
   if (state.activeEncounter && !['active', 'won', 'lost'].includes(state.activeEncounter.status)) errors.push('Combat encounter state is invalid.');
   if (state.activeMissionGame && !['active', 'won', 'lost', 'partial'].includes(state.activeMissionGame.status))
     errors.push('Mission challenge state is invalid.');

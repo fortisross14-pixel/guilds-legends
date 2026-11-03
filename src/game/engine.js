@@ -64,7 +64,6 @@ export {
 } from './engine/dashboard.js';
 export { createNewGame } from './engine/state.js';
 export { completeFallenBannerOpening } from './engine/dashboard.js';
-export { recordDunmereExploration } from './engine/dashboard.js';
 export { getWorldKnowledge } from './engine/dashboard.js';
 export { getLivingHistory } from './engine/dashboard.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
@@ -74,6 +73,21 @@ export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpe
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
+export {
+  checkCondition,
+  getDialogueView,
+  getDialogueReply,
+  talkTo,
+  chooseDialogueOption,
+  saveScenePosition,
+  recordSceneVisit,
+  getWildAreaView,
+  enterWildArea,
+  leaveWildArea,
+  gatherAtSpot,
+  restAtCamp,
+  startWildBattle,
+} from './engine/exploration.js';
 export {
   LADDERS,
   LADDER_LABELS,

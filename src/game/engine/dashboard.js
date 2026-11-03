@@ -3,7 +3,6 @@
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
 import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID } from '../../data/world.js';
-import { DUNMERE_DOORS, DUNMERE_NPCS, DUNMERE_SPAWN } from '../../data/dunmere.js';
 import { tournamentRequirements } from './tournaments.js';
 import { WEEKS_PER_MONTH, campaignWeekSerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
@@ -41,44 +40,6 @@ export function completeFallenBannerOpening(state, choices = []) {
   const next = clone(state);
   next.flags ||= {};
   next.flags.opening = { phase: 'complete', choices: Array.isArray(choices) ? choices.slice(0, 3) : [] };
-  next.world.exploration ||= {};
-  next.world.exploration.dunmere = { ...DUNMERE_SPAWN, discovered: ['house'] };
-  return finalize(next);
-}
-
-/** Persists exploration facts only; walking itself remains presentation state. */
-export function recordDunmereExploration(state, targetId, position) {
-  const next = clone(state);
-  next.world.exploration ||= {};
-  const town = next.world.exploration.dunmere || { ...DUNMERE_SPAWN, discovered: [], conversations: {} };
-  town.discovered = [...new Set([...(town.discovered || []), targetId])];
-  town.conversations ||= {};
-  if (targetId.startsWith('npc:')) town.conversations[targetId.slice(4)] = true;
-  if (targetId === 'npc:merchant') next.flags.oldRoadIntroduced = true;
-  if (targetId === 'npc:fighter' && next.missionHistory?.some((mission) => mission.templateId === 'wolves-old-road')) {
-    next.flags.harvestMeleeIntroduced = true;
-  }
-  next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
-  next.world.knowledge.locations ||= {};
-  next.world.knowledge.events ||= {};
-  next.world.knowledge.sources ||= {};
-  if (targetId === 'npc:traveler') {
-    next.world.knowledge.locations.ironford = 'rumored';
-    next.world.knowledge.sources.ironford = { source: 'Iven Quill', note: 'Follow the river east. You can hear the foundries before you see the walls.' };
-  }
-  if (targetId === 'npc:fighter' && next.flags.harvestMeleeIntroduced) {
-    next.world.knowledge.events['dunmere-harvest-melee'] = { source: 'Nia Voss', note: 'The Dunmere Harvest Melee is held at the local arena.' };
-  }
-  if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
-    town.x = Math.round(position.x);
-    town.y = Math.round(position.y);
-  }
-  const dunmereTargets = [...DUNMERE_DOORS, ...DUNMERE_NPCS].map((target) => `${DUNMERE_DOORS.includes(target) ? 'door' : 'npc'}:${target.id}`);
-  if (dunmereTargets.every((target) => town.discovered.includes(target))) {
-    town.fullyExplored = true;
-    next.world.knowledge.locations.dunmere = 'fullyExplored';
-  }
-  next.world.exploration.dunmere = town;
   return finalize(next);
 }
 
@@ -88,8 +49,7 @@ export function getWorldKnowledge(state) {
   const visited = new Set(state.world?.visitedLocationIds || []);
   return Object.fromEntries(
     LOCATIONS.map((location) => {
-      const exploration = state.world?.exploration?.[location.id];
-      if (exploration?.fullyExplored) return [location.id, 'fullyExplored'];
+      if (explicit[location.id] === 'fullyExplored') return [location.id, 'fullyExplored'];
       return [location.id, visited.has(location.id) ? 'visited' : explicit[location.id] || 'unknown'];
     }),
   );

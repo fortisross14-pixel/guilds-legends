@@ -59,6 +59,9 @@ export function startTravel(state, destinationId) {
   if (next.world.knowledge.locations[destinationId] !== 'visited' && next.world.knowledge.locations[destinationId] !== 'fullyExplored') {
     next.world.knowledge.locations[destinationId] = 'discovered';
   }
+  // Leaving a wild area to travel; arriving starts at the town's gate, not the old spot.
+  next.world.wildAreaId = null;
+  if (next.world.exploration?.positions) delete next.world.exploration.positions[destinationId];
   next.world.activeTravel = {
     fromId: next.world.currentLocationId,
     toId: destinationId,

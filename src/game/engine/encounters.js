@@ -1,9 +1,10 @@
 // @ts-check
 // Active combat and mission-game actions, and concluding them.
 import { ONBOARDING_STEPS } from '../../data/content.js';
+import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
-import { addChronicle, clone, commitRng, completeTutorialTargetInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
+import { addChronicle, campaignWeekSerial, clone, commitRng, completeTutorialTargetInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
 import { applyXpInPlace } from './heroes.js';
 import { addItemsInPlace, lootNames, rollLoot, settleBattleItemsInPlace } from './inventory.js';
 import { evaluateStateInPlace } from './goals.js';
@@ -93,6 +94,53 @@ export function fleeActiveCombat(state) {
   return { state: finalize(next), error: null, encounter: next.activeEncounter };
 }
 
+/** A battle with a group standing in a wild area: rewards, injuries, and the group stays away for a while. */
+function concludeWildCombatInPlace(next, encounter, combatResult) {
+  const { areaId, groupId } = encounter.sourceMeta || {};
+  const area = WILD_AREAS[areaId];
+  const group = areaGroups(area).find((item) => item.id === groupId);
+  if (!area || !group) return;
+  const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
+  const rng = rngFor(next, `wild-combat:${encounter.id}`);
+  next.world.exploration ||= {};
+  next.world.exploration.wild ||= {};
+  const wild = (next.world.exploration.wild[areaId] ||= { cleared: {}, gathered: {}, visited: true, bosses: 0 });
+  if (combatResult.playerWon) {
+    const reward = group.reward || {};
+    const gold = reward.gold ? rng.int(reward.gold[0], reward.gold[1]) : 0;
+    next.guild.crowns += gold;
+    const xp = fighters.map((hero) => {
+      applyXpInPlace(hero, reward.xp || 20, next, area.name);
+      return { heroId: hero.id, name: hero.name, xp: reward.xp || 20 };
+    });
+    const loot = { ...(reward.items || {}) };
+    if (group.isBoss) Object.entries(rollLoot(rng, next.guild.tierIndex, 1)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
+    addItemsInPlace(next, loot);
+    wild.cleared[groupId] = campaignWeekSerial(next) + (group.respawnWeeks || WILD_RESPAWN.enemies);
+    if (group.isBoss) wild.bosses = (wild.bosses || 0) + 1;
+    pushMoment(next, { type: 'victory', title: `${encounter.title} defeated`, grade: 'Victory', gold, xp, loot: lootNames(loot) });
+    addChronicle(next, {
+      type: 'combat-victory',
+      importance: group.isBoss ? 3 : 1,
+      title: group.isBoss ? `${encounter.title} falls` : `${encounter.title} driven off`,
+      text: `${fighters.map((hero) => hero.name).join(', ')} win in ${area.name} and take ${gold} crowns.`,
+      heroIds: fighters.map((hero) => hero.id),
+      tags: ['combat', 'explore'],
+    });
+  } else {
+    fighters
+      .filter((hero) => (combatResult.knockedOut || []).includes(hero.id))
+      .forEach((hero) => {
+        hero.status = 'injured';
+        hero.injury = `Wounded in ${area.name}`;
+        hero.injuryWeeks = rng.int(1, 3);
+        hero.monthlyActivity = 'Infirmary';
+      });
+    next.notifications.push({ id: `wild-loss-${encounter.id}`, tone: 'red', title: `Pushed back in ${area.name}`, text: `${encounter.title} still holds the ground. Rest at the camp and try again.` });
+  }
+  commitRng(next, rng);
+}
+
 function concludeRoadCombatInPlace(next, encounter, combatResult) {
   const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
   const tier = next.guild.tierIndex + 1;
@@ -166,6 +214,13 @@ export function concludeActiveCombat(state, mutate = false) {
     next.activeEncounter = null;
     evaluateStateInPlace(next);
     return { state: finalize(next), error: null, result: { kind: 'road-combat', combat: combatResult } };
+  }
+
+  if (encounter.sourceType === 'wild') {
+    concludeWildCombatInPlace(next, encounter, combatResult);
+    next.activeEncounter = null;
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'wild-combat', combat: combatResult } };
   }
 
   if (encounter.sourceType === 'mission') {
