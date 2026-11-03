@@ -1,7 +1,7 @@
 // @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
 import { FACILITIES } from '../../data/content.js';
-import { LOCATION_BY_ID, travelDuration, unlockedLocations } from '../../data/world.js';
+import { LOCATION_BY_ID, travelWeeks, unlockedLocations } from '../../data/world.js';
 import {
   activeHeroCount,
   addChronicle,
@@ -33,9 +33,9 @@ export function getTravelQuote(state, destinationId) {
   const fromId = state.world?.currentLocationId || 'dunmere';
   const destination = LOCATION_BY_ID[destinationId];
   const unlocked = unlockedLocations(state.guild.tierIndex).some((location) => location.id === destinationId);
-  const months = destination ? travelDuration(fromId, destinationId) : 0;
-  const cost = Math.round(35 + months * (38 + activeHeroCount(state) * 7) * (appointmentHolder(state, 'Quartermaster') ? 0.86 : 1));
-  return { destination, unlocked, months, cost, same: fromId === destinationId };
+  const weeks = destination ? travelWeeks(fromId, destinationId) : 0;
+  const cost = Math.round(35 + weeks * (16 + activeHeroCount(state) * 3) * (appointmentHolder(state, 'Quartermaster') ? 0.86 : 1));
+  return { destination, unlocked, weeks, cost, same: fromId === destinationId };
 }
 
 export function startTravel(state, destinationId) {
@@ -57,22 +57,22 @@ export function startTravel(state, destinationId) {
   next.world.activeTravel = {
     fromId: next.world.currentLocationId,
     toId: destinationId,
-    monthsRemaining: quote.months,
-    totalMonths: quote.months,
+    weeksRemaining: quote.weeks,
+    totalWeeks: quote.weeks,
     cost: quote.cost,
   };
   addChronicle(next, {
     type: 'travel',
     importance: 1,
     title: `The guild departs for ${quote.destination.name}`,
-    text: `${next.guild.tierIndex === 0 ? activeHeroCount(next) : next.heroes.filter((hero) => hero.status === 'available' && !hero.branchId).length} headquarters heroes take the road. Deployed companies and branches continue operating. The journey will require ${quote.months} month${quote.months === 1 ? '' : 's'} and ${quote.cost} crowns.`,
+    text: `${next.guild.tierIndex === 0 ? activeHeroCount(next) : next.heroes.filter((hero) => hero.status === 'available' && !hero.branchId).length} headquarters heroes take the road. Deployed companies and branches continue operating. The journey will require ${quote.weeks} week${quote.weeks === 1 ? '' : 's'} and ${quote.cost} crowns.`,
     tags: ['travel', quote.destination.primal],
   });
   next.notifications.push({
     id: `travel-${destinationId}-${next.date.year}-${next.date.month}`,
     tone: 'blue',
     title: `Journey to ${quote.destination.name}`,
-    text: `${quote.months} month${quote.months === 1 ? '' : 's'} on the road.`,
+    text: `${quote.weeks} week${quote.weeks === 1 ? '' : 's'} on the road.`,
   });
   return { state: finalize(next), error: null };
 }
@@ -80,9 +80,9 @@ export function startTravel(state, destinationId) {
 export function progressTravelInPlace(state, rng) {
   const travel = state.world?.activeTravel;
   if (!travel) return;
-  travel.monthsRemaining -= 1;
+  travel.weeksRemaining -= 1;
   // Road events planned at departure fire on their month (one per month).
-  const elapsed = travel.totalMonths - travel.monthsRemaining;
+  const elapsed = travel.totalWeeks - travel.weeksRemaining;
   const roadEvents = state.world.roadEvents || [];
   const due = roadEvents.find((event) => event.month <= elapsed);
   if (due) {
@@ -92,9 +92,9 @@ export function progressTravelInPlace(state, rng) {
   state.heroes
     .filter((hero) => hero.status === 'available')
     .forEach((hero) => {
-      hero.fatigue = clamp(hero.fatigue + rng.int(1, 4), 0, 100);
+      hero.fatigue = clamp(hero.fatigue + rng.int(0, 1), 0, 100);
     });
-  if (travel.monthsRemaining > 0) return;
+  if (travel.weeksRemaining > 0) return;
   const destination = LOCATION_BY_ID[travel.toId] || LOCATION_BY_ID.dunmere;
   state.world.currentLocationId = destination.id;
   state.world.visitedLocationIds ||= [];

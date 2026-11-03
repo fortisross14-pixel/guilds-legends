@@ -12,6 +12,8 @@ import {
   concludeActiveCombat,
   activeHeroCount,
   advanceMonths,
+  advanceWeeks,
+  campaignWeekSerial,
   compactForSave,
   createNewGame,
   designateSuccessor,
@@ -58,7 +60,6 @@ import {
   startTravel,
   travelTo,
   resolveRoadEvent,
-  restAtGuildHall,
   planRoadEvents,
   makeRng,
   takePatronLoan,
@@ -159,13 +160,13 @@ test('injured heroes can be sent to the infirmary and recover faster', () => {
   const founder = state.heroes[0];
   founder.status = 'injured';
   founder.injury = 'Test wound';
-  founder.injuryMonths = 4;
+  founder.injuryWeeks = 12;
   founder.health = 45;
   founder.monthlyActivity = 'Infirmary';
   const advanced = advanceMonths(state, 1);
   state = advanced.state;
   const recovered = state.heroes[0];
-  assert.ok(recovered.injuryMonths <= 2, `injury months remained ${recovered.injuryMonths}`);
+  assert.ok(recovered.injuryWeeks <= 4, `injury weeks remained ${recovered.injuryWeeks}`);
   assert.ok(recovered.health > 45);
   assert.equal(state.council.lastReport.activities[0].activity, 'Infirmary');
 });
@@ -293,14 +294,14 @@ test('missions and recruitment are local; travel consumes time and opens a new m
   const quote = getTravelQuote(state, 'greenhollow');
   assert.equal(quote.unlocked, true);
   assert.ok(quote.cost > 0);
-  assert.ok(quote.months >= 1);
+  assert.ok(quote.weeks >= 1);
   const beforeGold = state.guild.crowns;
   const journey = startTravel(state, 'greenhollow');
   assert.equal(journey.error, null);
   state = journey.state;
   assert.equal(state.guild.crowns, beforeGold - quote.cost);
   assert.equal(state.world.activeTravel.toId, 'greenhollow');
-  state = advanceMonths(state, quote.months).state;
+  state = advanceWeeks(state, quote.weeks).state;
   assert.equal(state.world.currentLocationId, 'greenhollow');
   assert.equal(state.world.activeTravel, null);
   assert.ok(state.candidates.some((candidate) => candidate.locationId === 'greenhollow'));
@@ -920,6 +921,7 @@ test('a broke guild recovers through a patron loan without the autoplay emergenc
   assert.equal(state.stats.missionsCompleted, 1);
   assert.ok(state.guild.crowns > 0, `treasury should be positive, was ${state.guild.crowns}`);
   assert.equal(state.guild.unpaidMonths, 0);
+  state = advanceMonths(state, 1).state;
   assert.ok(state.guild.loan.remaining < offer.repayment, 'installments should be paid down monthly');
   assert.deepEqual(validateGame(state), []);
 });
@@ -995,7 +997,7 @@ function travelAll(state, destinationId) {
   const events = [];
   while (next.pendingRoadEvent) {
     events.push(next.pendingRoadEvent.type);
-    const option = next.pendingRoadEvent.type === 'ambush' ? 'fight' : 'ignore';
+    const option = next.pendingRoadEvent.type === 'ambush' ? 'pay' : 'ignore';
     const choice = ['shortcut', 'delay'].includes(next.pendingRoadEvent.type) ? (next.pendingRoadEvent.type === 'delay' ? 'wait' : 'safe') : option;
     result = resolveRoadEvent(next, choice);
     assert.equal(result.error, null);
@@ -1007,13 +1009,13 @@ function travelAll(state, destinationId) {
 test('travel moves the guild and advances time by the journey length', () => {
   let state = createNewGame({ seed: 30001 });
   state = hireFirstCompanion(state);
-  const months = getTravelQuote(state, 'ironford').months;
-  const before = state.date.year * 12 + state.date.month;
+  const weeks = getTravelQuote(state, 'ironford').weeks;
+  const before = campaignWeekSerial(state);
   const { state: arrived, events } = travelAll(state, 'ironford');
   const delays = events.filter((type) => type === 'delay').length;
   assert.equal(arrived.world.currentLocationId, 'ironford');
   assert.equal(arrived.world.activeTravel, null);
-  assert.equal(arrived.date.year * 12 + arrived.date.month - before, months + delays);
+  assert.equal(campaignWeekSerial(arrived) - before, weeks + delays);
   assert.deepEqual(validateGame(arrived), []);
 });
 
@@ -1029,10 +1031,9 @@ test('road events are seeded: the same journey yields the same events', () => {
   }
 });
 
-test('resting at the Guild Hall runs the monthly council resolution', () => {
+test('advancing two months runs the monthly council resolution twice', () => {
   let state = hireFirstCompanion(createNewGame({ seed: 30003 }));
-  assert.ok(restAtGuildHall(state, 4).error);
-  const rested = restAtGuildHall(state, 2);
+  const rested = advanceMonths(state, 2);
   assert.equal(rested.error, null);
   assert.equal(rested.state.date.month, state.date.month + 2);
   assert.equal(rested.state.council.lastReport.advancedMonths, 2);
@@ -1150,7 +1151,7 @@ test('class skills unlock by level and level-ups announce new skills', () => {
   const before = state.moments.length;
   state = structuredClone(state);
   state.heroes[0].xp = xpForNextLevel(1) + xpForNextLevel(2) - 1;
-  state = restAtGuildHall(state, 1).state;
+  state = advanceMonths(state, 1).state;
   const levelUp = state.moments.slice(before).find((moment) => moment.type === 'levelUp' && moment.heroId === founder.id);
   assert.ok(levelUp, 'a level-up moment is queued');
   assert.ok(levelUp.levelAfter >= 3);

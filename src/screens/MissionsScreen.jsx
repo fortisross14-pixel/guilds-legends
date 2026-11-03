@@ -20,6 +20,38 @@ function buildBestFormation(state, formationType) {
     .filter(Boolean);
 }
 
+// Fills the formation with available main-party heroes (best role fit first).
+function buildMainPartyFormation(state, formationType) {
+  const party = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter((hero) => hero?.status === 'available');
+  if (!party.length) return null;
+  const used = new Set();
+  return FORMATION_TYPES[formationType].slots
+    .map((slot) => {
+      const hero = party.filter((item) => !used.has(item.id)).sort((a, b) => roleRating(b, slot.role) - roleRating(a, slot.role))[0];
+      if (!hero) return null;
+      used.add(hero.id);
+      return { slotId: slot.id, role: slot.role, heroId: hero.id };
+    })
+    .filter(Boolean);
+}
+
+function MainPartyNotice({ state }) {
+  const members = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter(Boolean);
+  if (!members.length) return <p className="main-party-notice muted">No main party set. Pick one in the Guild Hall War Room to pre-fill companies.</p>;
+  const missing = members.filter((hero) => hero.status !== 'available');
+  if (!missing.length) return <p className="main-party-notice">Pre-filled with your main party.</p>;
+  const substitutes = state.heroes
+    .filter((hero) => hero.status === 'available' && !state.guild.mainParty.includes(hero.id))
+    .sort((a, b) => b.power - a.power)
+    .slice(0, missing.length);
+  return (
+    <p className="main-party-notice main-party-notice--warning">
+      Main party: {missing.map((hero) => `${hero.name} (${hero.status === 'injured' ? 'injured' : 'away'})`).join(', ')} unavailable.
+      {substitutes.length ? ` Suggested substitute${substitutes.length > 1 ? 's' : ''}: ${substitutes.map((hero) => hero.name).join(', ')}.` : ''}
+    </p>
+  );
+}
+
 export default function MissionsScreen({ state, actions, navigate }) {
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
   const operationalIds = [...operationalLocationIds(state)];
@@ -53,7 +85,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
     const type = formationForMission(selected);
     setFormationType(type);
     const saved = (state.guild.formations?.[type] || []).filter((assignment) => availableHeroes.some((hero) => hero.id === assignment.heroId));
-    setAssignments(saved);
+    setAssignments(buildMainPartyFormation(state, type) || saved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
@@ -66,7 +98,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const changeFormation = (type) => {
     setFormationType(type);
     const availableIds = new Set(availableHeroes.map((hero) => hero.id));
-    setAssignments((state.guild.formations?.[type] || []).filter((assignment) => availableIds.has(assignment.heroId)));
+    setAssignments(buildMainPartyFormation(state, type) || (state.guild.formations?.[type] || []).filter((assignment) => availableIds.has(assignment.heroId)));
   };
 
   const assignSlot = (slot, heroId) => {
@@ -185,7 +217,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
                   </div>
                   <div className="mission-card__footer">
                     <span>
-                      {mission.duration} month{mission.duration === 1 ? '' : 's'}
+                      {mission.duration} week{mission.duration === 1 ? '' : 's'}
                     </span>
                     <strong>{mission.reward} crowns</strong>
                     <span>+{mission.fame} fame</span>
@@ -308,7 +340,11 @@ export default function MissionsScreen({ state, actions, navigate }) {
                 </p>
               </div>
 
+              <MainPartyNotice state={state} />
               <div className="formation-toolbar">
+                <Button size="sm" onClick={() => setAssignments(buildMainPartyFormation(state, formationType) || [])} disabled={!(state.guild.mainParty || []).length}>
+                  Use main party
+                </Button>
                 <Button size="sm" onClick={autoBuild}>
                   Build best available
                 </Button>
@@ -476,7 +512,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
                         : ['Diplomacy', 'Expedition', 'Intrigue'].includes(mission.formationType) && !mission.missionGameResolved
                           ? `${mission.formationType} challenge waiting`
                           : 'Aftermath decision waiting'
-                      : `${mission.remaining} month${mission.remaining === 1 ? '' : 's'} remaining`
+                      : `${mission.remaining} week${mission.remaining === 1 ? '' : 's'} remaining`
                   }
                   tone={mission.remaining <= 0 ? 'gold' : 'blue'}
                 />

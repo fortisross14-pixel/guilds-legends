@@ -237,7 +237,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       </label>
                     ) : null}
                     <span className={`availability availability--${hero.status}`}>
-                      {hero.status === 'injured' ? `${hero.injury} · ${hero.injuryMonths}m` : hero.status}
+                      {hero.status === 'injured' ? `${hero.injury} · ${hero.injuryWeeks}w` : hero.status}
                     </span>
                     <Button size="sm" onClick={() => actions.openHero(hero.id)}>
                       Career

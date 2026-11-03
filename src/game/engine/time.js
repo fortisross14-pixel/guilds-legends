@@ -1,6 +1,6 @@
 // @ts-check
 // The monthly and annual loop: council activities, aging, advanceMonths.
-import { normalizeClassId, MONTHS, ONBOARDING_STEPS } from '../../data/content.js';
+import { normalizeClassId, ONBOARDING_STEPS } from '../../data/content.js';
 import { LOCATIONS, unlockedLocations } from '../../data/world.js';
 import {
   MAX_HEROES,
@@ -18,6 +18,10 @@ import {
   getCurrentLocation,
   getHero,
   rngFor,
+  campaignWeekSerial,
+  dateLabel,
+  dateWeekSerial,
+  WEEKS_PER_MONTH,
 } from './core.js';
 import { applyXpInPlace, calculatePower, generateHero } from './heroes.js';
 import { makeCandidate, refreshCandidatesForLocationInPlace, updatePromiseDeadlinesInPlace } from './candidates.js';
@@ -63,25 +67,10 @@ function resolveMonthlyHeroActivities(state, rng) {
     let summary = '';
 
     if (hero.status === 'injured') {
-      const treatmentBonus = activity === 'Infirmary' ? 1 + Math.floor(infirmaryLevel / 2) : 0;
-      hero.injuryMonths -= 1 + treatmentBonus + (infirmaryLevel >= 3 && rng.chance(0.25) ? 1 : 0);
+      // Injuries count down weekly (weeklyInjuriesInPlace); the month adds care.
       hero.health = clamp(hero.health + 5 + infirmaryLevel * 3 + (activity === 'Infirmary' ? 5 : 0), 0, 100);
       hero.fatigue = clamp(hero.fatigue - (activity === 'Rest' ? 18 : 14), 0, 100);
-      if (hero.injuryMonths <= 0) {
-        hero.status = 'available';
-        hero.injury = null;
-        hero.health = Math.max(hero.health, 72);
-        state.notifications.push({
-          id: `recover-${hero.id}-${state.date.year}-${state.date.month}`,
-          tone: 'green',
-          title: `${hero.name} returns`,
-          text: 'Recovery is complete and the hero is available again.',
-        });
-        addHeroHistory(hero, state, { type: 'recovery', title: 'Returned from injury', text: 'Cleared by the guild infirmary.' });
-        summary = 'Cleared from injury and returned to active duty.';
-      } else {
-        summary = `${activity === 'Infirmary' ? 'Treated in the infirmary' : 'Rested'}; ${Math.max(1, hero.injuryMonths)} month${hero.injuryMonths === 1 ? '' : 's'} of recovery remain.`;
-      }
+      summary = `${activity === 'Infirmary' ? 'Treated in the infirmary' : 'Rested'}; ${Math.max(1, hero.injuryWeeks || 0)} week${hero.injuryWeeks === 1 ? '' : 's'} of recovery remain.`;
     } else if (activity === 'Rest') {
       hero.fatigue = clamp(hero.fatigue - (24 + infirmaryLevel * 2), 0, 100);
       hero.health = clamp(hero.health + 7 + infirmaryLevel, 0, 100);
@@ -317,91 +306,151 @@ function archiveOldHeroesInPlace(state) {
   }
 }
 
-export function advanceMonths(state, count = 1, mutate = false) {
-  if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
-  if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
-  if (state.pendingDecisions.length) return { state, error: 'Resolve the critical decision before advancing time.' };
-  if (state.pendingRoadEvent) return { state, error: 'Deal with the event on the road before advancing time.' };
+function pauseReason(state) {
+  if (state.activeEncounter) return 'Conclude the active combat before advancing time.';
+  if (state.activeMissionGame) return 'Conclude the active mission challenge before advancing time.';
+  if (state.pendingDecisions.length) return 'Resolve the critical decision before advancing time.';
+  if (state.pendingRoadEvent) return 'Deal with the event on the road before advancing time.';
   if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
-    return { state, error: 'Finish the active tournament before advancing time.' };
+    return 'Finish the active tournament before advancing time.';
   }
-  let next = mutate ? state : clone(state);
-  let advancedCount = 0;
-  let latestCouncilMonth = null;
+  return null;
+}
+
+/** Injuries heal one week at a time; the Infirmary heals twice as fast. */
+function weeklyInjuriesInPlace(state) {
+  state.heroes
+    .filter((hero) => hero.status === 'injured')
+    .forEach((hero) => {
+      hero.injuryWeeks = (hero.injuryWeeks || 1) - (hero.monthlyActivity === 'Infirmary' ? 2 : 1);
+      if (hero.injuryWeeks > 0) return;
+      hero.injuryWeeks = 0;
+      hero.status = 'available';
+      hero.injury = null;
+      hero.health = Math.max(hero.health, 72);
+      if (hero.monthlyActivity === 'Infirmary') hero.monthlyActivity = 'Training';
+      state.notifications.push({
+        id: `recover-${hero.id}-${campaignWeekSerial(state)}`,
+        tone: 'green',
+        title: `${hero.name} returns`,
+        text: 'Recovery is complete and the hero is available again.',
+      });
+      addHeroHistory(hero, state, { type: 'recovery', title: 'Returned from injury', text: 'Cleared by the guild infirmary.' });
+    });
+}
+
+/** Everything that happens once a month (on week 1). */
+function runMonthInPlace(next, rng) {
+  const upkeep = monthlyUpkeep(next);
+  next.guild.crowns -= upkeep;
+  if (next.guild.crowns < 0) {
+    next.stats.bankruptMonths += 1;
+    next.guild.fallen = next.guild.crowns < -900 || next.stats.bankruptMonths >= 6;
+  } else {
+    next.stats.bankruptMonths = Math.max(0, next.stats.bankruptMonths - 1);
+    if (next.guild.fallen && next.guild.crowns > 300) next.guild.fallen = false;
+  }
+  const debt = applyDebtInPlace(next);
+  const council = resolveMonthlyHeroActivities(next, rng);
+  const branches = simulateBranchesInPlace(next, rng);
+  simulateRivals(next, rng);
+  updatePromiseDeadlinesInPlace(next);
+  if (next.date.month === 0) annualCycle(next, rng);
+  refreshMissionsInPlace(next, rng);
+  if (!next.tournaments?.length || next.tournaments[0].year < next.date.year) createTournamentsInPlace(next, rng);
+  return { upkeep, debt, council, branches };
+}
+
+/**
+ * Advances time week by week. Monthly systems run when a new month starts.
+ * Stops early when a decision, battle, mission game, road event or tournament
+ * needs the player. A council report summarizes the advance when it crossed a month.
+ */
+export function advanceWeeks(state, count = 1, mutate = false) {
+  const blocked = pauseReason(state);
+  if (blocked) return { state, error: blocked };
+  const next = mutate ? state : clone(state);
+  const start = { crowns: next.guild.crowns, fame: next.guild.fame, legacy: next.guild.legacy, label: dateLabel(next) };
+  const summary = { weeks: 0, months: 0, upkeep: 0, loanPayment: 0, walkouts: [], scouts: 0, exhibitionFame: 0, activities: [], branches: [] };
   for (let step = 0; step < count; step += 1) {
     if (next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame || next.pendingRoadEvent) break;
-    const rng = rngFor(next, `advance-${step}`);
-    const upkeep = monthlyUpkeep(next);
-    const monthLabel = `${MONTHS[next.date.month]} ${next.date.year}`;
-    const crownsBefore = next.guild.crowns;
-    const fameBefore = next.guild.fame;
-    const legacyBefore = next.guild.legacy;
-    next.guild.crowns -= upkeep;
-    if (next.guild.crowns < 0) {
-      next.stats.bankruptMonths += 1;
-      next.guild.fallen = next.guild.crowns < -900 || next.stats.bankruptMonths >= 6;
-    } else {
-      next.stats.bankruptMonths = Math.max(0, next.stats.bankruptMonths - 1);
-      if (next.guild.fallen && next.guild.crowns > 300) next.guild.fallen = false;
-    }
-    const debt = applyDebtInPlace(next);
-    const councilResolution = resolveMonthlyHeroActivities(next, rng);
-    const branchResolution = simulateBranchesInPlace(next, rng);
-    simulateRivals(next, rng);
+    const rng = rngFor(next, `week-${step}`);
     progressTravelInPlace(next, rng);
-
+    weeklyInjuriesInPlace(next);
     next.activeMissions.forEach((mission) => {
       mission.remaining -= 1;
     });
     queueDueCombatMissionInPlace(next);
     queueDueMissionGameInPlace(next);
-
-    next.date.month += 1;
-    if (next.date.month >= 12) {
-      next.date.month = 0;
-      next.date.year += 1;
+    next.date.week = (next.date.week || 0) + 1;
+    if (next.date.week >= WEEKS_PER_MONTH) {
+      next.date.week = 0;
+      next.date.month += 1;
+      if (next.date.month >= 12) {
+        next.date.month = 0;
+        next.date.year += 1;
+      }
+      const month = runMonthInPlace(next, rng);
+      summary.months += 1;
+      summary.upkeep += month.upkeep;
+      summary.loanPayment += month.debt.loanPayment;
+      summary.walkouts.push(...month.debt.walkouts);
+      summary.scouts += month.council.scouts || 0;
+      summary.exhibitionFame += month.council.exhibitionFame || 0;
+      summary.activities = month.council.results;
+      summary.branches = month.branches;
     }
-    updatePromiseDeadlinesInPlace(next);
     simulateScheduledCompetitionsInPlace(next, rng);
-    if (next.date.month === 0) annualCycle(next, rng);
-    refreshMissionsInPlace(next, rng);
-    if (!next.tournaments?.length || next.tournaments[0].year < next.date.year) createTournamentsInPlace(next, rng);
-    latestCouncilMonth = {
-      id: `council-${next.date.year}-${next.date.month}-${step}`,
-      label: monthLabel,
-      upkeep,
-      loanPayment: debt.loanPayment,
-      walkouts: debt.walkouts,
-      crownsBefore,
-      crownsAfter: next.guild.crowns,
-      fameDelta: next.guild.fame - fameBefore,
-      legacyDelta: next.guild.legacy - legacyBefore,
-      scouts: councilResolution.scouts,
-      exhibitionFame: councilResolution.exhibitionFame,
-      activities: councilResolution.results,
-      branches: branchResolution,
-    };
-    advancedCount += 1;
+    summary.weeks += 1;
     commitRng(next, rng);
     if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'advanceMonth') completeTutorialTargetInPlace(next, 'advanceMonth');
     evaluateStateInPlace(next);
-    recordRankSnapshotInPlace(next);
-    if (next.date.month % 3 === 0) pushRankingsMomentInPlace(next, 'Season rankings', next.rankHistory.at(-4) || null);
+    if (next.date.week === 0 && summary.weeks > 0 && summary.months > 0) {
+      recordRankSnapshotInPlace(next);
+      if (next.date.month % 3 === 0) pushRankingsMomentInPlace(next, 'Season rankings', next.rankHistory.at(-4) || null);
+    }
   }
-  if (advancedCount > 0 && latestCouncilMonth) {
+  if (summary.months > 0) {
     next.council ||= { lastReport: null, unread: false };
-    next.council.lastReport = { ...latestCouncilMonth, advancedMonths: advancedCount };
+    next.council.lastReport = {
+      id: `council-${campaignWeekSerial(next)}`,
+      label: `${start.label} → ${dateLabel(next)}`,
+      advancedWeeks: summary.weeks,
+      advancedMonths: summary.months,
+      upkeep: summary.upkeep,
+      loanPayment: summary.loanPayment,
+      walkouts: summary.walkouts,
+      crownsBefore: start.crowns,
+      crownsAfter: next.guild.crowns,
+      fameDelta: next.guild.fame - start.fame,
+      legacyDelta: next.guild.legacy - start.legacy,
+      scouts: summary.scouts,
+      exhibitionFame: summary.exhibitionFame,
+      activities: summary.activities,
+      branches: summary.branches,
+    };
     next.council.unread = true;
   }
   return { state: finalize(next), error: null };
 }
 
+/** +N months: the same week, N months later. */
+export function advanceMonths(state, count = 1, mutate = false) {
+  return advanceWeeks(state, count * WEEKS_PER_MONTH, mutate);
+}
+
+/** Advance until a given { year, month, week }. */
+export function advanceToDate(state, date) {
+  const weeks = dateWeekSerial(date) - campaignWeekSerial(state);
+  if (!Number.isFinite(weeks) || weeks <= 0) return { state, error: 'Pick a date in the future.' };
+  return advanceWeeks(state, weeks);
+}
+
+/** Advance until the next deployed company returns (or the journey ends); one week if nothing is pending. */
 export function advanceToNextEvent(state) {
-  if (state.activeEncounter) return { state, error: 'Conclude the active combat before advancing time.' };
-  if (state.activeMissionGame) return { state, error: 'Conclude the active mission challenge before advancing time.' };
-  if (state.pendingDecisions.length) return { state, error: 'Resolve the critical decision before advancing time.' };
-  if (state.pendingRoadEvent) return { state, error: 'Deal with the event on the road before advancing time.' };
-  if (!state.activeMissions.length) return advanceMonths(state, 1);
-  const months = Math.max(1, Math.min(...state.activeMissions.map((mission) => mission.remaining)));
-  return advanceMonths(state, months);
+  const blocked = pauseReason(state);
+  if (blocked) return { state, error: blocked };
+  const waits = state.activeMissions.map((mission) => mission.remaining);
+  if (state.world?.activeTravel) waits.push(state.world.activeTravel.weeksRemaining);
+  return advanceWeeks(state, Math.max(1, waits.length ? Math.min(...waits) : 1));
 }

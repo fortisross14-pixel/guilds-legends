@@ -66,7 +66,7 @@ export { createNewGame } from './engine/state.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
-export { MAX_REST_MONTHS, planRoadEvents, travelTo, continueJourney, resolveRoadEvent, restAtGuildHall, launchExpedition } from './engine/timeActions.js';
+export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition } from './engine/timeActions.js';
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
@@ -83,3 +83,7 @@ export {
   officialPointsFor,
 } from './engine/rankings.js';
 export { noteTutorialStep, skipTutorial } from './engine/dashboard.js';
+export { advanceWeeks, advanceToDate } from './engine/time.js';
+export { WEEKS_PER_MONTH, campaignWeekSerial, dateWeekSerial, dateFromWeekSerial } from './engine/core.js';
+export { getCalendarEntries } from './engine/dashboard.js';
+export { MAIN_PARTY_SIZE, isHeroAway, sendIdleHeroesTo, autoAssignRooms, setMainParty, toggleMainPartyMember } from './engine/recruitment.js';

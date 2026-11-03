@@ -7,6 +7,7 @@ import { BRANCH_RULES } from '../legacy.js';
 export const SCHEMA_VERSION = 15;
 
 export const MAX_MOMENTS = 12;
+export const WEEKS_PER_MONTH = 4;
 
 export const MAX_CHRONICLE = 900;
 
@@ -61,7 +62,7 @@ export function makeRng(seed) {
 }
 
 export function rngFor(state, salt = '') {
-  const rng = makeRng((state.rngState ^ hashString(`${salt}:${state.date.year}:${state.date.month}`)) >>> 0);
+  const rng = makeRng((state.rngState ^ hashString(`${salt}:${state.date.year}:${state.date.month}:${state.date.week || 0}`)) >>> 0);
   return rng;
 }
 
@@ -264,6 +265,7 @@ export function completeTutorialTargetInPlace(state, target) {
   state.tutorial.step += 1;
   if (state.tutorial.step >= ONBOARDING_STEPS.length) {
     state.tutorial.completed = true;
+    state.notifications = state.notifications.filter((item) => item.id !== 'welcome' && !item.id.startsWith('tutorial-'));
     addChronicle(state, {
       type: 'milestone',
       importance: 3,
@@ -333,4 +335,18 @@ export function pushMoment(state, moment) {
     ...moment,
   });
   if (state.moments.length > MAX_MOMENTS) state.moments.splice(0, state.moments.length - MAX_MOMENTS);
+}
+
+/** Absolute week number for a { year, month, week } date (week 0–3). */
+export function dateWeekSerial(date) {
+  return (date.year * 12 + date.month) * WEEKS_PER_MONTH + (date.week || 0);
+}
+
+export function campaignWeekSerial(state) {
+  return dateWeekSerial(state.date);
+}
+
+export function dateFromWeekSerial(serial) {
+  const monthSerial = Math.floor(serial / WEEKS_PER_MONTH);
+  return { year: Math.floor(monthSerial / 12), month: monthSerial % 12, week: serial % WEEKS_PER_MONTH };
 }

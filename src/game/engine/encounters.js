@@ -121,7 +121,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
       .forEach((hero) => {
         hero.status = 'injured';
         hero.injury = 'Road wound';
-        hero.injuryMonths = rng.int(1, 2);
+        hero.injuryWeeks = rng.int(2, 4);
         hero.monthlyActivity = 'Infirmary';
       });
     addChronicle(next, {

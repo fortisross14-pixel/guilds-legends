@@ -10,13 +10,11 @@ import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
 import { launchMission } from './missions.js';
 import { concludeActiveCombat } from './encounters.js';
-import { advanceMonths, advanceToNextEvent } from './time.js';
-
-export const MAX_REST_MONTHS = 3;
+import { advanceToNextEvent, advanceWeeks } from './time.js';
 
 /**
- * Plans 0–2 road events for a journey of `months` months. Each fires on a
- * distinct month. Shortcuts need two months left; delays need one.
+ * Plans 0–2 road events for a journey of `months` weeks. Each fires on a
+ * distinct week. Shortcuts need two weeks left; delays need one.
  */
 export function planRoadEvents(rng, months) {
   const roll = rng.next();
@@ -40,16 +38,16 @@ export function travelTo(state, destinationId) {
   if (started.error) return started;
   const next = started.state;
   const rng = rngFor(next, `road-${destinationId}`);
-  next.world.roadEvents = planRoadEvents(rng, next.world.activeTravel.totalMonths);
+  next.world.roadEvents = planRoadEvents(rng, next.world.activeTravel.totalWeeks);
   commitRng(next, rng);
-  return advanceMonths(next, next.world.activeTravel.totalMonths, true);
+  return advanceWeeks(next, next.world.activeTravel.totalWeeks, true);
 }
 
 /** Resumes an interrupted journey. */
 export function continueJourney(state) {
   const travel = state.world?.activeTravel;
   if (!travel) return { state, error: 'The guild is not travelling.' };
-  return advanceMonths(state, travel.monthsRemaining);
+  return advanceWeeks(state, travel.weeksRemaining);
 }
 
 function travellers(state) {
@@ -59,7 +57,7 @@ function travellers(state) {
 function woundInPlace(hero, rng) {
   hero.status = 'injured';
   hero.injury = 'Road wound';
-  hero.injuryMonths = rng.int(1, 2);
+  hero.injuryWeeks = rng.int(2, 4);
   hero.health = clamp((hero.health ?? 100) - 20, 1, 100);
   hero.monthlyActivity = 'Infirmary';
 }
@@ -133,17 +131,17 @@ export function resolveRoadEvent(state, optionId) {
     candidate.channel = 'Met on the road';
     next.candidates.push(candidate);
     result = `${candidate.name}, a level ${candidate.level} ${candidate.classId}, will wait for you at the tavern in ${LOCATION_BY_ID[locationId]?.name || 'town'}.`;
-  } else if (event.type === 'shortcut' && optionId === 'take' && travel && travel.monthsRemaining >= 2) {
-    travel.monthsRemaining -= 1;
-    travel.totalMonths -= 1;
+  } else if (event.type === 'shortcut' && optionId === 'take' && travel && travel.weeksRemaining >= 2) {
+    travel.weeksRemaining -= 1;
+    travel.totalWeeks -= 1;
     party.forEach((hero) => {
       hero.fatigue = clamp(hero.fatigue + 10, 0, 100);
     });
-    result = 'The steep trail saves a month.';
+    result = 'The steep trail saves a week.';
   } else if (event.type === 'delay' && optionId === 'wait' && travel) {
-    travel.monthsRemaining += 1;
-    travel.totalMonths += 1;
-    result = 'The storm costs the journey a month.';
+    travel.weeksRemaining += 1;
+    travel.totalWeeks += 1;
+    result = 'The storm costs the journey a week.';
   } else if (event.type === 'delay' && optionId === 'push') {
     party.forEach((hero) => {
       hero.fatigue = clamp(hero.fatigue + 15, 0, 100);
@@ -163,17 +161,9 @@ export function resolveRoadEvent(state, optionId) {
     return advanceToNextEvent(next);
   }
   if (next.world.activeTravel && !next.pendingDecisions.length && !next.activeEncounter && !next.activeMissionGame) {
-    return advanceMonths(next, next.world.activeTravel.monthsRemaining, true);
+    return advanceWeeks(next, next.world.activeTravel.weeksRemaining, true);
   }
   return { state: finalize(next), error: null };
-}
-
-/** Wait 1–3 months at the Guild Hall; heroes follow their monthly assignments. */
-export function restAtGuildHall(state, months = 1) {
-  const count = Math.round(Number(months));
-  if (!Number.isFinite(count) || count < 1 || count > MAX_REST_MONTHS) return { state, error: `Rest for 1 to ${MAX_REST_MONTHS} months.` };
-  if (state.world?.activeTravel) return { state, error: 'The guild is on the road. Continue the journey instead.' };
-  return advanceMonths(state, count);
 }
 
 /**
@@ -200,7 +190,7 @@ export function concludeCombatAndContinue(state) {
   if (concluded.error) return concluded;
   const next = concluded.state;
   if (next.world?.activeTravel && !next.pendingDecisions.length && !next.activeEncounter && !next.activeMissionGame && !next.pendingRoadEvent) {
-    return advanceMonths(next, next.world.activeTravel.monthsRemaining, true);
+    return advanceWeeks(next, next.world.activeTravel.weeksRemaining, true);
   }
   return concluded;
 }

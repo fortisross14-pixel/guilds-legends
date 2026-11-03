@@ -690,3 +690,9 @@ export function missionGradeFromCombat(encounter) {
   if (performance >= 45) return 'Success';
   return 'Partial';
 }
+
+/** Battle stats a hero would bring into combat (for the status screen). */
+export function heroBattleStats(hero) {
+  const unit = makeCombatant(hero, 'party');
+  return { maxHp: unit.maxHp, maxMp: unit.maxMp, atk: unit.atk, def: unit.def, mag: unit.mag, spd: unit.spd };
+}

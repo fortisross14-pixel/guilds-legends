@@ -349,3 +349,11 @@ export const LOCATION_BUILDINGS = {
 export function locationBuildings(locationId) {
   return ['guildHall', ...(LOCATION_BUILDINGS[locationId] || VILLAGE)];
 }
+
+/** Journey length in weeks (1–6), from map distance. */
+export function travelWeeks(fromId, toId) {
+  const from = LOCATION_BY_ID[fromId];
+  const to = LOCATION_BY_ID[toId];
+  if (!from || !to || fromId === toId) return 0;
+  return Math.max(1, Math.min(6, Math.ceil((Math.abs(from.x - to.x) + Math.abs(from.y - to.y)) / 18)));
+}

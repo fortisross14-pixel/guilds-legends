@@ -3,7 +3,7 @@
 import { FORMATION_TYPES } from '../../data/formations.js';
 import { LOCATION_BY_ID, primalCombatModifier } from '../../data/world.js';
 import { GUILD_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
-import { MAX_TOURNAMENT_HISTORY, addChronicle, clamp, clone, ensureTournamentCareer, getHero } from './core.js';
+import { MAX_TOURNAMENT_HISTORY, addChronicle, clamp, clone, ensureTournamentCareer, getHero, hashString, campaignWeekSerial, dateWeekSerial } from './core.js';
 import { applyXpInPlace, formationSlotFor, roleRating } from './heroes.js';
 import {
   completeIndividualTournamentInPlace,
@@ -39,6 +39,7 @@ function createGuildTournamentsInPlace(state) {
       region: location.region,
       primal: location.primal,
       month: definition.month,
+      week: definition.week ?? hashString(definition.id) % 4,
       size: definition.size,
       entryFee: definition.entryFee,
       purse: definition.purse,
@@ -302,7 +303,7 @@ export function simulateScheduledCompetitionsInPlace(state, rng) {
   const all = [...(state.tournaments || []), ...(state.guildTournaments || [])];
   all.forEach((tournament) => {
     if (tournament.status !== 'registration') return;
-    const hasPassed = state.date.year > tournament.year || (state.date.year === tournament.year && state.date.month > tournament.month);
+    const hasPassed = campaignWeekSerial(state) > dateWeekSerial({ year: tournament.year, month: tournament.month, week: tournament.week || 0 });
     if (!hasPassed) return;
     if (tournament.kind === 'individual') completeIndividualTournamentInPlace(state, tournament, rng, null);
     else completeGuildTournamentInPlace(state, tournament, rng, null);

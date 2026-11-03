@@ -26,9 +26,11 @@ function routePath(chain) {
     .join(' ');
 }
 
-export default function MapScreen({ state, actions, navigate }) {
+// place.pin: a location to highlight (from the Quest Log).
+export default function MapScreen({ state, actions, navigate, place }) {
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
-  const [selectedId, setSelectedId] = useState(currentLocationId);
+  const pinId = place?.pin || null;
+  const [selectedId, setSelectedId] = useState(pinId || currentLocationId);
   const selected = LOCATION_BY_ID[selectedId] || LOCATION_BY_ID[currentLocationId];
   const knownLocations = unlockedLocations(state.guild.tierIndex);
   const unlocked = TIER_ORDER[selected.tier] <= state.guild.tierIndex;
@@ -49,22 +51,20 @@ export default function MapScreen({ state, actions, navigate }) {
 
   return (
     <div className="screen screen--world">
-      <header className="screen-heading">
-        <div>
-          <span className="eyebrow">Where you stand determines what you can do</span>
-          <h1>The Living World</h1>
-          <p>
-            Missions, tournaments and recruitment are local. Travel consumes gold and months, but lets the guild seek the classes and primals needed for a
-            deliberate strategy.
-          </p>
-        </div>
-        <div className="heading-metrics">
-          <Badge tone="blue">
-            {knownLocations.length}/{LOCATIONS.length} destinations reachable
-          </Badge>
-          <Badge tone="gold">{current.name}</Badge>
-          <PrimalBadge primal={current.primal} />
-        </div>
+      <header className="map-header">
+        <h1>The Living World</h1>
+        <span
+          className="help-tip"
+          tabIndex={0}
+          title="Missions, tournaments and recruitment are local. Travel costs gold and weeks, but lets the guild seek the classes and primals it needs."
+        >
+          ?
+        </span>
+        <Badge tone="blue">
+          {knownLocations.length}/{LOCATIONS.length} reachable
+        </Badge>
+        <Badge tone="gold">{current.name}</Badge>
+        <PrimalBadge primal={current.primal} />
       </header>
 
       {travel ? (
@@ -82,9 +82,9 @@ export default function MapScreen({ state, actions, navigate }) {
             <p>The journey was interrupted. Deal with what happened, then continue. Recruitment and new deployments resume on arrival.</p>
           </div>
           <div className="travel-banner__time">
-            <strong>{travel.monthsRemaining}</strong>
-            <span>month{travel.monthsRemaining === 1 ? '' : 's'} remaining</span>
-            <ProgressBar value={travel.totalMonths - travel.monthsRemaining} max={travel.totalMonths} tone="blue" compact />
+            <strong>{travel.weeksRemaining}</strong>
+            <span>week{travel.weeksRemaining === 1 ? '' : 's'} remaining</span>
+            <ProgressBar value={travel.totalWeeks - travel.weeksRemaining} max={travel.totalWeeks} tone="blue" compact />
             {!state.pendingRoadEvent ? (
               <Button variant="primary" size="sm" onClick={actions.continueJourney}>
                 Continue journey
@@ -121,8 +121,8 @@ export default function MapScreen({ state, actions, navigate }) {
               className="map-party-marker"
               title="Your guild on the road"
               style={{
-                left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalMonths - travel.monthsRemaining) / travel.totalMonths)}%`,
-                top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalMonths - travel.monthsRemaining) / travel.totalMonths)}%`,
+                left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
+                top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
               }}
             >
               ⚑
@@ -155,6 +155,11 @@ export default function MapScreen({ state, actions, navigate }) {
               </button>
             );
           })}
+          {pinId && LOCATION_BY_ID[pinId] ? (
+            <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
+              📍
+            </span>
+          ) : null}
           <div className="map-legend">
             <span>
               <i className="legend-dot is-known" />
@@ -241,7 +246,7 @@ export default function MapScreen({ state, actions, navigate }) {
                   <div>
                     <span>Journey</span>
                     <strong>
-                      {quote.months} month{quote.months === 1 ? '' : 's'}
+                      {quote.weeks} week{quote.weeks === 1 ? '' : 's'}
                     </strong>
                   </div>
                   <div>
@@ -288,7 +293,7 @@ export default function MapScreen({ state, actions, navigate }) {
                   ))}
                 </div>
               ) : (
-                <p className="muted">No current petitions are known here. New work appears as months pass.</p>
+                <p className="muted">No current petitions are known here. New work appears as weeks pass.</p>
               )}
             </>
           ) : (

@@ -153,7 +153,7 @@ export function createHeroFromBase(base, state, rng, options = {}) {
     health: 100,
     status: 'available',
     injury: null,
-    injuryMonths: 0,
+    injuryWeeks: 0,
     salary: Math.max(12, Math.round((18 + level * 7 + Math.max(0, (base.potential || 70) - 70) * 0.45) * (RARITIES[rarity]?.salary || 1))),
     joinedYear: options.joinedYear ?? state.date.year,
     guildId: options.guildId || 'player',

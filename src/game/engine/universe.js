@@ -281,7 +281,8 @@ function instantiateMission(template, state, rng, forcedLocation = null) {
     locationId: location.id,
     locationName: location.name,
     risk: template.risk,
-    duration: template.duration,
+    // Weeks on the road (1–4).
+    duration: clamp(template.duration, 1, 4),
     difficulty: clamp(template.difficulty + rng.int(-4, 5) + tierIndexByName(location.tier) * 2, 30, 99),
     reward: rewardVariance,
     fame: fameVariance,

@@ -92,13 +92,14 @@ function injureHero(state, hero, mission, grade, rng, extraRisk = 0) {
   hero.status = 'injured';
   hero.monthlyActivity = 'Infirmary';
   hero.injury = rng.pick(injuries);
-  hero.injuryMonths = rng.int(1, 2 + mission.risk);
+  hero.injuryWeeks = rng.int(2, 4 + mission.risk * 2);
+  hero.monthlyActivity = 'Infirmary';
   hero.health = clamp(hero.health - rng.int(14, 30), 20, 95);
   hero.career.injuries += 1;
   addHeroHistory(hero, state, {
     type: 'injury',
     title: hero.injury,
-    text: `Suffered during ${mission.title}; expected recovery ${hero.injuryMonths} month${hero.injuryMonths === 1 ? '' : 's'}.`,
+    text: `Suffered during ${mission.title}; expected recovery ${hero.injuryWeeks} week${hero.injuryWeeks === 1 ? '' : 's'}.`,
   });
   return { injured: true, died: false };
 }

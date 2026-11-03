@@ -37,9 +37,9 @@ export const ROAD_EVENTS = {
   },
   shortcut: {
     title: 'A local knows a shortcut',
-    text: 'A shepherd points to a steep trail that saves a month of travel.',
+    text: 'A shepherd points to a steep trail that saves a week of travel.',
     options: [
-      { id: 'take', label: 'Take the shortcut', note: 'Arrive a month sooner. The climb is tiring.' },
+      { id: 'take', label: 'Take the shortcut', note: 'Arrive a week sooner. The climb is tiring.' },
       { id: 'safe', label: 'Stay on the road', note: 'Nothing happens.' },
     ],
   },
@@ -47,7 +47,7 @@ export const ROAD_EVENTS = {
     title: 'Storm on the road',
     text: 'A storm washes out the road ahead.',
     options: [
-      { id: 'wait', label: 'Wait it out', note: 'The journey takes one more month.' },
+      { id: 'wait', label: 'Wait it out', note: 'The journey takes one more week.' },
       { id: 'push', label: 'Push through', note: 'No delay, but heavy fatigue and a chance of injury.' },
     ],
   },

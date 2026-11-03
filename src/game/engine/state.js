@@ -70,7 +70,7 @@ export function createNewGame(options = {}) {
     rngState: seed,
     createdAt: new Date().toISOString(),
     lastPlayedAt: new Date().toISOString(),
-    date: { year: 1187, month: 0 },
+    date: { year: 1187, month: 0, week: 0 },
     guild: {
       id: 'player',
       name: options.guildName || 'The Broken Lantern',
@@ -98,6 +98,7 @@ export function createNewGame(options = {}) {
       legacyPoints: 0,
       officialPoints: 0,
       statusTitle: 'Unknown',
+      mainParty: [],
       facilities: facilityLevels(),
       appointments: {},
       formations: emptyFormations(),

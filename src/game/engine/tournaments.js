@@ -15,6 +15,9 @@ import {
   getHeroGuildName,
   getWorldHeroes,
   rngFor,
+  hashString,
+  campaignWeekSerial,
+  dateWeekSerial,
 } from './core.js';
 import { applyXpInPlace } from './heroes.js';
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
@@ -64,7 +67,9 @@ export function getTournamentAccess(state, tournament, heroId = null) {
     },
   ].filter((check) => check.target > 0);
   const locationMet = !tournament.locationId || (state.world?.currentLocationId || 'dunmere') === tournament.locationId;
-  const registrationOpen = tournament.status === 'registration' && state.date.year === tournament.year && state.date.month <= tournament.month;
+  const registrationOpen =
+    tournament.status === 'registration' &&
+    campaignWeekSerial(state) <= dateWeekSerial({ year: tournament.year, month: tournament.month, week: tournament.week || 0 });
   return { unlocked: checks.every((check) => check.met), checks, locationMet, registrationOpen };
 }
 
@@ -570,6 +575,7 @@ export function createIndividualTournamentsInPlace(state, rng) {
         region: location.region,
         primal: location.primal,
         month: definition.month,
+        week: definition.week ?? hashString(definition.id) % 4,
         size: definition.size,
         entryFee: definition.entryFee,
         purse: definition.purse,

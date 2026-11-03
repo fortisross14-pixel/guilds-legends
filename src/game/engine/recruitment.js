@@ -343,3 +343,52 @@ export function inspectHero(state, heroId) {
   }
   return finalize(next);
 }
+
+// ---------------------------------------------------------------- rooms and main party
+
+export const MAIN_PARTY_SIZE = 4;
+const BASIC_ROOMS = ['Training', 'Rest', 'Infirmary'];
+
+/** Away heroes (mission, tournament, branch duty, or travelling with the guild) can't change rooms. */
+export function isHeroAway(state, hero) {
+  return ['mission', 'tournament'].includes(hero.status) || Boolean(hero.branchId) || Boolean(state.world?.activeTravel);
+}
+
+function homeHeroes(state) {
+  return state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status) && !isHeroAway(state, hero));
+}
+
+/** "Send all idle heroes here": moves heroes from the basic rooms (training, barracks, infirmary). */
+export function sendIdleHeroesTo(state, activity) {
+  if (!BASIC_ROOMS.includes(activity)) return { state, error: 'Only the Training Grounds, Barracks and Infirmary take everyone.' };
+  const next = clone(state);
+  homeHeroes(next)
+    .filter((hero) => BASIC_ROOMS.includes(hero.monthlyActivity || 'Training'))
+    .filter((hero) => !(hero.status === 'injured' && activity !== 'Infirmary'))
+    .forEach((hero) => {
+      hero.monthlyActivity = activity;
+    });
+  return { state: finalize(next), error: null };
+}
+
+/** Injured to the Infirmary, fatigue over 60 to the Barracks, everyone else to training. */
+export function autoAssignRooms(state) {
+  const next = clone(state);
+  homeHeroes(next).forEach((hero) => {
+    hero.monthlyActivity = hero.status === 'injured' ? 'Infirmary' : (hero.fatigue || 0) > 60 ? 'Rest' : 'Training';
+  });
+  return { state: finalize(next), error: null };
+}
+
+export function setMainParty(state, heroIds) {
+  const ids = [...new Set(heroIds)].filter((id) => state.heroes.some((hero) => hero.id === id && !['dead', 'retired'].includes(hero.status)));
+  if (ids.length > MAIN_PARTY_SIZE) return { state, error: `The main party holds up to ${MAIN_PARTY_SIZE} heroes.` };
+  const next = clone(state);
+  next.guild.mainParty = ids;
+  return { state: finalize(next), error: null };
+}
+
+export function toggleMainPartyMember(state, heroId) {
+  const current = (state.guild.mainParty || []).filter((id) => state.heroes.some((hero) => hero.id === id && !['dead', 'retired'].includes(hero.status)));
+  return setMainParty(state, current.includes(heroId) ? current.filter((id) => id !== heroId) : [...current, heroId]);
+}

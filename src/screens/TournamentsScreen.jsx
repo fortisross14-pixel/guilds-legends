@@ -56,7 +56,10 @@ function HeroCircuit({ state, actions, navigate }) {
   useEffect(() => {
     if (!selected) return;
     if (selected.playerHeroId) setHeroId(selected.playerHeroId);
-    else if (!eligible.some((hero) => hero.id === heroId)) setHeroId(eligible[0]?.id || '');
+    else if (!eligible.some((hero) => hero.id === heroId)) {
+      const lead = (state.guild.mainParty || []).find((id) => eligible.some((hero) => hero.id === id));
+      setHeroId(lead || eligible[0]?.id || '');
+    }
   }, [selectedId, selected?.playerHeroId, eligible.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!selected)
@@ -72,7 +75,7 @@ function HeroCircuit({ state, actions, navigate }) {
               <span className={`event-ticket__tier event-ticket__tier--${event.circuit.toLowerCase()}`}>{event.circuit}</span>
               <strong>{event.name}</strong>
               <small>
-                {event.location} · Month {event.month + 1}
+                {event.location} · Month {event.month + 1}, week {(event.week || 0) + 1}
               </small>
               <div>
                 <PrimalBadge primal={event.primal} compact />

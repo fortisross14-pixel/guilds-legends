@@ -3,12 +3,12 @@
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { resolveRoadEvent } from './timeActions.js';
 import { FORMATION_TYPES, formationForMission } from '../../data/formations.js';
-import { activeHeroCount, clone, completeTutorialTargetInPlace } from './core.js';
+import { WEEKS_PER_MONTH, activeHeroCount, campaignWeekSerial, clone, completeTutorialTargetInPlace } from './core.js';
 import { roleRating } from './heroes.js';
 import { launchMission } from './missions.js';
 import { resolveDecision } from './outcomes.js';
 import { autoResolveActiveCombat, autoResolveActiveMissionGame, concludeActiveCombat } from './encounters.js';
-import { advanceMonths } from './time.js';
+import { advanceWeeks } from './time.js';
 import { recruitCandidate } from './recruitment.js';
 import { compactForSave } from './save.js';
 
@@ -33,12 +33,14 @@ function autoplayAssignments(state, mission) {
   return { formationType, assignments };
 }
 
+// months: how long to simulate. Time runs in weeks internally.
 export function simulateAutoplay(initialState, months = 240) {
   let state = clone(initialState);
+  const totalWeeks = months * WEEKS_PER_MONTH;
   let elapsed = 0;
-  let nextCompaction = 12;
+  let nextCompaction = 12 * WEEKS_PER_MONTH;
 
-  while (elapsed < months) {
+  while (elapsed < totalWeeks) {
     // Reports are presentation state. The long-horizon harness records the
     // immutable facts but clears the modal queue without cloning the world for
     // every acknowledgement.
@@ -102,13 +104,15 @@ export function simulateAutoplay(initialState, months = 240) {
     // complete universe once per quiet month. Competitions, aging, finances,
     // travel, rival careers and annual generation still resolve month by month
     // inside advanceMonths.
-    const monthsUntilMission = state.activeMissions.length ? Math.max(1, Math.min(...state.activeMissions.map((mission) => mission.remaining))) : 12;
-    const monthsUntilCompaction = Math.max(1, nextCompaction - elapsed);
-    const jump = Math.min(months - elapsed, monthsUntilMission, monthsUntilCompaction, 12);
-    const before = state.date.year * 12 + state.date.month;
-    const advanced = advanceMonths(state, jump, true);
+    const weeksUntilMission = state.activeMissions.length
+      ? Math.max(1, Math.min(...state.activeMissions.map((mission) => mission.remaining)))
+      : 12 * WEEKS_PER_MONTH;
+    const weeksUntilCompaction = Math.max(1, nextCompaction - elapsed);
+    const jump = Math.min(totalWeeks - elapsed, weeksUntilMission, weeksUntilCompaction, 12 * WEEKS_PER_MONTH);
+    const before = campaignWeekSerial(state);
+    const advanced = advanceWeeks(state, jump, true);
     state = advanced.state;
-    const after = state.date.year * 12 + state.date.month;
+    const after = campaignWeekSerial(state);
     const progressed = Math.max(0, after - before);
 
     if (!progressed) {
@@ -117,7 +121,7 @@ export function simulateAutoplay(initialState, months = 240) {
       if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
         break;
       }
-      const single = advanceMonths(state, 1, true);
+      const single = advanceWeeks(state, 1, true);
       if (single.state === state || single.error) break;
       state = single.state;
       elapsed += 1;
@@ -127,7 +131,7 @@ export function simulateAutoplay(initialState, months = 240) {
 
     if (elapsed >= nextCompaction) {
       state = compactForSave(state, true);
-      nextCompaction += 12;
+      nextCompaction += 12 * WEEKS_PER_MONTH;
     }
   }
 

@@ -40,3 +40,20 @@ export const MONTHLY_ACTIVITIES = [
 export const TRAINING_FOCI = ['Fundamentals', 'Role Drills', 'Sparring', 'Mentorship', 'Study'];
 
 export const ACTIVITY_BY_ID = Object.fromEntries(MONTHLY_ACTIVITIES.map((activity) => [activity.id, activity]));
+
+// Guild Hall rooms. Activity rooms map 1:1 onto monthly activities; the
+// others are management rooms.
+export const HALL_ROOMS = [
+  { id: 'training', name: 'Training Grounds', icon: '⚔', activity: 'Training', bulk: true, description: 'Heroes train each month. Pick a focus per hero.' },
+  { id: 'infirmary', name: 'Infirmary', icon: '✚', activity: 'Infirmary', bulk: true, description: 'Injured heroes heal twice as fast here; healthy heroes recover health.' },
+  { id: 'barracks', name: 'Barracks', icon: '☾', activity: 'Rest', bulk: true, description: 'Resting heroes shed fatigue.' },
+  { id: 'scouts', name: "Scouts' Table", icon: '⌖', activity: 'Scouting', description: 'Scouts find contracts and talent.' },
+  { id: 'courtyard', name: 'Courtyard', icon: '✦', activity: 'Public Exhibition', description: 'Public exhibitions build fame.' },
+  { id: 'council', name: 'Council Chamber', icon: '♜', activity: 'Guild Duty', description: 'Guild duty and appointments.' },
+  { id: 'war', name: 'War Room', icon: '⚑', description: 'Pick the main party (up to 4) and review saved formations.' },
+  { id: 'treasury', name: 'Treasury', icon: '◈', description: 'Income and upkeep, loans and debt, the last council report.' },
+  { id: 'armory', name: 'Armory', icon: '⚒', description: 'Equipment and items.' },
+  { id: 'facilities', name: 'Facilities', icon: '⌂', description: 'Headquarters upgrades, appointments and doctrine.' },
+];
+
+export const ROOM_BY_ACTIVITY = Object.fromEntries(HALL_ROOMS.filter((room) => room.activity).map((room) => [room.activity, room]));

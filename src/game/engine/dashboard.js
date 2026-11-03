@@ -1,9 +1,10 @@
 // @ts-check
 // Read models for the UI (next action, summary) and small UI-state actions.
-import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
+import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
+import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { tournamentRequirements } from './tournaments.js';
-import { campaignMonthSerial } from './core.js';
+import { WEEKS_PER_MONTH, campaignWeekSerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
   activeHeroCount,
   clone,
@@ -234,71 +235,118 @@ export function getDashboardSummary(state) {
     locationId: getCurrentLocation(state).id,
     locationPrimal: getCurrentLocation(state).primal,
     travel: state.world?.activeTravel || null,
+    week: state.date.week || 0,
   };
 }
 
+function tournamentEntry(state, tournament, now) {
+  const req = tournamentRequirements(tournament);
+  const date = { year: tournament.year, month: tournament.month, week: tournament.week ?? hashString(tournament.definitionId || tournament.id) % 4 };
+  const needs = [req.level ? `Lv ${req.level}+` : null, req.fame ? `${req.fame} fame` : null, req.combatWins ? `${req.combatWins} combat wins` : null].filter(
+    Boolean,
+  );
+  const locked = (req.tierIndex || 0) > state.guild.tierIndex;
+  return {
+    kind: 'tournament',
+    id: tournament.id,
+    title: tournament.name,
+    date,
+    weeksAway: dateWeekSerial(date) - now,
+    locationId: tournament.locationId,
+    enterable: !locked && tournament.status !== 'completed',
+    locked,
+    detail: locked
+      ? `Unlocks at ${TIERS[req.tierIndex]?.id}`
+      : `${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location || ''} · ${needs.length ? needs.join(', ') : 'open entry'}`,
+  };
+}
+
+function projectedTournaments(year) {
+  return [...INDIVIDUAL_TOURNAMENT_DEFINITIONS, ...GUILD_TOURNAMENT_DEFINITIONS]
+    .filter((definition) => !definition.cadence || year % definition.cadence === 0)
+    .map((definition) => ({
+      ...definition,
+      id: `${definition.id}-${year}`,
+      definitionId: definition.id,
+      year,
+      status: 'registration',
+      week: definition.week ?? hashString(definition.id) % 4,
+    }));
+}
+
 /**
- * Calendar strip: upcoming tournaments (with entry requirements), deployed
- * companies, the current journey and promise deadlines, soonest first.
+ * Everything the calendar knows about, from now on: tournaments (enterable or
+ * locked), company returns, travel arrival, promise deadlines, wage day, loan
+ * payments and season ends. Each entry has a { year, month, week } date.
  */
-export function getUpcomingEvents(state, limit = 8) {
-  const now = campaignMonthSerial(state);
-  const items = [];
-  [...(state.tournaments || []), ...(state.guildTournaments || [])]
-    .filter((tournament) => tournament.status !== 'completed' && tournament.year * 12 + tournament.month >= now)
-    .forEach((tournament) => {
-      const req = tournamentRequirements(tournament);
-      const needs = [
-        req.tierIndex ? `${TIERS[req.tierIndex]?.id} tier` : null,
-        req.level ? `Lv ${req.level}+` : null,
-        req.fame ? `${req.fame} fame` : null,
-        req.combatWins ? `${req.combatWins} combat wins` : null,
-      ].filter(Boolean);
-      items.push({
-        kind: 'tournament',
-        id: tournament.id,
-        title: tournament.name,
-        monthsAway: tournament.year * 12 + tournament.month - now,
-        date: `${MONTHS[tournament.month]} ${tournament.year}`,
-        detail: `${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location || ''} · ${needs.length ? needs.join(', ') : 'open entry'}`,
-        active: tournament.status === 'active',
-      });
-    });
+export function getCalendarEntries(state, months = 12) {
+  const now = campaignWeekSerial(state);
+  const end = now + months * WEEKS_PER_MONTH;
+  const entries = [];
+  const add = (entry) => {
+    const serial = dateWeekSerial(entry.date);
+    if (serial >= now && serial <= end) entries.push({ ...entry, weeksAway: serial - now });
+  };
+  const years = [state.date.year, state.date.year + 1];
+  years.forEach((year) => {
+    const pool = year === state.date.year ? [...(state.tournaments || []), ...(state.guildTournaments || [])] : projectedTournaments(year);
+    pool.filter((tournament) => tournament.status !== 'completed').forEach((tournament) => add(tournamentEntry(state, tournament, now)));
+  });
   (state.activeMissions || []).forEach((mission) => {
-    items.push({
+    add({
       kind: 'mission',
       id: mission.id,
-      title: mission.title,
-      monthsAway: Math.max(0, mission.remaining),
-      detail: `Company returns in ${mission.remaining} month${mission.remaining === 1 ? '' : 's'}`,
+      title: `${mission.title} returns`,
+      date: dateFromWeekSerial(now + Math.max(0, mission.remaining)),
+      locationId: mission.locationId,
+      detail: `${mission.locationName || ''} · ${mission.assignments.length} heroes`,
     });
   });
   const travel = state.world?.activeTravel;
-  if (travel) {
-    items.push({
+  if (travel)
+    add({
       kind: 'travel',
       id: 'travel',
-      title: `Journey to ${LOCATION_BY_ID[travel.toId]?.name || travel.toId}`,
-      monthsAway: travel.monthsRemaining,
-      detail: `${travel.monthsRemaining} month${travel.monthsRemaining === 1 ? '' : 's'} on the road`,
+      title: `Arrive in ${LOCATION_BY_ID[travel.toId]?.name || travel.toId}`,
+      date: dateFromWeekSerial(now + travel.weeksRemaining),
+      locationId: travel.toId,
+      detail: 'End of the journey',
     });
-  }
   state.heroes
     .filter((hero) => !['dead', 'retired'].includes(hero.status))
     .forEach((hero) =>
       (hero.promises || [])
-        .filter((promise) => promise.status === 'active')
-        .forEach((promise) => {
-          items.push({
+        .filter((promise) => promise.status === 'active' && Number.isFinite(promise.dueSerial))
+        .forEach((promise) =>
+          add({
             kind: 'promise',
             id: promise.id,
             title: `Promise to ${hero.name}`,
-            monthsAway: Math.max(0, (promise.dueSerial ?? now) - now),
-            detail: `${promise.label} · due ${promise.dueLabel}`,
-          });
-        }),
+            date: { year: Math.floor(promise.dueSerial / 12), month: promise.dueSerial % 12, week: 0 },
+            detail: promise.label,
+          }),
+        ),
     );
-  return items.sort((a, b) => a.monthsAway - b.monthsAway).slice(0, limit);
+  for (let serial = now; serial <= end; serial += 1) {
+    const date = dateFromWeekSerial(serial);
+    if (date.week !== 0 || serial === now) continue;
+    add({
+      kind: 'wages',
+      id: `wages-${serial}`,
+      title: 'Wages and upkeep',
+      date,
+      detail: `About ${monthlyUpkeep(state)} gold${state.guild.loan ? ` + ${state.guild.loan.installment} loan payment` : ''}`,
+    });
+    if (date.month % 3 === 0) add({ kind: 'season', id: `season-${serial}`, title: 'Season ends', date, detail: 'Rankings update' });
+  }
+  return entries.sort((x, y) => x.weeksAway - y.weeksAway || x.kind.localeCompare(y.kind));
+}
+
+/** The next few events the player can act on (no locked tournaments, no routine wage days). */
+export function getUpcomingEvents(state, limit = 3) {
+  return getCalendarEntries(state, 6)
+    .filter((entry) => (entry.kind === 'tournament' ? entry.enterable : ['mission', 'travel', 'promise'].includes(entry.kind)))
+    .slice(0, limit);
 }
 
 /** Dismiss the oldest reward moment (victory, level-up, recruit card). */
@@ -325,5 +373,6 @@ export function skipTutorial(state) {
   next.tutorial.acknowledged = true;
   next.tutorial.step = ONBOARDING_STEPS.length;
   next.flags.openingPeddler = true;
+  next.notifications = next.notifications.filter((item) => item.id !== 'welcome' && !item.id.startsWith('tutorial-'));
   return finalize(next);
 }
