@@ -126,6 +126,19 @@ export default function MissionsScreen({ state, actions, navigate }) {
     });
   };
 
+  // A hero dragged from the party bar onto a slot (App routes 'slot' drops here).
+  useEffect(() => {
+    const onDrop = (event) => {
+      const { heroId, kind, id } = event.detail || {};
+      if (kind !== 'slot') return;
+      const slot = formation.slots.find((item) => item.id === id);
+      const hero = state.heroes.find((item) => item.id === heroId);
+      if (slot && hero?.status === 'available') assignSlot(slot, heroId);
+    };
+    window.addEventListener('gol:drop-hero', onDrop);
+    return () => window.removeEventListener('gol:drop-hero', onDrop);
+  });
+
   const autoBuild = () => {
     const next = buildBestFormation(state, formationType);
     setAssignments(next);
@@ -399,7 +412,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
                   const assignment = assignments.find((item) => item.slotId === slot.id);
                   const hero = assignment ? state.heroes.find((item) => item.id === assignment.heroId) : null;
                   return (
-                    <article className={`formation-slot ${slot.required ? 'is-required' : ''} ${hero ? 'is-filled' : ''}`} key={slot.id}>
+                    <article className={`formation-slot ${slot.required ? 'is-required' : ''} ${hero ? 'is-filled' : ''}`} key={slot.id} data-drop="slot" data-drop-id={slot.id}>
                       <div className="formation-slot__label">
                         <span>{slot.required ? 'Required' : 'Optional'}</span>
                         <strong>{slot.label}</strong>

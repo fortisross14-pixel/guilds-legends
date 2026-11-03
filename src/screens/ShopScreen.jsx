@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
 import { chestCapacity, chestUsed, roomLevel, shopPrice, shopStock } from '../game/engine.js';
-import { Badge, Button, EmptyState, HeroPortrait } from '../components/UI.jsx';
+import { Badge, Button, EmptyState, HeroPortrait, toast } from '../components/UI.jsx';
+import { useDraggable } from '../components/useDraggable.js';
+import { dragEnabled } from '../components/gestures.js';
+import { itemPreview } from './EquipmentScreen.jsx';
 import PixelIcon from '../components/PixelIcon.jsx';
 
 const KIND_GLYPHS = { consumable: '✚', weapon: '⚔', armor: '◆', accessory: '◇' };
@@ -22,6 +25,24 @@ function compareFor(hero, item) {
   const current = currentId && !currentId.startsWith(ARTIFACT_PREFIX) ? ITEMS[currentId] : null;
   const keys = STAT_ORDER.filter((key) => item.stats?.[key] || current?.stats?.[key]);
   return { current, deltas: keys.map((key) => ({ key, delta: (item.stats?.[key] || 0) - (current?.stats?.[key] || 0) })) };
+}
+
+/** A shop item: tap to see it, or drag it onto a hero's row to compare. */
+function DraggableItem({ state, id, onPick, className, children, ...rest }) {
+  const drag = useDraggable({
+    enabled: dragEnabled(state.settings),
+    label: ITEMS[id].name,
+    onStart: onPick,
+    onDrop: (target) => {
+      const hero = target?.kind === 'hero' ? state.heroes.find((item) => item.id === target.id) : null;
+      if (hero) toast(`${hero.name}: ${itemPreview(hero, id)}`);
+    },
+  });
+  return (
+    <button className={`${className} is-draggable`} onClick={onPick} onFocus={onPick} {...rest} {...drag}>
+      {children}
+    </button>
+  );
 }
 
 // Town shop, classic layout: item list on the left, details and stat comparison
@@ -69,10 +90,11 @@ export default function ShopScreen({ state, actions }) {
                 const item = ITEMS[id];
                 return (
                   <li key={id}>
-                    <button
+                    <DraggableItem
+                      state={state}
+                      id={id}
+                      onPick={() => setSelectedId(id)}
                       className={`shop-item shop-item--${item.kind} ${selected?.id === id ? 'is-selected' : ''}`}
-                      onClick={() => setSelectedId(id)}
-                      onFocus={() => setSelectedId(id)}
                       aria-pressed={selected?.id === id}
                     >
                       <span className="shop-item__icon" aria-hidden="true">
@@ -83,7 +105,7 @@ export default function ShopScreen({ state, actions }) {
                         {count ? <span className="shop-item__count"> ×{count}</span> : null}
                       </span>
                       <span className="shop-item__price num">{mode === 'buy' ? shopPrice(state, item.id) : Math.floor(item.price / 2)} G</span>
-                    </button>
+                    </DraggableItem>
                   </li>
                 );
               })}
@@ -125,7 +147,7 @@ export default function ShopScreen({ state, actions }) {
                     {wearers.map((hero) => {
                       const { current, deltas } = compareFor(hero, selected);
                       return (
-                        <tr key={hero.id}>
+                        <tr key={hero.id} data-drop="hero" data-drop-id={hero.id}>
                           <th scope="row">
                             <HeroPortrait hero={hero} size="xs" showStatus={false} />
                             {hero.name}

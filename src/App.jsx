@@ -833,7 +833,23 @@ function Toasts({ notifications, onDismiss, onClear }) {
   return (
     <div className="toast-stack" aria-live="polite">
       {notifications.slice(-4).map((notification) => (
-        <button key={notification.id} className={`toast toast--${notification.tone}`} onClick={() => onDismiss(notification.id)}>
+        <button
+          key={notification.id}
+          className={`toast toast--${notification.tone}`}
+          onClick={() => onDismiss(notification.id)}
+          // Swipe a notice sideways to dismiss it.
+          onPointerDown={(event) => (event.currentTarget.dataset.x = event.clientX)}
+          onPointerMove={(event) => {
+            const from = Number(event.currentTarget.dataset.x);
+            if (Number.isFinite(from) && event.buttons) event.currentTarget.style.transform = `translateX(${event.clientX - from}px)`;
+          }}
+          onPointerUp={(event) => {
+            const from = Number(event.currentTarget.dataset.x);
+            event.currentTarget.style.transform = '';
+            delete event.currentTarget.dataset.x;
+            if (Number.isFinite(from) && Math.abs(event.clientX - from) > 70) onDismiss(notification.id);
+          }}
+        >
           <span>{notification.tone === 'green' ? '✓' : notification.tone === 'red' ? '!' : notification.tone === 'purple' ? '✦' : '◆'}</span>
           <div>
             <strong>{notification.title}</strong>
@@ -1036,7 +1052,11 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       // the hero, the main party adds or removes them; other drops go to the open screen.
       dropHero: (heroId, target) => {
         const inParty = (state.guild.mainParty || []).includes(heroId);
-        if (target.kind === 'room') commitState(setHeroMonthlyActivity(state, heroId, target.id));
+        if (target.kind === 'room') {
+          const next = setHeroMonthlyActivity(state, heroId, target.id);
+          // The room-drag hint has done its job once a hero is dropped on a room.
+          commitState(next.settings?.seenHints?.roomDrag ? next : { ...next, settings: { ...next.settings, seenHints: { ...(next.settings.seenHints || {}), roomDrag: true } } });
+        }
         else if (target.kind === 'party' && !inParty) applyResult(toggleMainPartyMember(state, heroId));
         else if (target.kind === 'bench' && inParty) applyResult(toggleMainPartyMember(state, heroId));
         else window.dispatchEvent(new CustomEvent('gol:drop-hero', { detail: { heroId, kind: target.kind, id: target.id } }));

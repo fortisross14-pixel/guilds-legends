@@ -539,6 +539,11 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
           ) : null}
           <Button onClick={actions.autoAssignRooms}>Auto-assign heroes to rooms</Button>
         </div>
+        {hall.owned && !state.settings?.seenHints?.roomDrag && state.settings?.gestures !== 'tap' ? (
+          <p className="gesture-tip">
+            <span className="gesture-tip__hand" aria-hidden="true">☝</span> Drag a hero from the party bar onto a room to put them to work.
+          </p>
+        ) : null}
         <nav className="building-grid" aria-label="Guild Hall rooms" data-menu>
           {HALL_ROOMS.filter((item) => !item.needsHall || hall.owned).map((item) => (
             <Tile key={item.id} id={item.id} icon={ROOM_ICONS[item.id] || 'castle'} name={item.name} text={item.description} activity={item.activity} state={state} actions={actions} onClick={() => setRoom(item.id)} />
