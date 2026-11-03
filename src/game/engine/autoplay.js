@@ -11,6 +11,7 @@ import { autoResolveActiveCombat, autoResolveActiveMissionGame, concludeActiveCo
 import { advanceWeeks } from './time.js';
 import { recruitCandidate } from './recruitment.js';
 import { compactForSave } from './save.js';
+import { resolveTownEvent } from './townLife.js';
 
 function autoplayAssignments(state, mission) {
   const formationType = formationForMission(mission);
@@ -56,6 +57,12 @@ export function simulateAutoplay(initialState, months = 240) {
     }
 
     if (state.moments?.length) state.moments = [];
+
+    if (state.pendingEvent) {
+      const options = state.pendingEvent.options;
+      state = resolveTownEvent(state, (state.pendingEvent.source === 'story' ? options[0] : options.at(-1)).id).state;
+      continue;
+    }
 
     if (state.pendingRoadEvent) {
       state = resolveRoadEvent(state, ROAD_EVENTS[state.pendingRoadEvent.type].options.at(-1).id).state;

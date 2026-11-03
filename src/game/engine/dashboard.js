@@ -25,6 +25,8 @@ import { getPlayerRanks, getRankMovement, getStatusTitle } from './rankings.js';
 import { getTournamentAccess } from './tournaments.js';
 import { FAMILY_PERKS, getReputationSummary, specializationTitle } from './reputation.js';
 import { nemesisIds } from './rivalry.js';
+import { festivalFor } from './townLife.js';
+import { getStoryView } from './stories.js';
 
 export function acknowledgeWelcome(state) {
   const next = clone(state);
@@ -348,6 +350,48 @@ export function getCalendarEntries(state, months = 12) {
         detail: 'Renew from the hero status screen',
       }),
     );
+  for (let offset = 0; offset < 5; offset += 1) {
+    const seasonSerial = Math.floor((state.date.year * 12 + state.date.month) / 3) + offset;
+    const festival = festivalFor(Math.floor(seasonSerial / 4), seasonSerial % 4);
+    add({
+      kind: 'festival',
+      id: `festival-${seasonSerial}`,
+      title: `${festival.name} in ${LOCATION_BY_ID[festival.townId]?.name}`,
+      date: festival.date,
+      locationId: festival.townId,
+      detail: 'Be in town that week to join the festival',
+    });
+  }
+  state.missions
+    .filter((mission) => mission.bossId && !mission.story)
+    .forEach((mission) =>
+      add({
+        kind: 'boss',
+        id: `boss-${mission.id}`,
+        title: mission.title,
+        date: dateFromWeekSerial(now + 1),
+        locationId: mission.locationId,
+        detail: `Boss contract open in ${mission.locationName}`,
+      }),
+    );
+  if (state.wager)
+    add({
+      kind: 'challenge',
+      id: 'wager',
+      title: `Wager with ${state.wager.rivalName} ends`,
+      date: dateFromWeekSerial(state.wager.deadlineWeek),
+      detail: `Finish a ${state.wager.family} contract first to win ${state.wager.gold} gold`,
+    });
+  const story = getStoryView(state);
+  if (story.posted)
+    add({
+      kind: 'story',
+      id: 'story',
+      title: `Story: ${story.posted.title}`,
+      date: dateFromWeekSerial(now + 1),
+      locationId: story.posted.locationId,
+      detail: `Special contract in ${story.posted.locationName}`,
+    });
   if (state.challenge?.status === 'pending') {
     add({
       kind: 'challenge',
@@ -407,7 +451,7 @@ export function getUpcomingEvents(state, limit = 3) {
     .filter((entry) =>
       entry.kind === 'tournament'
         ? entry.enterable
-        : ['mission', 'travel', 'promise', 'contract', 'challenge'].includes(entry.kind) && entry.id !== 'reputation-goal',
+        : ['mission', 'travel', 'promise', 'contract', 'challenge', 'festival', 'boss', 'story'].includes(entry.kind) && entry.id !== 'reputation-goal',
     )
     .slice(0, limit);
 }

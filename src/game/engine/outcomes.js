@@ -29,6 +29,9 @@ import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './miss
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
 import { addMissionLegacyInPlace } from './rankings.js';
 import { addContractReputationInPlace, contractFameBonus, contractPayBonus } from './reputation.js';
+import { onContractResolvedInPlace } from './stories.js';
+import { checkWagerOnContractInPlace } from './townLife.js';
+import { missionFamily } from './reputation.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -230,10 +233,12 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   if (decision.missionGameSummary?.rewardModifier) rewardMultiplier *= decision.missionGameSummary.rewardModifier;
   if (next.guild.alignment === 'Baron' && ['Political Mission', 'War Operation'].includes(mission.family)) rewardMultiplier += 0.1;
   rewardMultiplier *= contractPayBonus(next, mission);
+  if (next.story?.choice === 'revenge' && missionFamily(mission) === 'Combat') rewardMultiplier += 0.1;
   const reward = Math.max(0, Math.round((mission.reward + (option.reward || 0)) * multiplier * rewardMultiplier));
   const rawFame = Math.round((mission.fame + (option.fame || 0)) * multiplier);
   let fameMultiplier = 1 + (next.guild.facilities.archive || 0) * 0.04 + (appointmentHolder(next, 'Chronicler') ? 0.08 : 0);
   fameMultiplier += contractFameBonus(next, mission) - 1;
+  if (next.story?.choice === 'restore') fameMultiplier += 0.1;
   if (next.guild.policies.treasure === 'Public Trust') fameMultiplier += 0.18;
   if (next.guild.policies.publicity === 'Heroic') fameMultiplier += 0.12;
   if (next.guild.policies.publicity === 'Private') fameMultiplier -= 0.35;
@@ -349,6 +354,8 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
 
   next.guild.crowns += reward;
   const reputationChange = addContractReputationInPlace(next, mission, grade);
+  onContractResolvedInPlace(next, mission, grade, cleanSuccess, rng);
+  if (cleanSuccess) checkWagerOnContractInPlace(next, missionFamily(mission));
   addMissionLegacyInPlace(
     next,
     mission,

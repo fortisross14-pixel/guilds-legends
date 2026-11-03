@@ -93,6 +93,24 @@ const list = [
   { id: 'sage-charm', name: 'Sage Charm', kind: 'accessory', tier: 2, price: 160, stats: { mag: 4, mp: 10 } },
   { id: 'life-pendant', name: 'Life Pendant', kind: 'accessory', tier: 2, price: 180, stats: { hp: 30 } },
   { id: 'hero-crest', name: 'Hero’s Crest', kind: 'accessory', tier: 3, price: 480, stats: { atk: 4, def: 4, mag: 4 } },
+
+  // Boss trophies (unique accessories; not sold in shops).
+  { id: 'oswin-signet', name: 'Oswin’s Signet', kind: 'accessory', tier: 9, price: 600, unique: true, stats: { atk: 6, def: 6 } },
+  { id: 'briar-crown', name: 'Briar Crown', kind: 'accessory', tier: 9, price: 600, unique: true, stats: { mag: 7, hp: 30 } },
+  { id: 'tide-pearl', name: 'Tide Pearl', kind: 'accessory', tier: 9, price: 600, unique: true, stats: { mag: 6, mp: 20 } },
+  { id: 'sun-sigil', name: 'Sun Sigil', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { atk: 5, mag: 5, spd: 2 } },
+  { id: 'roc-feather', name: 'Roc Feather', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { spd: 8, atk: 3 } },
+  { id: 'frost-heart', name: 'Frost Heart', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { def: 9, hp: 40 } },
+  { id: 'veil-mask', name: 'Veil Mask', kind: 'accessory', tier: 9, price: 800, unique: true, stats: { mag: 9, spd: 3 } },
+  {
+    id: 'lantern-of-the-lost',
+    name: 'Lantern of the Lost Company',
+    kind: 'accessory',
+    tier: 9,
+    price: 1200,
+    unique: true,
+    stats: { atk: 6, def: 6, mag: 6, hp: 30 },
+  },
 ];
 
 export const ITEMS = Object.fromEntries(list.map((item) => [item.id, item]));

@@ -23,6 +23,8 @@ import { evaluateStateInPlace } from './goals.js';
 import { battleItems } from './inventory.js';
 import { DECLINE_PENALTY, adjustRegionReputationInPlace, familyLevel } from './reputation.js';
 import { rivalTakesContractInPlace } from './rivalry.js';
+import { regionRoster } from '../../data/enemies.js';
+import { bossForMission } from './stories.js';
 
 export function inspectMission(state, missionId) {
   const next = clone(state);
@@ -208,6 +210,8 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     // Low-risk contracts field weaker enemies than high-risk ones.
     strength: scripted ? 0.6 : (0.65 + mission.risk * 0.09) * (familyLevel(state, 'Combat') >= 4 ? 0.9 : 1),
     guaranteed: scripted,
+    enemyTypes: regionRoster(mission.region),
+    boss: bossForMission(mission),
     items: battleItems(state),
   });
   mission.combatStarted = true;
@@ -276,6 +280,7 @@ export function declineContract(state, missionId) {
   const mission = state.missions.find((item) => item.id === missionId);
   if (!mission) return { state, error: 'This contract is no longer available.' };
   if (mission.templateId === 'wolves-old-road' && !state.tutorial.completed) return { state, error: 'Take this first contract to learn the ropes.' };
+  if (mission.story || mission.bossId) return { state, error: 'Story and boss contracts wait for you; they can’t be declined.' };
   const next = clone(state);
   next.missions = next.missions.filter((item) => item.id !== missionId);
   const rival = rivalTakesContractInPlace(next, mission, 'declined');

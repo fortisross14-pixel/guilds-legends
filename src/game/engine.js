@@ -104,3 +104,5 @@ export { makeOffer } from './engine/recruitment.js';
 export { REPUTATION_FAMILIES, REPUTATION_LEVELS, FAMILY_PERKS, getReputationSummary, specializationTitle, reputationLevel } from './engine/reputation.js';
 export { nemesisIds, rivalRecord, getNemesisView, challengeNemesis, acceptChallenge, declineChallenge } from './engine/rivalry.js';
 export { declineContract } from './engine/missions.js';
+export { resolveTownEvent, startSideJob, markNewsRead, festivalFor } from './engine/townLife.js';
+export { getStoryView, bossForMission } from './engine/stories.js';

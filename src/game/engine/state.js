@@ -9,6 +9,7 @@ import { refreshCandidatesForLocationInPlace } from './candidates.js';
 import { createUniverseInPlace, refreshMissionsInPlace } from './universe.js';
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
+import { refreshSideJobsInPlace } from './townLife.js';
 
 export function facilityLevels() {
   return Object.fromEntries(
@@ -116,6 +117,14 @@ export function createNewGame(options = {}) {
     rivalries: {},
     nemesisIds: [],
     challenge: null,
+    wager: null,
+    pendingEvent: null,
+    news: [],
+    newsUnread: 0,
+    sideJobs: [],
+    activeSideJobs: [],
+    story: { step: 0, next: null, choice: null, rivalId: null, done: false, postedMissionId: null },
+    defeatedBosses: [],
     rankHistory: [],
     council: { lastReport: null, unread: false },
     heroes: [],
@@ -145,7 +154,7 @@ export function createNewGame(options = {}) {
     achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
     stats: initialStats(),
     notifications: [],
-    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard' },
+    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6 },
     legacy: { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] },
     flags: {
       firstMissionInspected: false,
@@ -224,6 +233,7 @@ export function createNewGame(options = {}) {
   refreshMissionsInPlace(state, rng, true);
   refreshCandidatesForLocationInPlace(state, rng, 'dunmere');
   createTournamentsInPlace(state, rng);
+  refreshSideJobsInPlace(state, rng);
   commitRng(state, rng);
 
   addChronicle(state, {

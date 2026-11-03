@@ -267,6 +267,13 @@ export function migrateGame(raw) {
   next.rivalries ||= {};
   next.nemesisIds ||= [];
   next.challenge ??= null;
+  next.wager ??= null;
+  next.pendingEvent ??= null;
+  next.news ||= [];
+  next.sideJobs ||= [];
+  next.activeSideJobs ||= [];
+  next.story ||= { step: 0, next: null, choice: null, rivalId: null, done: false, postedMissionId: null };
+  next.defeatedBosses ||= [];
   next.rankHistory ||= [];
   next.council = { lastReport: null, unread: false, ...(next.council || {}) };
   next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);

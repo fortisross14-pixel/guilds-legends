@@ -36,6 +36,15 @@ import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings
 import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace } from './contracts.js';
 import { EXPIRE_PENALTY, adjustRegionReputationInPlace } from './reputation.js';
 import { expireChallengeInPlace, maybeIssueChallengeInPlace, nemesisBidsInPlace, rivalTakesContractInPlace, updateNemesesInPlace } from './rivalry.js';
+import { checkBossesInPlace, checkStoryInPlace } from './stories.js';
+import {
+  expireWagerInPlace,
+  maybeFriendlyChallengeInPlace,
+  progressSideJobsInPlace,
+  queueStoryCardInPlace,
+  refreshSideJobsInPlace,
+  rollWeeklyEventInPlace,
+} from './townLife.js';
 
 function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
@@ -49,6 +58,10 @@ function resolveMonthlyHeroActivities(state, rng) {
     if (['dead', 'retired'].includes(hero.status)) return;
     if (hero.status === 'mission') {
       results.push({ heroId: hero.id, name: hero.name, activity: 'Mission', icon: '⌖', summary: 'Deployed on an active mission.' });
+      return;
+    }
+    if (hero.status === 'sidejob') {
+      results.push({ heroId: hero.id, name: hero.name, activity: 'Side job', icon: '✎', summary: 'Out on a side job.' });
       return;
     }
     if (hero.status === 'tournament') {
@@ -377,6 +390,9 @@ function runMonthInPlace(next, rng) {
     }
   });
   updateNemesesInPlace(next);
+  refreshSideJobsInPlace(next, rng);
+  queueStoryCardInPlace(next, checkStoryInPlace(next, rng));
+  checkBossesInPlace(next, rng);
   nemesisBidsInPlace(next, rng);
   if (next.date.month % 3 === 0) maybeIssueChallengeInPlace(next, rng);
   if (!next.tournaments?.length || next.tournaments[0].year < next.date.year) createTournamentsInPlace(next, rng);
@@ -400,6 +416,8 @@ export function advanceWeeks(state, count = 1, mutate = false) {
     progressTravelInPlace(next, rng);
     weeklyInjuriesInPlace(next);
     expireChallengeInPlace(next);
+    progressSideJobsInPlace(next, rng);
+    expireWagerInPlace(next);
     next.activeMissions.forEach((mission) => {
       mission.remaining -= 1;
     });
@@ -424,6 +442,8 @@ export function advanceWeeks(state, count = 1, mutate = false) {
       summary.branches = month.branches;
     }
     simulateScheduledCompetitionsInPlace(next, rng);
+    rollWeeklyEventInPlace(next, rng);
+    maybeFriendlyChallengeInPlace(next, rng);
     summary.weeks += 1;
     commitRng(next, rng);
     if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'advanceMonth') completeTutorialTargetInPlace(next, 'advanceMonth');

@@ -360,7 +360,7 @@ const BASIC_ROOMS = ['Training', 'Rest', 'Infirmary'];
 
 /** Away heroes (mission, tournament, branch duty, or travelling with the guild) can't change rooms. */
 export function isHeroAway(state, hero) {
-  return ['mission', 'tournament'].includes(hero.status) || Boolean(hero.branchId) || Boolean(state.world?.activeTravel);
+  return ['mission', 'tournament', 'sidejob'].includes(hero.status) || Boolean(hero.branchId) || Boolean(state.world?.activeTravel);
 }
 
 function homeHeroes(state) {

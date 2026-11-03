@@ -261,7 +261,7 @@ function availableTemplatePool(state, location = null) {
   return regional.length ? regional : eligible;
 }
 
-function instantiateMission(template, state, rng, forcedLocation = null) {
+export function instantiateMission(template, state, rng, forcedLocation = null) {
   const location = forcedLocation || LOCATION_BY_ID[state.world?.currentLocationId] || LOCATIONS[0];
   const rewardVariance = rng.int(template.reward[0], template.reward[1]) + tierIndexByName(location.tier) * 80;
   const fameVariance = rng.int(template.fame[0], template.fame[1]) + tierIndexByName(location.tier) * 2;

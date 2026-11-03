@@ -10,6 +10,7 @@ import { primalCombatModifier } from '../data/world.js';
 import { normalizeClassId } from '../data/content.js';
 import { SKILLS, skillLabel, skillsForLevel } from '../data/skills.js';
 import { ITEMS, gearStats } from '../data/items.js';
+import { ENEMY_ROLES } from '../data/enemies.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const clone = (value) => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)));
@@ -43,13 +44,15 @@ export const COMMANDS = [
 
 // ---------------------------------------------------------------- combatants
 
-function makeCombatant(hero, side, { role = null, sprite = null, scale = 1 } = {}) {
+// mods: per-stat multipliers (enemy roles, bosses); skills: replaces class skills.
+function makeCombatant(hero, side, { role = null, sprite = null, scale = 1, mods = null, skills = null } = {}) {
   const level = hero.level || 1;
   const attributes = hero.attributes || {};
   const get = (key) => Number(attributes[key] ?? hero.power ?? 50);
   const gear = gearStats(hero);
   const classId = normalizeClassId(hero.classId);
-  const maxHp = Math.round((30 + get('Endurance') * 1.0 + get('Might') * 0.2 + level * 3 + gear.hp) * scale);
+  const m = { hp: 1, atk: 1, def: 1, mag: 1, spd: 1, ...(mods || {}) };
+  const maxHp = Math.round((30 + get('Endurance') * 1.0 + get('Might') * 0.2 + level * 3 + gear.hp) * scale * m.hp);
   const maxMp = Math.round(8 + (get('Mind') + get('Spirit')) * 0.15 + level * 1.5 + gear.mp);
   return {
     id: `${side}-${hero.id}`,
@@ -65,11 +68,11 @@ function makeCombatant(hero, side, { role = null, sprite = null, scale = 1 } = {
     hp: maxHp,
     maxMp,
     mp: maxMp,
-    atk: Math.round((get('Might') * 0.45 + get('Finesse') * 0.25 + level * 0.8 + gear.atk) * scale),
-    def: Math.round(get('Endurance') * 0.3 + get('Spirit') * 0.1 + level * 0.5 + gear.def),
-    mag: Math.round((get('Mind') * 0.4 + get('Spirit') * 0.3 + level * 0.8 + gear.mag) * scale),
-    spd: Math.round(get('Finesse') * 0.5 + get('Presence') * 0.15 + gear.spd),
-    skills: skillsForLevel(classId, level).map((skill) => skill.id),
+    atk: Math.round((get('Might') * 0.45 + get('Finesse') * 0.25 + level * 0.8 + gear.atk) * scale * m.atk),
+    def: Math.round((get('Endurance') * 0.3 + get('Spirit') * 0.1 + level * 0.5 + gear.def) * m.def),
+    mag: Math.round((get('Mind') * 0.4 + get('Spirit') * 0.3 + level * 0.8 + gear.mag) * scale * m.mag),
+    spd: Math.round((get('Finesse') * 0.5 + get('Presence') * 0.15 + gear.spd) * m.spd),
+    skills: skills || skillsForLevel(classId, level).map((skill) => skill.id),
     status: {},
     ko: false,
     damageDealt: 0,
@@ -138,6 +141,7 @@ function startEncounter(encounter, items) {
   encounter.items = { ...consumables };
   encounter.itemsAtStart = { ...consumables };
   planEnemies(encounter);
+  if (encounter.intro) encounter.log.push({ turn: 0, tone: 'bad', text: encounter.intro });
   encounter.log.push({
     turn: 0,
     tone: 'info',
@@ -188,6 +192,8 @@ export function createPartyEncounter({
   opponentRoster = null,
   enemyCount = null,
   strength = 1,
+  enemyTypes = null,
+  boss = null,
   prestige = 0,
   risk = 2,
   canFlee = true,
@@ -221,6 +227,38 @@ export function createPartyEncounter({
       );
   } else {
     const count = clamp(enemyCount ?? party.length - 1 + Math.ceil(risk / 2), 1, 5);
+    if (boss || enemyTypes?.length) {
+      // Typed enemies: a regional roster (and optionally a boss leading them).
+      const roster = enemyTypes?.length ? enemyTypes : [];
+      const start = hashString(`${id}:types`);
+      const total = boss ? clamp(count - 1, 1, 3) + 1 : count;
+      for (let index = 0; index < total; index += 1) {
+        const type = boss && index === 0 ? boss : roster[(start + index) % roster.length];
+        if (!type) continue;
+        const role = ENEMY_ROLES[type.role] || ENEMY_ROLES.brute;
+        const isBoss = boss && index === 0;
+        const enemy = syntheticEnemy({
+          id: `${id}-e${index}`,
+          name: isBoss ? type.name : `${type.name}${total > 1 && !boss ? ` ${String.fromCharCode(65 + index)}` : ''}`,
+          classId: role.classId,
+          primal: opponentPrimal,
+          level: clamp(opponentLevel + (isBoss ? 3 : 0), 1, 20),
+          power: opponentPower + (isBoss ? 8 : -2 - index),
+        });
+        const mods = isBoss ? { ...role.mods, hp: role.mods.hp * 3.2, atk: role.mods.atk * 1.25, mag: role.mods.mag * 1.25 } : role.mods;
+        encounter.enemies.push(
+          makeCombatant(enemy, 'enemy', {
+            role: isBoss ? 'Boss' : type.role,
+            scale: (isBoss ? 1 : 0.85) * strength,
+            mods,
+            skills: type.skills,
+            sprite: { kind: 'enemy', key: type.sprite },
+          }),
+        );
+      }
+      if (boss?.intro) encounter.intro = `${boss.name}: ${boss.intro}`;
+      return startEncounter(encounter, items);
+    }
     const spriteBase = hashString(`${id}:${opponentName}`);
     const classes = [opponentClassId, 'Duelist', 'Ranger', 'Mage', 'Cleric'];
     for (let index = 0; index < count; index += 1) {

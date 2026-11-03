@@ -160,25 +160,29 @@ export function maybeIssueChallengeInPlace(state, rng) {
   issueChallengeInPlace(state, rng.pick(eligible), 'them');
 }
 
-function issueChallengeInPlace(state, rivalId, by) {
+/** kind: 'nemesis' | 'duel' | 'exhibition' | 'wager'. Friendly kinds use lighter stakes and no season limit. */
+export function issueChallengeInPlace(state, rivalId, by, kind = 'nemesis') {
   const rival = state.rivals.find((item) => item.id === rivalId);
   state.rivalries ||= {};
-  (state.rivalries[rivalId] ||= emptyRecord()).lastChallengeSeason = seasonIndex(state);
+  if (kind === 'nemesis') (state.rivalries[rivalId] ||= emptyRecord()).lastChallengeSeason = seasonIndex(state);
+  const tier = state.guild.tierIndex + 1;
   state.challenge = {
     rivalId,
     rivalName: rival.name,
     by,
+    kind,
     status: 'pending',
     issuedWeek: campaignWeekSerial(state),
     expiresWeek: campaignWeekSerial(state) + CHALLENGE_WINDOW_WEEKS,
-    stakes: challengeStakes(state),
+    stakes: kind === 'nemesis' ? challengeStakes(state) : { gold: (kind === 'wager' ? 80 : 40) * tier, fame: 3 * tier, points: 15 * tier },
   };
   if (by === 'them') {
+    const what = { nemesis: 'challenges you', duel: 'proposes a friendly duel', exhibition: 'proposes an exhibition match', wager: 'offers a wager' }[kind];
     state.notifications.push({
-      id: `challenge-${rivalId}-${seasonIndex(state)}`,
-      tone: 'red',
-      title: `${rival.name} challenges you`,
-      text: 'Accept from the Herald (nemesis page) within 4 weeks, or lose a little fame.',
+      id: `challenge-${rivalId}-${campaignWeekSerial(state)}`,
+      tone: kind === 'nemesis' ? 'red' : 'blue',
+      title: `${rival.name} ${what}`,
+      text: 'Answer at the Herald (Rivals) within 4 weeks, or lose a little fame.',
     });
   }
 }
@@ -198,6 +202,26 @@ export function acceptChallenge(state) {
   const challenge = state.challenge;
   if (challenge?.status !== 'pending') return { state, error: 'No challenge is pending.' };
   if (state.activeEncounter) return { state, error: 'Finish the current battle first.' };
+  if (challenge.kind === 'wager') {
+    // A wager: whoever finishes a contract of this kind first, within 8 weeks.
+    const families = ['Combat', 'Diplomacy', 'Expedition', 'Intrigue'];
+    const next = clone(state);
+    next.wager = {
+      rivalId: challenge.rivalId,
+      rivalName: challenge.rivalName,
+      family: families[hashString(`${challenge.rivalId}:${challenge.issuedWeek}`) % families.length],
+      deadlineWeek: campaignWeekSerial(state) + 8,
+      gold: challenge.stakes.gold,
+    };
+    next.challenge = null;
+    next.notifications.push({
+      id: `wager-${challenge.issuedWeek}`,
+      tone: 'blue',
+      title: `Wager with ${challenge.rivalName}`,
+      text: `Finish a ${next.wager.family} contract within 8 weeks to win ${next.wager.gold} gold.`,
+    });
+    return { state: finalize(next), error: null };
+  }
   const rival = state.rivals.find((item) => item.id === challenge.rivalId);
   const ready = state.heroes.filter((hero) => hero.status === 'available');
   if (!ready.length) return { state, error: 'Nobody is available to fight.' };
@@ -217,11 +241,11 @@ export function acceptChallenge(state) {
     sourceType: 'challenge',
     sourceId: rival.id,
     title: `Challenge: ${rival.name}`,
-    roundName: 'Nemesis challenge',
+    roundName: challenge.kind === 'nemesis' || !challenge.kind ? 'Nemesis challenge' : challenge.kind === 'duel' ? 'Friendly duel' : 'Exhibition match',
     items: battleItems(next),
   };
   next.activeEncounter =
-    party.length === 1
+    party.length === 1 || challenge.kind === 'duel'
       ? createDuelEncounter({ ...common, playerHero: party[0], opponentHero: roster[0] })
       : createPartyEncounter({
           ...common,

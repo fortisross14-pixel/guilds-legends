@@ -122,7 +122,8 @@ export function monthlyUpkeep(state) {
   const wages = state.heroes.filter((hero) => !['retired', 'dead', 'candidate'].includes(hero.status)).reduce((sum, hero) => sum + hero.salary, 0);
   const facilityUpkeep = Object.values(state.guild.facilities).reduce((sum, level) => sum + level * 8, 0);
   const appointmentUpkeep = Object.keys(state.guild.appointments).length * 7;
-  return wages + facilityUpkeep + appointmentUpkeep;
+  const total = wages + facilityUpkeep + appointmentUpkeep;
+  return state.story?.choice === 'bury' && state.story?.done ? Math.round(total * 0.9) : total;
 }
 
 export function getPatronLoanOffer(state) {

@@ -350,3 +350,19 @@ export function dateFromWeekSerial(serial) {
   const monthSerial = Math.floor(serial / WEEKS_PER_MONTH);
   return { year: Math.floor(monthSerial / 12), month: monthSerial % 12, week: serial % WEEKS_PER_MONTH };
 }
+
+export const MAX_NEWS = 60;
+
+/** Minor world events go to the News feed instead of a pop-up. */
+export function pushNewsInPlace(state, item) {
+  state.news ||= [];
+  state.news.unshift({
+    id: `news-${campaignWeekSerial(state)}-${state.news.length}`,
+    week: campaignWeekSerial(state),
+    date: dateLabel(state),
+    tone: 'neutral',
+    ...item,
+  });
+  if (state.news.length > MAX_NEWS) state.news.length = MAX_NEWS;
+  state.newsUnread = (state.newsUnread || 0) + 1;
+}
