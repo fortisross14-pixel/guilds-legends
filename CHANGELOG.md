@@ -2,7 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — 16-bit JRPG visual pass
+## Unreleased — HD-2D visual pass
+
+- New interface language: art first, with every scene, the overworld and battles full-screen behind dark translucent panels with thin brass edges and corner flourishes. Replaces the 16-bit JRPG windows. See `DESIGN.md` and `docs/UX_REDESIGN.md`.
+- Type: Cormorant Garamond (titles, names, ceremonies), Cinzel (labels), Manrope (text and data). No pixel font in the interface.
+- Atmosphere: vignette, depth-of-field edges, bloom and drifting dust on scenes; a gliding gem cursor in menus; HP bars with a damage ghost; counting numbers; typed dialogue on parchment; ceremonies with a light burst and sparks.
+- One slim status bar with a Journal dropdown for the next step and upcoming events; slim collapsible party plates; floating dock; bottom sheets on phone.
+- Battle: full-screen scene, breathing enemies on ground shadows, light rings for targeting, party plates with the command menu above the active hero.
+- No engine changes.
+
+## 16-bit JRPG visual pass
 
 - New look: Dragon Quest-style windows (deep blue fill, white pixel frame), Pixelify Sans for the game voice and Atkinson Hyperlegible for reading text, command menus with a ▶ cursor and arrow-key navigation. Replaces "Midnight Guild Atlas". See `DESIGN.md` and `docs/UX_REDESIGN.md`.
 - Title screen with Continue / New Game menu; status strip and World / Guild / Chronicle command dock; party status windows.
