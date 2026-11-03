@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "skills": {
+    "animations": {
+      "source": "phaserjs/phaser",
+      "sourceType": "github",
+      "skillPath": "skills/animations/SKILL.md",
+      "computedHash": "342f4448eed4b25a890793b7f14cad8b3393a16a915cf967edbcd6d2fd9d20d7"
+    },
+    "dialogue-systems": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/disciplines/dialogue-systems/SKILL.md",
+      "computedHash": "7b6ee7b0d72d6062d6c228656f227a07c04d37ba9735541defceb7830a9e6303"
+    },
+    "game-ai": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/disciplines/game-ai/SKILL.md",
+      "computedHash": "8e1a99b7cb56731c2b264eb1972f1fcd79248e1c33c870d1aeed351be584f5d1"
+    },
+    "input-keyboard-mouse-touch": {
+      "source": "phaserjs/phaser",
+      "sourceType": "github",
+      "skillPath": "skills/input-keyboard-mouse-touch/SKILL.md",
+      "computedHash": "ec25f47ee3cdc6a6ed0ceaa77d62fcbe30a161f73cbc2dcf3771e12c64bee791"
+    },
+    "level-design": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/disciplines/level-design/SKILL.md",
+      "computedHash": "44e46c164a1e3502d076a8eb0568d06b98f1df5f76d384caa8a003ad76cc948a"
+    },
+    "narrative-design": {
+      "source": "poorvith-mp/skills-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/narrative-design/SKILL.md",
+      "computedHash": "e6279ae5989ef0756534b817dbcf62685dc13dfafa4f2bdcfd225749ffe796b7"
+    },
+    "scenes": {
+      "source": "phaserjs/phaser",
+      "sourceType": "github",
+      "skillPath": "skills/scenes/SKILL.md",
+      "computedHash": "3074badaa83649550b218788638c4811bfa3dc9b21f1139e99661f36d1bcdc9e"
+    },
+    "tilemaps": {
+      "source": "phaserjs/phaser",
+      "sourceType": "github",
+      "skillPath": "skills/tilemaps/SKILL.md",
+      "computedHash": "42007a40324eb14675db75b7cb9239c203c44caeefb97942ac3a6bae9fb92604"
+    }
+  }
+}
