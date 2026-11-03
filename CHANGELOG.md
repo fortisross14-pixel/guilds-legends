@@ -2,7 +2,14 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 5 (your team, your time)
+## Unreleased — Wave 6 (recruitment depth)
+
+- Contracts of 1–3 years with salary and expiry. A warning comes 3 months before, and heroes leave as free agents if not renewed. Renewal talks from the status screen: the asking salary depends on loyalty and level, and disloyal heroes refuse.
+- Candidate stats show as ranges until scouting narrows them.
+- Free agents in town are listed in the Tavern and can be signed.
+- Poaching both ways. Rivals court low-loyalty heroes (counter-offer within a month or lose them). You can make offers to rival heroes; success depends on their loyalty and your fame.
+
+## Wave 5 (your team, your time)
 
 - Weekly time: dates are { year, month, week }. +1 week, +1 month and "Wait until…" (the calendar) live in the top bar. Monthly systems run on week 1. Travel takes 1–6 weeks, missions 1–4 weeks, and injuries heal weekly.
 - Calendar page: a month grid by week with tournaments (enterable or locked), company returns, arrival, promises, wage days and season ends, plus "Advance to this date". The Upcoming strip shows the next 3 actionable events.

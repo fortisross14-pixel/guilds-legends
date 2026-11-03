@@ -8,7 +8,7 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) | ✅ Done (2026-11-02) |
 | Wave 4 — Rankings as the hook, and the scripted opening | ✅ Done (2026-11-02) |
 | Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | ✅ Done (2026-11-02) |
-| Wave 6 — Recruitment depth | Not started |
+| Wave 6 — Recruitment depth | ✅ Done (2026-11-02) |
 | Wave 7 — Specialization and rivalries | Not started |
 
 ## The goal: turn a stack of menus into a game
@@ -237,12 +237,27 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
 - The old Hall overview (next-step panel, objectives, expeditions) is gone. Objectives live in the Quest Log, and the next-step ribbon now shows on every screen.
 - Removed: the Guild Hall Overview/Roster/Equipment/Facilities tabs, HallScreen, CouncilPlanner ("Resolve month" / "Rest 1–3 months"), restAtGuildHall, and the hero dossier modal (replaced by the status screen).
 
-## Wave 6 — Recruitment depth (not started)
+## Wave 6 — Recruitment depth
 
 - Contracts with length and salary, expiry and renewal talks.
 - Candidate stats shown as ranges until narrowed by scouting.
 - Released or expired heroes become free agents who can join rivals.
 - Poaching both ways, driven by loyalty.
+
+### Wave 6 notes (choices where the brief was open)
+
+- **Contracts:** 1, 2 or 3 years, chosen when hiring. Longer deals pay less per month (×1, ×0.93, ×0.87). The founder has no contract. The guildmaster's contract quietly extends a year at a time.
+- **Expiry:** a warning 3 months before (notification, party-bar dot, calendar entry). At expiry the hero leaves as a free agent. A hero on a mission or in a tournament leaves when they're back.
+- **Renewal talks** open in the last 12 months, from the hero status screen. The asking salary is the hero's current market rate (level, potential, rarity) for the chosen length, ×1.15 below 70 loyalty and ×1.3 below 45. The signing bonus is 2 months' base salary per year. Below 25 loyalty the hero refuses to talk. A renewal adds +5 loyalty and starts when the old deal ends.
+- **Candidate fog:** power, potential and attributes show as ranges (±15, ±9, ±4, exact) that always contain the true value. A month with any scouting raises the scouting level of candidates where the guild operates by 1, or by 2 with 3+ scouting effort. A Scout Office adds +1. Founding candidates are fully known; road recruits start at level 1.
+- **Rivals poaching your heroes:** heroes below 40 loyalty (not the founder or guildmaster) may get a rival approach each month (chance grows with disloyalty and level). You have one month to make a counter-offer (+20% salary, +15 loyalty). If loyalty is still under 40 next month, the hero joins that rival.
+- **You poaching theirs:**
+  - Any rival hero or free agent can get an offer from their status screen; free agents in your town are also listed in the Tavern.
+  - The fee scales with level, power, renown and rarity: 1.4× for rival heroes, 0.6× for free agents.
+  - Acceptance chance: 85% for free agents. For rival heroes it is 10% plus a loyalty factor plus your fame lead over their guild, between 5% and 80%.
+  - A refusal locks that hero out for the year and makes them a bit more loyal to their current guild.
+  - Signing a rival's star promotes their next-best hero.
+- Released and expired heroes already became free agents (Wave 0); rivals' existing transfer market signs them.
 
 ## Wave 7 — Specialization and rivalries (not started)
 

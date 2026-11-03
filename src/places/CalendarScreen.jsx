@@ -3,7 +3,7 @@ import { MONTHS } from '../data/content.js';
 import { getCalendarEntries } from '../game/engine.js';
 import { Badge, Button, Panel } from '../components/UI.jsx';
 
-const KIND_ICONS = { tournament: '♛', mission: '⌖', travel: '➜', promise: '✎', wages: '◈', season: '★' };
+const KIND_ICONS = { tournament: '♛', mission: '⌖', travel: '➜', promise: '✎', wages: '◈', season: '★', contract: '✍' };
 
 function sameDate(a, b) {
   return a.year === b.year && a.month === b.month && a.week === b.week;

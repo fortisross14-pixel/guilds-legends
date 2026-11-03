@@ -76,3 +76,9 @@ button.quest-row { cursor: pointer; }
 .quest-row small { color: var(--muted); }
 .quest-row__map { color: var(--gold-light); font-size: .75rem; }
 .upcoming-strip__label { border: 0; background: none; cursor: pointer; }
+
+/* Wave 6: contracts, offers, free agents */
+.contract-length { max-width: 100%; }
+.contract-options { display: flex; flex-wrap: wrap; gap: .4rem; }
+.free-agent-row { display: flex; gap: .5rem; align-items: center; justify-content: space-between; padding: .35rem 0; border-top: 1px solid var(--line); }
+.calendar-entry--contract i, .upcoming-item--contract i { color: var(--purple); }

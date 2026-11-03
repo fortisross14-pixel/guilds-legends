@@ -64,6 +64,9 @@ import {
   sendIdleHeroesTo,
   autoAssignRooms,
   toggleMainPartyMember,
+  renewContract,
+  counterOffer,
+  makeOffer,
   takePatronLoan,
   updateSettings,
   upgradeBranch,
@@ -913,7 +916,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       toggleMainParty: (heroId) => applyResult(toggleMainPartyMember(state, heroId)),
       waitForCompany: () => applyResult(advanceToNextEvent(state)),
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
-      recruit: (id, negotiation = 'accept') => applyResult(recruitCandidate(state, id, negotiation), 'A new hero has joined the banner.'),
+      recruit: (id, negotiation = 'accept', years = 2) => applyResult(recruitCandidate(state, id, negotiation, years), 'A new hero has joined the banner.'),
+      renewContract: (heroId, years) => applyResult(renewContract(state, heroId, years), 'Contract renewed.'),
+      counterOffer: (heroId) => applyResult(counterOffer(state, heroId), 'The hero stays.'),
+      makeOffer: (heroId) => {
+        const result = makeOffer(state, heroId);
+        applyResult(result, result.accepted ? 'The offer was accepted.' : null);
+      },
       setTraining: (id, training) => commitState(setHeroTraining(state, id, training)),
       setMonthlyActivity: (id, activity) => commitState(setHeroMonthlyActivity(state, id, activity)),
       acknowledgeCouncilReport: () => commitState(acknowledgeCouncilReport(state)),

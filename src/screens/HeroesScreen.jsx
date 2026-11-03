@@ -1,7 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, normalizeClassId } from '../data/content.js';
 import { LOCATION_BY_ID, PRIMALS, RARITIES } from '../data/world.js';
-import { activeHeroCount, heroCapacity, operationalLocationIds, xpForNextLevel } from '../game/engine.js';
+import {
+  activeHeroCount,
+  heroCapacity,
+  operationalLocationIds,
+  xpForNextLevel,
+  CONTRACT_LENGTHS,
+  candidateRanges,
+  contractSalary,
+  offerTerms,
+} from '../game/engine.js';
 import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from '../data/activities.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, Tabs } from '../components/UI.jsx';
 
@@ -13,6 +22,10 @@ function candidateValue(candidate) {
 // the Guild Hall shows ['roster', 'legends'].
 export default function HeroesScreen({ state, actions, navigate, tabs = ['roster', 'recruit', 'legends'] }) {
   const [tab, setTab] = useState(tabs[0]);
+  const [contractYears, setContractYears] = useState({});
+  const yearsFor = (id) => contractYears[id] || 2;
+  const rangeText = ([low, high]) => (low === high ? String(low) : `${low}–${high}`);
+  const townAgents = (state.freeAgents || []).filter((hero) => hero.homeLocationId === (state.world?.currentLocationId || 'dunmere')).slice(0, 6);
   const [sort, setSort] = useState('level');
   const [classFilter, setClassFilter] = useState('All');
   const [primalFilter, setPrimalFilter] = useState('All');
@@ -319,11 +332,15 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                   <div className="candidate-card__ratings">
                     <span>
                       <small>Power</small>
-                      <strong>{candidate.power}</strong>
+                      <strong>{rangeText(candidateRanges(state, candidate).power)}</strong>
                     </span>
                     <span>
                       <small>Potential</small>
-                      <strong>{candidate.potential}</strong>
+                      <strong>{rangeText(candidateRanges(state, candidate).potential)}</strong>
+                    </span>
+                    <span>
+                      <small>Scouted</small>
+                      <strong>{candidateRanges(state, candidate).level}/3</strong>
                     </span>
                     <span>
                       <small>Interest</small>
@@ -345,8 +362,18 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       {candidate.dream}
                     </span>
                     <span>
-                      <b>Monthly salary</b>
-                      {candidate.salary} crowns
+                      <b>Contract</b>
+                      <select
+                        className="contract-length"
+                        value={yearsFor(candidate.id)}
+                        onChange={(event) => setContractYears({ ...contractYears, [candidate.id]: Number(event.target.value) })}
+                      >
+                        {CONTRACT_LENGTHS.map((years) => (
+                          <option key={years} value={years}>
+                            {years} year{years === 1 ? '' : 's'} · {contractSalary(candidate.salary, years)}/month
+                          </option>
+                        ))}
+                      </select>
                     </span>
                   </div>
                   {candidate.demand ? (
@@ -364,7 +391,8 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       Signing fee<strong>{candidate.signingFee.toLocaleString()}</strong>
                     </span>
                     <span>
-                      First-year commitment<strong>{(candidate.signingFee + candidate.salary * 12).toLocaleString()}</strong>
+                      First-year commitment
+                      <strong>{(candidate.signingFee + contractSalary(candidate.salary, yearsFor(candidate.id)) * 12).toLocaleString()}</strong>
                     </span>
                     {candidate.demand ? (
                       <span>
@@ -375,7 +403,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                   <div className="candidate-card__actions">
                     <Button
                       variant="primary"
-                      onClick={() => actions.recruit(candidate.id, 'accept')}
+                      onClick={() => actions.recruit(candidate.id, 'accept', yearsFor(candidate.id))}
                       disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee}
                     >
                       {candidate.signingFee === 0
@@ -388,7 +416,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                     </Button>
                     {candidate.demand ? (
                       <Button
-                        onClick={() => actions.recruit(candidate.id, 'buyout')}
+                        onClick={() => actions.recruit(candidate.id, 'buyout', yearsFor(candidate.id))}
                         disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee + (candidate.buyoutFee || 0)}
                       >
                         Buy out demand · {(candidate.signingFee + (candidate.buyoutFee || 0)).toLocaleString()}
@@ -408,6 +436,34 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
             </div>
           </Panel>
           <aside className="recruit-sidebar">
+            {townAgents.length ? (
+              <Panel title="Free agents in town" eyebrow="Released or out-of-contract heroes">
+                {townAgents.map((hero) => {
+                  const terms = offerTerms(state, hero.id);
+                  return (
+                    <div key={hero.id} className="free-agent-row">
+                      <button className="room-hero__who" onClick={() => actions.openHero(hero.id)}>
+                        <HeroPortrait hero={hero} size="xs" showStatus={false} />
+                        <span>
+                          <strong>{hero.name}</strong>
+                          <small>
+                            Lv {hero.level} {hero.rarity} {hero.classId}
+                          </small>
+                        </span>
+                      </button>
+                      <Button
+                        size="sm"
+                        disabled={!terms.available || state.guild.crowns < terms.fee}
+                        onClick={() => actions.makeOffer(hero.id)}
+                        title={terms.reason || ''}
+                      >
+                        Offer {terms.fee} · {Math.round((terms.chance || 0) * 100)}%
+                      </Button>
+                    </div>
+                  );
+                })}
+              </Panel>
+            ) : null}
             <Panel title="Hiring strategy" eyebrow="Build toward arrangements" tone="dark">
               <ul className="insight-list">
                 <li>

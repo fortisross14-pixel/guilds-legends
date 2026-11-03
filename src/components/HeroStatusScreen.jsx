@@ -3,7 +3,7 @@ import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, APPOINTMENTS, normalizeCl
 import { MONTHLY_ACTIVITIES, TRAINING_FOCI, HALL_ROOMS } from '../data/activities.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
 import { CLASS_SKILLS, skillLabel } from '../data/skills.js';
-import { MAIN_PARTY_SIZE, getHero, xpForNextLevel } from '../game/engine.js';
+import { MAIN_PARTY_SIZE, contractMonthsLeft, getHero, offerTerms, renewalTerms, xpForNextLevel } from '../game/engine.js';
 import { heroBattleStats } from '../game/combat.js';
 import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
@@ -142,6 +142,79 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
             ))}
           </ul>
         </section>
+
+        {own ? (
+          <section className="hero-status__contract">
+            <h3>Contract</h3>
+            {hero.contract ? (
+              (() => {
+                const left = contractMonthsLeft(state, hero);
+                const terms = renewalTerms(state, hero);
+                return (
+                  <>
+                    <p>
+                      {hero.salary} gold a month · {left > 0 ? `${left} month${left === 1 ? '' : 's'} left` : 'ends now'} ({hero.contract.years}-year deal)
+                    </p>
+                    {terms.open ? (
+                      terms.refuses ? (
+                        <p className="hero-status__warnings">{hero.name} refuses to discuss renewal. Raise their loyalty first.</p>
+                      ) : (
+                        <div className="contract-options">
+                          {terms.options.map((option) => (
+                            <Button
+                              key={option.years}
+                              size="sm"
+                              disabled={state.guild.crowns < option.bonus}
+                              onClick={() => actions.renewContract(hero.id, option.years)}
+                            >
+                              Renew {option.years}y · {option.salary}/month · bonus {option.bonus}
+                            </Button>
+                          ))}
+                        </div>
+                      )
+                    ) : (
+                      <p className="muted">Renewal talks open in the last 12 months.</p>
+                    )}
+                  </>
+                );
+              })()
+            ) : (
+              <p className="muted">No contract: the founder serves for life.</p>
+            )}
+            {hero.poachApproach ? (
+              <p className="hero-status__warnings">
+                {hero.poachApproach.rivalName} is courting {hero.name}.{' '}
+                <Button size="sm" variant="primary" onClick={() => actions.counterOffer(hero.id)}>
+                  Counter-offer (+20% salary)
+                </Button>
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
+        {!own && offerTerms(state, hero.id).fee ? (
+          <section className="hero-status__offer">
+            <h3>Make an offer</h3>
+            {(() => {
+              const terms = offerTerms(state, hero.id);
+              return (
+                <p>
+                  {terms.rival ? `Plays for ${terms.rival.name}.` : 'Free agent.'} Fee {terms.fee} gold · about {Math.round(terms.chance * 100)}% chance they
+                  accept.{' '}
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    disabled={!terms.available || state.guild.crowns < terms.fee}
+                    onClick={() => actions.makeOffer(hero.id)}
+                    title={terms.reason || ''}
+                  >
+                    {terms.available ? 'Make offer' : 'Refused this year'}
+                  </Button>
+                </p>
+              );
+            })()}
+          </section>
+        ) : null}
 
         {own ? (
           <section className="hero-status__room">

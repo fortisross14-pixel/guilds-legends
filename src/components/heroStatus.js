@@ -31,6 +31,8 @@ export function heroWarnings(state, hero) {
   if ((hero.fatigue || 0) >= 70) warnings.push('Very tired');
   if ((hero.loyalty ?? 100) < 35) warnings.push('Loyalty is low');
   const nowMonth = state.date.year * 12 + state.date.month;
+  if (hero.contract && hero.contract.endSerial - nowMonth <= 3) warnings.push('Contract ends soon');
+  if (hero.poachApproach) warnings.push(`${hero.poachApproach.rivalName} is courting them`);
   if ((hero.promises || []).some((promise) => promise.status === 'active' && Number.isFinite(promise.dueSerial) && promise.dueSerial - nowMonth <= 2)) {
     warnings.push('A promise is due soon');
   }

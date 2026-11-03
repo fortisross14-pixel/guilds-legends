@@ -66,6 +66,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   universe.js             rival guilds, legends, title records, artifacts, contract board
   rankings.js             Strength/Legacy/Official ladders, official points ledger, status titles, rank snapshots
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
+  contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
   goals.js                goals, achievements, promotion, evaluateStateInPlace
   economy.js              upkeep, patron loans and debt, travel, facility upgrades
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
@@ -102,9 +103,9 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `schemaVersion`, `seed`, `rngState`: save version and RNG state (advance the RNG only via `commitRng`)
 - `date: { year, month, week }`: month 0–11, week 0–3 (4 weeks per month); the campaign starts in 1187. Durations (travel, missions, injuries) are in weeks
 - `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `facilities`, `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
-- `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty` and `salary`
+- `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty`, `salary`, `contract` ({ years, salary, startSerial, endSerial } in month serials; none for the founder) and an optional `poachApproach`
 - `historicHeroes[]`: archived player heroes (compacted)
-- `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee` and an optional `demand`
+- `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee`, a `scoutLevel` (0–3, how precisely its stats are known) and an optional `demand`
 - `rivals[]`: 30 AI guilds, each with a `star` and `members[]`. `freeAgents[]` and `worldHistoricHeroes[]` hold the rest of the world's heroes
 - `missions[]` (contract board), `activeMissions[]` (deployed, with `assignments` and `remaining`)
 - `activeEncounter` (combat in progress), `activeMissionGame` (non-combat challenge in progress), `pendingDecisions[]`, `pendingReports[]`: while any of these is set, time is paused
