@@ -87,3 +87,17 @@ export { advanceWeeks, advanceToDate } from './engine/time.js';
 export { WEEKS_PER_MONTH, campaignWeekSerial, dateWeekSerial, dateFromWeekSerial } from './engine/core.js';
 export { getCalendarEntries } from './engine/dashboard.js';
 export { MAIN_PARTY_SIZE, isHeroAway, sendIdleHeroesTo, autoAssignRooms, setMainParty, toggleMainPartyMember } from './engine/recruitment.js';
+export {
+  CONTRACT_LENGTHS,
+  CONTRACT_WARNING_MONTHS,
+  POACH_LOYALTY,
+  baseSalaryFor,
+  contractSalary,
+  contractMonthsLeft,
+  renewalTerms,
+  renewContract,
+  counterOffer,
+  candidateRanges,
+  offerTerms,
+} from './engine/contracts.js';
+export { makeOffer } from './engine/recruitment.js';

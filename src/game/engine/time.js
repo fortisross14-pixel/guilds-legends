@@ -33,6 +33,7 @@ import { createTournamentsInPlace, simulateScheduledCompetitionsInPlace } from '
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
 import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings.js';
+import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace } from './contracts.js';
 
 function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
@@ -352,6 +353,9 @@ function runMonthInPlace(next, rng) {
   }
   const debt = applyDebtInPlace(next);
   const council = resolveMonthlyHeroActivities(next, rng);
+  scoutCandidatesInPlace(next, council.scouts);
+  processContractsInPlace(next);
+  processPoachingInPlace(next, rng);
   const branches = simulateBranchesInPlace(next, rng);
   simulateRivals(next, rng);
   updatePromiseDeadlinesInPlace(next);

@@ -327,6 +327,17 @@ export function getCalendarEntries(state, months = 12) {
           }),
         ),
     );
+  state.heroes
+    .filter((hero) => hero.contract && !['dead', 'retired'].includes(hero.status))
+    .forEach((hero) =>
+      add({
+        kind: 'contract',
+        id: `contract-${hero.id}`,
+        title: `${hero.name}'s contract ends`,
+        date: { year: Math.floor(hero.contract.endSerial / 12), month: hero.contract.endSerial % 12, week: 0 },
+        detail: 'Renew from the hero status screen',
+      }),
+    );
   for (let serial = now; serial <= end; serial += 1) {
     const date = dateFromWeekSerial(serial);
     if (date.week !== 0 || serial === now) continue;
@@ -345,7 +356,7 @@ export function getCalendarEntries(state, months = 12) {
 /** The next few events the player can act on (no locked tournaments, no routine wage days). */
 export function getUpcomingEvents(state, limit = 3) {
   return getCalendarEntries(state, 6)
-    .filter((entry) => (entry.kind === 'tournament' ? entry.enterable : ['mission', 'travel', 'promise'].includes(entry.kind)))
+    .filter((entry) => (entry.kind === 'tournament' ? entry.enterable : ['mission', 'travel', 'promise', 'contract'].includes(entry.kind)))
     .slice(0, limit);
 }
 

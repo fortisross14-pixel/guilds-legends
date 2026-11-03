@@ -211,6 +211,7 @@ export function createNewGame(options = {}) {
     candidate.demand = null;
     candidate.expiresYear = state.date.year + 1;
     candidate.interest = 100;
+    candidate.scoutLevel = 3;
     candidate.hook = `${candidate.hook} Will join the founding pair without a signing fee.`;
     state.candidates.push(candidate);
   }

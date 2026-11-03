@@ -19,10 +19,12 @@ import {
   rngFor,
   uid,
   pushMoment,
+  clamp,
 } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { candidateDemandFor, refreshCandidatesForLocationInPlace } from './candidates.js';
 import { releaseHeroInPlace } from './institution.js';
+import { CONTRACT_LENGTHS, baseSalaryFor, makeContract, offerTerms } from './contracts.js';
 import { evaluateStateInPlace } from './goals.js';
 
 // Raises a new founder (level 1, the new guildmaster) plus one free local
@@ -67,6 +69,8 @@ export function refoundGuild(state, options = {}) {
   founder.salary = 0;
   const recruit = generateHero(next, rng, 'normal', { homeLocationId: locationId });
   recruit.loyalty = Math.max(recruit.loyalty, 60);
+  recruit.contract = makeContract(next, recruit.salary, 2);
+  recruit.salary = recruit.contract.salary;
   next.heroes.push(founder, recruit);
   pushMoment(next, {
     type: 'recruit',
@@ -121,7 +125,8 @@ export function refoundGuild(state, options = {}) {
   return { state: finalize(next), error: null };
 }
 
-export function recruitCandidate(state, candidateId, negotiation = 'accept') {
+// years: contract length 1–3 (longer = lower monthly salary).
+export function recruitCandidate(state, candidateId, negotiation = 'accept', years = 2) {
   const next = clone(state);
   const index = next.candidates.findIndex((candidate) => candidate.id === candidateId);
   if (index < 0) return { state, error: 'This candidate has left the region.' };
@@ -160,6 +165,9 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept') {
   hero.status = 'available';
   hero.guildId = 'player';
   hero.joinedYear = next.date.year;
+  hero.contract = makeContract(next, hero.salary, CONTRACT_LENGTHS.includes(years) ? years : 2);
+  hero.salary = hero.contract.salary;
+  delete hero.scoutLevel;
   hero.promises = acceptedDemand ? [acceptedDemand] : [];
   addHeroHistory(hero, next, {
     type: 'joined',
@@ -391,4 +399,81 @@ export function setMainParty(state, heroIds) {
 export function toggleMainPartyMember(state, heroId) {
   const current = (state.guild.mainParty || []).filter((id) => state.heroes.some((hero) => hero.id === id && !['dead', 'retired'].includes(hero.status)));
   return setMainParty(state, current.includes(heroId) ? current.filter((id) => id !== heroId) : [...current, heroId]);
+}
+
+// ---------------------------------------------------------------- offers to rival heroes and free agents
+
+/** Offer a contract to a rival hero or free agent. Success depends on their loyalty; one try per hero per year. */
+export function makeOffer(state, heroId) {
+  const terms = offerTerms(state, heroId);
+  if (!terms.fee && !terms.available) return { state, error: terms.reason };
+  if (!terms.available) return { state, error: terms.reason };
+  if (activeHeroCount(state) >= heroCapacity(state)) return { state, error: 'The Great Hall has no room for another active hero.' };
+  if (state.guild.crowns < terms.fee) return { state, error: `The offer costs ${terms.fee} gold.` };
+  const next = clone(state);
+  const rng = rngFor(next, `offer-${heroId}`);
+  const accepted = rng.next() < terms.chance;
+  commitRng(next, rng);
+  const rival = terms.rival ? next.rivals.find((item) => item.id === terms.rival.id) : null;
+  const target = rival
+    ? [rival.star, ...(rival.members || [])].find((item) => item?.id === heroId)
+    : (next.freeAgents || []).find((item) => item.id === heroId);
+  if (!accepted) {
+    target.offerYear = next.date.year;
+    target.loyalty = clamp((target.loyalty ?? 60) + 5, 0, 100);
+    next.notifications.push({
+      id: `offer-refused-${heroId}-${next.date.year}`,
+      tone: 'red',
+      title: `${target.name} refuses`,
+      text: rival ? `They stay with ${rival.name} this year.` : 'They want to stay on the open circuit for now.',
+    });
+    return { state: finalize(next), error: null, accepted: false };
+  }
+  next.guild.crowns -= terms.fee;
+  if (rival) {
+    if (rival.star?.id === heroId) {
+      const members = [...(rival.members || [])].sort((a, b) => b.power - a.power);
+      rival.star = members[0] || rival.star;
+      rival.members = members.slice(1);
+    } else rival.members = rival.members.filter((item) => item.id !== heroId);
+    rival.recent = [...(rival.recent || []).slice(-8), `${target.name} left for ${next.guild.name}.`];
+  } else next.freeAgents = next.freeAgents.filter((item) => item.id !== heroId);
+  target.status = 'available';
+  target.guildId = 'player';
+  target.joinedYear = next.date.year;
+  target.monthlyActivity = 'Training';
+  target.training ||= 'Fundamentals';
+  target.promises = [];
+  target.loyalty = Math.max(target.loyalty ?? 50, 55);
+  target.gear ||= { weapon: null, armor: null, accessory: null };
+  target.contract = makeContract(next, baseSalaryFor(target), 2);
+  target.salary = target.contract.salary;
+  delete target.offerYear;
+  next.heroes.push(target);
+  addHeroHistory(target, next, {
+    type: 'joined',
+    title: `Joined ${next.guild.name}`,
+    text: rival ? `Signed away from ${rival.name} for ${terms.fee} gold.` : `Signed from the open circuit for ${terms.fee} gold.`,
+  });
+  addChronicle(next, {
+    type: 'recruitment',
+    importance: rival ? 3 : 2,
+    title: rival ? `${target.name} leaves ${rival.name} for ${next.guild.name}` : `${target.name} signs with ${next.guild.name}`,
+    text: `A ${target.rarity} ${target.classId} joins for ${terms.fee} gold.`,
+    heroIds: [target.id],
+    tags: ['recruitment', 'poaching'],
+  });
+  pushMoment(next, {
+    type: 'recruit',
+    heroId: target.id,
+    name: target.name,
+    classId: target.classId,
+    primal: target.primal,
+    rarity: target.rarity,
+    level: target.level,
+    personality: target.personality,
+    hook: target.hook,
+  });
+  evaluateStateInPlace(next);
+  return { state: finalize(next), error: null, accepted: true };
 }

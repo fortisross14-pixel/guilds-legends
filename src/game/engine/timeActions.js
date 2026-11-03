@@ -129,6 +129,7 @@ export function resolveRoadEvent(state, optionId) {
     candidate.buyoutFee = Math.round((candidate.buyoutFee || 0) / 2);
     candidate.interest = Math.max(candidate.interest || 0, 70);
     candidate.channel = 'Met on the road';
+    candidate.scoutLevel = 1;
     next.candidates.push(candidate);
     result = `${candidate.name}, a level ${candidate.level} ${candidate.classId}, will wait for you at the tavern in ${LOCATION_BY_ID[locationId]?.name || 'town'}.`;
   } else if (event.type === 'shortcut' && optionId === 'take' && travel && travel.weeksRemaining >= 2) {
