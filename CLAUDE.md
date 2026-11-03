@@ -34,6 +34,7 @@ The game is an early prototype and changes completely between phases. Tests writ
   2. After pushing to `main`, the "Deploy to GitHub Pages" workflow run succeeds.
 - **Do NOT** write tests, run test suites (including `test:fast`), simulations, balance or performance checks, Playwright, browser or device playthroughs, or take screenshots. This includes "quick" phone or touch runs.
 - If old tests or lint rules break because of an intended change, leave the tests alone; they get rebuilt in Phase 8. Fix lint only if it blocks the build or deploy.
+- Exception: visual phases (7C, 7D, 8) take screenshots to review layout.
 - If the build or deploy fails twice in a row, stop and report what is failing. Don't loop on retries.
 
 ## Commands

@@ -307,6 +307,14 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
   - **Effects:** hit, slash, fire, heal, buff, level-up.
 - Placeholder fallback stays, so art can arrive in batches.
 
+### Phase 7C — Game HUD, menus and walk-in buildings
+A visual phase (screenshots allowed, see `CLAUDE.md`). Two parts:
+- **Part 1 — HUD, orbs, ledger and visual language.** One HUD instead of four navigations: a fading place-and-date tag (top left), the Guild orb (Party, Items, Guild Hall, Quests, Contacts; bottom left), the World orb (Map, Calendar, Records, System; bottom right) that fan out like the combat radial, and a ledger (gold, fame, ranks, title, specialization; top right) that opens itself when a value changes. One screen template for every section, defined screen zones, one z-index scale, safe areas, a web app manifest, one icon set (game-icons.net + Phosphor through `<Icon>`), two fonts and five sizes, intentional placeholders, battle drag from the sprite, a full-width dialogue box.
+- **Part 2 — Walk-in buildings and people.** One people model (name, role, place, look, memory, offers: mission, hire, challenge) replacing the recruit, contract-giver and challenger lists; every building is a small walkable room that fits one screen; you discover offers by talking; hiring is an interview; the notice board lists the contracts people gave you; Contacts in the Guild orb. The Guild Hall interior is left for 7D.
+
+### Phase 7D — The Guild Hall compound
+Own pass: an empty lot with a small cabin that grows into a full compound (bedroom wings, training yard with stat equipment, infirmary, vault…). Details to come.
+
 ### Phase 8 — Polish, balance and testing
 - Turn the safety net back on: restore the full testing policy, put `npm test` back in `.github/workflows/deploy-pages.yml` (removed after Phase 3), add tests for the new systems, and run `npm run sim` for balance (the slice should take 2–3 hours; promotion near the end).
 - Touch QA on phone and tablet sizes, performance (60 fps in walkable scenes on a mid-range phone), save stability.
@@ -316,7 +324,7 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 
 ```
 Phase 0 → Phase 1 → Phase 2 ┐
-                   Phase 3 ─┼→ Phase 6 → Phase 7A → Phase 7B → Phase 8
+                   Phase 3 ─┼→ Phase 6 → Phase 7A → Phase 7C → Phase 7D → Phase 7B → Phase 8
                    Phase 4 ─┤
                    Phase 5 ─┘
 ```
@@ -324,7 +332,7 @@ Phase 0 → Phase 1 → Phase 2 ┐
 Phases 2–5 can run in any order after Phase 1. Phase 6 needs the towns, combat and growth in place. Phase 7B (assets) can be updated continuously but is finalized last.
 
 ## 6. Rules for every phase
-- Testing: only `npm run build` and a successful GitHub Pages deploy until Phase 8. No playthroughs or screenshots.
+- Testing: only `npm run build` and a successful GitHub Pages deploy until Phase 8. No playthroughs or screenshots, except in visual phases (7C, 7D, 8), which take screenshots to review layout.
 - Touch first: design every interaction for a thumb on a 390px phone, then check tablet and desktop.
 - No keyboard-only actions and no hover-only information.
 - Placeholders through the asset registry, never hard-coded colors standing in for art.
