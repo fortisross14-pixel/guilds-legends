@@ -4,7 +4,8 @@ import { ONBOARDING_STEPS } from '../../data/content.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
-import { addChronicle, campaignWeekSerial, clone, commitRng, completeTutorialTargetInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
+import { addChronicle, campaignWeekSerial, clone, commitRng, completeTutorialTargetInPlace, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
+import { charterEffect } from './charter.js';
 import { applyXpInPlace, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
@@ -12,7 +13,8 @@ function xpEntryInPlace(hero, amount, state, source) {
   const fill = () => (xpForNextLevel(hero.level) ? (hero.xp || 0) / xpForNextLevel(hero.level) : 1);
   const levelBefore = hero.level;
   const from = fill();
-  applyXpInPlace(hero, amount, state, source);
+  // Battle XP: the Free Company learns more from a fight.
+  applyXpInPlace(hero, Math.round(amount * charterEffect(state, 'combatXp')), state, source);
   return { heroId: hero.id, name: hero.name, xp: amount, levelBefore, levelAfter: hero.level, from, to: fill() };
 }
 import { addItemsInPlace, lootNames, rollLoot, settleBattleItemsInPlace } from './inventory.js';
@@ -117,7 +119,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
   if (combatResult.playerWon) {
     const reward = group.reward || {};
     const gold = reward.gold ? rng.int(reward.gold[0], reward.gold[1]) : 0;
-    next.guild.crowns += gold;
+    earnGoldInPlace(next, gold);
     const xp = fighters.map((hero) => xpEntryInPlace(hero, reward.xp || 20, next, area.name));
     const loot = { ...(reward.items || {}) };
     if (group.isBoss) Object.entries(rollLoot(rng, next.guild.tierIndex, 1)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
@@ -153,7 +155,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
   const rng = rngFor(next, `road-combat:${encounter.id}`);
   if (combatResult.playerWon) {
     const gold = (30 + rng.int(0, 60)) * tier;
-    next.guild.crowns += gold;
+    earnGoldInPlace(next, gold);
     const xp = fighters.map((hero) => xpEntryInPlace(hero, 25 * tier, next, 'a road ambush'));
     const loot = rollLoot(rng, next.guild.tierIndex, 0);
     addItemsInPlace(next, loot);

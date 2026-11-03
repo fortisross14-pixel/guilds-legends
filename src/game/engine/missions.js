@@ -3,6 +3,8 @@
 import { FORMATION_TYPES, emptyFormations } from '../../data/formations.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
+import { PATRON_DELTAS } from '../../data/patrons.js';
+import { adjustPatronInPlace } from './charter.js';
 import { createMissionGame } from '../missionGames.js';
 import {
   addChronicle,
@@ -288,6 +290,7 @@ export function declineContract(state, missionId) {
   next.missions = next.missions.filter((item) => item.id !== missionId);
   const rival = rivalTakesContractInPlace(next, mission, 'declined');
   adjustRegionReputationInPlace(next, mission.region, -DECLINE_PENALTY);
+  if (mission.patron) adjustPatronInPlace(next, mission.patron, PATRON_DELTAS.decline, 'you turned down their contract');
   if (rival)
     next.notifications.push({
       id: `declined-${missionId}`,

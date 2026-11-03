@@ -11,6 +11,7 @@ import { startTravel } from './economy.js';
 import { launchMission } from './missions.js';
 import { concludeActiveCombat } from './encounters.js';
 import { advanceToNextEvent, advanceWeeks } from './time.js';
+import { charterEffect } from './charter.js';
 
 /**
  * Plans 0–2 road events for a journey of `months` weeks. Each fires on a
@@ -39,6 +40,10 @@ export function travelTo(state, destinationId) {
   const next = started.state;
   const rng = rngFor(next, `road-${destinationId}`);
   next.world.roadEvents = planRoadEvents(rng, next.world.activeTravel.totalWeeks);
+  // Shield of the People: folk on the road warn you off ambushes and share supplies.
+  if (charterEffect(next, 'roadHelp', false)) {
+    next.world.roadEvents = next.world.roadEvents.map((event) => (event.type === 'ambush' && rng.chance(0.6) ? { ...event, type: 'peddler' } : event));
+  }
   commitRng(next, rng);
   return advanceWeeks(next, next.world.activeTravel.totalWeeks, true);
 }

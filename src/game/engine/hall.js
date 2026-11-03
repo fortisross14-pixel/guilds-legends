@@ -19,11 +19,17 @@ import {
   trophyCount,
 } from './core.js';
 import { getStoryView } from './stories.js';
+import { charterEffect } from './charter.js';
 import { evaluateStateInPlace } from './goals.js';
 import { hallUpkeep } from './economy.js';
 import { makeCandidate } from './candidates.js';
 
 const FAILED = ['Defeat', 'Catastrophic'];
+
+/** What a room level costs this guild (the Scholars' Lodge pays half for its Scout table). */
+function roomCost(state, roomId, plan) {
+  return roomId === 'scouts' ? Math.round(plan.cost * charterEffect(state, 'scoutTableCost')) : plan.cost;
+}
 
 function completedContracts(state) {
   return (state.missionHistory || []).filter((mission) => !FAILED.includes(mission.grade)).length;
@@ -68,7 +74,7 @@ function roomPlan(state, room) {
     effect: level ? room.effect(level) : null,
     interior: level ? roomInterior(room.id, level) : null,
     upkeep: level ? room.levels[level - 1].upkeep : 0,
-    next: next ? { level: level + 1, cost: next.cost, weeks: next.weeks, upkeep: next.upkeep, effect: room.effect(level + 1), ...requirementStatus(state, next.requires) } : null,
+    next: next ? { level: level + 1, cost: roomCost(state, room.id, next), weeks: next.weeks, upkeep: next.upkeep, effect: room.effect(level + 1), ...requirementStatus(state, next.requires) } : null,
   };
 }
 
@@ -114,7 +120,7 @@ function buildBlocker(state, roomId) {
   const status = requirementStatus(state, next.requires);
   if (!status.met) return `${room.name} needs: ${status.missing.join(', ')}.`;
   if (!level && wings(state).free <= 0) return 'No empty wing left. Raise the hall’s renown to open more.';
-  if (state.guild.crowns < next.cost) return `${room.name} costs ${next.cost} crowns.`;
+  if (state.guild.crowns < roomCost(state, roomId, next)) return `${room.name} costs ${roomCost(state, roomId, next)} crowns.`;
   return null;
 }
 
@@ -172,7 +178,7 @@ export function buildRoom(state, roomId) {
   const level = roomLevel(state, roomId) + 1;
   const plan = room.levels[level - 1];
   const next = clone(state);
-  next.guild.crowns -= plan.cost;
+  next.guild.crowns -= roomCost(state, roomId, plan);
   const now = campaignWeekSerial(next);
   next.guild.hall.construction = { roomId, level, weeksLeft: plan.weeks, totalWeeks: plan.weeks, startSerial: now, endSerial: now + plan.weeks };
   addChronicle(next, {

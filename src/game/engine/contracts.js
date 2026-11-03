@@ -4,6 +4,7 @@
 import { RARITIES } from '../../data/world.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, clone, finalize, getHero, hashString, operationalLocationIds, roomLevel } from './core.js';
 import { releaseHeroInPlace } from './institution.js';
+import { charterEffect } from './charter.js';
 import { nemesisIds, recordRivalryInPlace } from './rivalry.js';
 
 export const CONTRACT_LENGTHS = [1, 2, 3];
@@ -18,8 +19,10 @@ export const SCOUT_RANGE = [15, 9, 4, 0];
 export const MAX_SCOUT_LEVEL = 3;
 
 /** The salary a hero's level, potential and rarity justify (same rule as hiring). */
-export function baseSalaryFor(hero) {
-  return Math.max(12, Math.round((18 + (hero.level || 1) * 7 + Math.max(0, (hero.potential || 70) - 70) * 0.45) * (RARITIES[hero.rarity]?.salary || 1)));
+export function baseSalaryFor(hero, state = null) {
+  // Merchant House heroes know what the guild can pay.
+  const charter = state ? charterEffect(state, 'salary') : 1;
+  return Math.max(12, Math.round((18 + (hero.level || 1) * 7 + Math.max(0, (hero.potential || 70) - 70) * 0.45) * (RARITIES[hero.rarity]?.salary || 1) * charter));
 }
 
 export function contractSalary(baseSalary, years) {
@@ -38,7 +41,7 @@ export function contractMonthsLeft(state, hero) {
 /** What a hero asks for to renew: salary rises when loyalty is low; very disloyal heroes refuse. */
 export function renewalTerms(state, hero) {
   const left = contractMonthsLeft(state, hero);
-  const base = baseSalaryFor(hero);
+  const base = baseSalaryFor(hero, state);
   const mood = hero.loyalty >= 70 ? 1 : hero.loyalty >= 45 ? 1.15 : 1.3;
   return {
     monthsLeft: left,

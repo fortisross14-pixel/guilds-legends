@@ -25,7 +25,8 @@ import {
   clamp,
 } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
-import { candidateDemandFor, refreshCandidatesForLocationInPlace } from './candidates.js';
+import { candidateDemandFor, recruitObjection, refreshCandidatesForLocationInPlace } from './candidates.js';
+import { charterEffect } from './charter.js';
 import { releaseHeroInPlace } from './institution.js';
 import { CONTRACT_LENGTHS, baseSalaryFor, makeContract, offerTerms } from './contracts.js';
 import { evaluateStateInPlace } from './goals.js';
@@ -73,7 +74,7 @@ export function refoundGuild(state, options = {}) {
   founder.salary = 0;
   const recruit = generateHero(next, rng, 'normal', { homeLocationId: locationId });
   recruit.loyalty = Math.max(recruit.loyalty, 60);
-  recruit.contract = makeContract(next, recruit.salary, 2);
+  recruit.contract = makeContract(next, Math.round(recruit.salary * charterEffect(next, 'salary')), 2);
   recruit.salary = recruit.contract.salary;
   next.heroes.push(founder, recruit);
   pushMoment(next, {
@@ -149,6 +150,8 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
   )
     return { state, error: 'Headquarters is traveling; recruitment can continue only through established branches.' };
   if (freeBeds(next) <= 0) return { state, error: 'No free bed. Rent another bed or build a Bunk room first.' };
+  const objection = recruitObjection(next, candidate);
+  if (objection) return { state, error: `${candidate.name} refuses: “${objection}”` };
   const acceptingPromise = negotiation !== 'buyout' || !candidate.demand;
   const totalFee = candidate.signingFee + (!acceptingPromise ? candidate.buyoutFee || 0 : 0);
   if (next.guild.crowns < totalFee) return { state, error: `Recruitment requires ${totalFee} crowns.` };
@@ -169,7 +172,9 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
   hero.status = 'available';
   hero.guildId = 'player';
   hero.joinedYear = next.date.year;
-  hero.contract = makeContract(next, hero.salary, CONTRACT_LENGTHS.includes(years) ? years : 2);
+  // Charter: Merchant House pays more; Free Company hires are more loyal.
+  hero.loyalty = clamp((hero.loyalty || 50) + charterEffect(next, 'loyalty', 0), 0, 100);
+  hero.contract = makeContract(next, Math.round(hero.salary * charterEffect(next, 'salary')), CONTRACT_LENGTHS.includes(years) ? years : 2);
   hero.salary = hero.contract.salary;
   delete hero.scoutLevel;
   hero.promises = acceptedDemand ? [acceptedDemand] : [];
@@ -322,31 +327,6 @@ export function appointHero(state, heroId, appointmentId) {
   return { state: finalize(next), error: null };
 }
 
-export function chooseAlignment(state, alignment) {
-  const allowed = ['Council', 'Baron', 'Independent'];
-  if (!allowed.includes(alignment)) return { state, error: 'Choose the council, the baron or independence.' };
-  const next = clone(state);
-  if (next.guild.alignment !== 'Undeclared') return { state, error: 'The guild has already made its first political commitment.' };
-  next.guild.alignment = alignment;
-  next.stats.alignmentChosen = 1;
-  const effects = {
-    Council: { crowns: 160, fame: 4, text: 'Town contracts pay modestly but local trust grows faster.' },
-    Baron: { crowns: 320, fame: 1, text: 'Noble contracts and political obligations arrive together.' },
-    Independent: { crowns: 60, fame: 8, text: 'The guild keeps its freedom and earns popular respect.' },
-  }[alignment];
-  next.guild.crowns += effects.crowns;
-  next.guild.fame += effects.fame;
-  addChronicle(next, {
-    type: 'politics',
-    importance: 3,
-    title: `${next.guild.name} chooses ${alignment === 'Independent' ? 'independence' : `the ${alignment.toLowerCase()}`}`,
-    text: effects.text,
-    tags: ['politics', alignment],
-  });
-  evaluateStateInPlace(next);
-  return { state: finalize(next), error: null };
-}
-
 export function inspectHero(state, heroId) {
   const next = clone(state);
   if (getHero(next, heroId)) {
@@ -454,7 +434,7 @@ export function makeOffer(state, heroId) {
   target.promises = [];
   target.loyalty = Math.max(target.loyalty ?? 50, 55);
   target.gear ||= { weapon: null, armor: null, accessory: null };
-  target.contract = makeContract(next, baseSalaryFor(target), 2);
+  target.contract = makeContract(next, baseSalaryFor(target, next), 2);
   target.salary = target.contract.salary;
   delete target.offerYear;
   next.heroes.push(target);

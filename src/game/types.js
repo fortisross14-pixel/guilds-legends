@@ -97,7 +97,7 @@
  * @property {Record<string, string>} appointments
  * @property {Record<string, any[]>} formations
  * @property {any[]} branches
- * @property {string} alignment
+ * @property {string} charter  founding charter id (src/data/charters.js)
  */
 
 /**

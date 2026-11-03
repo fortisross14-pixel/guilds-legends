@@ -3,6 +3,7 @@
 // region, the perks it unlocks, and the guild's specialization title.
 import { formationForMission } from '../../data/formations.js';
 import { REGIONS } from '../../data/content.js';
+import { charterEffect } from './charter.js';
 
 export const REPUTATION_FAMILIES = ['Combat', 'Diplomacy', 'Expedition', 'Intrigue'];
 export const REPUTATION_LEVELS = [
@@ -65,7 +66,7 @@ export function contractFameBonus(state, mission) {
 
 /** Signing-fee multiplier for recruits in a region: −5% per regional level. */
 export function recruitFeeFactor(state, region) {
-  return 1 - 0.05 * regionLevel(state, region);
+  return (1 - 0.05 * regionLevel(state, region)) * charterEffect(state, 'recruitFee');
 }
 
 /** Bonus to the success estimate at Legendary family reputation. */
@@ -80,7 +81,9 @@ function addPoints(bucket, key, delta) {
 /** Reputation from a resolved contract (difficulty × grade). Returns the change. */
 export function addContractReputationInPlace(state, mission, grade) {
   state.reputation ||= { families: {}, regions: {} };
-  const delta = Math.round((mission.difficulty || 0) * (REPUTATION_GRADE[grade] ?? 0));
+  const raw = (mission.difficulty || 0) * (REPUTATION_GRADE[grade] ?? 0);
+  // Shield of the People: the people remember good work faster.
+  const delta = Math.round(raw > 0 ? raw * charterEffect(state, 'reputationGain') : raw);
   if (!delta) return 0;
   const family = missionFamily(mission);
   const before = familyLevel(state, family);
@@ -101,7 +104,7 @@ export function addContractReputationInPlace(state, mission, grade) {
 export function adjustRegionReputationInPlace(state, region, delta) {
   if (!region) return;
   state.reputation ||= { families: {}, regions: {} };
-  addPoints(state.reputation.regions, region, delta);
+  addPoints(state.reputation.regions, region, delta > 0 ? delta * charterEffect(state, 'reputationGain') : delta);
 }
 
 /** Short title from the top family once it reaches Known; otherwise null. */

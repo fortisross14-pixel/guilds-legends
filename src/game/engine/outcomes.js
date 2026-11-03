@@ -15,6 +15,7 @@ import {
   commitRng,
   completeTutorialTargetInPlace,
   dateLabel,
+  earnGoldInPlace,
   finalize,
   getHero,
   rngFor,
@@ -33,6 +34,8 @@ import { addContractReputationInPlace, contractFameBonus, contractPayBonus } fro
 import { onContractResolvedInPlace } from './stories.js';
 import { checkWagerOnContractInPlace } from './townLife.js';
 import { missionFamily } from './reputation.js';
+import { adjustPatronInPlace, charterEffect, patronAtLeast, patronContractResultInPlace } from './charter.js';
+import { grantPatronRewardsInPlace } from './connections.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -233,8 +236,10 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
           ? 0.82
           : 1;
   if (decision.missionGameSummary?.rewardModifier) rewardMultiplier *= decision.missionGameSummary.rewardModifier;
-  if (next.guild.alignment === 'Baron' && ['Political Mission', 'War Operation'].includes(mission.family)) rewardMultiplier += 0.1;
   rewardMultiplier *= contractPayBonus(next, mission);
+  // Charter pay (Merchant House +15%, Shield −10%) and allied patrons paying more for their own work.
+  rewardMultiplier *= charterEffect(next, 'contractPay');
+  if (mission.patron && ['trade', 'temple'].includes(mission.patron) && patronAtLeast(next, mission.patron, 'ally')) rewardMultiplier *= 1.25;
   if (next.story?.choice === 'revenge' && missionFamily(mission) === 'Combat') rewardMultiplier += 0.1;
   const reward = Math.max(0, Math.round((mission.reward + (option.reward || 0)) * multiplier * rewardMultiplier));
   const rawFame = Math.round((mission.fame + (option.fame || 0)) * multiplier);
@@ -245,8 +250,6 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   if (next.guild.policies.publicity === 'Heroic') fameMultiplier += 0.12;
   if (next.guild.policies.publicity === 'Private') fameMultiplier -= 0.35;
   if (next.guild.policies.publicity === 'Propaganda') fameMultiplier += cleanSuccess ? 0.25 : 0.4;
-  if (next.guild.alignment === 'Council' && ['Rescue', 'Investigation', 'Escort'].includes(mission.family)) fameMultiplier += 0.1;
-  if (next.guild.alignment === 'Independent' && ['Exploration', 'Monster Hunt', 'Legend Quest'].includes(mission.family)) fameMultiplier += 0.08;
   const fame = Math.max(
     -8,
     rawFame > 0 ? Math.round(rawFame * Math.max(0.4, fameMultiplier)) : Math.round(rawFame * (next.guild.policies.publicity === 'Propaganda' ? 1.4 : 1)),
@@ -307,7 +310,9 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     if (grade === 'Legendary') hero.career.legendary += 1;
     hero.career.fame += Math.max(0, Math.round(fame / mission.assignments.length));
     const xpMultiplier = { Legendary: 1.7, 'Great Success': 1.35, Success: 1, Partial: 0.78, Defeat: 0.52, Catastrophic: 0.34 }[grade] || 0.5;
-    let xpGain = Math.round((42 + mission.risk * 18 + mission.duration * 8) * xpMultiplier);
+    // Free Company: combat contracts teach more.
+    const charterXp = missionFamily(mission) === 'Combat' ? charterEffect(next, 'combatXp') : 1;
+    let xpGain = Math.round((42 + mission.risk * 18 + mission.duration * 8) * xpMultiplier * charterXp);
     // The scripted first contract always ends with a level-up moment.
     if (mission.templateId === 'wolves-old-road' && !next.tutorial.completed) xpGain = Math.max(xpGain, xpForNextLevel(hero.level) - (hero.xp || 0));
     const levelBefore = hero.level;
@@ -354,8 +359,12 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     option,
   );
 
-  next.guild.crowns += reward;
+  earnGoldInPlace(next, reward);
   const reputationChange = addContractReputationInPlace(next, mission, grade);
+  if (mission.patron) {
+    patronContractResultInPlace(next, mission.patron, grade);
+    grantPatronRewardsInPlace(next);
+  }
   onContractResolvedInPlace(next, mission, grade, cleanSuccess, rng);
   if (cleanSuccess) checkWagerOnContractInPlace(next, missionFamily(mission));
   addMissionLegacyInPlace(
@@ -395,10 +404,9 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   }
   if (mission.risk >= 3 && cleanSuccess && injuries.length === 0) next.stats.perfectHardMission += 1;
   if (cleanSuccess && mission.estimateAtLaunch < 40) next.stats.upsets += 1;
-  if (option.alignment) {
-    next.guild.alignment = option.alignment;
-    next.stats.alignmentChosen = 1;
-  }
+  // Old "alignment" choices now speak to patrons: the council's way is the Temple's, the baron's the Trade House's.
+  const alignmentPatron = { Council: 'temple', Baron: 'trade' }[option.alignment];
+  if (alignmentPatron) adjustPatronInPlace(next, alignmentPatron, 6);
   if (option.rivalry && !next.guild.rivalries.includes(option.rivalry)) {
     next.guild.rivalries.push(option.rivalry);
     next.stats.rivalries += 1;
@@ -422,7 +430,8 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
       .map((assignment) => getHero(next, assignment.heroId))
       .filter(Boolean)
       .sort((a, b) => b.renown - a.renown)[0];
-    const prestige = mission.risk * 12 + (grade === 'Legendary' ? 20 : 0);
+    // Scholars' Lodge: artifacts are worth more.
+    const prestige = Math.round((mission.risk * 12 + (grade === 'Legendary' ? 20 : 0)) * charterEffect(next, 'artifactValue'));
     const artifact = {
       id: uid('artifact', rng),
       name: artifactName,
@@ -491,7 +500,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     consequences: [
       option.obligation ? `Obligation: ${option.obligation}` : null,
       option.rivalry ? `Rivalry: ${option.rivalry}` : null,
-      option.alignment ? `Alignment: ${option.alignment}` : null,
+      alignmentPatron ? `${alignmentPatron === 'temple' ? 'Temple of the Dawn' : 'Trade House'} approves` : null,
     ].filter(Boolean),
   };
   next.missionHistory.unshift(record);

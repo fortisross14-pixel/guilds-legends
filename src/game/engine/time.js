@@ -32,6 +32,9 @@ import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace, retireHeroInPla
 import { evaluateStateInPlace } from './goals.js';
 import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace } from './economy.js';
 import { monthlyHallInPlace, progressConstructionInPlace } from './hall.js';
+import { monthlyConnectionsInPlace } from './connections.js';
+import { adjustPatronInPlace, patronAtLeast } from './charter.js';
+import { PATRON_DELTAS } from '../../data/patrons.js';
 import { createTournamentsInPlace, simulateScheduledCompetitionsInPlace } from './guildTournaments.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
@@ -52,7 +55,8 @@ import {
 function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = roomLevel(state, 'training');
   const trainingMaster = appointmentHolder(state, 'Training Master');
-  const infirmaryLevel = roomLevel(state, 'infirmary') + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
+  // The Temple of the Dawn at Partner counts as one more Infirmary level.
+  const infirmaryLevel = roomLevel(state, 'infirmary') + (appointmentHolder(state, 'Master Healer') ? 1 : 0) + (patronAtLeast(state, 'temple', 'partner') ? 1 : 0);
   const results = [];
   let scouts = 0;
   let exhibitionFame = 0;
@@ -343,7 +347,9 @@ function weeklyInjuriesInPlace(state) {
   state.heroes
     .filter((hero) => hero.status === 'injured')
     .forEach((hero) => {
-      hero.injuryWeeks = (hero.injuryWeeks || 1) - (hero.monthlyActivity === 'Infirmary' && roomLevel(state, 'infirmary') > 0 ? 2 : 1);
+      // Temple contacts tend the injured: one extra week of healing at the start of each month.
+      const templeCare = patronAtLeast(state, 'temple', 'contact') && state.date.week === 0 ? 1 : 0;
+      hero.injuryWeeks = (hero.injuryWeeks || 1) - (hero.monthlyActivity === 'Infirmary' && roomLevel(state, 'infirmary') > 0 ? 2 : 1) - templeCare;
       if (hero.injuryWeeks > 0) return;
       hero.injuryWeeks = 0;
       hero.status = 'available';
@@ -375,6 +381,7 @@ function runMonthInPlace(next, rng) {
   const council = resolveMonthlyHeroActivities(next, rng);
   scoutCandidatesInPlace(next, council.scouts);
   monthlyHallInPlace(next, rng);
+  monthlyConnectionsInPlace(next, rng);
   processContractsInPlace(next);
   processPoachingInPlace(next, rng);
   const branches = simulateBranchesInPlace(next, rng);
@@ -384,6 +391,7 @@ function runMonthInPlace(next, rng) {
   const expired = refreshMissionsInPlace(next, rng) || [];
   // Unclaimed contracts go to rivals; letting a local one lapse costs reputation.
   expired.forEach((mission) => {
+    if (mission.patron) adjustPatronInPlace(next, mission.patron, PATRON_DELTAS.expire, 'you let their contract lapse');
     const rival = rivalTakesContractInPlace(next, mission, 'expired', rng);
     if (rival && mission.locationId === next.world?.currentLocationId) {
       adjustRegionReputationInPlace(next, mission.region, -EXPIRE_PENALTY);

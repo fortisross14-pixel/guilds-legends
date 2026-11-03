@@ -9,7 +9,10 @@ import { TILE_SIZE } from '../../data/tiles.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
 import { createPartyEncounter } from '../combat.js';
-import { addChronicle, campaignWeekSerial, clamp, clone, commitRng, finalize, hashString, rngFor } from './core.js';
+import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor } from './core.js';
+import { adjustPatronInPlace, patronAtLeast, patronLevel } from './charter.js';
+import { PATRON_DELTAS } from '../../data/patrons.js';
+import { grantPatronRewardsInPlace } from './connections.js';
 import { addItemsInPlace, battleItems, settleBattleItemsInPlace } from './inventory.js';
 import { concludeActiveCombat } from './encounters.js';
 import { adjustRegionReputationInPlace } from './reputation.js';
@@ -95,6 +98,16 @@ export function checkCondition(state, condition, context = {}) {
         return Boolean(exploration.wild?.[value]?.visited);
       case 'bossDefeated':
         return (exploration.wild?.[value]?.bosses || 0) > 0;
+      case 'charter':
+        return (Array.isArray(value) ? value : [value]).includes(state.guild?.charter);
+      case 'patronAtLeast':
+        return Object.entries(value).every(([id, level]) => patronAtLeast(state, id, level));
+      case 'patronBelow':
+        return Object.entries(value).every(([id, level]) => !patronAtLeast(state, id, level));
+      case 'patronRival':
+        return patronLevel(state, value).index < 0;
+      case 'patronGiftReady':
+        return state.patrons?.[value]?.lastGift !== campaignMonthSerial(state) && (state.guild?.crowns || 0) >= PATRON_DELTAS.giftCost;
       default:
         return false;
     }
@@ -154,7 +167,16 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
   const knowledge = knowledgeInPlace(state);
   const exploration = explorationInPlace(state);
   effects.forEach((effect) => {
-    if (typeof effect.gold === 'number') state.guild.crowns = Math.max(0, state.guild.crowns + effect.gold);
+    if (typeof effect.gold === 'number') {
+      if (effect.gold > 0) earnGoldInPlace(state, effect.gold);
+      else state.guild.crowns = Math.max(0, state.guild.crowns + effect.gold);
+    }
+    if (effect.patron) adjustPatronInPlace(state, effect.patron.id, effect.patron.amount);
+    if (effect.patronGift && state.patrons?.[effect.patronGift]?.lastGift !== campaignMonthSerial(state)) {
+      state.guild.crowns -= PATRON_DELTAS.giftCost;
+      state.patrons[effect.patronGift].lastGift = campaignMonthSerial(state);
+      adjustPatronInPlace(state, effect.patronGift, PATRON_DELTAS.gift);
+    }
     if (effect.item) addItemsInPlace(state, effect.item);
     if (effect.reputation) adjustRegionReputationInPlace(state, effect.reputation.region, effect.reputation.amount);
     if (typeof effect.relationship === 'number' && context.conversationId) {
@@ -176,6 +198,7 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     if (effect.open) ui.open = effect.open;
     if (effect.recruit) ui.recruit = true;
   });
+  if (effects.some((effect) => effect.patron || effect.patronGift)) grantPatronRewardsInPlace(state);
   return ui;
 }
 
@@ -325,7 +348,7 @@ export function gatherAtSpot(state, areaId, spotId) {
   const parts = [];
   if (spot.reward.gold) {
     const gold = rng.int(spot.reward.gold[0], spot.reward.gold[1]);
-    next.guild.crowns += gold;
+    earnGoldInPlace(next, gold);
     parts.push(`${gold} crowns`);
   }
   if (spot.reward.items) {

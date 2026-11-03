@@ -13,7 +13,23 @@ import {
 } from '../../data/universe.js';
 import { clamp, clone, ensureTournamentCareer, tierIndexByName, uid } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
-import { boardPerks, missionFamily } from './reputation.js';
+import { boardPerks, familyLevel, missionFamily } from './reputation.js';
+import { charterOf, patronForFamily, patronLevel } from './charter.js';
+
+/**
+ * The identity loop: boards lean toward the kind of work the guild is known
+ * for (its reputation), its charter, and its patrons' trades.
+ */
+function pickTemplate(state, pool, rng) {
+  const favored = charterOf(state)?.favoredFamily;
+  const weights = pool.map((template) => {
+    const family = missionFamily(template);
+    const patron = patronForFamily(template.family);
+    return 1 + familyLevel(state, family) * 0.75 + (family === favored ? 0.75 : 0) + (patron && patronLevel(state, patron.id).index >= 2 ? 0.5 : 0);
+  });
+  let roll = rng.next() * weights.reduce((sum, weight) => sum + weight, 0);
+  return pool.find((_, index) => (roll -= weights[index]) < 0) || pool[pool.length - 1];
+}
 
 function createRival(blueprint, state, rng, index) {
   const tierIndex = clamp(blueprint.tierIndex ?? 0, 0, TIERS.length - 1);
@@ -279,6 +295,9 @@ export function instantiateMission(template, state, rng, forcedLocation = null) 
   const openingDunmere = state.date.year <= 1188 && location.id === 'dunmere';
   const enemyPrimal = rng.chance(openingDunmere ? 0.42 : 0.58) ? location.primal : rng.pick(PRIMAL_IDS);
   const patronPrimal = rng.chance(openingDunmere ? 0.6 : 0.72) ? location.primal : rng.pick(PRIMAL_IDS);
+  // Contracts in a patron's line of work are often theirs (never from a patron you made a rival).
+  const backer = patronForFamily(template.family, location.id);
+  const patron = backer && template.id !== 'wolves-old-road' && patronLevel(state, backer.id).index >= 0 && rng.chance(0.65) ? backer : null;
   return {
     id: uid('mission', rng),
     templateId: template.id,
@@ -302,7 +321,8 @@ export function instantiateMission(template, state, rng, forcedLocation = null) 
     saga: template.saga || null,
     artifact: template.artifact || null,
     tournament: Boolean(template.tournament),
-    issuer: rng.pick(issuerNames),
+    issuer: patron ? patron.name : rng.pick(issuerNames),
+    patron: patron ? patron.id : null,
     enemyPrimal,
     patronPrimal,
     availableUntil: { year: state.date.year + (state.date.month >= 9 ? 1 : 0), month: (state.date.month + rng.int(2, 5)) % 12 },
@@ -332,7 +352,7 @@ export function refreshMissionsInPlace(state, rng, initial = false) {
     let safety = 0;
     while (count < desired && safety < 40 && pool.length) {
       safety += 1;
-      const template = rng.pick(pool);
+      const template = pickTemplate(state, pool, rng);
       const duplicateCount = state.missions.filter((mission) => mission.locationId === location.id && mission.templateId === template.id).length;
       if (duplicateCount >= 1 && pool.length > desired) continue;
       state.missions.push(instantiateMission(template, state, rng, location));

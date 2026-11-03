@@ -9,6 +9,7 @@ import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, getHero, push
 import { applyXpInPlace, adjustRelationshipInPlace } from './heroes.js';
 import { addItemsInPlace } from './inventory.js';
 import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
+import { adjustPatronInPlace } from './charter.js';
 import { recordRivalryInPlace } from './rivalry.js';
 import { instantiateMission } from './universe.js';
 
@@ -183,6 +184,12 @@ export function advanceStoryEventInPlace(state, beatId, optionId, ctx, rng) {
   applyEventEffectsInPlace(state, option.effects, ctx);
   const story = storyState(state);
   state.story = { ...story, rivalId: ctx.rivalId || story.rivalId, choice: beat.id === 'truth' ? optionId : story.choice };
+  // The Blackwood truth matters to the patrons: restoring the Lantern's name pleases the Temple,
+  // revenge the Smiths, burying it quietly the Trade House.
+  if (beat.id === 'truth') {
+    const patron = { restore: 'temple', revenge: 'smiths', bury: 'trade' }[optionId];
+    if (patron) adjustPatronInPlace(state, patron, 10, 'your choice in the Blackwood');
+  }
   addChronicle(state, {
     type: 'story',
     importance: 4,

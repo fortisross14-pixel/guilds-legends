@@ -1,6 +1,8 @@
 // @ts-check
 // New campaign creation and default state pieces.
 import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, SAGA_DEFINITIONS, STARTING_HEROES } from '../../data/content.js';
+import { CHARTERS } from '../../data/charters.js';
+import { PATRON_LIST } from '../../data/patrons.js';
 import { emptyFormations } from '../../data/formations.js';
 import { PRIMALS, PRIMAL_IDS } from '../../data/world.js';
 import { SCHEMA_VERSION, addChronicle, addHeroHistory, commitRng, hashString, makeRng } from './core.js';
@@ -21,6 +23,7 @@ export function initialStats() {
     eventSerial: 1,
     missionsCompleted: 0,
     missionsWon: 0,
+    goldEarned: 0,
     missionsLost: 0,
     combatWins: 0,
     tournamentBest: 99,
@@ -42,7 +45,6 @@ export function initialStats() {
     inheritedAmbitionsCompleted: 0,
     rivalSplits: 0,
     rivalPoaches: 0,
-    alignmentChosen: 0,
     births: 0,
     deaths: 0,
     retirements: 0,
@@ -81,15 +83,15 @@ export function createNewGame(options = {}) {
       tier: 'Regional',
       fame: 8,
       legacy: 2,
-      crowns: 720,
-      alignment: 'Undeclared',
+      crowns: 720 + (CHARTERS[options.charter]?.start?.gold || 0),
+      // The founding charter (src/data/charters.js) shapes the whole run.
       rank: 18,
       contractsCompleted: 0,
       wins: 0,
       losses: 0,
       deaths: 0,
       fallen: false,
-      charter: true,
+      charter: CHARTERS[options.charter] ? options.charter : 'free',
       loan: null,
       unpaidMonths: 0,
       legacyPoints: 0,
@@ -120,6 +122,10 @@ export function createNewGame(options = {}) {
     moments: [],
     officialLedger: [],
     reputation: { families: {}, regions: {} },
+    // Patron standing (src/data/patrons.js); the charter may start you with a contact.
+    patrons: Object.fromEntries(PATRON_LIST.map((patron) => [patron.id, { points: CHARTERS[options.charter]?.start?.patrons?.[patron.id] || 0, granted: {}, lastGift: null }])),
+    // Run path scores, recorded monthly for the end of Chapter 1 (connections.js).
+    paths: null,
     rivalries: {},
     nemesisIds: [],
     challenge: null,

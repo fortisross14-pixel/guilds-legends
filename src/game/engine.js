@@ -33,6 +33,9 @@ export { designateSuccessor, assignMentor, foundBranch, assignBranchCommander, u
 export { getGoalMetric, getPromotionRequirement } from './engine/goals.js';
 export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep } from './engine/economy.js';
 export { getHallView, requirementStatus, nextUpgrade, rentBed, acquireHall, buildRoom } from './engine/hall.js';
+export { charterOf, charterEffect, patronLevel, patronAtLeast, patronPoints } from './engine/charter.js';
+export { getConnectionsView, getPathScores, giftPatron } from './engine/connections.js';
+export { recruitObjection } from './engine/candidates.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { enterHeroTournament, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
 export { inspectMission, notePartySelection, saveFormation, launchMission } from './engine/missions.js';

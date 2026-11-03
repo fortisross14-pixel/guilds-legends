@@ -16,8 +16,6 @@ export function getGoalMetric(state, metric) {
       return state.stats.tournamentBest;
     case 'fame':
       return state.guild.fame;
-    case 'alignmentChosen':
-      return state.stats.alignmentChosen;
     case 'tierIndex':
       return state.guild.tierIndex;
     case 'hallStage':
@@ -130,7 +128,7 @@ function evaluatePromotionInPlace(state) {
   if (requirement.fame.met && requirement.contracts.met && requirement.rank.met && requirement.feat.met && requirement.time.met) {
     state.guild.tierIndex += 1;
     state.guild.tier = TIERS[state.guild.tierIndex].id;
-    state.guild.charter = true;
+    state.guild.royalCharter = true;
     state.guild.crowns += 400 * state.guild.tierIndex;
     state.guild.legacy += 25 * state.guild.tierIndex;
     REGIONS.forEach((region) => {

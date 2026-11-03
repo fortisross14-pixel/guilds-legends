@@ -4,6 +4,7 @@ import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
 import { HALL_PURCHASE, HALL_STAGES, RENTED_ROOM, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
+import { patronAtLeast } from './charter.js';
 
 export const SCHEMA_VERSION = 15;
 
@@ -196,9 +197,16 @@ export function freeBeds(state) {
   return bedCount(state) - activeHeroCount(state);
 }
 
+/** Gold the guild earns (contracts, battles, finds): counted for the Richest path. */
+export function earnGoldInPlace(state, amount) {
+  if (!amount) return;
+  state.guild.crowns += amount;
+  if (amount > 0) state.stats.goldEarned = (state.stats.goldEarned || 0) + amount;
+}
+
 /** Items the guild chest holds (the armory adds racks and a store). */
 export function chestCapacity(state) {
-  return RENTED_ROOM.chest + (roomLevel(state, 'armory') ? 20 : 0);
+  return RENTED_ROOM.chest + (roomLevel(state, 'armory') ? 20 : 0) + (patronAtLeast(state, 'smiths', 'partner') ? 10 : 0);
 }
 
 /** Titles won, artifacts held and bosses defeated: what the Trophy hall displays. */

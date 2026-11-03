@@ -3,8 +3,32 @@
 import { normalizeClassId, MONTHS } from '../../data/content.js';
 import { RARITIES, unlockedLocations, LOCATION_BY_ID } from '../../data/world.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, dateLabel, roomLevel } from './core.js';
+import { patronAtLeast, patronLevel } from './charter.js';
+import { PATRON_LIST } from '../../data/patrons.js';
+
+// Some recruits refuse guilds whose reputation they dislike, and say why.
+const OBJECTIONS = [
+  { id: 'spies', line: 'I don’t sign with spies and knife-for-hire crews.', applies: (state) => topFamily(state) === 'Intrigue' && familyLevel(state, 'Intrigue') >= 1 },
+  { id: 'blood', line: 'Too much blood on that banner for my liking.', applies: (state) => familyLevel(state, 'Combat') >= 2 },
+  { id: 'ledger', line: 'A merchant house? I would be a line in somebody’s ledger.', applies: (state) => state.guild.charter === 'merchant' },
+  { id: 'masterless', line: 'A guild without a single friend in town has no future.', applies: (state) => !PATRON_LIST.some((patron) => patronAtLeast(state, patron.id, 'contact')) },
+  { id: 'temple', line: 'You crossed the Temple of the Dawn. I won’t.', applies: (state) => patronLevel(state, 'temple').index < 0 },
+  { id: 'smiths', line: 'The Smiths say you can’t be trusted with good steel.', applies: (state) => patronLevel(state, 'smiths').index < 0 },
+  { id: 'unknown', line: 'Come back when people in Dunmere know your name.', applies: (state) => state.guild.fame < 25 },
+];
+
+function topFamily(state) {
+  const families = state.reputation?.families || {};
+  return Object.keys(families).sort((a, b) => (families[b] || 0) - (families[a] || 0))[0] || null;
+}
+
+/** The line a candidate refuses with, if the guild is what they dislike right now (else null). */
+export function recruitObjection(state, candidate) {
+  const objection = OBJECTIONS.find((item) => item.id === candidate?.objection);
+  return objection && objection.applies(state) ? objection.line : null;
+}
 import { generateHero } from './heroes.js';
-import { recruitFeeFactor } from './reputation.js';
+import { familyLevel, recruitFeeFactor } from './reputation.js';
 
 function promiseDeadlineLabel(serial) {
   const year = Math.floor(serial / 12);
@@ -105,12 +129,13 @@ export function updatePromiseDeadlinesInPlace(state) {
   });
 }
 
-export function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere') {
+/** A recruit for a town's tavern. `options` can fix the hero (name, classId, primal, rarity, level). */
+export function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere', options = {}) {
   const scoutLevel = roomLevel(state, 'scouts');
   const spymasterBonus = state.guild.appointments?.Spymaster ? 0.08 : 0;
   const qualityRoll = rng.next() + scoutLevel * 0.05 + spymasterBonus;
   const quality = forcedQuality || (qualityRoll > 1.12 ? 'elite' : qualityRoll > 0.92 ? 'veteran' : 'normal');
-  const hero = generateHero(state, rng, quality, { homeLocationId: locationId });
+  const hero = generateHero(state, rng, quality, { homeLocationId: locationId, recruit: true, ...options });
   const rarityFactor = RARITIES[hero.rarity]?.signing || 1;
   const signingFee = Math.round(
     (hero.level * 85 + hero.power * 3.5 + Math.max(0, hero.potential - 70) * 10) * rarityFactor * recruitFeeFactor(state, LOCATION_BY_ID[locationId]?.region),
@@ -123,6 +148,7 @@ export function makeCandidate(state, rng, forcedQuality, locationId = state.worl
     signingFee,
     buyoutFee: Math.round(signingFee * (hero.rarity === 'Legend' ? 0.65 : hero.rarity === 'Epic' ? 0.5 : 0.35)),
     demand: candidateDemandFor(hero, state, rng),
+    objection: rng.chance(0.2) ? rng.pick(OBJECTIONS).id : null,
     expiresYear: state.date.year + 1,
     interest: clamp(63 + state.guild.tierIndex * 10 + Math.round(state.guild.fame / 110) - hero.level * 1.6 - (hero.rarity === 'Legend' ? 12 : 0), 20, 98),
   };

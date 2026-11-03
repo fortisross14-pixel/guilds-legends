@@ -5,6 +5,7 @@ import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAME
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
 import { addHeroHistory, appointmentHolder, clamp, getHero, roomLevel, uid, pushMoment } from './core.js';
+import { charterEstimate, charterOf, patronAtLeast } from './charter.js';
 import { estimateBonus } from './reputation.js';
 
 export function xpForNextLevel(level) {
@@ -215,7 +216,11 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
   const qualityBonus = quality === 'elite' ? 0.24 : quality === 'veteran' ? 0.12 : 0;
   const rarity = options.rarity || rarityFromRoll(rng, scoutBonus + qualityBonus);
   const level = options.level || levelBandForRarity(rarity, rng, quality === 'veteran');
-  const classPool = (location?.specialties?.length && rng.chance(0.64) ? location.specialties : Object.keys(CLASSES)).map(normalizeClassId);
+  // Recruits reflect the guild: its charter draws certain classes, Temple friends bring clerics.
+  const drawn = options.recruit ? [...(charterOf(state)?.recruitClasses || []), ...(patronAtLeast(state, 'temple', 'partner') ? ['Cleric'] : [])] : [];
+  const classPool = (
+    drawn.length && rng.chance(0.3) ? drawn : location?.specialties?.length && rng.chance(0.64) ? location.specialties : Object.keys(CLASSES)
+  ).map(normalizeClassId);
   const classId = options.classId || rng.pick(classPool);
   const age = options.age ?? clamp(rng.int(17, 27) + Math.floor(level / 3) + (quality === 'veteran' ? 7 : 0), 16, 39);
   const powerBase = powerForLevel(level, rarity, rng);
@@ -353,13 +358,13 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
   if (appointmentHolder(state, 'Questmaster')) partyPower += 2;
   if (formationType === 'Expedition') partyPower += roomLevel(state, 'scouts') * 2;
   if (formationType === 'Intrigue' && appointmentHolder(state, 'Spymaster')) partyPower += 5;
-  if (formationType === 'Diplomacy' && state.guild.alignment !== 'Undeclared') partyPower += 2;
   if (formationType === 'Expedition' && breakdown.some((item) => item.role === 'Curator')) partyPower += mission.artifact ? 7 : 2;
   if (formationType === 'Combat' && !breakdown.some((item) => item.role === 'Combat Support') && mission.risk >= 3) partyPower -= 5;
 
   const difficultyModifier = state.settings.difficulty === 'Story' ? -6 : state.settings.difficulty === 'Harsh' ? 6 : 0;
   const delta = partyPower + estimateBonus(state, mission) - (mission.difficulty + difficultyModifier);
-  const chance = clamp(Math.round(100 / (1 + Math.exp(-delta / 10))), 3, 97);
+  // Charter: Scholars' Lodge is better at expeditions and investigations, worse in fights.
+  const chance = clamp(Math.round(100 / (1 + Math.exp(-delta / 10))) + charterEstimate(state, formationType), 3, 97);
   const warnings = [];
   if (validCount < 2) warnings.push('Every field arrangement needs at least two people.');
   if (validCount > 5) warnings.push('No arrangement can exceed five people.');

@@ -1,6 +1,7 @@
 // @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
 import { HALL_PURCHASE, RENTED_ROOM, ROOM_BY_ID } from '../../data/rooms.js';
+import { charterEffect } from './charter.js';
 import { LOCATION_BY_ID, travelWeeks, unlockedLocations } from '../../data/world.js';
 import {
   activeHeroCount,
@@ -160,6 +161,8 @@ export function getPatronLoanOffer(state) {
   const amount = Math.ceil(((300 + upkeep * 2 + Math.max(0, -crowns)) * (roomLevel(state, "treasury") >= 2 ? 1.5 : 1)) / 10) * 10;
   const repayment = Math.round(amount * (1 + LOAN_INTEREST));
   const remaining = (state.guild.loan?.remaining || 0) + repayment;
+  // Free Company: no patron lends to a guild that answers to no one.
+  if (charterEffect(state, 'noLoans', false)) return { available: false, amount: 0, repayment: 0, installment: 0, months: LOAN_TERM_MONTHS, outstanding: state.guild.loan?.remaining || 0, reason: 'A Free Company takes no patron’s money.' };
   return {
     available: distressed,
     amount,

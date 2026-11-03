@@ -4,11 +4,18 @@ import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, canEquip 
 import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
 import { chestCapacity, clamp, clone, finalize, hashString, roomLevel } from './core.js';
+import { patronAtLeast } from './charter.js';
 
-/** Shop price after the Armory's 10% discount. */
+/** Shop price after discounts: the Armory, the Trade House, the Temple (healing) and the Smiths (gear). */
 export function shopPrice(state, itemId) {
-  const price = ITEMS[itemId]?.price || 0;
-  return roomLevel(state, 'armory') ? Math.round(price * 0.9) : price;
+  const item = ITEMS[itemId];
+  let factor = 1;
+  if (roomLevel(state, 'armory')) factor *= 0.9;
+  if (patronAtLeast(state, 'trade', 'ally')) factor *= 0.9;
+  else if (patronAtLeast(state, 'trade', 'contact')) factor *= 0.95;
+  if (item?.battle?.heal && patronAtLeast(state, 'temple', 'contact')) factor *= 0.75;
+  if (GEAR_SLOTS.includes(item?.kind) && patronAtLeast(state, 'smiths', 'partner')) factor *= 0.9;
+  return Math.round((item?.price || 0) * factor);
 }
 
 /** Items in the guild chest (equipped gear does not count). */
@@ -25,7 +32,7 @@ export function shopStock(locationId) {
   const location = LOCATION_BY_ID[locationId];
   if (!location || !locationBuildings(locationId).includes('shop')) return [];
   const maxTier = (TIER_INDEX_BY_NAME[location.tier] ?? 0) + 1;
-  return ITEM_LIST.filter((item) => item.tier <= maxTier)
+  return ITEM_LIST.filter((item) => item.tier <= maxTier && !item.unique)
     .filter((item) => ['potion', 'antidote'].includes(item.id) || hashString(`${locationId}:${item.id}`) % 3 !== 0)
     .map((item) => item.id);
 }
@@ -76,12 +83,14 @@ export function sellItem(state, itemId, quantity = 1) {
 export function gearUpgradeCost(state, itemId) {
   const target = GEAR_UPGRADES[itemId];
   if (!target || !ITEMS[target] || !ITEMS[itemId]) return null;
-  return Math.max(40, ITEMS[target].price - ITEMS[itemId].price);
+  const cost = Math.max(40, ITEMS[target].price - ITEMS[itemId].price);
+  return patronAtLeast(state, 'smiths', 'contact') ? Math.round(cost * 0.8) : cost;
 }
 
 /** The Armory's smith reforges a hero's equipped item into the next tier of its line. */
 export function upgradeGear(state, heroId, slot) {
-  if (!roomLevel(state, 'armory')) return { state, error: 'Build an Armory to upgrade gear.' };
+  // The Armory's smith, or the Ironford Smiths for a guild they know.
+  if (!roomLevel(state, 'armory') && !patronAtLeast(state, 'smiths', 'contact')) return { state, error: 'Build an Armory (or befriend the Ironford Smiths) to upgrade gear.' };
   const hero = playerHero(state, heroId);
   const itemId = hero?.gear?.[slot];
   const cost = itemId ? gearUpgradeCost(state, itemId) : null;
@@ -182,7 +191,7 @@ export function rollLoot(rng, tierIndex = 0, quality = 0) {
       add(pick[0]);
     }
     if (rng.next() < 0.18 + quality * 0.15) {
-      const gear = ITEM_LIST.filter((item) => GEAR_SLOTS.includes(item.kind) && item.tier <= tierIndex + 1 && item.tier >= tierIndex);
+      const gear = ITEM_LIST.filter((item) => GEAR_SLOTS.includes(item.kind) && !item.unique && item.tier <= tierIndex + 1 && item.tier >= tierIndex);
       if (gear.length) add(gear[Math.floor(rng.next() * gear.length)].id);
     }
   }
