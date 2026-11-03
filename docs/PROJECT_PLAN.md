@@ -227,11 +227,27 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 
 > **Main story:** [`docs/STORY.md`](STORY.md) ("The Last Banner", by the author) is the source of truth for the story. Chapter 1 = Prologue + Acts I–II (missions 1–8). Phase 6 implements it, together with the new time model and arenas.
 
-### Phase 6 — Story: Chapter 1, the Blackwood
-- Rewrite the Blackwood arc with the `narrative-design` skill: **6–8 beats** connecting the three towns and the wild areas, 3–4 memorable NPCs, one rival guild involved, and a choice at the end with lasting effects.
+### Phase 6a — Time and arenas ✅ Done (2026-11-03)
+- **Time only moves when you act.** The calendar gets days (7 a week, 4 weeks a month). Travel takes days (1–4 nearby, 1–3 weeks farther), resting at the Guild Hall (1 week, 1 month, 3 months, with each hero's task set on the same screen) is the only free skip, inns away from home rest 1–3 nights, contracts take their time (the player waits only if the founder goes), camping takes a night. No global skip buttons; the calendar is read-only except "Advance to this date" in the Guild Hall.
+- **Arenas as places:** each town's arena is an interior with a fighting ground (referee), a sign-up desk (registrar: this town's tournament only, the rest listed for information) and a history board. Sign up, then be there on the start day; absent is a forfeit. Windmere joins the slice with the Cliff Duels.
+
+**Notes:**
+- **Days:** `date.day` (0–6) under the week. `advanceDays` runs travel and mission clocks daily, weekly systems (injuries, construction, side jobs, town events, AI tournaments) when the week rolls over, and monthly ones (upkeep, council report, rival seasons) when the month does. It stops early for battles, decisions, road events, mission games and an active tournament. `advanceWeeks` is now N×7 days; `advanceMonths` and `advanceToNextEvent` are gone.
+- **Travel:** `travelDays` from map distance: ≤40 map units is 1–4 days (distance/10), then 1 week (≤60), 2 weeks (≤90) or 3 weeks. Dunmere to Greenhollow, Ironford or Windmere is 3–4 days. Cost is per day per traveller. Road events are planned by day (shortcuts save a day, storms cost one). Travel no longer waits for deployed companies.
+- **Home and party:** the Guild Hall is in Dunmere (`HOME_LOCATION_ID`). Away from home (another town, the road or the wild), the travelling party is the main party, or else the founder plus the strongest fit heroes (up to 4). They skip their hall task; everyone else keeps it. The lodges in Greenhollow and Ironford still open the roster, but resting there points to the inn.
+- **Resting:** `restAtHall(weeks, tasks)` sets the tasks chosen on the rest screen, then passes 1, 4 or 12 weeks. Tasks still pay off at each month start, so a one-week rest mid-month resolves no training; the rest screen says when the next payoff is. `restAtInn(nights)` costs 6 G per traveller per night, heals the party (+12 HP, −15 fatigue a night) and only works away from home. Camping passes 1 day (+20 HP, −20 fatigue, a week off injuries).
+- **Contracts:** each active mission has a `dueDay`; `remaining` (weeks) is derived from it. If the founder is in the party, `launchExpedition` waits until the company is back (`advanceUntilMissionReturns`). Otherwise no time passes and the player keeps exploring.
+- **Arenas:** `getArenaView` (`tournamentEntry.js`) feeds `ArenaScreen`. `signUpForTournament` requires being in the host town before the start day and a hero meeting the rules, and pays the fee (tallied as "tournaments" in season spending). On the start day (day 1 of its week), `startScheduledTournamentsInPlace` seats the hero and starts the bracket if the guild is in town and the hero is available; otherwise it is a forfeit (−5 fame, fee lost). Bouts start from the referee. The history board shows champions by year, the title record, repeat winners and the player's best result, with a link to the Herald's Tournament legends tab (`RankingsScreen` takes `initialTab`).
+- **Windmere:** in the slice and on the world map, with an arena, shop, tavern (inn) and notice board, and the 8-hero Windmere Cliff Duels (month 5, Lv 2+, 5 fame, 40 G). It has no walkable layout yet, so it uses the town directory.
+- **Calendar:** entries in other towns show "you are N days away"; signed-up tournaments are marked. "Advance to this date" and "Rest until week N" appear only in the calendar inside the Guild Hall's rest screen (and the engine refuses away from home).
+- **Removed:** the top-bar "+1 week", "+1 month" and "Wait until…" buttons and their CSS; the "Wait for the company" button; `TournamentsScreen` (its guild championships moved to `GuildChampionships.jsx`, shown at the registrar only when the slice stops hiding them); instant tournament entry (`enterHeroTournament`); the tutorial's unused `advanceMonth` hook; dead tournament CSS.
+- **Choices to review:** guild championships still use the old enter-now flow (outside the slice). Weekly systems (injuries, construction) still tick per week, not per day. Inn and travel prices are first guesses.
+
+### Phase 6b — The Last Banner, Chapter 1
+- Implement [`docs/STORY.md`](STORY.md) Chapter 1: the prologue ("The knock at the door", the first choice and naming the guild), the tutorial (Act I missions 1–4, ending with the Dunmere Harvest Melee and the Argent Crown's warning) and Act II (missions 5–8, ending on the Wren banner scene).
+- Follow the story's implementation notes: the 12-mission story system with 9–12 as locked Chapter 2 stubs, evidence tracking, quest-log gates, the renames, the Argent Crown as a real rival, and the Broken Lantern's seven.
 - **Main quest guidance:** a quest marker on the world map and in town, and a quest log entry with the next step.
-- **Story recruits:** 2 unique heroes join through the story, each with a personal side quest.
-- **Chapter end:** an ending scene, a chapter summary (season-review style), and a teaser for Chapter 2. Free play continues afterwards.
+- **Chapter end:** the Wren banner scene, a chapter summary (season-review style) and a teaser for Chapter 2. Free play continues afterwards.
 
 ### Phase 7 — Asset list (for the art AI)
 - Finalize `docs/ASSETS.md`: every placeholder in the game, grouped. For each asset list:

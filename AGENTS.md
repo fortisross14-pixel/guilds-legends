@@ -56,7 +56,7 @@ npm run build       # production build to dist/ (not committed)
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
 src/places/               MapScreen (world map, wild-area cards), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, mission log, season reviews, codex, CalendarScreen, QuestLogScreen), routes.js
 src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
-src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, …)
+src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, ArenaScreen + GuildChampionships, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
   dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js
@@ -88,17 +88,17 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   seasons.js              season review, awards, record book, and read models for the mission log, hall of fame, ladder history, head-to-head and hero careers (tallies live in core.js)
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
-  tournamentEntry.js      player tournament entry and starting tournament combat
+  tournamentEntry.js      arena sign-up, tournament start days and forfeits, the arena read model, starting tournament combat
   missions.js             contract inspection, party selection, launch, encounter queueing
   outcomes.js             mission resolution: grades, injuries, rewards, reports, sagas
   encounters.js           active combat / mission-game actions and conclusion
   rivals.js               rival seasons, AI transfer market, rival institutions
-  time.js                 weekly loop (advanceWeeks/advanceMonths/advanceToDate), monthly council resolution, aging
+  time.js                 day loop (advanceDays; weekly and monthly systems on rollover), advanceToDate (Guild Hall only), monthly council resolution, aging
   recruitment.js          roster actions: recruit, release, refound, training, appointments
   dashboard.js            UI read models (getNextAction, getDashboardSummary), small UI actions
   state.js                createNewGame and default state pieces
   save.js                 compactForSave, migrateGame, validateGame
-  timeActions.js          travelTo + road events, continueJourney, launchExpedition
+  timeActions.js          the only ways time moves: travelTo + road events, continueJourney, launchExpedition, restAtHall, restAtInn
   exploration.js          walkable scenes: dialogue conditions/effects, scene positions, wild areas (enter, gather, camp, battles)
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
@@ -120,7 +120,7 @@ docs/AUDIT_v1.9.md        Audit and improvement waves
 One plain JSON-serializable object, created by `createNewGame` and upgraded by `migrateGame`:
 
 - `schemaVersion`, `seed`, `rngState`: save version and RNG state (advance the RNG only via `commitRng`)
-- `date: { year, month, week }`: month 0–11, week 0–3 (4 weeks per month); the campaign starts in 1187. Durations (travel, missions, injuries) are in weeks
+- `date: { year, month, week, day }`: month 0–11, week 0–3, day 0–6; the campaign starts in 1187. Time only passes through player actions (travel, rest, camps, contracts the founder joins). Travel is in days; missions, injuries and construction in weeks (missions also keep a `dueDay`). The home town is `HOME_LOCATION_ID` (Dunmere); away from it the travelling party is `travellingPartyIds(state)`
 - `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `hall` ({ owned, lease, rentedBeds, rooms: { roomId: level }, construction }; beds are the only roster limit), `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
 - `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty`, `salary`, `contract` ({ years, salary, startSerial, endSerial } in month serials; none for the founder) and an optional `poachApproach`
 - `historicHeroes[]`: archived player heroes (compacted)
@@ -128,8 +128,8 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `rivals[]`: 30 AI guilds, each with a `star` and `members[]`. `freeAgents[]` and `worldHistoricHeroes[]` hold the rest of the world's heroes
 - `missions[]` (contract board), `activeMissions[]` (deployed, with `assignments` and `remaining`)
 - `activeEncounter` (combat in progress), `activeMissionGame` (non-combat challenge in progress), `pendingDecisions[]`, `pendingReports[]`: while any of these is set, time is paused
-- `tournaments[]`, `guildTournaments[]`, `tournamentHistory[]`, `titleRecords`
-- `world: { currentLocationId, visitedLocationIds, activeTravel, wildAreaId, exploration }`: `wildAreaId` is the wild area the guild is walking (null in town); `exploration` holds `positions[sceneId]`, `discovered[sceneId]`, `talked[conversationId]`, `npcs` (relationship), `wild[areaId] = { cleared, gathered, visited, bosses }` (cleared/gathered hold the week serial they return)
+- `tournaments[]` (a `signup: { heroId, fee, day }` until the start day), `guildTournaments[]`, `tournamentHistory[]`, `titleRecords`
+- `world: { currentLocationId, visitedLocationIds, activeTravel ({ fromId, toId, daysRemaining, totalDays, cost }), wildAreaId, exploration }`: `wildAreaId` is the wild area the guild is walking (null in town); `exploration` holds `positions[sceneId]`, `discovered[sceneId]`, `talked[conversationId]`, `npcs` (relationship), `wild[areaId] = { cleared, gathered, visited, bosses }` (cleared/gathered hold the week serial they return)
 - `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `goals[]`, `achievements[]`, `stats`, `legacy`
 - `inventory` (itemId → count), each hero's `gear` (weapon/armor/accessory item ids; `artifact:<id>` for a worn artifact)
 - `moments[]`: reward screens queued for the UI (victory, levelUp, recruit); presentation only

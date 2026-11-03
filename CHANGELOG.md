@@ -2,6 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 6a: time and arenas
+
+- Time only moves when you act. The calendar now has days. Travel takes days (nearby towns are 3–4 days away), contracts take their time (you wait only if the founder goes), a night at a wild camp is one day, and inns away from home rest 1–3 nights.
+- Rest at the Guild Hall to let 1 week, 1 month or 3 months pass. Before resting, see every hero's task and change it on the same screen. The calendar inside the hall can also wait for a chosen date.
+- Heroes who stay home keep training, healing and scouting while you travel with your party.
+- Arenas are places now: tap the fighting ground to start bouts, the sign-up desk to enter this town's tournament (and see the others), and the history board for champions, records and your best results. Be in town on the start day, or forfeit.
+- Windmere is on the map, with a small arena and the Windmere Cliff Duels.
+- Removed the top-bar "+1 week", "+1 month" and "Wait until…" buttons, "Wait for the company" and the old arena menu.
+
 ## Unreleased — Phase 5: history and records
 
 - A season review at the end of every year: your record, titles, gold earned against gold spent, MVP, Rookie of the year and Best signing, the biggest win and worst defeat, how you moved on the three ladders (with a chart), records broken, and a word from a patron or your nemesis. Skip it any time; reopen it later.
