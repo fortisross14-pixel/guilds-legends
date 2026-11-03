@@ -294,6 +294,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                 </select>
               </label>
             ) : null}
+            {localCandidates.length > 1 ? <p className="swipe-hint">Swipe through {localCandidates.length} candidates</p> : null}
             <div className="candidate-grid">
               {localCandidates.map((candidate) => (
                 <article

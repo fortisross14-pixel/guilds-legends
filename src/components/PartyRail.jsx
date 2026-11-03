@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { HeroPortrait, ProgressBar } from './UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
+import DraggableHero from './DraggableHero.jsx';
 
-// The party bar: every active hero, always visible. It has no game logic;
-// clicking a card opens the hero status screen, the one place to change a hero.
-export default function PartyRail({ state, onOpenHero, onOpenQuests }) {
+// The party bar: every active hero, always visible. Tap a card for the hero
+// status screen; drag it onto a Guild Hall room, the main party or a slot.
+export default function PartyRail({ state, actions, onOpenHero, onOpenQuests }) {
   const [collapsed, setCollapsed] = useState(false);
   const mainParty = state.guild.mainParty || [];
   const heroes = [...activeRoster(state)].sort((a, b) => Number(mainParty.includes(b.id)) - Number(mainParty.includes(a.id)));
@@ -28,8 +29,11 @@ export default function PartyRail({ state, onOpenHero, onOpenQuests }) {
             const status = heroStatus(state, hero);
             const warnings = heroWarnings(state, hero);
             return (
-              <button
+              <DraggableHero
                 key={hero.id}
+                hero={hero}
+                state={state}
+                actions={actions}
                 className={`party-rail__member party-rail__member--${status.key}`}
                 onClick={() => onOpenHero(hero.id)}
                 title={[status.label, ...warnings].join(' · ')}
@@ -66,7 +70,7 @@ export default function PartyRail({ state, onOpenHero, onOpenQuests }) {
                   />
                 </span>
                 {warnings.length ? <i className="party-rail__warning" aria-label={warnings.join(', ')} /> : null}
-              </button>
+              </DraggableHero>
             );
           })}
         </div>

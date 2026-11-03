@@ -77,3 +77,44 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 .world-map { touch-action: none; overflow: hidden; }
 .world-map__plane { will-change: transform; }
 .world-map__reset { position: absolute; z-index: 5; right: 10px; top: 10px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .85); color: var(--text); font-size: 20px; cursor: pointer; }
+
+/* Rest dial */
+.rest-dial { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line-soft); border-radius: 3px; background: rgba(10, 9, 14, .6); }
+.rest-dial__track { position: relative; padding-top: 26px; }
+.rest-dial__track input[type='range'] { width: 100%; height: 44px; margin: 0; accent-color: var(--gold-bright); touch-action: none; }
+.rest-dial__event { position: absolute; top: 0; transform: translateX(-50%); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(246, 210, 140, .16); pointer-events: none; }
+.rest-dial__scale { display: flex; justify-content: space-between; color: var(--text-faint); font-size: 11px; }
+.rest-dial__scale span:nth-child(2) { margin-left: 18%; }
+.rest-dial__scale span:nth-child(3) { margin-left: auto; margin-right: 22%; }
+.rest-dial__readout { margin: 0; }
+.rest-dial__readout small { color: var(--text-dim); }
+.rest-room__calendar summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--text-dim); }
+
+/* Hall rooms as drop targets, with who is inside */
+.room-tile-wrap { position: relative; display: grid; }
+.room-tile-wrap.is-drop { border-radius: 3px; }
+.room-tile__heroes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 40px; padding: 4px 8px 8px; }
+.room-tile__hero { min-width: 44px; min-height: 44px; padding: 0; border: 0; background: none; cursor: grab; }
+.war-room__zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.war-room__zone { display: grid; align-content: start; gap: 6px; min-height: 120px; padding: 10px; border: 1px dashed var(--line); border-radius: 3px; }
+.war-room__zone--party { border-color: var(--gold); }
+.war-room__member { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border: 1px solid var(--line-soft); border-radius: 3px; background: rgba(10, 9, 14, .6); color: var(--text); text-align: left; }
+
+/* Armory: items as chips, heroes as drop targets with a live preview */
+.item-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.item-chip { display: grid; min-width: 96px; min-height: 48px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 3px; background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; }
+.item-chip small { color: var(--text-dim); }
+.item-chip.is-selected { border-color: var(--gold-bright); box-shadow: 0 0 0 1px var(--gold-bright); }
+.equipment-card__drop { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 6px; border: 1px dashed var(--line); border-radius: 3px; background: none; color: var(--text-dim); text-align: left; }
+.equipment-card__drop.is-armed { border-color: var(--gold); }
+.equipment-card__preview.is-on { color: var(--gold-bright); font-weight: 600; }
+
+/* Recruits: swipe through candidates as cards (phones) */
+@media (max-width: 759px) {
+  .candidate-grid { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .candidate-grid > .candidate-card { flex: 0 0 min(86vw, 360px); scroll-snap-align: center; }
+}
+.swipe-hint { color: var(--text-faint); font-size: 12px; text-align: center; }
+
+/* Hero pages: long-press detail */
+.inspect-toast { position: sticky; bottom: 8px; z-index: 5; margin: 8px 0 0; padding: 10px 12px; border: 1px solid var(--gold); border-radius: 3px; background: rgba(10, 9, 14, .95); color: var(--text); font-size: 13.5px; }

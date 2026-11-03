@@ -11,7 +11,7 @@ import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
 import { launchMission } from './missions.js';
 import { concludeActiveCombat } from './encounters.js';
-import { advanceDays, advanceUntilMissionReturns, advanceWeeks } from './time.js';
+import { advanceDays, advanceUntilMissionReturns } from './time.js';
 import { charterEffect } from './charter.js';
 
 /**
@@ -207,16 +207,17 @@ export function concludeCombatAndContinue(state) {
 
 // ---------------------------------------------------------------- resting
 
-export const HALL_REST_WEEKS = [1, 4, 12];
+/** The longest single rest at the Guild Hall (the rest dial's end): 13 weeks. */
+export const MAX_REST_DAYS = 91;
 export const INN_NIGHT_COST = 6;
 
 /**
  * Rests at the Guild Hall (home only): first applies the heroes' tasks chosen
- * on the rest screen ({ heroId: activity }), then lets 1 week, 1 month or
- * 3 months pass. Room activities resolve at each month start during the wait.
+ * on the rest screen ({ heroId: activity }), then lets `days` pass (the rest
+ * dial: 1 day to 13 weeks). Room activities resolve at each month start.
  */
-export function restAtHall(state, weeks, tasks = {}) {
-  if (!HALL_REST_WEEKS.includes(weeks)) return { state, error: 'Rest for a week, a month or three months.' };
+export function restAtHall(state, days, tasks = {}) {
+  if (!Number.isInteger(days) || days < 1 || days > MAX_REST_DAYS) return { state, error: `Rest between 1 and ${MAX_REST_DAYS} days.` };
   if (!atHome(state)) return { state, error: `Rest at the Guild Hall in ${LOCATION_BY_ID[HOME_LOCATION_ID].name}, or at an inn while away.` };
   const next = clone(state);
   Object.entries(tasks || {}).forEach(([heroId, activity]) => {
@@ -224,7 +225,7 @@ export function restAtHall(state, weeks, tasks = {}) {
     if (!hero || ['dead', 'retired', 'mission', 'sidejob', 'tournament'].includes(hero.status)) return;
     if (activityAvailable(next, activity)) hero.monthlyActivity = activity;
   });
-  return advanceWeeks(next, weeks, true);
+  return advanceDays(next, days, true);
 }
 
 /** A night or three at an inn away from home: the party heals and time passes. */

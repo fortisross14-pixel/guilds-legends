@@ -3,13 +3,15 @@ import { APPOINTMENTS } from '../data/content.js';
 import { HALL_ROOMS, MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { FORMATION_TYPES } from '../data/formations.js';
 import { HOUSE, ROOM_BY_ID } from '../data/rooms.js';
-import { HALL_REST_WEEKS, HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
+import { HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
 import PixelIcon, { ROOM_ICONS } from '../components/PixelIcon.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
+import DraggableHero from '../components/DraggableHero.jsx';
 import HeadquartersScreen from '../screens/HeadquartersScreen.jsx';
 import CalendarScreen from './CalendarScreen.jsx';
+import RestDial from './RestDial.jsx';
 import { LOCATION_BY_ID } from '../data/world.js';
 
 // The Guild Hall, from a rented room to a renowned hall (src/data/rooms.js).
@@ -261,16 +263,32 @@ function WarRoom({ state, actions }) {
   const party = state.guild.mainParty || [];
   return (
     <>
-      <Panel title="Main party" eyebrow={`${party.length}/${MAIN_PARTY_SIZE} · fights in the wild, pre-fills contracts and tournaments`}>
-        {activeRoster(state).map((hero) => (
-          <label key={hero.id} className="war-room__member">
-            <input type="checkbox" checked={party.includes(hero.id)} disabled={!party.includes(hero.id) && party.length >= MAIN_PARTY_SIZE} onChange={() => actions.toggleMainParty(hero.id)} />
-            <HeroPortrait hero={hero} size="xs" showStatus={false} />
-            <span>
-              {hero.name} · Lv {hero.level} {hero.classId} · {heroStatus(state, hero).label}
-            </span>
-          </label>
-        ))}
+      <Panel title="Main party" eyebrow={`${party.length}/${MAIN_PARTY_SIZE} · drag heroes in and out, or tap to toggle`}>
+        <div className="war-room__zones">
+          {[
+            ['party', 'Main party', activeRoster(state).filter((hero) => party.includes(hero.id))],
+            ['bench', 'Everyone else', activeRoster(state).filter((hero) => !party.includes(hero.id))],
+          ].map(([zone, label, heroes]) => (
+            <div key={zone} className={`war-room__zone war-room__zone--${zone}`} data-drop={zone} data-drop-id={zone}>
+              <strong>{label}</strong>
+              {heroes.map((hero) => (
+                <DraggableHero
+                  key={hero.id}
+                  hero={hero}
+                  state={state}
+                  actions={actions}
+                  className="war-room__member"
+                  onClick={() => (zone === 'party' || party.length < MAIN_PARTY_SIZE ? actions.toggleMainParty(hero.id) : null)}
+                >
+                  <HeroPortrait hero={hero} size="xs" showStatus={false} />
+                  <span>
+                    {hero.name} · Lv {hero.level} · {heroStatus(state, hero).label}
+                  </span>
+                </DraggableHero>
+              ))}
+            </div>
+          ))}
+        </div>
       </Panel>
       <Panel title="Saved formations" eyebrow="Save them from the Notice Board party builder">
         {Object.keys(FORMATION_TYPES).map((type) => {
@@ -403,7 +421,6 @@ function TrophyHall({ state }) {
   );
 }
 
-const REST_LABELS = { 1: 'Rest 1 week', 4: 'Rest 1 month', 12: 'Rest 3 months' };
 const activityName = (id) =>
   HALL_ROOMS.find((item) => item.activity === id)?.name || ROOM_BY_ID[{ Training: 'training', Infirmary: 'infirmary', Scouting: 'scouts' }[id]]?.name || MONTHLY_ACTIVITIES.find((item) => item.id === id)?.label || id;
 
@@ -457,30 +474,40 @@ function RestRoom({ state, actions }) {
         ))}
         {away.length ? <p className="muted">Away: {away.map((hero) => `${hero.name} (${heroStatus(state, hero).label})`).join(', ')}.</p> : null}
       </div>
-      <div className="rest-room__actions">
-        {HALL_REST_WEEKS.map((weeks) => (
-          <Button key={weeks} variant={weeks === 4 ? 'primary' : 'secondary'} disabled={Boolean(paused)} onClick={() => actions.restAtHall(weeks, draft)}>
-            {REST_LABELS[weeks]}
-          </Button>
-        ))}
-      </div>
-      <p className="muted">Rest stops early if a battle, decision or tournament needs you.</p>
-      <CalendarScreen state={state} actions={actions} canAdvance />
+      <RestDial state={state} disabled={Boolean(paused)} onRest={(days) => actions.restAtHall(days, draft)} />
+      <p className="muted">Stops early if a battle, decision or tournament needs you.</p>
+      <details className="rest-room__calendar">
+        <summary>Calendar</summary>
+        <CalendarScreen state={state} actions={actions} canAdvance />
+      </details>
     </div>
   );
 }
 
 /** A tile on the hall floor plan. */
-function Tile({ id, icon, name, text, badge, onClick, className = '' }) {
+function Tile({ id, icon, name, text, badge, onClick, className = '', activity = null, state = null, actions = null }) {
+  const inside = activity && state ? roomHeroes(state, activity) : [];
   return (
-    <button className={`building-tile room-tile room-tile--${id} ${className}`} onClick={onClick}>
-      <span className="building-tile__icon">
-        <PixelIcon name={icon} size={36} />
-      </span>
-      <strong>{name}</strong>
-      <small>{text}</small>
-      {badge !== null && badge !== undefined ? <Badge tone="blue">{badge}</Badge> : null}
-    </button>
+    <div className={`room-tile-wrap ${activity ? 'is-drop' : ''}`} {...(activity ? { 'data-drop': 'room', 'data-drop-id': activity } : {})}>
+      <button className={`building-tile room-tile room-tile--${id} ${className}`} onClick={onClick}>
+        <span className="building-tile__icon">
+          <PixelIcon name={icon} size={36} />
+        </span>
+        <strong>{name}</strong>
+        <small>{text}</small>
+        {badge !== null && badge !== undefined && !activity ? <Badge tone="blue">{badge}</Badge> : null}
+      </button>
+      {activity ? (
+        <div className="room-tile__heroes" aria-label={`In the ${name}`}>
+          {inside.map((hero) => (
+            <DraggableHero key={hero.id} hero={hero} state={state} actions={actions} className="room-tile__hero" onClick={() => actions.openHero(hero.id)} title={hero.name}>
+              <HeroPortrait hero={hero} size="xs" showStatus={false} />
+            </DraggableHero>
+          ))}
+          {!inside.length ? <small className="muted">Drop heroes here</small> : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -514,7 +541,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
         </div>
         <nav className="building-grid" aria-label="Guild Hall rooms" data-menu>
           {HALL_ROOMS.filter((item) => !item.needsHall || hall.owned).map((item) => (
-            <Tile key={item.id} id={item.id} icon={ROOM_ICONS[item.id] || 'castle'} name={item.name} text={item.description} badge={roomHeroes(state, item.activity).length} onClick={() => setRoom(item.id)} />
+            <Tile key={item.id} id={item.id} icon={ROOM_ICONS[item.id] || 'castle'} name={item.name} text={item.description} activity={item.activity} state={state} actions={actions} onClick={() => setRoom(item.id)} />
           ))}
           {hall.rooms
             .filter((item) => item.built)
@@ -525,7 +552,10 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
                 icon={ROOM_ICONS[item.id] || 'castle'}
                 name={`${item.name}${item.max > 1 ? ` · lv ${item.level}` : ''}`}
                 text={hall.construction?.roomId === item.id ? `Upgrading: ${hall.construction.weeksLeft} weeks left` : item.effect}
-                badge={item.activity ? roomHeroes(state, item.activity).length : item.id === 'war' ? (state.guild.mainParty || []).length : null}
+                badge={item.id === 'war' ? (state.guild.mainParty || []).length : null}
+                activity={item.activity || null}
+                state={state}
+                actions={actions}
                 onClick={() => setRoom(item.id)}
               />
             ))}

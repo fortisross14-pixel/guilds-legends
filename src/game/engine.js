@@ -88,7 +88,7 @@ export { getLivingHistory } from './engine/dashboard.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
-export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition, restAtHall, restAtInn, HALL_REST_WEEKS, INN_NIGHT_COST } from './engine/timeActions.js';
+export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition, restAtHall, restAtInn, MAX_REST_DAYS, INN_NIGHT_COST } from './engine/timeActions.js';
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero, shopPrice, chestUsed, gearUpgradeCost, upgradeGear } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
@@ -128,6 +128,7 @@ export {
   HOME_LOCATION_ID,
   atHome,
   campaignDaySerial,
+  dateFromDaySerial,
   campaignWeekSerial,
   dateWeekSerial,
   dateFromWeekSerial,

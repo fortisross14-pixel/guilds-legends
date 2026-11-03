@@ -113,6 +113,7 @@ import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
 import PartyRail from './components/PartyRail.jsx';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
 import Prologue from './components/Prologue.jsx';
+import { haptic } from './components/gestures.js';
 import DialogueBox from './explore/DialogueBox.jsx';
 import Asset from './components/Asset.jsx';
 import { CHARTERS, CHARTER_LIST, PATHS } from './data/charters.js';
@@ -1019,12 +1020,22 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
       // Time only moves through actions: travel, contracts the founder joins,
       // camping, inns, and resting at the Guild Hall (which can also wait for a date).
-      restAtHall: (weeks, tasks) => applyResult(restAtHall(state, weeks, tasks), weeks >= 4 ? 'The guild rests and works.' : 'A quiet week at the hall.'),
+      restAtHall: (days, tasks) => applyResult(restAtHall(state, days, tasks), `${days} day${days === 1 ? '' : 's'} pass at the hall.`),
       restAtInn: (nights) => applyResult(restAtInn(state, nights), 'Rested at the inn.'),
       advanceToDate: (date) => applyResult(advanceToDate(state, date)),
       sendIdleHeroesTo: (activity) => applyResult(sendIdleHeroesTo(state, activity)),
       autoAssignRooms: () => applyResult(autoAssignRooms(state), 'Heroes assigned to rooms.'),
       toggleMainParty: (heroId) => applyResult(toggleMainPartyMember(state, heroId)),
+      // A hero dragged onto something (src/components/DraggableHero.jsx). Rooms take
+      // the hero, the main party adds or removes them; other drops go to the open screen.
+      dropHero: (heroId, target) => {
+        const inParty = (state.guild.mainParty || []).includes(heroId);
+        if (target.kind === 'room') commitState(setHeroMonthlyActivity(state, heroId, target.id));
+        else if (target.kind === 'party' && !inParty) applyResult(toggleMainPartyMember(state, heroId));
+        else if (target.kind === 'bench' && inParty) applyResult(toggleMainPartyMember(state, heroId));
+        else window.dispatchEvent(new CustomEvent('gol:drop-hero', { detail: { heroId, kind: target.kind, id: target.id } }));
+        haptic('drop', state.settings);
+      },
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept', years = 2) => applyResult(recruitCandidate(state, id, negotiation, years), 'A new hero has joined the banner.'),
       resolveTownEvent: (optionId) => applyResult(resolveTownEvent(state, optionId)),
@@ -1332,7 +1343,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           </button>
         ))}
       </nav>
-      <PartyRail state={state} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
+      <PartyRail state={state} actions={actions} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
       <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { LONG_PRESS_MS, useSwipe } from './gestures.js';
 import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, APPOINTMENTS, normalizeClassId } from '../data/content.js';
 import { MONTHLY_ACTIVITIES, TRAINING_FOCI, HALL_ROOMS } from '../data/activities.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
@@ -9,6 +10,17 @@ import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBad
 import { CareerTab } from '../screens/HistoryScreens.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
 import { sliceHides } from '../data/slice.js';
+
+const STAT_HELP = {
+  HP: 'hit points. At 0 the hero is knocked out.',
+  MP: 'mana for skills.',
+  ATK: 'weapon damage.',
+  DEF: 'reduces damage taken.',
+  MAG: 'skill damage and healing.',
+  SPD: 'acts earlier in the round.',
+  Power: 'overall strength, used for estimates and rankings.',
+  Loyalty: 'low loyalty heroes leave or listen to rivals.',
+};
 
 function gearName(state, id) {
   if (!id) return 'Empty';
@@ -22,11 +34,27 @@ const roomName = (activity) => HALL_ROOMS.find((room) => room.activity === activ
 // through the active roster. Non-roster heroes (rivals, legends) are read-only.
 export default function HeroStatusScreen({ state, heroId, onClose, onSelect, actions }) {
   const [tab, setTab] = useState('status');
+  // Long-press a stat or a skill for what it means.
+  const [detail, setDetail] = useState(null);
+  const pressTimer = useRef(0);
+  // Swipe left/right through the roster.
+  const nav = useRef({});
+  const swipe = useSwipe({ onLeft: () => nav.current.next?.(), onRight: () => nav.current.prev?.() });
+  const inspect = (text) => ({
+    onPointerDown: () => {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = window.setTimeout(() => setDetail(text), LONG_PRESS_MS);
+    },
+    onPointerUp: () => window.clearTimeout(pressTimer.current),
+    onPointerLeave: () => window.clearTimeout(pressTimer.current),
+    onContextMenu: (event) => event.preventDefault(),
+  });
   const hero = heroId ? getHero(state, heroId) : null;
   if (!hero) return null;
   const roster = activeRoster(state);
   const index = roster.findIndex((item) => item.id === hero.id);
   const own = index >= 0;
+  nav.current = own && roster.length > 1 ? { next: () => onSelect(roster[(index + 1) % roster.length].id), prev: () => onSelect(roster[(index - 1 + roster.length) % roster.length].id) } : {};
   const classId = normalizeClassId(hero.classId);
   const stats = heroBattleStats(hero);
   const status = heroStatus(state, hero);
@@ -39,7 +67,7 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
 
   return (
     <Modal open title={hero.name} eyebrow={`Lv ${hero.level || 1} ${hero.rarity || 'Common'} ${hero.primal || ''} ${classId}`} onClose={onClose} width="wide">
-      <div className="hero-status">
+      <div className="hero-status" {...swipe}>
         {own && roster.length > 1 ? (
           <nav className="hero-status__nav">
             <Button size="sm" onClick={() => onSelect(roster[(index - 1 + roster.length) % roster.length].id)}>
@@ -54,6 +82,11 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
           </nav>
         ) : null}
 
+        {detail ? (
+          <p className="inspect-toast" role="status" onClick={() => setDetail(null)}>
+            {detail}
+          </p>
+        ) : null}
         <section className="hero-status__identity">
           <HeroPortrait hero={hero} size="xl" />
           <div className="hero-status__vitals">
@@ -90,7 +123,7 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
               ['Power', hero.power],
               ['Loyalty', hero.loyalty ?? '—'],
             ].map(([label, value]) => (
-              <div key={label}>
+              <div key={label} {...inspect(`${label}: ${STAT_HELP[label]}`)}>
                 <dt>{label}</dt>
                 <dd>{value}</dd>
               </div>
@@ -164,9 +197,8 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
               <h3>Skills</h3>
               <ul>
                 {(CLASS_SKILLS[classId] || []).map((skill) => (
-                  <li key={skill.id} className={skill.level <= (hero.level || 1) ? 'is-unlocked' : 'is-locked'}>
-                    <strong>{skillLabel(skill, hero.primal)}</strong> · {skill.mp} MP ·{' '}
-                    {skill.level <= (hero.level || 1) ? skill.description : `Unlocks at level ${skill.level}`}
+                  <li key={skill.id} className={skill.level <= (hero.level || 1) ? 'is-unlocked' : 'is-locked'} {...inspect(`${skillLabel(skill, hero.primal)}: ${skill.description}`)}>
+                    <strong>{skillLabel(skill, hero.primal)}</strong> · {skill.mp} MP{skill.level <= (hero.level || 1) ? '' : ` · Lv ${skill.level}`}
                   </li>
                 ))}
               </ul>
