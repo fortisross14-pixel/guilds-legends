@@ -103,6 +103,21 @@ export default function MomentModal({ moment, state, onClose }) {
     );
   }
 
+  if (moment.type === 'nemesis') {
+    return (
+      <Modal open title={`${moment.title} is now your nemesis`} eyebrow="Rivalry" onClose={onClose} width="medium">
+        <div className="moment moment--nemesis">
+          <p className="moment__fanfare">⚔</p>
+          <p>{moment.text}</p>
+          <p className="muted">See the head-to-head record and issue challenges at the Herald (Rivals & nemeses).</p>
+          <Button variant="primary" onClick={onClose}>
+            Bring it on
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
   if (moment.type === 'recruit') {
     return (
       <Modal open title={`${moment.name} joins the guild`} eyebrow="A new companion" onClose={onClose} width="medium">

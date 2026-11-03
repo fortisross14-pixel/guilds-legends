@@ -55,16 +55,18 @@ npm run build       # production build to dist/ (not committed)
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
 src/places/               MapScreen (home), TownScreen (buildings), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
 src/components/           UI primitives (UI.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
-src/screens/              Building/page content rendered inside places (Hall, Missions, Heroes, …)
+src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   core.js                 clone, seeded RNG (rngFor/commitRng), uid, chronicle helpers, roster/guild queries
+  reputation.js           family/region reputation, levels, perks, specialization title (pure helpers)
   heroes.js               hero generation, XP/levels (level-up moments), relationships, party role ratings and estimates
   inventory.js            guild inventory, gear, shops, loot, battle item settlement
   candidates.js           recruitment market and recruitment promises
   universe.js             rival guilds, legends, title records, artifacts, contract board
   rankings.js             Strength/Legacy/Official ladders, official points ledger, status titles, rank snapshots
+  rivalry.js              rivalry scores, nemeses, rivals taking contracts, challenge matches
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
   contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
   goals.js                goals, achievements, promotion, evaluateStateInPlace
@@ -115,6 +117,9 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `inventory` (itemId → count), each hero's `gear` (weapon/armor/accessory item ids; `artifact:<id>` for a worn artifact)
 - `moments[]`: reward screens queued for the UI (victory, levelUp, recruit); presentation only
 - `world.roadEvents`, `pendingRoadEvent`: planned and current road events
+- `reputation: { families: { Combat: pts, … }, regions: { Crownlands: pts, … } }`
+- `rivalries: { [rivalId]: { score, boutsWon, boutsLost, contractsTaken, poachedFromUs, poachedFromThem, challengesWon, challengesLost, lastChallengeSeason } }`, `nemesisIds[]`, `challenge` (pending/accepted nemesis challenge or null)
+- `officialLedger[]` entries can also come from contracts and challenges (`source`)
 - `tutorial`, `council` (last monthly report), `notifications[]`, `settings`, `flags`
 
 `validateGame(state)` returns a list of invariant violations; the UI runs it after every action. Keep it in sync with state shape changes.

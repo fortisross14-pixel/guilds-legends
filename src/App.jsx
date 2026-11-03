@@ -67,6 +67,10 @@ import {
   renewContract,
   counterOffer,
   makeOffer,
+  declineContract,
+  challengeNemesis,
+  acceptChallenge,
+  declineChallenge,
   takePatronLoan,
   updateSettings,
   upgradeBranch,
@@ -76,7 +80,7 @@ import {
 import { deleteGame, exportGame, importGame, listSaveSlots, loadGame, saveGame } from './game/storage.js';
 import { CLASSES, MONTHS } from './data/content.js';
 import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, ProgressBar, RankChange } from './components/UI.jsx';
+import { Badge, Button, Crest, HeroPortrait, Modal, RankChange } from './components/UI.jsx';
 import MapScreen from './places/MapScreen.jsx';
 import TownScreen from './places/TownScreen.jsx';
 import MenuScreen from './places/MenuScreen.jsx';
@@ -830,6 +834,25 @@ function Toasts({ notifications, onDismiss, onClear }) {
 function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlotsChanged }) {
   const [place, setPlaceState] = useState({ view: 'map' });
   const [heroModalId, setHeroModalId] = useState(null);
+  const [timeMenuOpen, setTimeMenuOpen] = useState(false);
+  // The ribbon's collapsed state is a per-viewer convenience kept in localStorage.
+  const [ribbonCollapsed, setRibbonCollapsed] = useState(() => {
+    try {
+      return window.localStorage.getItem('gol.ribbonCollapsed') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const toggleRibbon = () => {
+    setRibbonCollapsed((current) => {
+      try {
+        window.localStorage.setItem('gol.ribbonCollapsed', current ? '0' : '1');
+      } catch {
+        /* storage unavailable: keep the in-memory choice */
+      }
+      return !current;
+    });
+  };
   const [reportModalRef, setReportModalRef] = useState(null);
   const [message, setMessage] = useState(null);
   const [saveStatus, setSaveStatus] = useState('saved');
@@ -917,6 +940,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       waitForCompany: () => applyResult(advanceToNextEvent(state)),
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept', years = 2) => applyResult(recruitCandidate(state, id, negotiation, years), 'A new hero has joined the banner.'),
+      declineContract: (missionId) => {
+        if (window.confirm('Decline this contract? A rival guild will take it, and regional reputation drops a little.'))
+          applyResult(declineContract(state, missionId));
+      },
+      challengeNemesis: (rivalId) => applyResult(challengeNemesis(state, rivalId), 'Challenge issued. Accept it when your party is ready.'),
+      acceptChallenge: () => applyResult(acceptChallenge(state)),
+      declineChallenge: () => applyResult(declineChallenge(state), 'Challenge declined.'),
       renewContract: (heroId, years) => applyResult(renewContract(state, heroId, years), 'Contract renewed.'),
       counterOffer: (heroId) => applyResult(counterOffer(state, heroId), 'The hero stays.'),
       makeOffer: (heroId) => {
@@ -1122,12 +1152,31 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             <Button size="sm" onClick={() => actions.advanceWeeks(1)} disabled={timePaused}>
               +1 week
             </Button>
-            <Button size="sm" onClick={() => actions.advanceWeeks(4)} disabled={timePaused}>
-              +1 month
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => navigate('calendar')}>
-              Wait until…
-            </Button>
+            <span className={`time-controls__extra ${timeMenuOpen ? 'is-open' : ''}`}>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setTimeMenuOpen(false);
+                  actions.advanceWeeks(4);
+                }}
+                disabled={timePaused}
+              >
+                +1 month
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setTimeMenuOpen(false);
+                  navigate('calendar');
+                }}
+              >
+                Wait until…
+              </Button>
+            </span>
+            <button className="time-controls__more" onClick={() => setTimeMenuOpen(!timeMenuOpen)} aria-expanded={timeMenuOpen} aria-label="More time options">
+              ⋯
+            </button>
           </div>
           <button className="topbar__location" onClick={() => navigate('world')} title="Current guild location">
             <i>{summary.travel ? '➜' : PRIMALS[summary.locationPrimal]?.icon || '⌖'}</i>
@@ -1151,6 +1200,9 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
                 <small>{LADDER_LABELS[ladder].toLowerCase()}</small>
               </span>
             ))}
+            <button className="topbar__rank-chip" onClick={() => navigate('rankings')} title="Strength · Legacy · Official ranks">
+              ⚔{summary.ranks.strength.rank} ▤{summary.ranks.legacy.rank} ♛{summary.ranks.official.rank}
+            </button>
             <button className="topbar__status" onClick={() => navigate('rankings')} title="Status title from the Official ladder">
               {summary.statusTitle}
             </button>
@@ -1164,21 +1216,16 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           </button>
         ) : null}
         <UpcomingStrip state={state} actions={actions} navigate={navigate} />
-        {nextAction ? (
-          <aside className={`objective-ribbon objective-ribbon--${nextAction.kind}`}>
+        {place.view === 'map' || place.view === 'town' ? (
+          <aside className={`objective-ribbon objective-ribbon--compact objective-ribbon--${nextAction.kind} ${ribbonCollapsed ? 'is-collapsed' : ''}`}>
             <span className="objective-ribbon__mark">{nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}</span>
-            <div>
-              <small>
-                {nextAction.kind === 'tutorial'
-                  ? `Current order · ${nextAction.step}/${nextAction.total}`
-                  : nextAction.kind === 'critical'
-                    ? 'Time paused'
-                    : 'Recommended next step'}
-              </small>
-              <strong>{nextAction.title}</strong>
-              <p>{nextAction.body}</p>
-            </div>
-            {typeof nextAction.progress === 'number' ? <ProgressBar value={nextAction.progress} max={nextAction.target} compact tone="gold" /> : null}
+            <strong className="objective-ribbon__title">{nextAction.title}</strong>
+            {!ribbonCollapsed ? (
+              <span className="objective-ribbon__body">
+                {nextAction.body}
+                {typeof nextAction.progress === 'number' && typeof nextAction.target === 'number' ? ` (${nextAction.progress}/${nextAction.target})` : ''}
+              </span>
+            ) : null}
             <Button
               size="sm"
               variant={nextAction.kind === 'critical' ? 'danger' : 'primary'}
@@ -1190,13 +1237,21 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
                 else navigate(nextAction.screen || 'hall');
               }}
             >
-              {nextAction.kind === 'critical' ? 'Resolve now' : nextAction.target === 'finishTutorial' ? 'Finish tutorial' : 'Go to task'}
+              {nextAction.kind === 'critical' ? 'Resolve' : nextAction.target === 'finishTutorial' ? 'Finish tutorial' : 'Go'}
             </Button>
-            {nextAction.kind === 'tutorial' ? (
+            {nextAction.kind === 'tutorial' && !ribbonCollapsed ? (
               <Button size="sm" variant="secondary" onClick={actions.skipTutorial}>
                 Skip tutorial
               </Button>
             ) : null}
+            <button
+              className="objective-ribbon__toggle"
+              onClick={toggleRibbon}
+              aria-expanded={!ribbonCollapsed}
+              aria-label={ribbonCollapsed ? 'Expand' : 'Collapse'}
+            >
+              {ribbonCollapsed ? '▾' : '▴'}
+            </button>
           </aside>
         ) : null}
         <main className="screen-container" key={`${place.view}-${place.building || ''}-${place.page || ''}`}>

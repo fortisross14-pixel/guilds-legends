@@ -2,7 +2,7 @@ import React from 'react';
 import { APPOINTMENTS } from '../data/content.js';
 import { HALL_ROOMS, MONTHLY_ACTIVITIES, TRAINING_FOCI } from '../data/activities.js';
 import { FORMATION_TYPES } from '../data/formations.js';
-import { MAIN_PARTY_SIZE, getPatronLoanOffer, heroCapacity, isHeroAway } from '../game/engine.js';
+import { MAIN_PARTY_SIZE, getPatronLoanOffer, heroCapacity, isHeroAway, specializationTitle } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
@@ -26,6 +26,7 @@ function GuildSummary({ state }) {
       </span>
       <span>{state.guild.fame} fame</span>
       <Badge tone="gold">{state.guild.statusTitle || 'Unknown'}</Badge>
+      {specializationTitle(state) ? <Badge tone="purple">{specializationTitle(state)}</Badge> : null}
       {state.guild.loan ? <Badge tone="red">Loan {state.guild.loan.remaining}</Badge> : null}
     </header>
   );

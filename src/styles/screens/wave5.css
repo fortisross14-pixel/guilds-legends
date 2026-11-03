@@ -82,3 +82,36 @@ button.quest-row { cursor: pointer; }
 .contract-options { display: flex; flex-wrap: wrap; gap: .4rem; }
 .free-agent-row { display: flex; gap: .5rem; align-items: center; justify-content: space-between; padding: .35rem 0; border-top: 1px solid var(--line); }
 .calendar-entry--contract i, .upcoming-item--contract i { color: var(--purple); }
+
+/* Wave 7: compact ribbon, phone top bar, reputation and rivals */
+.objective-ribbon--compact { display: flex; flex-wrap: nowrap; gap: .5rem; align-items: center; min-height: 0; padding: .35rem .6rem; }
+.objective-ribbon--compact .objective-ribbon__title { white-space: nowrap; font-size: .82rem; }
+.objective-ribbon--compact .objective-ribbon__body { overflow: hidden; flex: 1; min-width: 0; color: var(--muted); font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+.objective-ribbon--compact.is-collapsed .objective-ribbon__title { flex: 1; }
+.objective-ribbon__toggle { padding: .1rem .4rem; border: 1px solid var(--line-strong); border-radius: 6px; background: none; color: var(--muted); cursor: pointer; }
+.time-controls__extra { display: inline-flex; gap: .35rem; }
+.time-controls__more, .topbar__rank-chip { display: none; }
+.topbar__rank-chip { padding: .2rem .55rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel-2); color: var(--text); font-size: .72rem; white-space: nowrap; cursor: pointer; }
+@media (max-width: 760px) {
+  .topbar__date span { display: inline; font-size: .62rem; }
+  .time-controls { position: relative; }
+  .time-controls__more { display: inline-grid; place-items: center; min-width: 2rem; padding: .2rem .4rem; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--panel-2); color: var(--text); cursor: pointer; }
+  .time-controls__extra { display: none; }
+  .time-controls__extra.is-open { position: absolute; z-index: 60; top: 110%; right: 0; display: grid; gap: .3rem; padding: .4rem; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--bg-1); box-shadow: var(--shadow); }
+  .topbar__resources { display: flex; }
+  .topbar__resources > *:not(.topbar__rank-chip) { display: none; }
+  .topbar__rank-chip { display: inline-block; }
+  .objective-ribbon--compact .objective-ribbon__body { display: none; }
+}
+.reputation-view, .nemesis-view { display: grid; gap: 1rem; }
+.reputation-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(140px, 1fr); gap: .8rem; align-items: center; padding: .4rem 0; border-top: 1px solid var(--line); }
+.reputation-row small { display: block; color: var(--muted); }
+.nemesis-view__list { display: flex; flex-wrap: wrap; gap: .4rem; }
+.nemesis-chip { padding: .3rem .7rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel-2); color: var(--text); cursor: pointer; }
+.nemesis-chip.is-selected { border-color: var(--gold); }
+.nemesis-chip.is-nemesis { color: var(--red-light); }
+.nemesis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: .8rem; }
+.nemesis-grid h3 { margin: 0 0 .3rem; font-size: .9rem; color: var(--gold-light); }
+.calendar-entry.is-almost { box-shadow: inset 3px 0 0 var(--gold); }
+.calendar-entry--challenge i { color: var(--red-light); }
+.calendar-entry--reputation i { color: var(--purple); }

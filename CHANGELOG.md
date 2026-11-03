@@ -2,6 +2,13 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Wave 7 (specialization, rivalries and fixes)
+
+- Reputation per mission family and per region, with named levels and perks: better pay and fame, extra and early contracts, cheaper regional recruits, and a top-level bonus. Specialization titles (Monster Hunters, Envoys, Pathfinders, Shadow Hand).
+- Declined or expired contracts go to rival guilds, which gain fame, Legacy and Official points. There is a Decline button on the Notice Board.
+- Rivalry scores and 1–2 nemeses with a head-to-head page in the Herald. Season challenge matches with gold, fame and Official points at stake. Nemeses outbid you for contracts and court your heroes.
+- Fixes: the calendar follows the date; the ribbon is compact and collapsible on World and Guild only; the phone top bar is reworked; calendar goals (challenge windows, reputation milestones, almost-enterable tournaments).
+
 ## Wave 6 (recruitment depth)
 
 - Contracts of 1–3 years with salary and expiry. A warning comes 3 months before, and heroes leave as free agents if not renewed. Renewal talks from the status screen: the asking salary depends on loyalty and level, and disloyal heroes refuse.

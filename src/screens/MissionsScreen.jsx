@@ -478,6 +478,9 @@ export default function MissionsScreen({ state, actions, navigate }) {
                       ? 'All companies deployed'
                       : `Send ${formationType} company`}
                 </Button>
+                <Button variant="secondary" onClick={() => selected && actions.declineContract(selected.id)} title="A rival takes it; regional reputation −5">
+                  Decline
+                </Button>
               </div>
             </>
           ) : (

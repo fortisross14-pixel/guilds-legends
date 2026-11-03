@@ -9,7 +9,7 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave 4 — Rankings as the hook, and the scripted opening | ✅ Done (2026-11-02) |
 | Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | ✅ Done (2026-11-02) |
 | Wave 6 — Recruitment depth | ✅ Done (2026-11-02) |
-| Wave 7 — Specialization, rivalries and fixes | In progress |
+| Wave 7 — Specialization, rivalries and fixes | ✅ Done (2026-11-02) |
 | Wave 8 — Content and pacing | Not started |
 
 ## The goal: turn a stack of menus into a game
@@ -260,11 +260,48 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
   - Signing a rival's star promotes their next-best hero.
 - Released and expired heroes already became free agents (Wave 0); rivals' existing transfer market signs them.
 
-## Wave 7 — Specialization and rivalries (not started)
+## Wave 7 — Specialization, rivalries and fixes (done)
 
 - Reputation per mission family (Combat/Diplomacy/Expedition/Intrigue) and per region, with perks.
 - Declined contracts go to rivals.
 - 1–2 rival guilds become nemeses, with head-to-head records and challenge matches.
+
+### Wave 7 notes (choices where the brief was open)
+
+- **Reputation families** are the four mission approaches (Combat/Diplomacy/Expedition/Intrigue), not the story families like "Monster Hunt".
+  - Points: difficulty × grade weight (Legendary 2, Great 1.5, Success 1, Partial 0.3, Defeat −0.3, Catastrophic −0.5). They go to both the family and the contract's region.
+  - Levels: Unknown 0, Known 100, Respected 300, Renowned 700, Legendary 1500.
+- **Family perks** (cumulative):
+  - +5% pay and fame per level.
+  - Respected: one extra contract of that kind on each board.
+  - Renowned: next-tier contracts of that kind appear a tier early.
+  - Legendary: +6% success estimate, and Combat also faces 10% weaker enemies.
+- **Regional perks:** +5% pay and −5% recruit signing fees per level in that region.
+- **Specialization title** comes from the top family once it reaches Known: Monster Hunters, Envoys, Pathfinders or Shadow Hand. It shows in the Guild Hall header and the Herald.
+- **The Reputation view lives in the Herald,** next to a new Rivals & nemeses tab.
+- **Contracts going to rivals.**
+  - Declining (Notice Board button, with confirm) or letting a contract expire hands it to a rival. The pick order is a nemesis from that region, then any rival from that region, then a rival near your tier.
+  - The rival gains fame, Legacy (difficulty) and Official points (difficulty ÷ 2, as a ledger entry with source "contract").
+  - Declining costs 5 regional reputation. Expiry costs 10, but only for contracts in the town where the guild is based; others lapse quietly so the notices don't flood.
+- **Rivalry score:** +5 per tournament bout against their hero, +8 per guild-championship bout, +6 per contract they take, +15 per poaching either way, +10 per challenge, and +1 per month while within 2 places on the Official ladder.
+  - The top 2 with at least 20 points are nemeses, recomputed monthly. A new nemesis gets a moment screen.
+- **Nemeses in the world:** each month there's a 25% chance a nemesis takes a contract from its home region's boards. While you have a nemesis, rival approaches to low-loyalty heroes are 1.5× as likely and come from the nemesis.
+- **Challenges.**
+  - At each season start, a nemesis issues one with 50% chance. You can also challenge each nemesis once per season from its page.
+  - The challenge stays open for 4 weeks. Accept starts a party battle: your main party first, up to 4, against their best heroes; a duel if only one hero is free. Challenges can't be fled.
+  - Stakes, × tier: 120 gold, 6 fame, 60 Official points. A win takes the gold, fame and points; a loss pays the gold and gives them the points.
+  - Declining or letting it expire costs half the fame stake.
+- **Calendar additions:**
+  - nemesis challenge windows at season starts, plus the pending challenge's deadline
+  - the next reputation milestone for your best family
+  - tournaments marked "almost" when the tier is open but no hero meets level, fame or win requirements yet (with what's missing)
+
+  Locked tournaments still show "Unlocks at …".
+- **Fixes:**
+  - The calendar follows the current date unless you browsed to another month (a "Today" button returns).
+  - The ribbon is one line, shows only on the World and Guild screens, collapses (remembered per browser), and its empty progress bar is gone. The bar was empty because tutorial steps pass a string target; progress now shows as "x/y" text when it exists.
+  - The phone top bar shows the date, +1 week, a "⋯" menu (+1 month, Wait until…) and one rank chip with all three ranks.
+- Removed: the ribbon's progress bar and the ribbon on non-place screens.
 
 ## Wave 8 — Content and pacing (not started)
 

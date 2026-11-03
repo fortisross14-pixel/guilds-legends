@@ -11,8 +11,10 @@ import {
   getPointsToPass,
   getRankMovement,
   getStatusTitle,
+  specializationTitle,
 } from '../game/engine.js';
-import { Badge, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline, Tabs } from '../components/UI.jsx';
+import { NemesisView, ReputationView } from './RivalryScreens.jsx';
+import { Badge, Button, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline, Tabs } from '../components/UI.jsx';
 
 const LADDER_COPY = {
   strength: 'Current power: the average of each guild’s top five heroes. Moves fast.',
@@ -47,6 +49,7 @@ function GuildLadders({ state, actions }) {
       <div className="status-banner">
         <span className="eyebrow">Status</span>
         <strong className="status-banner__title">{getStatusTitle(state)}</strong>
+        {specializationTitle(state) ? <Badge tone="purple">{specializationTitle(state)}</Badge> : null}
         <div className="status-banner__ranks">
           {LADDERS.map((id) => (
             <span key={id}>
@@ -320,7 +323,7 @@ function ArtifactAlmanac({ state, actions }) {
   );
 }
 
-function GuildDirectory({ state, actions }) {
+function GuildDirectory({ state, actions, onOpenRival }) {
   const [guildId, setGuildId] = useState(state.rivals[0]?.id || '');
   const guild = state.rivals.find((item) => item.id === guildId) || state.rivals[0];
   if (!guild) return null;
@@ -341,7 +344,15 @@ function GuildDirectory({ state, actions }) {
           </button>
         ))}
       </aside>
-      <Panel title={guild.name} eyebrow={`${guild.archetype} · Founded ${guild.founded}`} action={<Badge tone="gold">{guild.titles} titles</Badge>}>
+      <Panel
+        title={guild.name}
+        eyebrow={`${guild.archetype} · Founded ${guild.founded}`}
+        action={
+          <Button size="sm" onClick={() => onOpenRival(guild.id)}>
+            Rivalry ⚔
+          </Button>
+        }
+      >
         <div className="directory-banner" style={{ '--guild-color': guild.color }}>
           <blockquote>“{guild.motto}”</blockquote>
           <div>
@@ -381,7 +392,12 @@ function GuildDirectory({ state, actions }) {
 }
 
 export default function RankingsScreen({ state, actions }) {
-  const [tab, setTab] = useState('guilds');
+  const [tab, setTab] = useState(state.challenge?.status === 'pending' ? 'rivals' : 'guilds');
+  const [rivalFocus, setRivalFocus] = useState(null);
+  const openRival = (id) => {
+    setRivalFocus(id);
+    setTab('rivals');
+  };
   const heroCount =
     state.rivals.reduce((sum, guild) => sum + 1 + guild.members.length, 0) +
     (state.freeAgents?.length || 0) +
@@ -409,15 +425,19 @@ export default function RankingsScreen({ state, actions }) {
           { id: 'heroLadders', label: 'Hero ladders', icon: '♟' },
           { id: 'heroes', label: 'All-time greats', icon: '✦' },
           { id: 'tournaments', label: 'Tournament legends', icon: '♛' },
+          { id: 'reputation', label: 'Reputation', icon: '❖' },
+          { id: 'rivals', label: 'Rivals & nemeses', icon: '⚔' },
           { id: 'directory', label: 'Guild directory', icon: '▤' },
           { id: 'artifacts', label: 'Artifacts', icon: '◈' },
         ]}
       />
       {tab === 'guilds' ? <GuildLadders state={state} actions={actions} /> : null}
       {tab === 'heroLadders' ? <HeroLadders state={state} actions={actions} /> : null}
+      {tab === 'reputation' ? <ReputationView state={state} /> : null}
+      {tab === 'rivals' ? <NemesisView state={state} actions={actions} initialRivalId={rivalFocus} /> : null}
       {tab === 'heroes' ? <HeroGoat state={state} actions={actions} /> : null}
       {tab === 'tournaments' ? <TournamentLegends state={state} actions={actions} /> : null}
-      {tab === 'directory' ? <GuildDirectory state={state} actions={actions} /> : null}
+      {tab === 'directory' ? <GuildDirectory state={state} actions={actions} onOpenRival={openRival} /> : null}
       {tab === 'artifacts' ? <ArtifactAlmanac state={state} actions={actions} /> : null}
     </div>
   );
