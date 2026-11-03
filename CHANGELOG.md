@@ -2,6 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 6b: The Last Banner, Chapter 1
+
+- A new prologue: a knock at your door in Dunmere, a dying guildmaster, a banner that should not exist. Choose what to do when someone tries the door; each choice gives a different first clue. Then name your guild.
+- Act I is the tutorial: rent the old stable as your Guild Hall, meet Mara Fen and hire Nessa, clear the Old Road with Corwin, and answer Bram Calder's dare at the Harvest Melee. A warning from the Argent Crown ends it. Skip it at new game if you like.
+- Act II: a herbalist's testimony in Greenhollow, a ledger in Ironford's archive, an old champion's duel in Windmere, and Wren, the last scout. Your charter opens its own routes. Collect evidence against Garrick Thorne; it all ends in your own Guild Hall, in front of the banner.
+- The Argent Crown is a real rival guild; the Crownfall Tournament is the kingdom's championship.
+- A new Quest Log (Main, Side, Guild, Done) with Show on map, quest markers on the map and on people in town, and a Lore codex for the world's history.
+- The Blackwood opens at its edge after Act I. Something blocks the way deeper.
+- Removed the old opening, the intro card, the old tutorial steps, the old Blackwood story and the rented room.
+
 ## Unreleased — Phase 6a: time and arenas
 
 - Time only moves when you act. The calendar now has days. Travel takes days (nearby towns are 3–4 days away), contracts take their time (you wait only if the founder goes), a night at a wild camp is one day, and inns away from home rest 1–3 nights.

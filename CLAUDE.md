@@ -55,12 +55,13 @@ npm run build       # production build to dist/ (not committed)
 ```text
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
 src/places/               MapScreen (world map, wild-area cards), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, mission log, season reviews, codex, CalendarScreen, QuestLogScreen), routes.js
-src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
-src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, ArenaScreen + GuildChampionships, …)
+src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door), ChapterEnd
+src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, ArenaScreen + GuildChampionships, LoreCodex, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
-  dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js
-  tiles.js, openingRoom.js  Ground tiles for walkable layouts; the opening room map
+  dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js; story.js and storyAct2.js hold the story scenes
+  story.js, lore.js       The Last Banner (docs/STORY.md): missions, steps, gates, evidence, story heroes, the prologue; the Broken Lantern's seven, the official story, the Lore codex
+  tiles.js, playerHouse.js  Ground tiles for walkable layouts; the player's house (prologue)
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
   rooms.js                Rented room, hall purchase, buildable rooms (levels, cost, weeks, upkeep, requirements), hall stages
@@ -77,7 +78,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   universe.js             rival guilds, legends, title records, artifacts, contract board
   rankings.js             Strength/Legacy/Official ladders, official points ledger, status titles, rank snapshots
   rivalry.js              rivalry scores, nemeses, rivals taking contracts, challenge matches (nemesis, duel, exhibition, wager)
-  stories.js              Blackwood story arc, regional boss contracts, shared event-effect rules
+  stories.js              regional boss contracts, shared event-effect rules
   townLife.js             weekly town events and news, festivals, side jobs, friendly challenges and wagers
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
   contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
@@ -86,6 +87,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   hall.js                 the guild's home: rented beds, buying/leasing the hall, building rooms, weekly construction, next-upgrade suggestion
   connections.js          patron rewards and exclusive contracts, the Connections read model, run path scores
   seasons.js              season review, awards, record book, and read models for the mission log, hall of fame, ladder history, head-to-head and hero careers (tallies live in core.js)
+  story.js                The Last Banner: story missions and steps, scenes, story contracts and duels, evidence, the Lore codex, story recruits, the prologue, skip tutorial; the shared condition checker; progress runs from a finalize hook
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
   tournamentEntry.js      arena sign-up, tournament start days and forfeits, the arena read model, starting tournament combat
@@ -120,8 +122,8 @@ docs/AUDIT_v1.9.md        Audit and improvement waves
 One plain JSON-serializable object, created by `createNewGame` and upgraded by `migrateGame`:
 
 - `schemaVersion`, `seed`, `rngState`: save version and RNG state (advance the RNG only via `commitRng`)
-- `date: { year, month, week, day }`: month 0–11, week 0–3, day 0–6; the campaign starts in 1187. Time only passes through player actions (travel, rest, camps, contracts the founder joins). Travel is in days; missions, injuries and construction in weeks (missions also keep a `dueDay`). The home town is `HOME_LOCATION_ID` (Dunmere); away from it the travelling party is `travellingPartyIds(state)`
-- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `hall` ({ owned, lease, rentedBeds, rooms: { roomId: level }, construction }; beds are the only roster limit), `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
+- `date: { year, month, week, day }`: month 0–11, week 0–3, day 0–6; the campaign starts in June 1187. Time only passes through player actions (travel, rest, camps, contracts the founder joins). Travel is in days; missions, injuries and construction in weeks (missions also keep a `dueDay`). The home town is `HOME_LOCATION_ID` (Dunmere); away from it the travelling party is `travellingPartyIds(state)`
+- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `hall` ({ owned, lease, houseBeds, rooms: { roomId: level }, construction }; the founder's house has one bed, the stable is leased in story mission 1; beds are the only roster limit), `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
 - `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty`, `salary`, `contract` ({ years, salary, startSerial, endSerial } in month serials; none for the founder) and an optional `poachApproach`
 - `historicHeroes[]`: archived player heroes (compacted)
 - `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee`, a `scoutLevel` (0–3, how precisely its stats are known) and an optional `demand`
@@ -140,7 +142,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `officialLedger[]` entries can also come from contracts and challenges (`source`)
 - `pendingEvent` (a town event, festival or story card waiting for a choice), `news[]` + `newsUnread`
 - `sideJobs[]` (board), `activeSideJobs[]` (running; heroes have status `sidejob`), `wager`
-- `story: { step, next, choice, rivalId, done, postedMissionId }`, `defeatedBosses[]`; story and boss contracts carry `story` / `bossId`
+- `story: { prologue ('house'|'done'), tutorial ('active'|'done'|'skipped'), missions: { m1: { status, step, route } }, evidence, codex, choices, scene (a queued story scene), chapter, chapterDone }`, `defeatedBosses[]`; story contracts carry `story` ('m3.contract'), boss contracts `bossId`; story heroes carry `storyId`
 - `seasons[year]`: per-year totals (`g` guild, `fam` per family, `spent` by category, `h[heroId]` per hero), ranks (`ranksStart`, `ranksEnd`, `best`, monthly `series`, every guild's end rank in `ladder`), `big`/`worst`, `broken[]` and the `review`; `records: { guild, hero }`, `streak`, `bossLog[]`; heroes carry `awards[]`, `signedFee` and `career.goldForGuild`
 - `settings.sound`, `settings.volume`
 - `tutorial`, `council` (last monthly report), `notifications[]`, `settings` (incl. `joystick`), `flags` (`flags.dialogue` holds flags set by conversations)
