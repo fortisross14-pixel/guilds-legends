@@ -35,6 +35,16 @@ export function acknowledgeWelcome(state) {
   return finalize(next);
 }
 
+/** Records the opening prologue without letting presentation frame timing affect the simulation. */
+export function completeFallenBannerOpening(state, choices = []) {
+  const next = clone(state);
+  next.flags ||= {};
+  next.flags.opening = { phase: 'complete', choices: Array.isArray(choices) ? choices.slice(0, 3) : [] };
+  next.world.exploration ||= {};
+  next.world.exploration.dunmere = { x: 224, y: 404, discovered: ['house'] };
+  return finalize(next);
+}
+
 export function acknowledgeCouncilReport(state) {
   const next = clone(state);
   next.council ||= { lastReport: null, unread: false };

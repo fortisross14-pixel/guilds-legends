@@ -13,6 +13,7 @@ import {
   chooseAlignment,
   clearNotifications,
   clone,
+  completeFallenBannerOpening,
   createNewGame,
   designateSuccessor,
   dismissNotification,
@@ -99,6 +100,7 @@ import EventCardModal from './components/EventCardModal.jsx';
 import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
 import PartyRail from './components/PartyRail.jsx';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
+import FallenBannerOpening from './components/FallenBannerOpening.jsx';
 
 // Three places replace the old 11-item navigation.
 const PLACE_NAV = [
@@ -948,6 +950,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const actions = useMemo(
     () => ({
       acknowledgeWelcome: () => commitState(acknowledgeWelcome(state)),
+      completeFallenBannerOpening: (choices) => commitState(completeFallenBannerOpening(state, choices)),
       inspectMission: (id) => commitState(inspectMission(state, id)),
       notePartySelection: (id, formationType, assignments) => {
         const next = notePartySelection(state, id, formationType, assignments);
@@ -1133,6 +1136,10 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     if (isPending) actions.acknowledgeReport(activeReportReference);
     else setReportModalRef(null);
   };
+
+  if (state.flags?.opening?.phase && state.flags.opening.phase !== 'complete') {
+    return <FallenBannerOpening state={state} onComplete={actions.completeFallenBannerOpening} />;
+  }
 
   return (
     <div className="game-shell">

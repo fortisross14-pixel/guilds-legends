@@ -157,6 +157,9 @@ export function createNewGame(options = {}) {
     settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6 },
     legacy: { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] },
     flags: {
+      // The exploration layer owns visual movement; this tiny serializable record
+      // only preserves consequential opening progress across a refresh.
+      opening: { phase: 'house', choices: [] },
       firstMissionInspected: false,
       firstHeroInspected: false,
       goalsInspected: false,
