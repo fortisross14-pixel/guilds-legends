@@ -211,6 +211,14 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     boss: bossForMission(mission),
     items: battleItems(state),
   });
+  if (scripted) {
+    state.activeEncounter.hints = [
+      'Tap a hero, pick a command, then tap a target.',
+      'The marker over an enemy shows what it plans next. Hit the one about to strike.',
+      'Hurt? A potion or a heal keeps everyone standing. Guard soaks a big hit.',
+      'Finish the weakest wolf first: fewer wolves, fewer bites.',
+    ];
+  }
   mission.combatStarted = true;
   addChronicle(state, {
     type: 'combat',

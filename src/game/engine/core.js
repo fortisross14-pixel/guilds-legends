@@ -3,7 +3,7 @@
 import { MONTHS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
-import { HALL_PURCHASE, HALL_STAGES, RENTED_ROOM, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
+import { HALL_PURCHASE, HALL_STAGES, HOUSE, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
 import { patronAtLeast } from './charter.js';
 
 export const SCHEMA_VERSION = 15;
@@ -195,7 +195,7 @@ export function roomLevel(state, roomId) {
 /** Beds are the only roster limit: rented beds, the hall's dormitory corner and bunk rooms. */
 export function bedCount(state) {
   const hall = state.guild?.hall || {};
-  return (hall.rentedBeds || 0) + (hall.owned ? HALL_PURCHASE.beds : 0) + roomLevel(state, 'bunks') * 2;
+  return (hall.houseBeds ?? HOUSE.beds) + (hall.owned ? HALL_PURCHASE.beds : 0) + roomLevel(state, 'bunks') * 2;
 }
 
 export function freeBeds(state) {
@@ -258,7 +258,7 @@ export function earnGoldInPlace(state, amount) {
 
 /** Items the guild chest holds (the armory adds racks and a store). */
 export function chestCapacity(state) {
-  return RENTED_ROOM.chest + (roomLevel(state, 'armory') ? 20 : 0) + (patronAtLeast(state, 'smiths', 'partner') ? 10 : 0);
+  return HOUSE.chest + (roomLevel(state, 'armory') ? 20 : 0) + (patronAtLeast(state, 'smiths', 'partner') ? 10 : 0);
 }
 
 /** Titles won, artifacts held and bosses defeated: what the Trophy hall displays. */

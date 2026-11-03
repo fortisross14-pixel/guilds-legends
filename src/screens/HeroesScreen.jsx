@@ -396,7 +396,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       <b>Won’t join:</b> “{recruitObjection(state, candidate)}”
                     </p>
                   ) : freeBeds(state) <= 0 ? (
-                    <NoFreeBed state={state} actions={actions} navigate={navigate} />
+                    <NoFreeBed state={state} navigate={navigate} />
                   ) : null}
                   <div className="candidate-card__actions" hidden={freeBeds(state) <= 0 || Boolean(recruitObjection(state, candidate))}>
                     <Button
@@ -510,16 +510,12 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
 }
 
 /** Shown instead of the hire button when every bed is taken, with a shortcut to make room. */
-function NoFreeBed({ state, actions, navigate }) {
+function NoFreeBed({ state, navigate }) {
   const hall = getHallView(state);
   return (
     <div className="no-free-bed">
       <strong>No free bed</strong>
-      {hall.canRentBed ? (
-        <Button size="sm" variant="primary" onClick={actions.rentBed}>
-          Rent a bed ({hall.bedCost} G)
-        </Button>
-      ) : hall.owned ? (
+      {hall.owned ? (
         <Button size="sm" variant="primary" onClick={() => navigate({ view: 'town', building: 'guildHall', tab: hall.rooms.some((room) => room.id === 'bunks' && room.built) ? 'bunks' : 'build' })}>
           Build bunks
         </Button>

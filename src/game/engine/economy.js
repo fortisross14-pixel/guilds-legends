@@ -1,6 +1,6 @@
 // @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
-import { HALL_PURCHASE, RENTED_ROOM, ROOM_BY_ID } from '../../data/rooms.js';
+import { HALL_PURCHASE, ROOM_BY_ID } from '../../data/rooms.js';
 import { charterEffect } from './charter.js';
 import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
 import {
@@ -132,16 +132,15 @@ export function progressTravelInPlace(state, rng) {
   });
 }
 
-/** What the guild's home costs each month: rent for the room, the hall lease, and each room's upkeep. */
+/** What the guild's home costs each month: the stable's rent while leased, and each room's upkeep. */
 export function hallUpkeep(state) {
   const hall = state.guild.hall || {};
-  const rent = hall.rentedBeds ? RENTED_ROOM.rent + Math.max(0, hall.rentedBeds - RENTED_ROOM.beds) * RENTED_ROOM.bedRent : 0;
   const lease = hall.owned && hall.lease ? HALL_PURCHASE.lease.rent : 0;
   const rooms = Object.entries(hall.rooms || {})
     .filter(([, level]) => level > 0)
     .map(([id, level]) => ({ id, name: ROOM_BY_ID[id]?.name || id, level, upkeep: ROOM_BY_ID[id]?.levels[level - 1]?.upkeep || 0 }));
   const roomTotal = rooms.reduce((sum, room) => sum + room.upkeep, 0);
-  return { rent, lease, rooms, roomTotal, total: rent + lease + roomTotal };
+  return { lease, rooms, roomTotal, total: lease + roomTotal };
 }
 
 /** Monthly costs by line, for the Treasury and the council report. */

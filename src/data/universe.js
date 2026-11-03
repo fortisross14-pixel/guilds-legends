@@ -356,6 +356,7 @@ export const INDIVIDUAL_TOURNAMENT_DEFINITIONS = [
     circuit: 'Regional',
     locationId: 'dunmere',
     month: 6,
+    week: 1,
     size: 16,
     entryFee: 35,
     purse: 260,

@@ -68,7 +68,10 @@ export default {
   npcs: [
     { id: 'innkeeper', name: 'Mara Fen', role: 'Innkeeper', at: [14, 9], dialogue: 'dunmere.innkeeper' },
     { id: 'merchant', name: 'Corwin Pell', role: 'Road merchant', at: [23, 14], dialogue: 'dunmere.merchant' },
-    { id: 'fighter', name: 'Nia Voss', role: 'Local fighter', at: [24, 21], dialogue: 'dunmere.fighter' },
+    { id: 'fighter', name: 'Bram Calder', role: 'Duelist', at: [24, 21], dialogue: 'dunmere.fighter' },
+    { id: 'stablemaster', name: 'Gideon Rusk', role: 'Stable owner', at: [24, 8], dialogue: 'dunmere.stablemaster' },
+    // Nessa waits by the Wayfarer until she joins the guild (story mission 2).
+    { id: 'nessa', name: 'Nessa Thornfield', role: 'Hunter', at: [17, 9], dialogue: 'dunmere.nessa', if: { notStoryHero: 'nessa' } },
     { id: 'traveler', name: 'Iven Quill', role: 'Traveler', at: [4, 18], dialogue: 'dunmere.traveler' },
     { id: 'herald', name: 'Orren Pike', role: 'Herald', at: [7, 8], dialogue: 'dunmere.herald' },
     { id: 'kilnmaster', name: 'Hesta Coal', role: 'Kiln-master', at: [35, 21], dialogue: 'dunmere.kilnmaster' },

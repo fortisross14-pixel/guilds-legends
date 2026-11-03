@@ -37,6 +37,7 @@ import { addItemsInPlace, battleItems } from './inventory.js';
 import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
 import { instantiateMission } from './universe.js';
 import { makeContract } from './contracts.js';
+import { leaseHallInPlace } from './hall.js';
 
 // ---------------------------------------------------------------- state
 
@@ -82,7 +83,7 @@ function tournamentPlayed(state, definitionId) {
 
 // ---------------------------------------------------------------- conditions
 
-const oldRoadCleared = (state) => (state.missionHistory || []).some((mission) => mission.templateId === 'wolves-old-road');
+const oldRoadCleared = (state) => storyDone(state, 'm3') || (state.missionHistory || []).some((mission) => mission.templateId === 'wolves-old-road');
 
 /**
  * True when every key of `condition` holds. Shared by dialogue, story gates,
@@ -600,6 +601,33 @@ export function completePrologue(state, { choice, guildName } = {}) {
   (reward.codex || []).forEach((id) => unlockCodexInPlace(next, id, true));
   foundGuildInPlace(next, guildName);
   return { state: finalize(next), error: null };
+}
+
+/**
+ * "Skip tutorial" at new game: the same end state without the guidance. The
+ * prologue is seen (the banner inspected), the stable is rented, Nessa is
+ * hired and the Old Road is clear (missions 1–3 done); the Melee is next.
+ */
+export function skipTutorialInPlace(state, guildName) {
+  const story = storyInPlace(state);
+  story.prologue = 'done';
+  story.tutorial = 'skipped';
+  story.choices.prologue = 'banner';
+  state.flags.dialogue ||= {};
+  state.flags.dialogue.knowsSeven = true;
+  state.flags.oldRoadIntroduced = true;
+  state.flags.openingPeddler = true;
+  foundGuildInPlace(state, guildName);
+  leaseHallInPlace(state, 0);
+  storyRecruitInPlace(state, 'nessa');
+  ['m1', 'm2', 'm3'].forEach((id) => {
+    const record = missionState(story, id);
+    record.status = 'done';
+    record.step = STORY_MISSION_BY_ID[id].steps.length;
+  });
+  ['seven-names', 'official-story', 'mara-fen', 'nessa-thornfield'].forEach((id) => unlockCodexInPlace(state, id, true));
+  state.moments = [];
+  addChronicle(state, { type: 'story', importance: 2, title: 'A guild of nobodies', text: 'A rented stable, a hunter called Nessa and a cleared Old Road: the new guild finds its feet in Dunmere.', tags: ['story'] });
 }
 
 // ---------------------------------------------------------------- read models

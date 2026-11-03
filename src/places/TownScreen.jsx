@@ -75,7 +75,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
         : hallStage(state).interior
       : null;
   const buildingLabel = (id) =>
-    id === 'guildHall' ? (hallStage(state).key === 'rented' ? 'Your rented room' : 'Guild Hall') : walkable?.buildings.find((item) => item.building === id && !item.id)?.label || BUILDINGS[id]?.name;
+    id === 'guildHall' ? (hallStage(state).key === 'house' ? 'Your house' : 'Guild Hall') : walkable?.buildings.find((item) => item.building === id && !item.id)?.label || BUILDINGS[id]?.name;
 
   // Scenes own the entire viewport. Keeping them below this animated screen
   // would turn the fixed canvas into a descendant-sized strip.

@@ -20,7 +20,7 @@ export default {
         if: { charter: 'shield', talked: false },
         lines: [
           'Shield of the People? Then half of Dunmere likes you already. The other half will, once you earn it.',
-          'The rooms upstairs are yours. Come in when you are ready to meet Dunmere’s strays and strivers.',
+          'Come in when you are ready to meet Dunmere’s strays and strivers.',
         ],
         choices: [
           { text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }] },
@@ -37,8 +37,8 @@ export default {
       },
       {
         lines: [
-          'A new banner is a promise, not a company. The right person might be inside — listen before you hire.',
-          'The rooms are yours. Come in when you are ready to meet Dunmere’s strays and strivers.',
+          'A new banner is a promise, not a company. The right person might be inside. Listen before you hire.',
+          'Come in when you are ready to meet Dunmere’s strays and strivers.',
         ],
         choices: [
           { text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }] },
@@ -58,16 +58,8 @@ export default {
       },
       {
         if: { oldRoadCleared: true },
-        lines: ['You cleared the Old Road. My wagons made the run at dawn, and every driver knew whose work made it possible.', 'I will send business your way, {guild}.'],
-        choices: [
-          {
-            text: 'Business is welcome.',
-            if: { notFlag: 'bramThanks' },
-            effects: [{ gold: 40 }, { reputation: { region: 'Crownlands', amount: 5 } }, { relationship: 2 }, { patron: { id: 'trade', amount: 8 } }, { flag: 'bramThanks' }],
-            reply: ['Forty crowns, and my name on your door if anyone asks. The Trade House will hear about this.'],
-          },
-          ...TRADE,
-        ],
+        lines: ['The wagons run the Old Road every morning now. I will send business your way, {guild}.'],
+        choices: [...TRADE],
       },
       {
         if: { charter: 'merchant' },
@@ -93,23 +85,43 @@ export default {
     ],
   },
   'dunmere.fighter': {
-    speaker: 'Nia Voss',
-    portrait: P('fighter'),
+    speaker: 'Bram Calder',
+    portrait: 'portrait.story.bram',
     variants: [
       {
-        if: { oldRoadCleared: true },
-        effects: [{ flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'The Dunmere Harvest Melee is held at the local arena.' } }],
-        lines: ['So the stories are true. The road is open and {guild} did it. The Harvest Melee will be more interesting now.'],
-        choices: [{ text: 'Show me the arena', effects: [{ open: 'arena' }] }],
+        if: { storyHero: 'bram' },
+        lines: ['Practising. Somebody in this guild has to look good in the ring.'],
       },
       {
-        if: { charter: 'free' },
-        lines: ['A Free Company. No patron to hide behind and no ledger to blame. I respect that. I will be watching.'],
-        choices: [{ text: 'Any advice?', reply: ['Wolves circle. Do not chase the one in front of you; watch the two beside it.'] }],
+        if: { storyDone: 'm4' },
+        lines: ['Still carrying that banner? Brave or stupid. I haven’t decided which.'],
+        choices: [{ text: 'Any advice?', reply: ['Watch the feet, not the blade. Everybody lies with the blade.'] }],
       },
       {
-        lines: ['I like a company that starts small. I like it better if it survives. Come back when Dunmere has a reason to remember your name.'],
+        lines: ['A banner, a house and no guild. Come back when Dunmere has a reason to remember your name.'],
         choices: [{ text: 'Any advice?', reply: ['Wolves circle. Do not chase the one in front of you; watch the two beside it.'] }],
+      },
+    ],
+  },
+  'dunmere.stablemaster': {
+    speaker: 'Gideon Rusk',
+    portrait: 'portrait.story.stablemaster',
+    variants: [
+      {
+        if: { hallLeased: true },
+        lines: ['Roof holding? Good. Pay on time, don’t burn it down, and we’ll get on fine.'],
+      },
+      {
+        lines: ['The old stable? Empty, leaky and mine. If you want it, you know where I stand.'],
+      },
+    ],
+  },
+  'dunmere.nessa': {
+    speaker: 'Nessa Thornfield',
+    portrait: 'portrait.story.nessa',
+    variants: [
+      {
+        lines: ['Mara says I should be patient. I’ve been patient for two years.'],
       },
     ],
   },

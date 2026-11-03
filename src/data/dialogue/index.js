@@ -36,6 +36,9 @@
 //   { rumor: { location, note } }           marks a place as rumored on the world map
 //   { event: { id, note } }                 records a known event
 //   { open: buildingId }                    UI: opens that building
+//   Story (src/data/story.js): { codex: id | [ids] }, { evidence: id }, { choice: { name: value } },
+//   { route: name } (the mission's contract route), { storyRecruit: heroId }, { leaseHall: deposit },
+//   { passDays: n }, { fame: n }, { legacy: n }, { wait: true } (keep a story scene open)
 //   { recruit: true }                       UI: shows a recruit offer from this town
 //   { patron: { id, amount } }              standing with a patron (src/data/patrons.js)
 //   { patronGift: patronId }                50 gold for standing, once a month
@@ -43,8 +46,9 @@ import dunmere from './dunmere.js';
 import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';
 import wilds from './wilds.js';
+import story from './story.js';
 
-export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...wilds };
+export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...wilds, ...story };
 
 /** Flags that live at state.flags[name] (other systems read them), not in state.flags.dialogue. */
 export const TOP_LEVEL_FLAGS = ['oldRoadIntroduced', 'harvestMeleeIntroduced'];

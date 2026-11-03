@@ -1,21 +1,22 @@
 // @ts-check
 // New campaign creation and default state pieces.
-import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, SAGA_DEFINITIONS, STARTING_HEROES } from '../../data/content.js';
+import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, SAGA_DEFINITIONS } from '../../data/content.js';
 import { CHARTERS } from '../../data/charters.js';
 import { PATRON_LIST } from '../../data/patrons.js';
 import { emptyFormations } from '../../data/formations.js';
-import { PRIMALS, PRIMAL_IDS } from '../../data/world.js';
+import { PRIMALS } from '../../data/world.js';
 import { SCHEMA_VERSION, commitRng, hashString, makeRng } from './core.js';
-import { choosePrimal, createHeroFromBase } from './heroes.js';
+import { createHeroFromBase } from './heroes.js';
 import { refreshCandidatesForLocationInPlace } from './candidates.js';
 import { createUniverseInPlace, refreshMissionsInPlace } from './universe.js';
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
 import { refreshSideJobsInPlace } from './townLife.js';
+import { progressStoryInPlace, skipTutorialInPlace } from './story.js';
 
-/** Every campaign starts in the rented room above the Wayfarer: one bed, the banner, a small chest. */
+/** Every campaign starts in the founder's house: one bed, the banner, a small chest. */
 export function startingHall() {
-  return { owned: false, lease: false, rentedBeds: 1, rooms: {}, construction: null };
+  return { owned: false, lease: false, houseBeds: 1, rooms: {}, construction: null };
 }
 
 export function initialStats() {
@@ -69,7 +70,8 @@ export function createNewGame(options = {}) {
     rngState: seed,
     createdAt: new Date().toISOString(),
     lastPlayedAt: new Date().toISOString(),
-    date: { year: 1187, month: 0, week: 0, day: 0 },
+    // Early summer: the Dunmere Harvest Melee is about five weeks away (Act I, mission 4).
+    date: { year: 1187, month: 5, week: 0, day: 0 },
     guild: {
       id: 'player',
       // Named at the end of the prologue (the Broken Lantern is the old, destroyed guild).
@@ -213,34 +215,6 @@ export function createNewGame(options = {}) {
   founder.legacy = 1;
   state.heroes = [founder];
 
-  const openingPool = [...STARTING_HEROES];
-  const openingPrimals = ['Fire', rng.pick(PRIMAL_IDS.filter((id) => id !== 'Fire')), rng.pick(PRIMAL_IDS.filter((id) => id !== 'Fire'))];
-  if (openingPrimals[2] === openingPrimals[1]) {
-    openingPrimals[2] = PRIMAL_IDS.find((id) => id !== 'Fire' && id !== openingPrimals[1]) || 'Water';
-  }
-  while (state.candidates.length < 3 && openingPool.length) {
-    const index = rng.int(0, openingPool.length - 1);
-    const base = openingPool.splice(index, 1)[0];
-    const primal = openingPrimals[state.candidates.length] || choosePrimal(rng, 'dunmere');
-    const candidate = createHeroFromBase(
-      { ...base, power: 45 + rng.int(-2, 4), level: rng.int(1, 3), rarity: rng.chance(0.3) ? 'Rare' : 'Uncommon', primal, homeLocationId: 'dunmere' },
-      state,
-      rng,
-      { homeLocationId: 'dunmere' },
-    );
-    candidate.status = 'candidate';
-    candidate.locationId = 'dunmere';
-    candidate.channel = 'Founding appeal';
-    candidate.signingFee = 0;
-    candidate.buyoutFee = 0;
-    candidate.demand = null;
-    candidate.expiresYear = state.date.year + 1;
-    candidate.interest = 100;
-    candidate.scoutLevel = 3;
-    candidate.hook = `${candidate.hook} Will join the founding pair without a signing fee.`;
-    state.candidates.push(candidate);
-  }
-
   createUniverseInPlace(state, rng);
   refreshMissionsInPlace(state, rng);
   refreshCandidatesForLocationInPlace(state, rng, 'dunmere');
@@ -248,6 +222,11 @@ export function createNewGame(options = {}) {
   refreshSideJobsInPlace(state, rng);
   commitRng(state, rng);
 
+  // "Skip tutorial": no prologue, and Act I starts at the Harvest Melee.
+  if (options.skipTutorial) {
+    skipTutorialInPlace(state, options.guildName || 'The New Banner');
+    progressStoryInPlace(state);
+  }
   evaluateStateInPlace(state);
   return state;
 }

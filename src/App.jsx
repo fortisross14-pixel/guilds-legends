@@ -85,9 +85,8 @@ import {
   takePatronLoan,
   updateSettings,
   upgradeBranch,
-  rentBed,
   giftPatron,
-  acquireHall,
+  buyHall,
   buildRoom,
   upgradeGear,
   validateGame,
@@ -231,10 +230,14 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
   const [motto, setMotto] = useState('No light is lost forever.');
   const [seedText, setSeedText] = useState('Dunmere');
   const [charter, setCharter] = useState('free');
+  const [skipTutorial, setSkipTutorial] = useState(false);
+  const [guildName, setGuildName] = useState('');
 
   useEffect(() => {
     if (open) {
       setCharter('free');
+      setSkipTutorial(false);
+      setGuildName('');
       setFounderName('Rowan Vale');
       setFounderClass('Guardian');
       setFounderPrimal('Fire');
@@ -314,6 +317,19 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
             ))}
           </div>
         </fieldset>
+        <label className="new-campaign__skip">
+          <input type="checkbox" checked={skipTutorial} onChange={(event) => setSkipTutorial(event.target.checked)} />
+          <span>
+            <strong>Skip the tutorial</strong>
+            <small>No prologue: start with the stable rented, Nessa hired and the Old Road cleared. The Harvest Melee is next.</small>
+          </span>
+        </label>
+        {skipTutorial ? (
+          <label className="new-campaign__name">
+            Guild name
+            <input value={guildName} maxLength={38} placeholder="The Ember Company" onChange={(event) => setGuildName(event.target.value)} />
+          </label>
+        ) : null}
         <div className="new-campaign__premise">
           <strong>The Last Banner</strong>
           <p>
@@ -324,8 +340,8 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
         <Button
           variant="primary"
           size="lg"
-          disabled={!founderName.trim()}
-          onClick={() => onCreate({ founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText, charter })}
+          disabled={!founderName.trim() || (skipTutorial && !guildName.trim())}
+          onClick={() => onCreate({ founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText, charter, skipTutorial, guildName: guildName.trim() })}
         >
           Begin
         </Button>
@@ -845,7 +861,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   }, [arrivalKey, state.world?.activeTravel]);
   const [heroModalId, setHeroModalId] = useState(null);
   const [storyScene, setStoryScene] = useState(null);
-  const blocked = Boolean(state.activeEncounter || state.activeMissionGame || state.pendingDecisions.length || state.pendingRoadEvent);
+  // A story scene waits until fights, decisions, reports and reward cards are done.
+  const blocked = Boolean(
+    state.activeEncounter || state.activeMissionGame || state.pendingDecisions.length || state.pendingRoadEvent || state.pendingReports?.length || state.moments?.length,
+  );
   useEffect(() => {
     if (!storyScene && !blocked && state.story?.scene?.conversation) setStoryScene(state.story.scene.conversation);
   }, [storyScene, blocked, state.story?.scene?.conversation]);
@@ -1037,8 +1056,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(assignArtifact(state, artifactId, heroId), heroId ? 'Artifact entrusted to a hero.' : 'Artifact returned to the guild vault.'),
       inheritAmbition: (legacyAmbitionId, heroId) =>
         applyResult(inheritAmbition(state, legacyAmbitionId, heroId), 'An unfinished ambition has found a new bearer.'),
-      rentBed: () => applyResult(rentBed(state), 'Another bed squeezed into the rented room.'),
-      acquireHall: (mode) => applyResult(acquireHall(state, mode)),
+      buyHall: () => applyResult(buyHall(state), 'The stable is yours outright.'),
       buildRoom: (roomId) => applyResult(buildRoom(state, roomId), 'The builders arrive.'),
       upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
       giftPatron: (patronId) => applyResult(giftPatron(state, patronId), 'A gift is sent with your compliments.'),

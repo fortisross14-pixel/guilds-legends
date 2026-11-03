@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { APPOINTMENTS } from '../data/content.js';
 import { HALL_ROOMS, MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { FORMATION_TYPES } from '../data/formations.js';
-import { RENTED_ROOM, ROOM_BY_ID } from '../data/rooms.js';
+import { HOUSE, ROOM_BY_ID } from '../data/rooms.js';
 import { HALL_REST_WEEKS, HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
@@ -42,9 +42,9 @@ export function NextUpgrade({ suggestion, actions, setRoom }) {
   if (!suggestion) return null;
   const act = () => {
     const kind = suggestion.action?.kind;
-    if (kind === 'rentBed') actions.rentBed();
-    else if (kind === 'build') actions.buildRoom(suggestion.action.roomId);
-    else if (kind === 'buyHall') setRoom?.(null);
+    if (kind === 'build') actions.buildRoom(suggestion.action.roomId);
+    else if (kind === 'story') actions.playStoryScene('m1');
+    else setRoom?.(null);
   };
   return (
     <p className="next-upgrade">
@@ -221,49 +221,38 @@ function BuildList({ hall, actions }) {
   );
 }
 
-function RentedRoom({ state, hall, actions }) {
-  const rent = upkeepBreakdown(state).hall.rent;
+/** Before the stable is rented: the founder's house, and where to go next (story mission 1). */
+function House({ state, hall, actions }) {
   return (
-    <Panel title={RENTED_ROOM.name} eyebrow={`Rent ${rent}/month`}>
+    <Panel title={HOUSE.name} eyebrow="Your home, not yet a guild hall">
       <ul className="rented-room">
         <li>
-          <PixelIcon name="moon" size={24} /> {hall.rentedBeds} bed{hall.rentedBeds === 1 ? '' : 's'} ({hall.used} used)
+          <PixelIcon name="moon" size={24} /> {hall.houseBeds} bed ({hall.used} used)
         </li>
         <li>
-          <PixelIcon name="flag" size={24} /> The banner on the wall
+          <PixelIcon name="flag" size={24} /> The banner, hidden under the floorboards
         </li>
         <li>
           <PixelIcon name="bag" size={24} /> A small chest: {chestUsed(state)}/{chestCapacity(state)} items
         </li>
       </ul>
-      {hall.canRentBed ? (
-        <Button onClick={actions.rentBed}>
-          Rent another bed ({hall.bedCost} G, +{hall.bedRent}/month)
-        </Button>
-      ) : hall.rentedBeds >= RENTED_ROOM.maxBeds ? (
-        <p className="muted">No space for another bed up here.</p>
-      ) : null}
+      <p className="muted">The old stable on Banner Plaza stands empty. Gideon Rusk owns it; talk to him in the plaza (story mission 1).</p>
+      <Button variant="primary" onClick={() => actions.playStoryScene('m1')}>
+        Talk to Gideon Rusk
+      </Button>
     </Panel>
   );
 }
 
-function HallPurchase({ state, hall, actions }) {
-  const purchase = hall.purchase;
+/** The leased stable can be bought outright to end the rent. */
+function BuyHall({ state, hall, actions }) {
+  if (!hall.purchase) return null;
   return (
-    <Panel title="The old hall on Banner Plaza" eyebrow="For sale by the town council">
-      <p>Empty, drafty, and big enough to grow into: six wings to build rooms in, and a dormitory corner with two more beds.</p>
-      {purchase.met ? (
-        <div className="hall-purchase__actions">
-          <Button variant="primary" disabled={state.guild.crowns < purchase.buy} onClick={() => actions.acquireHall('buy')}>
-            Buy ({purchase.buy} G)
-          </Button>
-          <Button disabled={state.guild.crowns < purchase.lease} onClick={() => actions.acquireHall('lease')}>
-            Lease ({purchase.lease} G now, {purchase.leaseRent}/month)
-          </Button>
-        </div>
-      ) : (
-        <p className="muted">The council wants proof you will last: {purchase.missing.join(', ')}.</p>
-      )}
+    <Panel title="Buy the stable outright" eyebrow={`Rent now: ${hall.purchase.leaseRent} a month`}>
+      <p>Gideon would sell for {hall.purchase.buy} gold. No more rent, and nobody can take the hall away.</p>
+      <Button disabled={state.guild.crowns < hall.purchase.buy} onClick={actions.buyHall}>
+        Buy it ({hall.purchase.buy} G)
+      </Button>
     </Panel>
   );
 }
@@ -332,12 +321,6 @@ function Treasury({ state, actions }) {
         <dl className="treasury-table">
           <dt>Wages</dt>
           <dd>{upkeep.wages}</dd>
-          {upkeep.hall.rent ? (
-            <>
-              <dt>Room rent</dt>
-              <dd>{upkeep.hall.rent}</dd>
-            </>
-          ) : null}
           {upkeep.hall.lease ? (
             <>
               <dt>Hall lease</dt>
@@ -516,10 +499,11 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
         <NextUpgrade suggestion={hall.suggestion} actions={actions} setRoom={setRoom} />
         {!hall.owned ? (
           <div className="hall-start">
-            <RentedRoom state={state} hall={hall} actions={actions} />
-            <HallPurchase state={state} hall={hall} actions={actions} />
+            <House state={state} hall={hall} actions={actions} />
           </div>
-        ) : null}
+        ) : (
+          <BuyHall state={state} hall={hall} actions={actions} />
+        )}
         <div className="room-actions">
           {atHome(state) ? (
             <Button variant="primary" onClick={() => setRoom('rest')}>
@@ -585,12 +569,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
       {basic ? <p className="muted">{basic.description}</p> : null}
       {basic?.id === 'quarters' ? (
         <p className="quarters-beds">
-          {hall.used}/{hall.beds} beds used{hall.rentedBeds ? ` · ${hall.rentedBeds} in the rented room` : ''}
-          {hall.canRentBed ? (
-            <Button size="sm" onClick={actions.rentBed}>
-              Rent another bed ({hall.bedCost} G)
-            </Button>
-          ) : null}
+          {hall.used}/{hall.beds} beds used{hall.houseBeds ? ` · ${hall.houseBeds} in your house` : ''}
         </p>
       ) : null}
       {basic?.activity ? <ActivityRoom state={state} activity={basic.activity} name={basic.name} bulk={basic.bulk} room={basic} actions={actions} /> : null}

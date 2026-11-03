@@ -33,7 +33,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 1 (Rented room) |
+| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 1 (Your house) |
 | `town.dunmere.guildhall.stage2` | `art/walk/buildings/dunmere-guildhall-stage2.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 2 (Empty hall) |
 | `town.dunmere.guildhall.stage3` | `art/walk/buildings/dunmere-guildhall-stage3.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 3 (Working hall) |
 | `town.dunmere.guildhall.stage4` | `art/walk/buildings/dunmere-guildhall-stage4.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 4 (Renowned hall) |
@@ -55,7 +55,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `interior.guildhall.stage1` | `art/interiors/guildhall-stage1.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Guild Hall interior, stage 1 (Rented room) |
+| `interior.guildhall.stage1` | `art/interiors/guildhall-stage1.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Guild Hall interior, stage 1 (Your house) |
 | `interior.guildhall.stage2` | `art/interiors/guildhall-stage2.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 2 (Empty hall) |
 | `interior.guildhall.stage3` | `art/interiors/guildhall-stage3.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 3 (Working hall) |
 | `interior.guildhall.stage4` | `art/interiors/guildhall-stage4.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 4 (Renowned hall) |
@@ -73,7 +73,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.room.trophies.1` | `art/interiors/rooms/trophies-1.png` | 1280×576 | — | placeholder | Trophy hall, level 1 |
 | `interior.room.treasury.1` | `art/interiors/rooms/treasury-1.png` | 1280×576 | — | placeholder | Treasury, level 1 |
 | `interior.room.treasury.2` | `art/interiors/rooms/treasury-2.png` | 1280×576 | — | placeholder | Treasury, level 2 |
-| `interior.tavern` | `art/interiors/tavern.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Tavern (recruits) |
+| `interior.tavern` | `art/interiors/tavern.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Tavern (recruits) |
 | `interior.shop` | `art/interiors/shop.png` | 1280×576 | `art/scenes/scene_01.png` | borrowed | Shop |
 | `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena (tournaments) |
 | `interior.herald` | `art/interiors/herald.png` | 1280×576 | `art/scenes/scene_03.png` | borrowed | Herald (rankings) |
@@ -90,7 +90,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `bg.battle.oldroad` | `art/battle/oldroad.png` | 1280×576 | — | placeholder | Battles on the Old Road |
+| `bg.battle.oldroad` | `art/battle/oldroad.png` | 1280×576 | — | ready | Battles on the Old Road |
 | `bg.battle.thornwood` | `art/battle/thornwood.png` | 1280×576 | — | placeholder | Battles at the Thornwood edge |
 | `bg.battle.blackwood` | `art/battle/blackwood.png` | 1280×576 | — | placeholder | Battles in the Blackwood |
 | `bg.battle.arena` | `art/battle/arena.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Tournaments, duels, challenges |
@@ -147,7 +147,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.house.rook` | `art/walk/house/rook.png` | 44×28 | — | placeholder | Player’s house: Cassian Rook, wounded, on the floor |
 | `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | placeholder | Dunmere: Mara Fen, Innkeeper (walk sprite) |
 | `npc.dunmere.merchant` | `art/walk/npcs/dunmere-merchant.png` | 26×36 | — | placeholder | Dunmere: Corwin Pell, Road merchant (walk sprite) |
-| `npc.dunmere.fighter` | `art/walk/npcs/dunmere-fighter.png` | 26×36 | — | placeholder | Dunmere: Nia Voss, Local fighter (walk sprite) |
+| `npc.dunmere.fighter` | `art/walk/npcs/dunmere-fighter.png` | 26×36 | — | placeholder | Dunmere: Bram Calder, Duelist (walk sprite) |
+| `npc.dunmere.stablemaster` | `art/walk/npcs/dunmere-stablemaster.png` | 26×36 | — | placeholder | Dunmere: Gideon Rusk, Stable owner (walk sprite) |
+| `npc.dunmere.nessa` | `art/walk/npcs/dunmere-nessa.png` | 26×36 | — | placeholder | Dunmere: Nessa Thornfield, Hunter (walk sprite) |
 | `npc.dunmere.traveler` | `art/walk/npcs/dunmere-traveler.png` | 26×36 | — | placeholder | Dunmere: Iven Quill, Traveler (walk sprite) |
 | `npc.dunmere.herald` | `art/walk/npcs/dunmere-herald.png` | 26×36 | — | placeholder | Dunmere: Orren Pike, Herald (walk sprite) |
 | `npc.dunmere.kilnmaster` | `art/walk/npcs/dunmere-kilnmaster.png` | 26×36 | — | placeholder | Dunmere: Hesta Coal, Kiln-master (walk sprite) |
@@ -184,6 +186,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.poi` | `art/portraits/npcs/poi.png` | 160×160 | — | placeholder | Dialogue portrait for places and objects (fountain, statue, wells…) |
 | `portrait.arena.referee` | `art/portraits/npcs/arena-referee.png` | 160×160 | — | placeholder | Arena referee at the fighting ground (starts bouts) |
 | `portrait.arena.registrar` | `art/portraits/npcs/arena-registrar.png` | 160×160 | — | placeholder | Arena registrar at the sign-up desk |
+| `portrait.story.founder` | `art/portraits/story/founder.png` | 160×160 | — | placeholder | You, the founder, in dialogue (the class sprite stands in later) |
 | `portrait.story.rook` | `art/portraits/story/rook.png` | 160×160 | — | placeholder | Lord Cassian Rook: battered armor, silver insignia, dying (prologue) |
 | `portrait.story.thorne` | `art/portraits/story/thorne.png` | 160×160 | — | placeholder | Garrick Thorne: guildmaster of the Argent Crown, charming and cold |
 | `portrait.story.mara` | `art/portraits/story/mara.png` | 160×160 | — | placeholder | Mara Fen: keeper of the Wayfarer, practical and funny |
@@ -197,7 +200,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.story.stablemaster` | `art/portraits/story/stablemaster.png` | 160×160 | — | placeholder | Gideon Rusk: owner of the old stable on Banner Plaza |
 | `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | — | placeholder | Dunmere: Mara Fen, Innkeeper (dialogue portrait) |
 | `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | — | placeholder | Dunmere: Corwin Pell, Road merchant (dialogue portrait) |
-| `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | — | placeholder | Dunmere: Nia Voss, Local fighter (dialogue portrait) |
+| `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | — | placeholder | Dunmere: Bram Calder, Duelist (dialogue portrait) |
+| `portrait.dunmere.stablemaster` | `art/portraits/npcs/dunmere-stablemaster.png` | 160×160 | — | placeholder | Dunmere: Gideon Rusk, Stable owner (dialogue portrait) |
+| `portrait.dunmere.nessa` | `art/portraits/npcs/dunmere-nessa.png` | 160×160 | — | placeholder | Dunmere: Nessa Thornfield, Hunter (dialogue portrait) |
 | `portrait.dunmere.traveler` | `art/portraits/npcs/dunmere-traveler.png` | 160×160 | — | placeholder | Dunmere: Iven Quill, Traveler (dialogue portrait) |
 | `portrait.dunmere.herald` | `art/portraits/npcs/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Orren Pike, Herald (dialogue portrait) |
 | `portrait.dunmere.kilnmaster` | `art/portraits/npcs/dunmere-kilnmaster.png` | 160×160 | — | placeholder | Dunmere: Hesta Coal, Kiln-master (dialogue portrait) |

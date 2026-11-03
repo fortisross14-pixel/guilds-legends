@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { getLivingHistory, hallStage } from '../game/engine.js';
+import { checkCondition, getLivingHistory, hallStage, storyNpcsHere } from '../game/engine.js';
 import { townMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
@@ -17,6 +17,11 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
   const map = useMemo(() => townMap(town, hall), [town, hall?.asset, hall?.label]);
   const api = useRef(null);
   const [talk, setTalk] = useState(null);
+  // Conditional people (an NPC with `if`) appear only while their condition holds.
+  const active = map.targets.filter((target) => !target.if || checkCondition(state, target.if)).map((target) => target.id);
+  // The main quest marker sits on whoever holds the current story scene (hidden with the Quest Log toggle).
+  const questNpcs = state.settings?.questMarker === false ? [] : storyNpcsHere(state);
+  const beacons = map.targets.filter((target) => target.kind === 'npc' && questNpcs.includes(target.dialogue)).map((target) => target.id);
   const saved = state.world?.exploration?.positions?.[town.id];
   const start = saved && Number.isFinite(saved.x) ? saved : map.spawn;
 
@@ -43,6 +48,8 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
       map={map}
       start={start}
       apiRef={api}
+      activeTargets={active}
+      beacons={beacons}
       paused={Boolean(talk || state.activeEncounter)}
       joystick={Boolean(state.settings?.joystick)}
       onInteract={interact}

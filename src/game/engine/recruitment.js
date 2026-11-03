@@ -1,7 +1,7 @@
 // @ts-check
 // Player roster actions: recruit, release, refound, training, appointments, identity.
 import { APPOINTMENTS, CLASSES } from '../../data/content.js';
-import { LOCATION_BY_ID, PRIMALS, RARITIES } from '../../data/world.js';
+import { LOCATION_BY_ID, PRIMALS } from '../../data/world.js';
 import {
   activeHeroCount,
   addChronicle,
@@ -27,7 +27,7 @@ import {
   travellingPartyIds,
 } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
-import { candidateDemandFor, recruitObjection, refreshCandidatesForLocationInPlace } from './candidates.js';
+import { recruitObjection, refreshCandidatesForLocationInPlace } from './candidates.js';
 import { charterEffect } from './charter.js';
 import { releaseHeroInPlace } from './institution.js';
 import { CONTRACT_LENGTHS, baseSalaryFor, makeContract, offerTerms } from './contracts.js';
@@ -202,21 +202,7 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
     hook: hero.hook,
   });
   next.candidates.splice(index, 1);
-  if (wasFoundingSolo) {
-    next.flags.firstCompanionHired = true;
-    next.candidates
-      .filter((remaining) => (remaining.locationId || 'dunmere') === currentLocationId)
-      .forEach((remaining) => {
-        remaining.signingFee = Math.max(120, Math.round((remaining.level * 80 + remaining.power * 3) * (RARITIES[remaining.rarity]?.signing || 1)));
-        remaining.buyoutFee = Math.round(remaining.signingFee * (remaining.rarity === 'Legend' ? 0.65 : remaining.rarity === 'Epic' ? 0.5 : 0.35));
-        remaining.channel = 'Tavern board';
-        remaining.hook = remaining.hook.replace(' Will join the founding pair without a signing fee.', '');
-        if (!remaining.demand) {
-          const rr = rngFor(next, `post-founder-demand-${remaining.id}`);
-          remaining.demand = candidateDemandFor(remaining, next, rr);
-        }
-      });
-  }
+  if (wasFoundingSolo) next.flags.firstCompanionHired = true;
   addChronicle(next, {
     type: 'recruitment',
     importance: wasFoundingSolo ? 4 : hero.rarity === 'Legend' ? 4 : hero.rarity === 'Epic' ? 3 : 1,

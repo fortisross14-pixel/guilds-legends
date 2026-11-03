@@ -1,24 +1,24 @@
-// The guild's home, from a rented room to a renowned hall (Phase 3).
+// The guild's home: the founder's house, then the old stable on Banner Plaza
+// (rented in story mission 1), growing room by room into a renowned hall.
 // Engine: src/game/engine/hall.js (actions) and core.js (bedCount, roomLevel, hallStage).
 //
 // Requirements (all keys must hold): fame, tier (0 Regional…), contracts
 // (completed contracts), trophies, rooms ({ roomId: level }).
 
-/** The room above the Wayfarer in Dunmere: where every campaign starts. */
-export const RENTED_ROOM = {
-  name: 'Rented room above the Wayfarer',
+/** The founder's house on Kiln Row, where every campaign starts: one bed, a small chest. */
+export const HOUSE = {
+  name: 'Your house on Kiln Row',
   beds: 1,
-  maxBeds: 4,
-  bedCost: 40,
-  rent: 20,
-  bedRent: 6,
   chest: 12, // items the small chest holds
 };
 
-/** The old empty hall in Dunmere: buy it outright or lease it. */
+/**
+ * The old stable on Banner Plaza: rented in story mission 1 (A Banner Without
+ * a Hall) and the place where rooms get built. It can be bought outright later.
+ */
 export const HALL_PURCHASE = {
-  name: 'The old hall on Banner Plaza',
-  requires: { fame: 30, contracts: 2 },
+  name: 'The old stable on Banner Plaza',
+  requires: {},
   buy: { cost: 700 },
   lease: { cost: 160, rent: 35 },
   beds: 2, // a dormitory corner comes with the hall
@@ -76,7 +76,7 @@ export const ROOMS = [
     icon: '⚒',
     description: 'Racks, an anvil and a locked store.',
     levels: [{ cost: 420, weeks: 2, upkeep: 12, requires: { contracts: 4 } }],
-    effect: () => `Chest holds ${RENTED_ROOM.chest + 20} items · shop prices −10% · upgrade gear one step`,
+    effect: () => `Chest holds ${HOUSE.chest + 20} items · shop prices −10% · upgrade gear one step`,
   },
   {
     id: 'war',
@@ -129,7 +129,7 @@ export function trainingDrills(level) {
  * and an interior (the Guild Hall screen) asset id.
  */
 export const HALL_STAGES = [
-  { id: 1, key: 'rented', name: 'Rented room', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage1', townLabel: 'Old hall · for sale' },
+  { id: 1, key: 'house', name: 'Your house', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage1', townLabel: 'Old stable · empty' },
   { id: 2, key: 'empty', name: 'Empty hall', exterior: 'town.dunmere.guildhall.stage2', interior: 'interior.guildhall.stage2', townLabel: 'Guild Hall' },
   { id: 3, key: 'working', name: 'Working hall', exterior: 'town.dunmere.guildhall.stage3', interior: 'interior.guildhall.stage3', townLabel: 'Guild Hall' },
   { id: 4, key: 'renowned', name: 'Renowned hall', exterior: 'town.dunmere.guildhall.stage4', interior: 'interior.guildhall.stage4', townLabel: 'Guild Hall' },

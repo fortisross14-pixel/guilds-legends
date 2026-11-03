@@ -125,6 +125,7 @@ const LIST = [
 
   // The Last Banner (Phase 6b): story portraits, the Argent Crown crest, the banner relic, story backdrops.
   ...[
+    ['founder', 'You, the founder, in dialogue (the class sprite stands in later)'],
     ['rook', 'Lord Cassian Rook: battered armor, silver insignia, dying (prologue)'],
     ['thorne', 'Garrick Thorne: guildmaster of the Argent Crown, charming and cold'],
     ['mara', 'Mara Fen: keeper of the Wayfarer, practical and funny'],

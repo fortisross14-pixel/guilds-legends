@@ -142,6 +142,8 @@ function npcTarget(placeId, npc) {
     role: npc.role,
     verb: 'Talk',
     dialogue: npc.dialogue,
+    if: npc.if || null,
+    hideWhenInactive: Boolean(npc.if),
     x,
     y: feet,
     asset: `npc.${placeId}.${npc.id}`,

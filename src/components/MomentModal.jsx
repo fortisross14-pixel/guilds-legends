@@ -251,6 +251,26 @@ export default function MomentModal({ moment, state, onClose }) {
     );
   }
 
+  if (moment.type === 'tutorialComplete') {
+    return (
+      <Modal open title="Tutorial complete" eyebrow="The end of Act I" onClose={onClose} width="medium" className="modal--ceremony">
+        <div className={`moment moment--story ${skipClass}`} onClick={skip}>
+          <Ceremony fx="burst">
+            <Asset id="relic.banner" className="moment__relic" alt="" />
+          </Ceremony>
+          <p className="moment__headline">You are free</p>
+          <p>
+            {state.guild.name} has a hall, a first companion and a name in Dunmere. From here, go where you like: take contracts, grow the hall, enter
+            tournaments, travel, or follow the story. The Quest Log keeps the main story, side quests and guild goals.
+          </p>
+          <Button variant="primary" onClick={onClose}>
+            Continue
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
   if (moment.type === 'recruit') {
     return (
       <Modal open title={`${moment.name} joins the guild`} eyebrow="A new companion" onClose={onClose} width="medium" className="modal--ceremony">

@@ -32,7 +32,7 @@ export { getGuildRankings, getGuildRankSummary, getHeroRankings } from './engine
 export { designateSuccessor, assignMentor, foundBranch, assignBranchCommander, upgradeBranch, assignArtifact, inheritAmbition } from './engine/institution.js';
 export { getGoalMetric, getPromotionRequirement } from './engine/goals.js';
 export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep } from './engine/economy.js';
-export { getHallView, requirementStatus, nextUpgrade, rentBed, acquireHall, buildRoom } from './engine/hall.js';
+export { getHallView, requirementStatus, nextUpgrade, buyHall, buildRoom } from './engine/hall.js';
 export { charterOf, charterEffect, patronLevel, patronAtLeast, patronPoints } from './engine/charter.js';
 export { getConnectionsView, getPathScores, giftPatron } from './engine/connections.js';
 export {

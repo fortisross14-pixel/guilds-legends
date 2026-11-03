@@ -36,7 +36,10 @@ export function useCoarsePointer() {
  * The game is created once per mount: `map` and `start` are read only then.
  * Changing props (`activeTargets`, `paused`, `onInteract`) never rebuilds it.
  */
-export default function WalkableScene({ map, start, activeTargets, paused = false, joystick = false, onInteract, className = '', label, apiRef = null, children }) {
+export default function WalkableScene({ map, start, activeTargets, beacons = [], paused = false, joystick = false, onInteract, className = '', label, apiRef = null, children }) {
+  // Quest markers: targets pinned to the screen edge like beacons, which can change at any time.
+  const beaconsRef = useRef(beacons);
+  beaconsRef.current = beacons;
   const stageRef = useRef(null);
   const controllerRef = useRef(null);
   const bridge = useRef({});
@@ -71,7 +74,7 @@ export default function WalkableScene({ map, start, activeTargets, paused = fals
         let { x, y } = point;
         let edge = '';
         // Beacons stay on screen, pinned to the nearest edge with an arrow.
-        if (target.beacon && width) {
+        if ((target.beacon || beaconsRef.current.includes(target.id)) && width) {
           const half = (element.offsetWidth || 80) / 2 + 10;
           const top = 132;
           const bottom = height - 104;
@@ -260,7 +263,7 @@ export default function WalkableScene({ map, start, activeTargets, paused = fals
                   ref={(element) => {
                     labelRefs.current[target.id] = element;
                   }}
-                  className={`walk__label walk__label--${target.kind}${near?.id === target.id ? ' is-near' : ''}${target.beacon ? ' walk__label--beacon' : ''}`}
+                  className={`walk__label walk__label--${target.kind}${near?.id === target.id ? ' is-near' : ''}${target.beacon || beacons.includes(target.id) ? ' walk__label--beacon' : ''}${beacons.includes(target.id) ? ' walk__label--quest' : ''}`}
                   onClick={() => controllerRef.current?.goTo(target.id)}
                   onMouseDown={(event) => event.preventDefault()}
                   tabIndex={-1}

@@ -6,6 +6,7 @@ export const ROUTES = {
   world: { view: 'map' },
   town: { view: 'town' },
   hall: { view: 'town', building: 'guildHall', tab: null },
+  rest: { view: 'town', building: 'guildHall', tab: 'rest' },
   heroes: { view: 'town', building: 'guildHall', tab: null },
   headquarters: { view: 'town', building: 'guildHall', tab: 'office' },
   equipment: { view: 'town', building: 'guildHall', tab: 'armory' },

@@ -1,8 +1,8 @@
 // @ts-check
-// The guild's home: the rented room, buying or leasing the old hall, building
-// rooms in its empty wings, construction over weeks, the "Construction
-// complete" moment, and the next-upgrade suggestion. Data: src/data/rooms.js.
-import { HALL_PURCHASE, RENTED_ROOM, ROOMS, ROOM_BY_ID, roomInterior } from '../../data/rooms.js';
+// The guild's home: the founder's house, leasing the old stable (story mission 1)
+// or buying it outright, building rooms in its empty wings, construction over
+// weeks, the "Construction complete" moment and the next-upgrade suggestion. Data: src/data/rooms.js.
+import { HALL_PURCHASE, HOUSE, ROOMS, ROOM_BY_ID, roomInterior } from '../../data/rooms.js';
 import { TIERS } from '../../data/content.js';
 import { unlockedLocations } from '../../data/world.js';
 import {
@@ -90,13 +90,9 @@ export function getHallView(state) {
     beds: bedCount(state),
     used: activeHeroCount(state),
     free: freeBeds(state),
-    rentedBeds: hall.rentedBeds || 0,
-    canRentBed: (hall.rentedBeds || 0) > 0 && hall.rentedBeds < RENTED_ROOM.maxBeds,
-    bedCost: RENTED_ROOM.bedCost,
-    bedRent: RENTED_ROOM.bedRent,
-    purchase: hall.owned
-      ? null
-      : { ...requirementStatus(state, HALL_PURCHASE.requires), buy: HALL_PURCHASE.buy.cost, lease: HALL_PURCHASE.lease.cost, leaseRent: HALL_PURCHASE.lease.rent },
+    houseBeds: hall.houseBeds ?? HOUSE.beds,
+    // Buying the leased stable outright ends the rent.
+    purchase: hall.owned && hall.lease ? { buy: HALL_PURCHASE.buy.cost, leaseRent: HALL_PURCHASE.lease.rent } : null,
     wings: wings(state),
     construction,
     rooms: ROOMS.map((room) => roomPlan(state, room)),
@@ -111,7 +107,7 @@ function buildBlocker(state, roomId) {
   const hall = state.guild.hall || {};
   const room = ROOM_BY_ID[roomId];
   if (!room) return 'Unknown room.';
-  if (!hall.owned) return 'Buy or lease the old hall first.';
+  if (!hall.owned) return 'Rent the old stable on Banner Plaza first (story mission 1).';
   if (hall.construction) return `The builders are busy with the ${ROOM_BY_ID[hall.construction.roomId]?.name}.`;
   const level = roomLevel(state, roomId);
   const next = room.levels[level];
@@ -123,22 +119,8 @@ function buildBlocker(state, roomId) {
   return null;
 }
 
-/** Rents one more bed in the room above the Wayfarer (until the guild has bunks of its own). */
-export function rentBed(state) {
-  const hall = state.guild.hall || {};
-  if (!hall.rentedBeds) return { state, error: 'The rented room is gone; build a Bunk room instead.' };
-  if (hall.rentedBeds >= RENTED_ROOM.maxBeds) return { state, error: 'The room above the Wayfarer has no space for another bed. Buy the old hall.' };
-  if (state.guild.crowns < RENTED_ROOM.bedCost) return { state, error: `A bed costs ${RENTED_ROOM.bedCost} crowns.` };
-  const next = clone(state);
-  next.guild.crowns -= RENTED_ROOM.bedCost;
-  tallySpend(next, 'hall', RENTED_ROOM.bedCost);
-  next.guild.hall.rentedBeds += 1;
-  addChronicle(next, { type: 'facility', importance: 1, title: 'Another bed upstairs', text: `Mara squeezes a ${next.guild.hall.rentedBeds}th bed into the rented room. The rent goes up.`, tags: ['hall'] });
-  return { state: finalize(next), error: null };
-}
-
 /**
- * Leases the hall in place (mission 1's scene, or acquireHall). `deposit` is
+ * Leases the hall in place (mission 1's scene, or a skipped tutorial). `deposit` is
  * what the owner takes up front (0 when the work is done instead).
  */
 export function leaseHallInPlace(state, deposit = HALL_PURCHASE.lease.cost) {
@@ -164,36 +146,19 @@ export function leaseHallInPlace(state, deposit = HALL_PURCHASE.lease.cost) {
   return true;
 }
 
-/** Buys (or leases) the old hall on Banner Plaza: the guild's first real home. */
-export function acquireHall(state, mode = 'buy') {
+/** Buys the leased stable outright from Gideon Rusk: no more rent. */
+export function buyHall(state) {
   const hall = state.guild.hall || {};
-  if (hall.owned) return { state, error: 'The hall is already yours.' };
-  const status = requirementStatus(state, HALL_PURCHASE.requires);
-  if (!status.met) return { state, error: `The council will not sell yet: ${status.missing.join(', ')}.` };
-  const cost = mode === 'lease' ? HALL_PURCHASE.lease.cost : HALL_PURCHASE.buy.cost;
-  if (state.guild.crowns < cost) return { state, error: `That takes ${cost} crowns.` };
+  if (!hall.owned) return { state, error: 'Rent the old stable first (story mission 1).' };
+  if (!hall.lease) return { state, error: 'The hall is already yours outright.' };
+  const cost = HALL_PURCHASE.buy.cost;
+  if (state.guild.crowns < cost) return { state, error: `Gideon wants ${cost} crowns for it.` };
   const next = clone(state);
   next.guild.crowns -= cost;
   tallySpend(next, 'hall', cost);
-  next.guild.hall.owned = true;
-  next.guild.hall.lease = mode === 'lease';
+  next.guild.hall.lease = false;
   next.guild.legacy += 5;
-  pushMoment(next, {
-    type: 'construction',
-    roomId: 'hall',
-    title: mode === 'lease' ? 'The old hall is leased' : 'The old hall is yours',
-    effect: `${HALL_PURCHASE.wings} empty wings to build in, and ${HALL_PURCHASE.beds} more beds in the old dormitory corner.`,
-    unlocked: ['Room building', 'Guild duty (Office)', `${bedCount(next)} beds in total`],
-    stage: hallStage(next).name,
-    interior: hallStage(next).interior,
-  });
-  addChronicle(next, {
-    type: 'facility',
-    importance: 3,
-    title: mode === 'lease' ? `${next.guild.name} leases the old hall` : `${next.guild.name} buys the old hall`,
-    text: 'Dusty, drafty and theirs. The banner goes up over the door on Banner Plaza.',
-    tags: ['hall'],
-  });
+  addChronicle(next, { type: 'facility', importance: 3, title: `${next.guild.name} buys the old stable`, text: 'Gideon Rusk signs the deed over. No more rent, and nobody can take the hall away.', tags: ['hall'] });
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null };
 }
@@ -249,10 +214,6 @@ export function progressConstructionInPlace(state) {
   const room = ROOM_BY_ID[work.roomId];
   const unlocked = unlocksFor(state, work.roomId, work.level);
   // The first bunks replace the room above the Wayfarer: no more rent.
-  if (work.roomId === 'bunks' && hall.rentedBeds > 0) {
-    hall.rentedBeds = 0;
-    unlocked.push('The rented room is given up: no more rent');
-  }
   const stage = hallStage(state);
   state.guild.legacy += 2;
   pushMoment(state, {
@@ -304,7 +265,7 @@ export function monthlyHallInPlace(state, rng) {
 /**
  * The one upgrade that would help most right now, from what is limiting the
  * guild: no free beds, injuries, no training, unknown recruits… Returns
- * { text, label, action: { kind: 'rentBed' | 'buyHall' | 'build' | 'view', roomId? } } or null.
+ * { text, label, action: { kind: 'story' | 'build' | 'view', roomId? } } or null.
  */
 export function nextUpgrade(state) {
   const hall = state.guild.hall || {};
@@ -312,13 +273,7 @@ export function nextUpgrade(state) {
   if (hall.construction) return null;
   const canBuild = (roomId) => !buildBlocker(state, roomId);
   const build = (roomId, text) => ({ text, label: `Build ${ROOM_BY_ID[roomId].name}${roomLevel(state, roomId) ? ` lv ${roomLevel(state, roomId) + 1}` : ''}`, action: { kind: 'build', roomId } });
-  if (!hall.owned) {
-    const purchase = requirementStatus(state, HALL_PURCHASE.requires);
-    if (free <= 0 && hall.rentedBeds < RENTED_ROOM.maxBeds) return { text: 'Every bed is taken.', label: `Rent a bed (${RENTED_ROOM.bedCost})`, action: { kind: 'rentBed' } };
-    if (purchase.met) return { text: 'The old hall on Banner Plaza is for sale.', label: 'See the hall', action: { kind: 'buyHall' } };
-    if (free <= 0) return { text: `The rented room is full. The old hall needs ${purchase.missing.join(', ')}.`, label: 'See the hall', action: { kind: 'buyHall' } };
-    return null;
-  }
+  if (!hall.owned) return { text: 'Your house has one bed. The old stable on Banner Plaza stands empty.', label: 'Story: rent it', action: { kind: 'story' } };
   if (free <= 0 && canBuild('bunks')) return build('bunks', 'Every bed is taken.');
   const injured = state.heroes.filter((hero) => hero.status === 'injured').length;
   if (injured >= 2 && canBuild('infirmary')) return build('infirmary', `${injured} heroes are injured.`);

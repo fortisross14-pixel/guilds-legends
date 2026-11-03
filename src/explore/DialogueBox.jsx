@@ -93,13 +93,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
               {recruits.length && freeBeds(state) <= 0 ? (
                 <p className="dialogue__note">
                   Every bed is taken.{' '}
-                  {getHallView(state).canRentBed ? (
-                    <Button size="sm" onClick={actions.rentBed}>
-                      Rent a bed ({getHallView(state).bedCost} G)
-                    </Button>
-                  ) : (
-                    'Build bunks in the Guild Hall first.'
-                  )}
+                  {getHallView(state).owned ? 'Build bunks in the Guild Hall first.' : 'Rent the old stable on Banner Plaza first.'}
                 </p>
               ) : null}
               {recruits.map((candidate) => (

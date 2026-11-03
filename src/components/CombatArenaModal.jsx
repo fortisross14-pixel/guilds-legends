@@ -402,6 +402,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
           }}
         >
           <Motes />
+          {encounter.hints?.length && !finished ? <p className="battle-hint">{encounter.hints[Math.min(encounter.turn - 1, encounter.hints.length - 1)]}</p> : null}
 
           {!finished ? (
             <ol className="turn-order" aria-label="Turn order">
