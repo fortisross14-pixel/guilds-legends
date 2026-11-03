@@ -1,0 +1,61 @@
+/* Hero status: portrait top-left, vitals, stat columns, equipment, skills,
+   then character, relationships, contract and career. */
+
+.hero-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.hero-status > section { min-width: 0; padding: 12px 0; border-top: 1px solid var(--win-line); }
+.hero-status h3 { margin: 0 0 8px; color: var(--ink-dim); font-size: var(--t-label); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+.hero-status__nav { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-bottom: 10px; }
+.hero-status__nav > span { color: var(--ink-dim); font-size: var(--t-label); }
+
+/* Top row: portrait, vitals, stats. */
+.hero-status__identity { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 300px); gap: 16px 20px; align-items: start; border-top: 0 !important; padding-top: 0 !important; }
+.hero-status__vitals { display: grid; gap: 8px; min-width: 0; }
+.hero-status__vitals .dossier-taxonomy { justify-content: flex-start; }
+.hero-status__class { font-size: var(--t-title); font-weight: 600; }
+.hero-status__class small { margin-left: 6px; font-family: var(--font-pixel); font-size: var(--t-label); color: var(--ink-faint); }
+.hero-status__vitals p { margin: 0; }
+.hero-status__warnings { margin: 0; color: var(--warn); }
+.hero-status__stats { grid-column: 1 / -1; }
+.hero-status__identity .hero-status__grid { align-self: stretch; margin: 0; padding: 8px 10px; border: 1px solid var(--win-line); background: var(--win-deep); }
+.hero-status__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 18px; margin: 0; }
+.hero-status__grid > div { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px dashed var(--win-line); }
+.hero-status__grid dt { color: var(--ink-dim); font-size: var(--t-ui); }
+.hero-status__grid dd { margin: 0; color: var(--ink); font-family: var(--font-pixel); font-size: 17px; font-variant-numeric: tabular-nums; }
+.attribute-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 18px; }
+
+/* Equipment and skills side by side. */
+.hero-status__gear .equipment-slot:first-of-type { border-top: 0; }
+.hero-status__skills ul { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.hero-status__skills li { padding: 6px 0; border-top: 1px dashed var(--win-line); font-size: var(--t-small); }
+.hero-status__skills li:first-child { border-top: 0; }
+.hero-status__skills li strong { font-family: var(--font-pixel); font-size: var(--t-ui); font-weight: 500; }
+.hero-status__skills .is-locked { color: var(--ink-faint); }
+.hero-status__skills .is-locked strong { color: var(--ink-faint); }
+
+.hero-status__character p, .hero-status__relationships p { margin: 0 0 6px; }
+.hero-status__relationships p small { display: block; }
+.hero-status__career { grid-column: 1 / -1; }
+.hero-status__career > p { margin-bottom: 8px; font-family: var(--font-pixel); font-size: var(--t-ui); color: var(--ink); }
+.hero-status__room .room-hero__controls { gap: 10px; }
+.hero-status__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.hero-status__actions label { min-width: 180px; }
+.dossier-taxonomy { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+
+.hero-history { display: grid; max-height: 320px; overflow-y: auto; }
+.hero-history article { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--win-line); }
+.hero-history time { color: var(--ink-faint); font-size: var(--t-label); }
+.hero-history strong { font-weight: 600; }
+.hero-history p { margin: 2px 0 0; font-size: var(--t-small); }
+
+@media (max-width: 899px) {
+  .hero-status { grid-template-columns: 1fr; }
+  .hero-status__identity { grid-template-columns: auto minmax(0, 1fr); }
+  .hero-status__identity .hero-status__grid { grid-column: 1 / -1; }
+  .attribute-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 479px) {
+  .hero-status__identity { grid-template-columns: 1fr; }
+  .hero-status__identity .hero-portrait { --size: 132px; }
+  .attribute-grid { grid-template-columns: 1fr; }
+  .hero-history article { grid-template-columns: 1fr; gap: 2px; }
+}

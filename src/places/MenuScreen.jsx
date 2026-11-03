@@ -1,5 +1,6 @@
 import React from 'react';
-import { Tabs } from '../components/UI.jsx';
+import { Button, Tabs } from '../components/UI.jsx';
+import PixelIcon, { PAGE_ICONS } from '../components/PixelIcon.jsx';
 import SettingsScreen from '../screens/SettingsScreen.jsx';
 import ChronicleScreen from '../screens/ChronicleScreen.jsx';
 import GoalsScreen from '../screens/GoalsScreen.jsx';
@@ -33,12 +34,15 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
         <header className="town-header">
           <div>
             <h1>The Chronicle</h1>
+            <span className="eyebrow">{state.guild.name} · Year {state.date.year}</span>
           </div>
         </header>
-        <div className="building-grid">
+        <nav className="building-grid" aria-label="Chronicle pages" data-menu>
           {PAGES.map((item) => (
             <button key={item.id} className={`building-tile building-tile--${item.id}`} onClick={() => setPlace({ view: 'menu', page: item.id, tab: null })}>
-              <span className="building-tile__icon">{item.icon}</span>
+              <span className="building-tile__icon">
+                <PixelIcon name={PAGE_ICONS[item.id] || 'book'} size={36} />
+              </span>
               <strong>
                 {item.name}
                 {item.id === 'news' && state.newsUnread ? <span className="news-badge">{state.newsUnread}</span> : null}
@@ -46,7 +50,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
               <small>{item.description}</small>
             </button>
           ))}
-        </div>
+        </nav>
       </div>
     );
   }
@@ -54,9 +58,9 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
   const codexTab = ['legacy', 'bestiary'].includes(place.tab) ? place.tab : 'goals';
   return (
     <div className={`menu-page menu-page--${page.id}`}>
-      <button className="town-header__back menu-page__back" onClick={() => setPlace({ view: 'menu', page: null })}>
-        ← Chronicle
-      </button>
+      <Button size="sm" className="town-header__back menu-page__back" onClick={() => setPlace({ view: 'menu', page: null })}>
+        ◀ Chronicle
+      </Button>
       {page.id === 'settings' ? <SettingsScreen {...props} /> : null}
       {page.id === 'chronicle' ? <ChronicleScreen {...props} /> : null}
       {page.id === 'calendar' ? <CalendarScreen {...props} /> : null}

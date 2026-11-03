@@ -1,12 +1,16 @@
 import React from 'react';
 import { BUILDINGS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
-import { Badge, Button, PrimalBadge } from '../components/UI.jsx';
+import { Badge, Button, PrimalBadge, sceneStyle } from '../components/UI.jsx';
+import PixelIcon, { BUILDING_ICONS } from '../components/PixelIcon.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import MissionsScreen from '../screens/MissionsScreen.jsx';
 import TournamentsScreen from '../screens/TournamentsScreen.jsx';
 import RankingsScreen from '../screens/RankingsScreen.jsx';
 import ShopScreen from '../screens/ShopScreen.jsx';
 import GuildHallRooms from './GuildHallRooms.jsx';
+
+// Pixel scene behind each building's header (town street by default).
+const BUILDING_SCENES = { guildHall: 'scene_03', herald: 'scene_03', shop: 'scene_02', arena: 'scene_04', tavern: 'scene_01', noticeBoard: 'scene_01' };
 
 function buildingBadge(state, buildingId, locationId) {
   if (buildingId === 'noticeBoard') return state.missions.filter((mission) => mission.locationId === locationId).length || null;
@@ -32,22 +36,15 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
-      <header className="town-header">
-        <div>
-          <span className="eyebrow">
-            {town.region} · {town.tier}
-          </span>
-          <h1>
-            {building ? (
-              <button className="town-header__back" onClick={() => setPlace({ view: 'town', building: null })}>
-                ← {town.name}
-              </button>
-            ) : (
-              town.name
-            )}
-            {building ? <span className="town-header__building"> · {BUILDINGS[building].name}</span> : null}
-          </h1>
-          {!building ? <p>{town.description}</p> : null}
+      <header className={`town-header town-scene scene ${building ? 'town-scene--building' : ''}`} style={sceneStyle(BUILDING_SCENES[building] || 'scene_01')}>
+        {building ? (
+          <Button size="sm" className="town-header__back" onClick={() => setPlace({ view: 'town', building: null })}>
+            ◀ {town.name}
+          </Button>
+        ) : null}
+        <div className="town-scene__name">
+          <h1>{building ? BUILDINGS[building].name : town.name}</h1>
+          <span className="eyebrow">{building ? `${town.name} · ${town.region}` : `${town.region} · ${town.tier}`}</span>
         </div>
         <div className="heading-metrics">
           <PrimalBadge primal={town.primal} />
@@ -88,19 +85,32 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
           {building === 'herald' ? <RankingsScreen {...props} /> : null}
         </div>
       ) : (
-        <div className="building-grid">
-          {available.map((id) => {
-            const info = BUILDINGS[id];
-            const badge = buildingBadge(state, id, locationId);
-            return (
-              <button key={id} className={`building-tile building-tile--${id}`} onClick={() => openBuilding(id)}>
-                <span className="building-tile__icon">{info.icon}</span>
-                <strong>{info.name}</strong>
-                <small>{info.description}</small>
-                {badge ? <Badge tone={id === 'guildHall' ? 'red' : 'gold'}>{badge}</Badge> : null}
-              </button>
-            );
-          })}
+        <div className="town-body">
+          <nav className="building-grid" aria-label={`Buildings in ${town.name}`} data-menu>
+            {available.map((id) => {
+              const info = BUILDINGS[id];
+              const badge = buildingBadge(state, id, locationId);
+              return (
+                <button key={id} className={`building-tile building-tile--${id}`} onClick={() => openBuilding(id)}>
+                  <span className="building-tile__icon">
+                    <PixelIcon name={BUILDING_ICONS[id] || 'town'} size={36} />
+                  </span>
+                  <strong>{info.name}</strong>
+                  <small>{info.description}</small>
+                  {badge ? <Badge tone={id === 'guildHall' ? 'red' : 'blue'}>{badge}</Badge> : null}
+                </button>
+              );
+            })}
+          </nav>
+          <aside className="town-info win">
+            <p>{town.description}</p>
+            <div className="heading-metrics">
+              <PrimalBadge primal={town.primal} />
+              <Button size="sm" onClick={() => navigate('map')}>
+                World map
+              </Button>
+            </div>
+          </aside>
         </div>
       )}
     </div>

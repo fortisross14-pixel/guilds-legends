@@ -1,15 +1,24 @@
 import React from 'react';
 import { Modal } from './UI.jsx';
+import PixelIcon from './PixelIcon.jsx';
 
-// Town events, festivals and story beats: a short card with 2–3 choices.
+// Town events, festivals and story beats: a dialogue box with 2–3 choices.
 export default function EventCardModal({ card, onChoose }) {
   if (!card) return null;
-  const eyebrow = card.source === 'story' ? 'The Lantern in the Blackwood' : card.source === 'festival' ? 'Festival' : 'This week in town';
+  const speaker = card.source === 'story' ? 'The Lantern in the Blackwood' : card.source === 'festival' ? card.festival || 'Festival' : 'Town crier';
+  const subtitle = card.source === 'story' ? 'Story' : card.source === 'festival' ? 'Festival' : 'This week in town';
   return (
-    <Modal open title={card.title} eyebrow={eyebrow} preventClose width="medium">
+    <Modal open title={card.title} eyebrow={subtitle} preventClose width="medium">
       <div className={`decision-scene event-card event-card--${card.source}`}>
-        <blockquote>{card.text}</blockquote>
-        <div className="decision-options">
+        <div className="dialogue">
+          <span className="dialogue__speaker">
+            <PixelIcon name={card.source === 'story' ? 'book' : card.source === 'festival' ? 'star' : 'horn'} size={12} />
+            {speaker}
+          </span>
+          <blockquote>{card.text}</blockquote>
+          <span className="dialogue__more" aria-hidden="true" />
+        </div>
+        <div className="decision-options" data-menu>
           {card.options.map((option, index) => (
             <button key={option.id} onClick={() => onChoose(option.id)}>
               <span className="decision-options__key">{index + 1}</span>

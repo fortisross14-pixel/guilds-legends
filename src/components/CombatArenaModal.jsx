@@ -1,8 +1,62 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { COMMANDS } from '../game/combat.js';
 import { SKILLS, STATUS_LABELS, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
-import { Badge, Button, HeroSprite, Modal, ProgressBar } from './UI.jsx';
+import { Badge, Button, HeroSprite, Modal, ProgressBar, artUrl, sceneStyle } from './UI.jsx';
+
+// Battle backdrop: the arena for tournaments, otherwise the scene of the
+// location's primal (see DESIGN.md, Components).
+const PRIMAL_SCENES = { Fire: 'scene_10', Plant: 'scene_05', Water: 'scene_09', Air: 'scene_08', Animal: 'scene_05', Psychic: 'scene_07', Iron: 'scene_06' };
+export function battleScene(encounter, locationPrimal) {
+  if (!encounter) return 'scene_04';
+  if (encounter.mode === 'duel' || /tournament|championship|challenge/i.test(encounter.sourceType || '')) return 'scene_04';
+  return PRIMAL_SCENES[locationPrimal] || PRIMAL_SCENES[encounter.enemies?.[0]?.primal] || 'scene_06';
+}
+
+const HIT_FX = 'effect_01';
+const HEAL_FX = 'effect_11';
+
+// Watches unit HP between renders and returns short-lived damage / heal pops.
+function useHpPops(encounter) {
+  const previous = useRef(null);
+  const [pops, setPops] = useState([]);
+  useEffect(() => {
+    if (!encounter) {
+      previous.current = null;
+      return undefined;
+    }
+    const units = [...encounter.party, ...encounter.enemies];
+    const before = previous.current;
+    previous.current = { id: encounter.id, hp: Object.fromEntries(units.map((unit) => [unit.id, unit.hp])) };
+    if (!before || before.id !== encounter.id) return undefined;
+    const fresh = units
+      .filter((unit) => typeof before.hp[unit.id] === 'number' && before.hp[unit.id] !== unit.hp)
+      .map((unit) => {
+        const delta = unit.hp - before.hp[unit.id];
+        return { key: `${unit.id}-${encounter.turn}-${encounter.log.length}`, unitId: unit.id, amount: Math.abs(delta), kind: delta < 0 ? 'hit' : 'heal' };
+      });
+    if (!fresh.length) return undefined;
+    setPops(fresh);
+    const timer = window.setTimeout(() => setPops([]), 1000);
+    return () => window.clearTimeout(timer);
+  }, [encounter]);
+  return pops;
+}
+
+function UnitPops({ pops, unitId }) {
+  return pops
+    .filter((pop) => pop.unitId === unitId)
+    .map((pop) => (
+      <React.Fragment key={pop.key}>
+        <span className="fx-wrap" aria-hidden="true">
+          <img className="fx" src={artUrl(`art/effects/${pop.kind === 'hit' ? HIT_FX : HEAL_FX}.png`)} alt="" />
+        </span>
+        <span className={`dmg-pop dmg-pop--${pop.kind}`} aria-hidden="true">
+          {pop.kind === 'heal' ? `+${pop.amount}` : pop.amount}
+        </span>
+      </React.Fragment>
+    ));
+}
 
 // Front-view battle screen: enemies in the middle, party windows at the bottom,
 // a command menu for the hero whose turn it is to choose, and a short log.
@@ -46,11 +100,13 @@ function EnemyArt({ unit }) {
   return <HeroSprite hero={unit} size="lg" enemy />;
 }
 
-export default function CombatArenaModal({ encounter, actions }) {
+export default function CombatArenaModal({ encounter, actions, locationPrimal }) {
   const [commands, setCommands] = useState({});
   const [pending, setPending] = useState(null);
   const [menu, setMenu] = useState('root');
   const [hintsHidden, setHintsHidden] = useState(false);
+  const commandsRef = useRef(null);
+  const pops = useHpPops(encounter);
   const turnKey = encounter ? `${encounter.id}:${encounter.turn}:${encounter.status}` : null;
 
   useEffect(() => {
@@ -61,6 +117,29 @@ export default function CombatArenaModal({ encounter, actions }) {
 
   const livingParty = useMemo(() => (encounter ? encounter.party.filter((unit) => !unit.ko) : []), [encounter]);
   const active = livingParty.find((unit) => !commands[unit.id]) || null;
+
+  // Keep the cursor on the command window: focus its first entry whenever the
+  // acting hero or the sub-menu changes; when picking a target, focus the first target.
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const scope = pending ? document.querySelector('.battle-screen') : commandsRef.current;
+      const first = scope?.querySelector(pending ? '.is-targetable' : '.battle-commands__menu button:not(:disabled), .battle-commands__list button:not(:disabled)');
+      first?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [active?.id, menu, pending]);
+
+  // Escape backs out of a target pick or a sub-menu, like a cancel button.
+  useEffect(() => {
+    if (!encounter) return undefined;
+    const onKey = (event) => {
+      if (event.key !== 'Escape') return;
+      if (pending) setPending(null);
+      else if (menu !== 'root') setMenu('root');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [encounter, pending, menu]);
 
   if (!encounter) return null;
   const finished = encounter.status !== 'active';

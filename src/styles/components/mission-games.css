@@ -1,86 +1,46 @@
-/* Playable non-combat missions, recruitment promises (v1.7) */
-/* Phase 3 — playable non-combat mission challenges */
-.mission-game { display:grid; gap:.9rem; }
-.mission-game__header { display:flex; justify-content:space-between; gap:1rem; align-items:start; padding:.8rem; border:1px solid var(--line-strong); border-radius:12px; background:linear-gradient(145deg, rgba(18,28,39,.95), rgba(8,14,22,.96)); }
-.mission-game__header h3 { margin:.35rem 0 0; max-width:720px; font-family:var(--display); font-size:1rem; line-height:1.45; }
-.mission-game__context { display:grid; gap:.35rem; min-width:160px; }
-.mission-game__context > span { display:flex; justify-content:space-between; gap:.6rem; align-items:center; padding:.35rem .45rem; border:1px solid var(--line); border-radius:8px; color:var(--muted); font-size:.7rem; }
-.mission-game-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:.55rem; }
-.mission-game-metric { display:grid; gap:.35rem; padding:.65rem; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.018); }
-.mission-game-metric > div:first-child { display:flex; justify-content:space-between; gap:.55rem; align-items:baseline; }
-.mission-game-metric span { color:var(--muted); font-size:.7rem; }
-.mission-game-metric strong { font-family:var(--display); font-size:1rem; }
-.mission-game-metric small { color:var(--faint); font-size:.65rem; line-height:1.35; }
-.mission-game__lead { display:grid; grid-template-columns:minmax(150px,.65fr) minmax(260px,1.5fr) minmax(180px,.8fr); gap:.7rem; align-items:center; padding:.75rem; border:1px solid rgba(211,166,77,.2); border-radius:11px; background:rgba(211,166,77,.035); }
-.mission-game__lead p { margin:.12rem 0 0; font-size:.7rem; }
-.mission-game__roster { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:.35rem; }
-.mission-game__roster button { min-width:0; min-height:52px; display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:.45rem; padding:.4rem; border:1px solid var(--line); border-radius:9px; background:rgba(5,10,16,.42); color:var(--text); text-align:left; }
-.mission-game__roster button.is-active { border-color:rgba(211,166,77,.62); background:rgba(211,166,77,.09); box-shadow:inset 3px 0 var(--gold); }
-.mission-game__roster button span { min-width:0; display:grid; }
-.mission-game__roster strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.72rem; }
-.mission-game__roster small { color:var(--muted); font-size:.62rem; }
-.mission-game__character-note { display:grid; gap:.15rem; padding:.55rem; border-left:2px solid var(--gold); background:rgba(211,166,77,.045); }
-.mission-game__character-note strong { color:var(--gold-light); font-family:var(--display); }
-.mission-game__character-note span,.mission-game__character-note small { font-size:.66rem; line-height:1.4; }
-.mission-game__character-note small { color:var(--muted); }
-.mission-game__actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:.45rem; }
-.mission-game__actions > button { min-height:112px; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:.6rem; align-items:start; padding:.72rem; border:1px solid var(--line-strong); border-radius:11px; background:linear-gradient(145deg, rgba(24,35,47,.93), rgba(10,16,24,.96)); color:var(--text); text-align:left; }
-.mission-game__actions > button:hover:not(:disabled) { border-color:rgba(211,166,77,.52); transform:translateY(-1px); }
-.mission-game__actions > button:disabled { opacity:.42; cursor:not-allowed; }
-.mission-game__action-icon { width:38px; height:38px; display:grid; place-items:center; border:1px solid rgba(211,166,77,.3); border-radius:9px; color:var(--gold-light); background:rgba(211,166,77,.06); }
-.mission-game__actions strong { font-family:var(--display); font-size:.82rem; }
-.mission-game__actions p { margin:.2rem 0; color:var(--muted); font-size:.68rem; line-height:1.45; }
-.mission-game__actions small { color:var(--gold-light); font-size:.62rem; }
-.mission-game__actions i { color:var(--faint); font-size:1.2rem; font-style:normal; }
-.mission-game__footer { display:flex; justify-content:space-between; gap:1rem; align-items:center; padding:.7rem .8rem; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.015); }
-.mission-game__footer strong { font-family:var(--display); }
-.mission-game__footer p { margin:.1rem 0 0; max-width:650px; font-size:.68rem; }
-.mission-game__log { display:grid; gap:.2rem; padding:.7rem; border:1px solid var(--line); border-radius:10px; background:rgba(3,7,12,.34); }
-.mission-game__log article { display:grid; grid-template-columns:32px minmax(0,1fr); gap:.5rem; padding:.3rem .35rem; border-bottom:1px solid rgba(255,255,255,.035); }
-.mission-game__log time { color:var(--faint); font-size:.62rem; }
-.mission-game__log p { margin:0; font-size:.68rem; line-height:1.45; }
-.mission-game__log article.is-green p { color:#b9dfc8; }
-.mission-game__log article.is-red p { color:#e3b7b7; }
-.mission-game__log article.is-purple p { color:#d2c1ea; }
-.mission-game__log article.is-gold p { color:#e4c991; }
+/* Playable Diplomacy / Expedition / Intrigue challenges. */
 
-/* Phase 3 recruitment, promises and relationships */
-.candidate-card__conditions--personality { grid-template-columns:1fr 1fr; }
-.candidate-card__conditions--personality span { align-content:start; line-height:1.38; }
-.candidate-demand { display:grid; grid-template-columns:auto minmax(0,1fr); gap:.55rem; align-items:start; padding:.62rem; border:1px solid rgba(211,166,77,.28); border-radius:9px; background:rgba(211,166,77,.055); }
-.candidate-demand strong { color:var(--gold-light); font-family:var(--display); }
-.candidate-demand p { margin:.12rem 0; font-size:.68rem; line-height:1.4; }
-.candidate-demand small { color:var(--muted); font-size:.62rem; }
-.candidate-card__actions { display:grid; grid-template-columns:1fr; gap:.35rem; }
-.hero-card__promise { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; padding:.48rem .55rem; border:1px solid rgba(211,166,77,.22); border-radius:8px; background:rgba(211,166,77,.035); }
-.hero-card__promise > span { display:grid; }
-.hero-card__promise strong { font-size:.68rem; }
-.hero-card__promise small { color:var(--muted); font-size:.6rem; }
-.dossier-character { display:grid; gap:.35rem; }
-.dossier-character p { margin:0; font-size:.68rem; line-height:1.45; }
-.promise-list,.relationship-list { display:grid; gap:.4rem; }
-.promise-list__item { display:grid; grid-template-columns:auto minmax(0,1fr); gap:.55rem; align-items:start; padding:.55rem; border:1px solid var(--line); border-radius:9px; background:rgba(255,255,255,.015); }
-.promise-list__item p { margin:.1rem 0; font-size:.68rem; }
-.promise-list__item small { color:var(--muted); font-size:.62rem; }
-.relationship-list article { display:grid; grid-template-columns:28px minmax(0,1fr) auto; gap:.5rem; align-items:center; padding:.45rem .5rem; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.015); }
-.relationship-list article > div { display:grid; }
-.relationship-list small { color:var(--muted); font-size:.62rem; }
-.relationship-list b.is-positive { color:#87c49f; }
-.relationship-list b.is-negative { color:#d28f8f; }
+.mission-game { display: grid; gap: 12px; }
+.mission-game__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; padding: 10px 12px; }
+.mission-game__header h3 { margin: 6px 0 0; max-width: 70ch; font-family: var(--font-prose); font-size: var(--t-prose); font-weight: 400; line-height: 1.5; color: var(--ink); }
+.mission-game__context { display: grid; gap: 6px; min-width: 170px; }
+.mission-game__context > span { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 8px; border: 1px solid var(--win-line); color: var(--ink-dim); font-size: var(--t-label); }
+.mission-game-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.mission-game-metric { display: grid; gap: 4px; padding: 8px 10px; }
+.mission-game-metric > div:first-child { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mission-game-metric span { color: var(--ink-dim); font-size: var(--t-label); }
+.mission-game-metric strong { font-size: 20px; font-weight: 600; }
+.mission-game__lead { display: grid; grid-template-columns: minmax(150px, .65fr) minmax(260px, 1.5fr) minmax(180px, .8fr); align-items: center; gap: 12px; padding: 10px 12px; }
+.mission-game__lead > div:first-child { display: flex; flex-direction: column; }
+.mission-game__lead p { margin: 2px 0 0; font-size: var(--t-small); }
+.mission-game__roster { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1px solid var(--win-line); }
+.mission-game__roster button { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 4px 6px 4px 28px; }
+.mission-game__roster button span { display: grid; min-width: 0; }
+.mission-game__roster strong { overflow: hidden; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.mission-game__character-note { display: grid; gap: 2px; }
+.mission-game__character-note span, .mission-game__character-note small { font-family: var(--font-prose); font-size: var(--t-small); }
+.mission-game__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; border: 4px solid transparent; border-image: var(--frame) 4 / 4px stretch; background: var(--win-deep) padding-box; }
+.mission-game__actions > button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px; padding: 10px 10px 10px 30px; border-bottom: 1px dashed var(--win-line); }
+.mission-game__actions > button::before { top: 22px; }
+.mission-game__action-icon { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--win-line); color: var(--ink-dim); font-family: var(--font-prose); }
+.mission-game__actions strong { font-size: 18px; font-weight: 600; }
+.mission-game__actions p { margin: 2px 0; font-size: var(--t-small); }
+.mission-game__actions small { color: var(--mp); font-family: var(--font-pixel); font-size: var(--t-label); }
+.mission-game__actions i { color: var(--ink-faint); font-style: normal; }
+.mission-game__footer { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 12px; }
+.mission-game__footer p { margin: 2px 0 0; max-width: 65ch; font-size: var(--t-small); }
+.mission-game__log { display: grid; gap: 0; padding: 10px 12px; }
+.mission-game__log article { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 4px 0; border-bottom: 1px dashed var(--win-line); }
+.mission-game__log time { color: var(--ink-faint); font-size: var(--t-label); }
+.mission-game__log p { margin: 0; font-size: var(--t-small); }
+.mission-game__log .is-green p { color: var(--good); }
+.mission-game__log .is-red p { color: var(--bad); }
+.mission-game__log .is-gold p { color: var(--warn); }
+.mission-game__log .is-purple p { color: #dcc2fb; }
 
-@media (max-width:760px) {
-  .mission-game__header,.mission-game__footer { display:grid; }
-  .mission-game__context { min-width:0; }
-  .mission-game__lead { grid-template-columns:1fr; }
-  .mission-game__actions { grid-template-columns:1fr; }
-  .mission-game__actions > button { min-height:96px; }
-  .candidate-card__conditions--personality { grid-template-columns:1fr; }
+@media (max-width: 759px) {
+  .mission-game__header, .mission-game__footer { display: grid; }
+  .mission-game__context { min-width: 0; }
+  .mission-game__lead { grid-template-columns: 1fr; }
+  .mission-game__actions { grid-template-columns: 1fr; }
 }
-
-/* Phase 3 mission-family gameplay callouts */
-.mission-game-intro { margin: 12px 0; padding: 12px 14px; border: 1px solid var(--line); border-left-width: 3px; border-radius: 10px; background: color-mix(in srgb, var(--panel-2) 86%, transparent); }
-.mission-game-intro strong { display: block; margin-bottom: 4px; }
-.mission-game-intro p { margin: 0; color: var(--muted); }
-.mission-game-intro--diplomacy { border-left-color: var(--gold); }
-.mission-game-intro--expedition { border-left-color: #6ea8d7; }
-.mission-game-intro--intrigue { border-left-color: #9d78c9; }

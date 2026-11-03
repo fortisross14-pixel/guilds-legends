@@ -1,31 +1,25 @@
-/* Styles are split by area and imported in cascade order. Keep this order. */
+/* 16-bit JRPG design system. Tokens live in base/tokens.css; see DESIGN.md.
+   Files are imported in cascade order: base, layout, components, screens, then breakpoints. */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
 @import './base/tokens.css';
 @import './base/base.css';
-@import './screens/home.css';
+@import './components/art.css';
 @import './layout/shell.css';
-@import './screens/hall.css';
+@import './components/battle.css';
+@import './components/moments.css';
+@import './components/mission-games.css';
+@import './screens/home.css';
+@import './screens/world.css';
+@import './screens/town.css';
 @import './screens/missions.css';
 @import './screens/heroes.css';
-@import './screens/world.css';
-@import './screens/headquarters.css';
+@import './screens/shop.css';
+@import './screens/hero-status.css';
 @import './screens/tournaments.css';
 @import './screens/rankings.css';
 @import './screens/chronicle.css';
 @import './screens/goals.css';
 @import './screens/settings.css';
-@import './components/dossier.css';
-@import './layout/responsive.css';
-@import './components/objective-ribbon.css';
-@import './components/formations-reports.css';
-@import './screens/world-travel.css';
-@import './screens/tournament-universe.css';
-@import './components/council.css';
-@import './components/combat.css';
-@import './components/mission-games.css';
 @import './screens/legacy.css';
-@import './components/art.css';
-@import './screens/places.css';
-@import './components/battle.css';
-@import './screens/herald.css';
-@import './premium-atlas.css';
-@import './screens/wave5.css';
+@import './screens/headquarters.css';
+@import './layout/responsive.css';

@@ -1,29 +1,89 @@
-/* Design tokens */
+/* Design tokens: the only place colours, type, frames and timing are defined.
+   Palette sampled from public/art (portrait navies, scene sky, gold trim). */
 :root {
   color-scheme: dark;
-  --bg-0: #090d14;
-  --bg-1: #0e1520;
-  --bg-2: #131d2a;
-  --panel: rgba(20, 29, 41, 0.92);
-  --panel-2: rgba(27, 39, 54, 0.92);
-  --panel-3: #1b2635;
-  --line: rgba(219, 205, 172, 0.16);
-  --line-strong: rgba(219, 205, 172, 0.3);
-  --text: #f4f0e6;
-  --muted: #aab3bf;
-  --faint: #737f8e;
-  --gold: #d3a64d;
-  --gold-light: #f1d28c;
-  --gold-dark: #8e6424;
-  --red: #a6424e;
-  --red-light: #d06a74;
-  --green: #5ba37f;
-  --blue: #5f91bc;
-  --purple: #8c6fb4;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
-  --shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.22);
-  --radius: 14px;
-  --radius-sm: 8px;
-  --display: Georgia, 'Times New Roman', serif;
-  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Ground and windows */
+  --ground: #05081a;
+  --win: #12205e;
+  --win-deep: #0a1440;
+  --win-line: #34489a;
+  --win-sel: #24398f;
+  --win-primary: #2a47b8;
+  --win-danger: #6e1c2b;
+  --edge: #f4f1ea;
+
+  /* Text */
+  --ink: #f6f3ea;
+  --ink-dim: #b4bfe6;
+  --ink-faint: #8494cc;
+  --cursor: #ffffff;
+  --focus: #7fb2ff;
+
+  /* Meaning */
+  --hp: #5ad16a;
+  --mp: #5599ff;
+  --dmg: #ff5a4a;
+  --heal: #7dff9a;
+  --xp: #c08af0;
+  --gold: #ffcf4a;
+  --warn: #ffc857;
+  --good: #7ee08a;
+  --bad: #ff8a7a;
+
+  /* Rarity (portrait frames, rarity tags) */
+  --r-common: #c4c8d4;
+  --r-uncommon: #6fd884;
+  --r-rare: #5fb0ff;
+  --r-epic: #c084fc;
+  --r-legend: #ffcf4a;
+
+  /* Primal (portrait ground, affinity tags, map tint) */
+  --p-fire: #ff7a3d;
+  --p-air: #a8ecf7;
+  --p-water: #4f9dff;
+  --p-plant: #6fd06a;
+  --p-animal: #e0a865;
+  --p-psychic: #c88af2;
+  --p-iron: #b0bacb;
+
+  /* Type */
+  --font-pixel: 'Pixelify Sans', 'Courier New', monospace;
+  --font-prose: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --t-label: 14px;
+  --t-ui: 16px;
+  --t-title: 20px;
+  --t-h2: 22px;
+  --t-h1: 32px;
+  --t-prose: 15px;
+  --t-small: 13px;
+
+  /* Space (4px grid) */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  /* Motion */
+  --fast: 120ms;
+  --med: 180ms;
+
+  /* Layout */
+  --dock-w: 232px;
+  --strip-h: 64px;
+  --party-h: 104px;
+  --content-max: 1280px;
+
+  /* The window frame: 1px black outline, 3px white edge, chamfered pixel corners (9-slice). */
+  --frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M2 0h8v1H2zM1 1h1v1H1zM10 1h1v1h-1zM0 2h1v8H0zM11 2h1v8h-1zM1 10h1v1H1zM10 10h1v1h-1zM2 11h8v1H2z'/%3E%3Cpath fill='%23f4f1ea' d='M2 1h8v1H2zM1 2h10v2H1zM1 4h3v4H1zM8 4h3v4H8zM1 8h10v2H1zM2 10h8v1H2z'/%3E%3C/svg%3E");
+  /* A thinner frame for buttons: 1px black, 2px white. */
+  --frame-thin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h7v1H1zM0 1h1v7H0zM8 1h1v7H8zM1 8h7v1H1z'/%3E%3Cpath fill='%23f4f1ea' d='M1 1h7v2H1zM1 3h2v3H1zM6 3h2v3H6zM1 6h7v2H1z'/%3E%3C/svg%3E");
+  /* A dim frame for disabled buttons. */
+  --frame-dim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h7v1H1zM0 1h1v7H0zM8 1h1v7H8zM1 8h7v1H1z'/%3E%3Cpath fill='%2334489a' d='M1 1h7v2H1zM1 3h2v3H1zM6 3h2v3H6zM1 6h7v2H1z'/%3E%3C/svg%3E");
+  /* The ▶ cursor, used as a mask so it takes any colour. */
+  --cursor-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 9' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v9H0zM1 1h1v7H1zM2 2h1v5H2zM3 3h1v3H3zM4 4h1v1H4z'/%3E%3C/svg%3E");
+  /* A small ▼ for selects. */
+  --caret-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 4' shape-rendering='crispEdges'%3E%3Cpath fill='%23f4f1ea' d='M0 0h7v1H0zM1 1h5v1H1zM2 2h3v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E");
 }

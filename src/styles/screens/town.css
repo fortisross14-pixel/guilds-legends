@@ -1,0 +1,85 @@
+/* Town, building headers, Guild Hall rooms and the Chronicle menu. */
+
+/* Scene banner with the place name in a window. */
+.town-scene { position: relative; display: flex; align-items: flex-end; min-height: 216px; margin: 0 0 var(--s4); padding: 12px; border: 4px solid transparent; border-image: var(--frame) 4 / 4px stretch; background-position: center 72%; background-clip: padding-box; }
+.town-scene--building { min-height: 152px; }
+.town-scene__name { display: flex; flex-direction: column; gap: 2px; max-width: calc(100% - 8px); padding: 8px 14px 10px; }
+.town-scene__name h1 { order: -1; margin: 0; }
+.town-scene__name .eyebrow { color: var(--ink-dim); }
+.town-scene__name h1 .town-header__building { color: var(--ink); }
+.town-header:not(.town-scene) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: var(--s4); }
+.town-header:not(.town-scene) > div:first-child { display: flex; flex-direction: column; }
+.town-header:not(.town-scene) h1 { order: -1; margin: 0; }
+.town-scene .town-header__back { position: absolute; top: 10px; left: 10px; z-index: 2; }
+.town-scene .heading-metrics { position: absolute; top: 10px; right: 10px; z-index: 2; }
+.town-header__building { color: var(--ink-dim); }
+
+.town-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s4); align-items: start; }
+.town-info { display: grid; gap: 10px; padding: 12px 14px; }
+.town-info p { margin: 0; color: var(--ink); }
+.town-info .heading-metrics { justify-content: flex-start; }
+.town-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: var(--s4); padding: 10px 14px; }
+.town-notice span { color: var(--ink-dim); font-family: var(--font-prose); font-size: var(--t-small); }
+
+/* Buildings, rooms and Chronicle pages as a command menu. */
+.building-grid { display: grid; margin: 0 0 var(--s4); padding: 6px; }
+.building-tile { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; gap: 0 12px; width: 100%; min-height: 64px; padding: 8px 12px 8px 32px; }
+.building-tile + .building-tile { border-top: 1px dashed var(--win-line); }
+.building-tile__icon { grid-row: 1 / span 2; display: grid; place-items: center; width: 40px; height: 40px; color: var(--ink-dim); }
+.building-tile:hover .building-tile__icon, .building-tile:focus-visible .building-tile__icon { color: var(--ink); }
+.building-tile strong { grid-column: 2; font-size: 19px; font-weight: 600; }
+.building-tile small { grid-column: 2; color: var(--ink-dim); }
+.building-tile .badge { grid-column: 3; grid-row: 1 / span 2; }
+.building > .tabs { margin-bottom: var(--s4); }
+
+/* Guild Hall. */
+.hall-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-bottom: 10px; padding: 8px 12px; font-size: var(--t-ui); }
+.hall-summary > span:nth-of-type(1) { color: var(--gold); }
+.room-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
+.room-actions label { display: grid; gap: 4px; min-width: 200px; }
+.hall-room__title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 6px 0 2px; font-size: var(--t-h2); }
+.hall-room__title .town-header__back { font-size: var(--t-ui); }
+.hall-room > .muted { margin: 0 0 10px; }
+.hall-room .panel + .panel, .hall-rooms .panel + .panel { margin-top: var(--s4); }
+.hall-room .panel { margin-bottom: var(--s4); }
+
+/* Heroes listed as status rows. */
+.room-hero { display: grid; grid-template-columns: minmax(220px, 1.3fr) minmax(140px, 1fr) auto; align-items: center; gap: 10px 16px; padding: 8px 0; border-top: 1px dashed var(--win-line); }
+.panel__body > .room-hero:first-child { border-top: 0; padding-top: 0; }
+.room-hero.is-away { opacity: .7; }
+.room-hero__who { display: flex; align-items: center; gap: 12px; min-width: 0; padding-top: 4px; padding-bottom: 4px; }
+.room-hero__who > span { display: grid; gap: 2px; min-width: 0; }
+.room-hero__who strong { font-size: 18px; font-weight: 600; }
+.room-hero__who small { color: var(--ink-dim); }
+.room-hero__bars { display: grid; gap: 6px; }
+.room-hero__controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.room-hero__controls label { display: grid; gap: 4px; min-width: 150px; }
+.room-hero__away { color: var(--ink-faint); font-family: var(--font-pixel); font-size: var(--t-label); }
+.war-room__member { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 0; border-top: 1px dashed var(--win-line); color: var(--ink); font-family: var(--font-pixel); font-size: var(--t-ui); }
+.war-room__member:first-child { border-top: 0; }
+.war-room__formation { margin: 6px 0; }
+.treasury-table { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; margin: 0; font-family: var(--font-pixel); }
+.treasury-table dt { color: var(--ink-dim); }
+.treasury-table dd { margin: 0; color: var(--ink); font-family: var(--font-pixel); text-align: right; font-variant-numeric: tabular-nums; }
+.treasury-table dt:last-of-type, .treasury-table dd:last-of-type { padding-top: 4px; border-top: 1px solid var(--win-line); }
+.main-party-notice { margin: 4px 0 8px; font-size: var(--t-small); }
+.main-party-notice--warning { color: var(--warn); }
+.rest-control { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* Chronicle menu pages. */
+.menu-page__back { margin-bottom: 12px; }
+.menu-page > .tabs { margin-top: 0; }
+
+@media (max-width: 1099px) {
+  .town-body { grid-template-columns: 1fr; }
+}
+@media (max-width: 759px) {
+  .town-scene { min-height: 168px; padding: 8px; }
+  .town-scene--building { min-height: 132px; }
+  .town-scene .heading-metrics { display: none; }
+  .building-tile { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 0 10px; padding-right: 8px; }
+  .building-tile__icon { width: 36px; }
+  .building-tile strong { font-size: 17px; }
+  .room-hero { grid-template-columns: 1fr; }
+  .room-actions label { min-width: 0; width: 100%; }
+}

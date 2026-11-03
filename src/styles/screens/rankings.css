@@ -1,44 +1,128 @@
-/* Rankings */
-/* Rankings */
-.ranking-table { min-width: 680px; }
-.ranking-table__head, .ranking-table article { display: grid; grid-template-columns: 55px minmax(220px,1fr) 100px 80px 80px 70px; align-items: center; gap: .6rem; padding: .6rem .5rem; }
-.ranking-table__head { color: var(--faint); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--line-strong); }
-.ranking-table article { border-bottom: 1px solid var(--line); font-size: .72rem; }
-.ranking-table article.is-player { background: linear-gradient(90deg, rgba(211,166,77,.1), transparent); }
-.ranking-position { font-family: var(--display); font-size: 1.2rem; color: var(--faint); text-align: center; }
-.ranking-identity { display: flex; align-items: center; gap: .65rem; }
-.ranking-identity > i { width: 8px; height: 34px; border-radius: 4px; }
-.ranking-identity > div { display: grid; }
-.ranking-identity strong { font-size: .75rem; }
-.ranking-identity small { font-size: .58rem; }
-.table-note { margin: .8rem 0 0; font-size: .67rem; }
-.hero-ranking-list { min-width: 780px; }
-.hero-ranking-list > button { width: 100%; display: grid; grid-template-columns: 42px auto minmax(180px,1fr) repeat(4,70px) 75px; align-items: center; gap: .55rem; padding: .55rem; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
-.hero-ranking-list > button:hover { background: rgba(255,255,255,.025); }
-.hero-ranking-list > button.is-player { background: linear-gradient(90deg, rgba(95,145,188,.08), transparent); }
-.hero-ranking-list__name { display: grid; }
-.hero-ranking-list__name strong { font-size: .73rem; }
-.hero-ranking-list__name small { font-size: .58rem; }
-.hero-ranking-list button > span:not(.ranking-position) { display: grid; text-align: center; }
-.hero-ranking-list button > span small { font-size: .52rem; }
-.hero-ranking-list button > span b { font-size: .7rem; }
-.historical-score { color: var(--gold-light); font-family: var(--display); font-size: 1rem; text-align: right; }
-.dashboard-grid--races { grid-template-columns: 1fr 1fr; }
-.race-list { display: grid; }
-.race-list button { display: grid; grid-template-columns: 25px auto 1fr auto; align-items: center; gap: .6rem; padding: .5rem 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
-.race-list button > span { color: var(--faint); text-align: center; }
-.race-list button > div { display: grid; gap: .2rem; }
-.race-list strong { font-size: .7rem; }
-.race-list small { font-size: .56rem; }
-.threat-list { display: grid; }
-.threat-list article { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .6rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
-.threat-list article > i { width: 8px; height: 42px; border-radius: 3px; }
-.threat-list article > div { display: grid; gap: .2rem; }
-.threat-list strong { font-size: .7rem; }
-.threat-list small { font-size: .56rem; }
-.artifact-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: .7rem; }
-.artifact-grid article { display: grid; grid-template-columns: auto 1fr; gap: .8rem; padding: .9rem; border: 1px solid var(--line); border-radius: 10px; background: radial-gradient(circle at 0 0, rgba(140,111,180,.14), transparent 30%), rgba(5,9,14,.24); }
-.artifact-grid__icon { width: 55px; height: 55px; display: grid; place-items: center; border: 1px solid rgba(140,111,180,.48); border-radius: 50%; color: #d9c8ee; font-size: 1.4rem; }
-.artifact-grid h3 { margin: 0; }
-.artifact-grid p { font-size: .68rem; }
-.artifact-grid__meta { display: flex; justify-content: space-between; gap: .5rem; align-items: center; color: var(--muted); font-size: .6rem; }
+/* Herald: status, ladders as tables, greatest careers, almanac, directory,
+   artifacts, reputation and rivals. */
+
+.ladder-view, .goat-view, .reputation-view, .nemesis-view { display: grid; gap: var(--s4); }
+.ladder-view > .ladder-picker, .ladder-view > .scope-picker, .goat-view > .filter-pills { margin-bottom: 0; }
+
+.status-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 14px; }
+.status-banner .eyebrow { order: 1; flex-basis: 100%; }
+.status-banner__title { color: var(--gold); font-size: 26px; font-weight: 700; }
+.status-banner__ranks { order: 2; display: flex; flex-wrap: wrap; gap: 4px 18px; margin-left: auto; font-size: var(--t-ui); }
+.status-banner__ranks b { font-size: 20px; }
+.status-banner__ranks small { font-family: var(--font-pixel); color: var(--ink-faint); }
+
+.points-to-pass { margin: 0 0 10px; padding: 6px 10px; color: var(--ink); font-family: var(--font-pixel); font-size: var(--t-ui); }
+
+/* The ladder table. */
+.ladder-table { display: grid; }
+.ladder-row { display: grid; grid-template-columns: 3ch auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 4px 8px 4px 28px; border: 0; border-bottom: 1px dashed var(--win-line); background: transparent; color: var(--ink); font-family: var(--font-pixel); text-align: left; }
+article.ladder-row { grid-template-columns: 3ch minmax(0, 1fr) minmax(0, 220px) 12ch; }
+.ladder-row--head { min-height: 32px; border-bottom: 1px solid var(--win-line); color: var(--ink-faint); font-size: var(--t-label); text-transform: uppercase; letter-spacing: .04em; }
+.ladder-row--head > :last-child { text-align: right; }
+.ladder-row.is-player { background: var(--win-sel); }
+.ladder-row.is-player .ladder-row__name strong { color: var(--gold); }
+.ladder-row.is-player::before { opacity: 1; }
+.ranking-position { color: var(--ink-dim); font-size: 18px; text-align: right; }
+.ladder-row__name { display: grid; min-width: 0; }
+.ladder-row__name strong { overflow: hidden; font-size: 17px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.ladder-row__value { font-size: 17px; font-weight: 600; text-align: right; white-space: nowrap; }
+.ladder-row__value small { font-family: var(--font-pixel); font-size: var(--t-label); color: var(--ink-faint); font-weight: 400; }
+.ranking-star { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--ink); font-family: var(--font-pixel); text-align: left; }
+button.ranking-star { min-height: 40px; padding-left: 24px; }
+.ranking-star > span { min-width: 0; overflow: hidden; color: var(--ink-dim); font-size: var(--t-label); text-overflow: ellipsis; white-space: nowrap; }
+
+/* Greatest careers. */
+.goat-summary { display: grid; grid-template-columns: repeat(3, 1fr); }
+.goat-summary > div { display: grid; gap: 2px; padding: 10px 14px; border-right: 1px solid var(--win-line); }
+.goat-summary > div:last-child { border-right: 0; }
+.goat-summary small { font-family: var(--font-pixel); font-size: var(--t-label); color: var(--ink-faint); }
+.goat-summary strong { color: var(--gold); font-size: 26px; font-weight: 600; }
+.goat-summary span { color: var(--ink-dim); font-family: var(--font-prose); font-size: var(--t-small); }
+.universe-hero-ranking { display: grid; }
+.universe-hero-ranking > button { display: grid; grid-template-columns: 4ch auto minmax(200px, 1.5fr) repeat(4, 72px) 64px; align-items: center; gap: 10px; min-height: 60px; padding: 4px 8px 4px 28px; border-bottom: 1px dashed var(--win-line); }
+.universe-hero-ranking > button.is-player { color: var(--gold); }
+.universe-hero-ranking__identity { display: grid; min-width: 0; }
+.universe-hero-ranking__identity > strong, .universe-hero-ranking__identity > small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.universe-hero-ranking__identity > span { display: flex; gap: 4px; margin-top: 2px; }
+.universe-hero-ranking > button > span:not(.ranking-position) { display: grid; text-align: right; }
+.universe-hero-ranking > button > span small { font-family: var(--font-pixel); font-size: 12px; color: var(--ink-faint); }
+.historical-score { color: var(--gold); font-size: 18px; text-align: right; }
+
+/* Almanac. */
+.tournament-almanac-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); }
+.records-to-chase { grid-column: 1 / -1; }
+.leader-list { display: grid; }
+.leader-list button { display: grid; grid-template-columns: 3ch auto 1fr auto; align-items: center; gap: 10px; padding: 4px 8px 4px 28px; border-bottom: 1px dashed var(--win-line); }
+.leader-list button > span { color: var(--ink-faint); text-align: right; }
+.leader-list button > div { display: grid; min-width: 0; }
+.leader-list button > b { color: var(--gold); font-weight: 600; }
+.record-chase-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.record-chase-grid article { display: grid; gap: 2px; padding: 8px 10px; }
+.record-chase-grid strong { font-weight: 600; }
+.record-chase-grid p { margin: 4px 0; font-size: var(--t-small); }
+.record-chase-grid em { color: var(--gold); font-style: normal; }
+.record-chase-grid span { color: var(--ink-dim); font-size: var(--t-label); }
+
+/* Guild directory. */
+.guild-directory { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--s4); align-items: start; }
+.guild-directory > aside { max-height: 720px; overflow-y: auto; padding: 4px; border: 4px solid transparent; border-image: var(--frame) 4 / 4px stretch; background: var(--win) padding-box; }
+.guild-directory > aside button { width: 100%; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 8px; padding: 4px 8px 4px 28px; border-bottom: 1px dashed var(--win-line); }
+.guild-directory > aside button > i { width: 6px; height: 28px; outline: 1px solid #000; }
+.guild-directory > aside button > div { display: grid; min-width: 0; }
+.guild-directory > aside strong, .guild-directory > aside small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.guild-directory > aside strong { font-weight: 500; }
+.directory-banner { display: grid; gap: 10px; padding: 12px; }
+.directory-banner blockquote { margin: 0; color: var(--ink); font-size: 17px; }
+.directory-banner > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.directory-banner span { display: grid; color: var(--ink-faint); font-size: var(--t-label); }
+.directory-banner b { color: var(--ink); font-size: var(--t-ui); }
+.directory-roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; margin-top: 10px; }
+.directory-roster button { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 8px; padding: 4px 6px 4px 28px; border-bottom: 1px dashed var(--win-line); }
+.directory-roster button > div { display: grid; min-width: 0; }
+.directory-roster button small { color: var(--gold); font-family: var(--font-pixel); font-size: 12px; text-transform: uppercase; }
+.directory-roster button span { color: var(--ink-dim); font-size: var(--t-label); }
+
+/* Artifacts. */
+.world-artifact-grid, .artifact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.artifact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.world-artifact-grid article, .artifact-grid article { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 10px; }
+.world-artifact-grid article.is-player { border-color: var(--gold); }
+.world-artifact-grid article > span { color: var(--xp); font-size: 26px; }
+.world-artifact-grid h3, .artifact-grid h3 { margin: 2px 0; }
+.world-artifact-grid p, .artifact-grid p { font-size: var(--t-small); }
+.world-artifact-grid button { min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--mp); font-family: var(--font-pixel); font-size: var(--t-label); text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Reputation and rivals. */
+.reputation-view__title { margin: 0; }
+.reputation-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(140px, 1fr); align-items: center; gap: 12px; padding: 8px 0; border-top: 1px dashed var(--win-line); }
+.reputation-row:first-child { border-top: 0; }
+.nemesis-view__list { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 4px solid transparent; border-image: var(--frame) 4 / 4px stretch; background: var(--win) padding-box; }
+.nemesis-chip { padding: 4px 12px 4px 26px; }
+.nemesis-chip.is-nemesis { color: var(--bad); }
+.nemesis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s4); margin-bottom: 10px; }
+.nemesis-grid h3 { margin: 0 0 6px; color: var(--ink-dim); font-size: var(--t-label); text-transform: uppercase; letter-spacing: .06em; }
+
+@media (max-width: 1240px) {
+  .universe-hero-ranking > button { grid-template-columns: 4ch auto minmax(180px, 1fr) repeat(2, 64px) 60px; }
+  .universe-hero-ranking > button > span:nth-of-type(3), .universe-hero-ranking > button > span:nth-of-type(4) { display: none; }
+  .record-chase-grid, .world-artifact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 899px) {
+  .guild-directory, .tournament-almanac-grid { grid-template-columns: 1fr; }
+  .guild-directory > aside { max-height: 280px; }
+  .records-to-chase { grid-column: auto; }
+  .directory-roster { grid-template-columns: 1fr; }
+}
+@media (max-width: 759px) {
+  .status-banner__ranks { margin-left: 0; }
+  .ladder-row, article.ladder-row { grid-template-columns: 3ch minmax(0, 1fr) auto; gap: 8px; padding-left: 24px; }
+  .ladder-row .ranking-star, .ladder-row .hero-portrait, .ladder-row--head > :nth-child(3) { display: none; }
+  .goat-summary { grid-template-columns: 1fr; }
+  .goat-summary > div { border-right: 0; border-bottom: 1px solid var(--win-line); }
+  .goat-summary > div:last-child { border-bottom: 0; }
+  .universe-hero-ranking { overflow-x: auto; }
+  .universe-hero-ranking > button { min-width: 640px; }
+  .record-chase-grid, .world-artifact-grid, .artifact-grid { grid-template-columns: 1fr; }
+  .directory-banner > div { grid-template-columns: repeat(2, 1fr); }
+  .reputation-row { grid-template-columns: 1fr; }
+}

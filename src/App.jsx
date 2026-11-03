@@ -83,7 +83,8 @@ import {
 import { deleteGame, exportGame, importGame, listSaveSlots, loadGame, saveGame } from './game/storage.js';
 import { CLASSES, MONTHS } from './data/content.js';
 import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, RankChange } from './components/UI.jsx';
+import { Badge, Button, Crest, HeroPortrait, Modal, RankChange, sceneStyle, useMenuKeys } from './components/UI.jsx';
+import PixelIcon, { LADDER_ICONS, PLACE_ICONS } from './components/PixelIcon.jsx';
 import MapScreen from './places/MapScreen.jsx';
 import TownScreen from './places/TownScreen.jsx';
 import MenuScreen from './places/MenuScreen.jsx';
@@ -149,74 +150,56 @@ function formatPlayed(value) {
   }
 }
 
+// Title screen: the logo window and a Continue / New Game menu, one row per save slot.
 function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
+  useMenuKeys();
   return (
-    <div className="home-screen">
-      <div className="home-screen__mist" />
-      <header className="home-title">
-        <Crest size="xl" />
-        <span className="eyebrow">A dynasty chronicle · A party management RPG</span>
-        <h1>Guilds of Legend</h1>
-        <p>Discover imperfect heroes. Give them a banner. Survive their failures. Preserve their names after they are gone.</p>
-      </header>
-      <div className="save-slots">
-        {[1, 2, 3].map((slot) => {
-          const meta = slots.find((item) => item.slot === slot);
-          return (
-            <article className={`save-slot ${meta ? 'save-slot--filled' : 'save-slot--empty'}`} key={slot}>
-              <div className="save-slot__number">{slot}</div>
-              {meta ? (
-                <>
-                  <div className="save-slot__crest">
-                    <Crest size="lg" />
-                  </div>
-                  <span className="eyebrow">
-                    Year {meta.year} · {meta.tier}
-                  </span>
-                  <h2>{meta.guildName}</h2>
-                  <p>
-                    Rank #{meta.rank} · {meta.activeHeroes} active heroes
-                  </p>
-                  <div className="save-slot__metrics">
-                    <span>
-                      <small>Fame</small>
-                      <strong>{meta.fame}</strong>
-                    </span>
-                    <span>
-                      <small>Legacy</small>
-                      <strong>{meta.legacy}</strong>
-                    </span>
-                  </div>
-                  <time>Last played {formatPlayed(meta.lastPlayedAt)}</time>
-                  <div className="save-slot__actions">
-                    <Button variant="primary" onClick={() => onLoad(slot)} disabled={busy}>
-                      Continue
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => onDelete(slot)} disabled={busy}>
+    <div className="home-screen scene" style={sceneStyle('scene_01')}>
+      <div className="home-screen__inner">
+        <header className="title-logo">
+          <Crest size="xl" />
+          <h1>Guilds of Legend</h1>
+          <p>Discover imperfect heroes. Give them a banner. Survive their failures. Preserve their names after they are gone.</p>
+        </header>
+        <nav className="save-menu" aria-label="Save slots">
+          <ul className="cmd-menu" data-menu>
+            {[1, 2, 3].map((slot) => {
+              const meta = slots.find((item) => item.slot === slot);
+              return (
+                <li className={`save-slot ${meta ? 'save-slot--filled' : 'save-slot--empty'}`} key={slot}>
+                  <button className="save-menu__main" onClick={() => (meta ? onLoad(slot) : onCreate(slot))} disabled={busy}>
+                    <span className="save-menu__verb">{meta ? 'Continue' : 'New Game'}</span>
+                    <span className="save-menu__slot">Slot {slot}</span>
+                    {meta ? (
+                      <span className="save-menu__meta">
+                        <strong>{meta.guildName}</strong>
+                        <span className="num">
+                          Year {meta.year} · {meta.tier} · Rank #{meta.rank} · {meta.activeHeroes} heroes · Fame <b>{meta.fame}</b> · Legacy {meta.legacy}
+                        </span>
+                        <small>Last played {formatPlayed(meta.lastPlayedAt)}</small>
+                      </span>
+                    ) : (
+                      <span className="save-menu__meta">
+                        <small>Empty chronicle. Begin in Year 1187 as a founder looking for a first companion.</small>
+                      </span>
+                    )}
+                  </button>
+                  {meta ? (
+                    <button className="save-menu__delete" onClick={() => onDelete(slot)} disabled={busy} aria-label={`Delete save slot ${slot}`}>
                       Delete
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="save-slot__empty-mark">✦</div>
-                  <span className="eyebrow">Empty chronicle</span>
-                  <h2>Found a new guild</h2>
-                  <p>Begin in Year 1187 as a founder searching for the first companion willing to carry the lantern.</p>
-                  <Button variant="primary" onClick={() => onCreate(slot)} disabled={busy}>
-                    Create campaign
-                  </Button>
-                </>
-              )}
-            </article>
-          );
-        })}
+                    </button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <footer className="home-footer">
+          <span>Saves stay in this browser</span>
+          <span>Made for 5–15 minute sessions</span>
+          <span>A campaign can span centuries</span>
+        </footer>
       </div>
-      <footer className="home-footer">
-        <span>Browser save: IndexedDB</span>
-        <span>Designed for 5–15 minute sessions</span>
-        <span>Campaign horizon: centuries</span>
-      </footer>
     </div>
   );
 }
@@ -287,9 +270,8 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
           </label>
         </div>
         <div className="founder-preview">
-          <span className="founder-preview__glyph">{classInfo?.glyph}</span>
+          <HeroPortrait hero={{ name: founderName || 'Founder', classId: founderClass, primal: founderPrimal, rarity: 'Common' }} size="md" showStatus={false} />
           <div>
-            <span className="eyebrow">Founding hero</span>
             <h3>{founderName || 'Unnamed founder'}</h3>
             <p>
               Level 1 · {PRIMALS[founderPrimal]?.icon} {founderPrimal} · {founderClass} · {classInfo?.description}
@@ -456,7 +438,7 @@ function DecisionModal({ state, actions }) {
             </div>
           </div>
         ) : null}
-        <div className="decision-options">
+        <div className="decision-options" data-menu>
           {decision.options.map((option, index) => (
             <button key={option.id} onClick={() => actions.resolveDecision(decision.id, option.id)}>
               <span className="decision-options__key">{index + 1}</span>
@@ -864,6 +846,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
   const nextAction = getNextAction(state);
+  useMenuKeys();
 
   const commitState = useCallback(
     (nextState, notice) => {
@@ -1160,10 +1143,15 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             </small>
           </div>
         </div>
-        <nav>
+        <nav aria-label="Places" data-menu>
           {PLACE_NAV.map((item) => (
-            <button key={item.id} className={place.view === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
-              <span className={`place-glyph place-glyph--${item.glyph}`} aria-hidden="true" />
+            <button
+              key={item.id}
+              className={place.view === item.id ? 'is-active' : ''}
+              aria-current={place.view === item.id ? 'page' : undefined}
+              onClick={() => navigate(item.id)}
+            >
+              <PixelIcon name={PLACE_ICONS[item.glyph]} size={24} />
               <strong>{item.id === 'town' ? `Guild · ${townName}` : item.label}</strong>
               {item.id === 'town' && state.pendingDecisions.length ? <i className="nav-alert">{state.pendingDecisions.length}</i> : null}
             </button>
@@ -1185,6 +1173,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             <span>{state.guild.name}</span>
           </button>
           <button className="topbar__date" onClick={() => navigate('calendar')} title="Open the calendar">
+            <PixelIcon name="calendar" size={24} />
             <span>
               {MONTHS[state.date.month]} · week {(state.date.week || 0) + 1}
             </span>
@@ -1225,10 +1214,10 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             <span>{summary.travel ? `Traveling · ${summary.travel.weeksRemaining}w` : summary.location}</span>
           </button>
           <div className="topbar__resources">
-            <span title="Treasury">
-              <i>◈</i>
+            <span className="topbar__gold" title="Treasury">
+              <PixelIcon name="coin" size={24} />
               <b>{summary.crowns.toLocaleString()}</b>
-              <small>gold</small>
+              <small>G</small>
             </span>
             {LADDERS.map((ladder) => (
               <span
@@ -1236,7 +1225,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
                 className="topbar__rank"
                 title={`${LADDER_LABELS[ladder]} ladder (${summary.tier}): #${summary.ranks[ladder].rank} of ${summary.ranks[ladder].total}`}
               >
-                <i>{ladder === 'strength' ? '⚔' : ladder === 'legacy' ? '▤' : '♛'}</i>
+                <PixelIcon name={LADDER_ICONS[ladder]} size={24} label={LADDER_LABELS[ladder]} />
                 <b>#{summary.ranks[ladder].rank}</b>
                 <RankChange change={summary.movement[ladder]} />
                 <small>{LADDER_LABELS[ladder].toLowerCase()}</small>
@@ -1301,10 +1290,15 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         </main>
       </div>
 
-      <nav className="mobile-nav">
+      <nav className="mobile-nav" aria-label="Places" data-menu>
         {PLACE_NAV.map((item) => (
-          <button key={item.id} className={place.view === item.id ? 'is-active' : ''} onClick={() => navigate(item.id)}>
-            <span className={`place-glyph place-glyph--${item.glyph}`} aria-hidden="true" />
+          <button
+            key={item.id}
+            className={place.view === item.id ? 'is-active' : ''}
+            aria-current={place.view === item.id ? 'page' : undefined}
+            onClick={() => navigate(item.id)}
+          >
+            <PixelIcon name={PLACE_ICONS[item.glyph]} size={24} />
             <small>{item.label}</small>
           </button>
         ))}
@@ -1430,8 +1424,10 @@ export default function App() {
         <HomeScreen slots={slots} busy={busy} onLoad={loadSlot} onCreate={setCreatingSlot} onDelete={removeSlot} />
         {busy ? (
           <div className="loading-layer">
-            <Crest size="lg" />
-            <span>Opening the chronicle…</span>
+            <div className="loading-layer__box">
+              <Crest size="sm" />
+              <span>Opening the chronicle…</span>
+            </div>
           </div>
         ) : null}
         {homeError ? (

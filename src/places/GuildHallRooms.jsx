@@ -5,6 +5,7 @@ import { FORMATION_TYPES } from '../data/formations.js';
 import { MAIN_PARTY_SIZE, getPatronLoanOffer, heroCapacity, isHeroAway, specializationTitle } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
+import PixelIcon, { ROOM_ICONS } from '../components/PixelIcon.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
 import HeadquartersScreen from '../screens/HeadquartersScreen.jsx';
 
@@ -19,7 +20,7 @@ function GuildSummary({ state }) {
   return (
     <header className="hall-summary">
       <strong>{state.guild.name}</strong>
-      <span>{state.guild.crowns.toLocaleString()} gold</span>
+      <span className="num">{state.guild.crowns.toLocaleString()} G</span>
       <span>−{upkeep.total}/month</span>
       <span>
         {activeRoster(state).length}/{heroCapacity(state)} heroes
@@ -247,19 +248,21 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
         <div className="room-actions">
           <Button onClick={actions.autoAssignRooms}>Auto-assign heroes to rooms</Button>
         </div>
-        <div className="building-grid">
+        <nav className="building-grid" aria-label="Guild Hall rooms" data-menu>
           {HALL_ROOMS.map((item) => {
             const count = item.activity ? roomHeroes(state, item).length : item.id === 'war' ? (state.guild.mainParty || []).length : null;
             return (
               <button key={item.id} className={`building-tile room-tile room-tile--${item.id}`} onClick={() => setRoom(item.id)}>
-                <span className="building-tile__icon">{item.icon}</span>
+                <span className="building-tile__icon">
+                  <PixelIcon name={ROOM_ICONS[item.id] || 'castle'} size={36} />
+                </span>
                 <strong>{item.name}</strong>
                 <small>{item.description}</small>
-                {count !== null ? <Badge tone={count ? 'gold' : 'neutral'}>{count}</Badge> : null}
+                {count !== null ? <Badge tone={count ? 'blue' : 'neutral'}>{count}</Badge> : null}
               </button>
             );
           })}
-        </div>
+        </nav>
       </div>
     );
   }
@@ -267,10 +270,11 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
     <div className={`hall-room hall-room--${room.id}`}>
       <GuildSummary state={state} />
       <h2 className="hall-room__title">
-        <button className="town-header__back" onClick={() => setRoom(null)}>
-          ← Rooms
-        </button>{' '}
-        {room.icon} {room.name}
+        <Button size="sm" className="town-header__back" onClick={() => setRoom(null)}>
+          ◀ Rooms
+        </Button>
+        <PixelIcon name={ROOM_ICONS[room.id] || 'castle'} size={24} />
+        {room.name}
       </h2>
       <p className="muted">{room.description}</p>
       {room.activity ? <ActivityRoom state={state} room={room} actions={actions} /> : null}

@@ -1,131 +1,94 @@
-/* Responsive overrides for the sections above */
-/* Responsive */
-@media (max-width: 1180px) {
-  .game-shell { grid-template-columns: 195px minmax(0,1fr); }
-  .sidebar nav button { grid-template-columns: 25px 1fr auto; }
-  .dashboard-grid--lower { grid-template-columns: 1fr 1fr; }
-  .dashboard-grid--lower > .panel:last-child { grid-column: 1 / -1; }
-  .mission-layout { grid-template-columns: 1fr 1.1fr; }
-  .party-builder__heroes { grid-template-columns: 1fr; }
-  .hero-grid { grid-template-columns: 1fr; }
-  .tutorial-path { grid-template-columns: repeat(2,1fr); }
+/* Shell breakpoints. Screen files carry their own layout breakpoints.
+   Desktop ≥ 1100px: labelled dock. Tablet 760–1099px: icon dock. Phone < 760px: bottom dock. */
+
+@media (max-width: 1360px) {
+  .topbar__rank small { display: none; }
 }
 
-@media (max-width: 940px) {
+@media (max-width: 1240px) {
+  .topbar { flex-wrap: wrap; row-gap: 4px; }
+  .topbar__resources { margin-left: 0; flex: 1 1 100%; justify-content: flex-end; border-top: 1px solid var(--win-line); padding-top: 4px; }
+  .topbar__resources > span:first-child { border-left: 0; margin-right: auto; }
+}
+
+@media (max-width: 1099px) {
+  :root { --dock-w: 92px; }
+  .sidebar__brand { justify-content: center; padding: 8px 4px; }
+  .sidebar__brand > div { display: none; }
+  .sidebar nav button { grid-template-columns: 1fr; justify-items: center; padding: 6px 4px 6px 22px; }
+  .sidebar nav button strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .sidebar nav button::before { left: 6px; }
+  .sidebar nav button > i { position: absolute; top: 4px; right: 4px; margin: 0; }
+  .sidebar__footer { justify-items: center; }
+  .sidebar__footer > button { text-align: center; }
+  .party-rail__member { width: 196px; grid-template-columns: auto minmax(0, 1fr); }
+  .party-rail__member .hero-portrait { --size: 36px; }
+  .party-rail__title { width: 96px; }
+}
+
+@media (max-width: 759px) {
+  :root { --party-h: 140px; }
+  body { font-size: 15px; }
+  h1 { font-size: 26px; }
+  h2 { font-size: 20px; }
   .game-shell { display: block; }
   .sidebar { display: none; }
-  .topbar { padding: .55rem .75rem; }
-  .topbar__mobile-brand { display: flex; align-items: center; gap: .45rem; max-width: 190px; border: 0; background: transparent; }
-  .topbar__mobile-brand span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); font-size: .8rem; }
-  .topbar__date { min-width: auto; }
-  .topbar__resources span:nth-child(3), .topbar__resources span:nth-child(4) { display: none; }
-  .mobile-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; display: grid; grid-template-columns: repeat(6,1fr); min-height: 62px; border-top: 1px solid var(--line); background: rgba(9,14,21,.96); backdrop-filter: blur(12px); }
-  .mobile-nav button { display: grid; place-items: center; align-content: center; gap: .1rem; border: 0; border-top: 2px solid transparent; background: transparent; color: var(--faint); }
-  .mobile-nav button.is-active { border-top-color: var(--gold); color: #fff; }
-  .mobile-nav span { color: var(--gold); }
-  .mobile-nav small { font-size: .55rem; }
-  .screen-container { padding-bottom: 5rem; }
-  .hall-hero { grid-template-columns: auto 1fr; }
-  .hall-hero__stats { grid-column: 1 / -1; grid-template-columns: repeat(3,1fr); }
-  .mission-layout { grid-template-columns: 1fr; }
-  .mission-planner { position: static; }
-  .world-layout, .hq-blueprint, .chronicle-layout { grid-template-columns: 1fr; }
-  .hq-blueprint__hall, .chronicle-sidebar, .recruit-sidebar { position: static; }
-  .dashboard-grid--world, .dashboard-grid--hq, .dashboard-grid--goals { grid-template-columns: 1fr; }
-  .dashboard-grid--hq > .panel:last-child { grid-column: auto; }
-  .recruit-layout { grid-template-columns: 1fr; }
-  .record-book { grid-template-columns: repeat(2,1fr); }
-}
+  .game-main { padding: 0 8px; }
 
+  .topbar { top: 0; margin-top: 8px; gap: 4px 6px; padding: 4px 6px; }
+  .topbar__mobile-brand { display: flex; align-items: center; min-height: 44px; padding: 0 4px; border: 0; background: none; }
+  .topbar__mobile-brand span { display: none; }
+  .topbar__date { margin-right: auto; padding: 0 4px; gap: 6px; }
+  .topbar__date .pixel-icon { display: none; }
+  .topbar__date span { font-size: 13px; }
+  .topbar__date strong { font-size: 18px; }
+  .time-controls__more { display: inline-grid; place-items: center; width: 44px; height: 44px; border: 3px solid transparent; border-image: var(--frame-thin) 3 / 3px stretch; background: var(--win-deep) padding-box; color: var(--ink); font-size: 18px; }
+  .time-controls__extra { display: none; }
+  .time-controls__extra.is-open { position: absolute; z-index: 60; top: calc(100% + 6px); right: 0; display: grid; gap: 6px; padding: 8px; border: 4px solid transparent; border-image: var(--frame) 4 / 4px stretch; background: var(--win) padding-box; }
+  .topbar__location { order: 3; flex: 1; max-width: none; padding: 0 4px; }
+  .topbar__location span { font-size: 15px; }
+  .topbar__resources { order: 4; flex: 0 1 auto; margin-left: 0; padding-top: 0; border-top: 0; gap: 4px; }
+  .topbar__resources > span { display: none; }
+  .topbar__resources > span.topbar__gold { display: flex; border-left: 0; padding: 0 4px; }
+  .topbar__rank-chip { display: inline-block; }
+  .topbar__status { display: none; }
 
-.room-limit { display: grid; gap: .55rem; margin-top: .75rem; padding: .75rem; border: 1px solid rgba(92,151,199,.35); border-radius: 10px; background: rgba(64,119,160,.08); }
-.room-limit.is-full { border-color: rgba(196,83,93,.45); background: rgba(139,55,64,.1); }
-.room-limit strong { display: block; margin-top: .12rem; color: var(--text); }
-.room-limit p { margin: .28rem 0 0; color: var(--muted); font-size: .68rem; }
-.facility-room__space { display: block; margin: .1rem 0 .42rem; color: var(--muted); font-size: .6rem; letter-spacing: .03em; }
-.world-mobile-summary { display: none; }
-.region-node__status { display: none; }
-@media (max-width: 720px) {
-  body { font-size: 14px; }
-  .home-screen { padding: 2rem 1rem 5rem; }
-  .save-slots { grid-template-columns: 1fr; }
-  .save-slot { min-height: 330px; }
-  .home-footer { flex-direction: column; align-items: center; gap: .3rem; }
-  .topbar__resources { display: none; }
-  .topbar__date { margin-left: auto; }
+  .message-bar, .upcoming-strip, .objective-ribbon { margin-top: 6px; }
+  .objective-ribbon { flex-wrap: wrap; }
+  .objective-ribbon__title { flex: 1; max-width: none; }
+  .objective-ribbon__body { display: none; }
+  .upcoming-item { min-width: 180px; }
+  .screen-container { padding-top: 12px; }
   .screen-heading { display: block; }
-  .heading-metrics { justify-content: flex-start; margin-top: .7rem; }
-  .hall-hero { grid-template-columns: 1fr; text-align: center; }
-  .hall-hero__crest { display: grid; place-items: center; }
-  .hall-hero__badges { justify-content: center; }
-  .hall-hero__stats { grid-column: auto; grid-template-columns: 1fr; text-align: left; }
-  .next-order { grid-template-columns: auto 1fr; }
-  .next-order > .button { grid-column: 1 / -1; }
-  .dashboard-grid--main, .dashboard-grid--lower, .dashboard-grid--tournament, .dashboard-grid--races { grid-template-columns: 1fr; }
-  .dashboard-grid--lower > .panel:last-child { grid-column: auto; }
-  .filter-bar { align-items: stretch; flex-wrap: wrap; }
-  .filter-bar label, .filter-search { width: 100%; min-width: 0; }
-  .filter-bar__hint { margin-left: 0; }
-  .mission-card { grid-template-columns: 72px 1fr; }
-  .mission-card__art { min-height: 160px; }
-  .intel-grid { grid-template-columns: repeat(2,1fr); }
-  .party-builder__heroes { max-height: none; }
-  .commit-bar { grid-template-columns: 1fr 1fr; }
-  .commit-bar .button { grid-column: 1 / -1; }
-  .deployed-grid { grid-template-columns: 1fr; }
-  .hero-card__ratings { grid-template-columns: repeat(2,1fr); }
-  .hero-card__ratings > div:nth-child(2) { border-right: 0; }
-  .hero-card__bars { grid-template-columns: 1fr; }
-  .hero-card__footer { grid-template-columns: 1fr 1fr; }
-  .hero-card__footer label { grid-column: 1 / -1; }
-  .candidate-grid, .artifact-grid, .campaign-goal-list, .achievement-grid { grid-template-columns: 1fr; }
-  .legend-row { grid-template-columns: 30px auto 1fr auto; }
-  .legend-row > span:nth-of-type(n+2) { display: none; }
-  .world-map { min-height: 620px; }
-  .region-node { width: 105px; min-height: 78px; }
-  .hq-blueprint__rooms { grid-template-columns: 1fr; }
-  .appointment-layout { grid-template-columns: 1fr; }
-  .alignment-grid { grid-template-columns: 1fr; }
-  .tournament-stage__banner { grid-template-columns: auto 1fr; }
-  .tournament-prize { grid-column: 1 / -1; text-align: left; border-left: 0; border-top: 1px solid var(--line); padding: .7rem 0 0; }
-  .tournament-registration, .tournament-active { grid-template-columns: 1fr; }
-  .entrant-picker { grid-template-columns: 1fr; }
-  .bracket-history article { grid-template-columns: 75px 1fr auto 1fr; }
-  .bracket-history article small { grid-column: 2 / -1; }
-  .record-grid, .era-grid, .hall-of-fame, .record-book, .settings-grid { grid-template-columns: 1fr; }
-  .hall-of-fame > button.podium { grid-column: auto; }
-  .ranking-table, .hero-ranking-list { overflow-x: auto; display: block; }
-  .ranking-table__head, .ranking-table article { min-width: 660px; }
-  .hero-ranking-list > button { min-width: 760px; }
-  .tutorial-path { grid-template-columns: 1fr; }
-  .goal-summary { grid-template-columns: 1fr; }
-  .hero-dossier { grid-template-columns: 1fr; }
-  .hero-dossier__identity { position: static; }
-  .career-grid { grid-template-columns: repeat(3,1fr); }
-  .dossier-controls { grid-template-columns: 1fr; }
-  .modal-layer { padding: .5rem; }
-  .modal { max-height: calc(100vh - 1rem); }
-  .toast-stack { top: 70px; right: .5rem; width: calc(100% - 1rem); }
-  .tutorial-rail { display: none; }
+  .heading-metrics { justify-content: flex-start; margin-top: 8px; }
+
+  .party-rail { left: 0; bottom: calc(64px + env(safe-area-inset-bottom)); gap: 6px; padding: 6px 8px; border-top-width: 2px; }
+  .party-rail__title { width: auto; min-width: 0; }
+  .party-rail__title > span, .party-rail__title > small { display: none; }
+  .party-rail__tools { flex-direction: column; }
+  .party-rail__tools button { min-height: 32px; padding: 0 6px; font-size: 13px; }
+  .party-rail__members { gap: 6px; }
+  .party-rail__member { width: 64px; grid-template-columns: 1fr; justify-items: center; gap: 4px; padding: 4px; }
+  .party-rail__member > span { width: 100%; gap: 2px; }
+  .party-rail__member > span > strong, .party-rail__member > span > small { display: none; }
+  .party-rail__member .progress__label { display: none; }
+  .party-rail__member .progress + .progress { display: none; }
+
+  .mobile-nav { position: fixed; z-index: 55; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); min-height: calc(64px + env(safe-area-inset-bottom)); padding: 0 4px env(safe-area-inset-bottom); }
+  .mobile-nav button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 0 6px 0 24px; color: var(--ink-dim); }
+  .mobile-nav button::before { left: 6px; }
+  .mobile-nav button.is-active { color: var(--ink); }
+  .mobile-nav small { font-family: var(--font-pixel); font-size: 15px; color: inherit; }
+
+  .toast-stack { top: 120px; right: 8px; width: calc(100% - 16px); }
+  .modal-layer { padding: 0; align-items: stretch; }
+  .modal { width: 100%; max-width: none !important; max-height: 100dvh; min-height: 100dvh; }
+  .modal__body { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
 }
 
-@media (max-width: 480px) {
-  .screen-container { padding-left: .7rem; padding-right: .7rem; }
-  .topbar { gap: .35rem; }
-  .topbar__mobile-brand span { max-width: 95px; }
+@media (max-width: 380px) {
   .topbar__date span { display: none; }
-  .mission-card { grid-template-columns: 1fr; }
-  .mission-card__art { min-height: 80px; border-right: 0; border-bottom: 1px solid var(--line); }
-  .mission-card__art small { display: none; }
-  .required-roles { display: grid; }
-  .estimate__breakdown { grid-template-columns: 1fr; }
-  .facility-room { grid-template-columns: auto 1fr; }
-  .tactic-notes { grid-template-columns: 1fr; }
-  .hero-history article { grid-template-columns: 80px 1fr; }
-  .attribute-grid, .role-rating-grid { grid-template-columns: 1fr; }
 }
 
-.reduced-motion *, .reduced-motion *::before, .reduced-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
-.compact-mode .panel__body { padding: .75rem; }
-.compact-mode .hero-card__identity, .compact-mode .mission-card__body { padding: .6rem; }
-.compact-mode .screen-container { padding-top: .7rem; }
+.compact-mode .panel__body { padding: 8px 10px; }
+.compact-mode .screen-container { padding-top: 8px; }

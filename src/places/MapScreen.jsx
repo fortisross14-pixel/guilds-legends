@@ -3,7 +3,8 @@ import { TIERS } from '../data/content.js';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings, unlockedLocations } from '../data/world.js';
 import { getStoryView, getTravelQuote } from '../game/engine.js';
 import { BLACKWOOD_MAP } from '../data/story.js';
-import { Badge, Button, EmptyState, Panel, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
+import { Badge, Button, EmptyState, Panel, PrimalBadge, ProgressBar, RiskPips, artUrl } from '../components/UI.jsx';
+import PixelIcon from '../components/PixelIcon.jsx';
 
 const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
 
@@ -96,9 +97,17 @@ export default function MapScreen({ state, actions, navigate, place }) {
       ) : null}
 
       <div className="world-layout world-layout--locations">
-        <section className="world-map world-map--locations" aria-label="Fictional world travel map">
-          <div className="world-map__mist" />
+        <section className="world-map world-map--locations map-frame" aria-label="Fictional world travel map">
+          <div className="world-map__terrain" style={{ '--overworld': `url(${artUrl('ui/overworld.png')})` }} />
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
+            {MAP_ROUTES.map((route) => (
+              <path
+                key={`under-${route.chain.join('-')}`}
+                className={`map-route map-route--under${route.dim ? ' map-route--dim' : ''}`}
+                d={routePath(route.chain)}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
             {MAP_ROUTES.map((route) => (
               <path
                 key={route.chain.join('-')}
@@ -126,7 +135,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
               }}
             >
-              ⚑
+              <PixelIcon name="flag" size={24} />
             </span>
           ) : null}
           {LOCATIONS.map((location) => {
@@ -141,8 +150,15 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 onClick={() => setSelectedId(location.id)}
                 aria-label={`${location.name}, ${location.tier}, ${location.primal}`}
               >
-                {isCurrent && !travel ? <em className="location-node__here">You are here</em> : null}
-                <span>{canReach ? location.icon : '⌁'}</span>
+                {isCurrent && !travel ? (
+                  <em className="location-node__here">
+                    <span>You are here</span>
+                    <PixelIcon name="pointer" size={12} />
+                  </em>
+                ) : null}
+                <span className="location-node__icon">
+                  <PixelIcon name={canReach ? (isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
+                </span>
                 <strong>{canReach ? location.name : location.tier}</strong>
                 <small>
                   {isCurrent
@@ -165,7 +181,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 style={{ left: `${LOCATION_BY_ID[mission.locationId].x}%`, top: `${LOCATION_BY_ID[mission.locationId].y}%` }}
                 title={mission.title}
               >
-                ☠
+                <PixelIcon name="skull" size={24} label={`Boss: ${mission.title}`} />
               </span>
             ))}
           {getStoryView(state).blackwoodOpen ? (
@@ -174,12 +190,12 @@ export default function MapScreen({ state, actions, navigate, place }) {
               style={{ left: `${BLACKWOOD_MAP.x}%`, top: `${BLACKWOOD_MAP.y}%` }}
               title="The Blackwood (reach it through the Dunmere contract)"
             >
-              🌲 {BLACKWOOD_MAP.name}
+              <PixelIcon name="tree" size={24} /> {BLACKWOOD_MAP.name}
             </span>
           ) : null}
           {pinId && LOCATION_BY_ID[pinId] ? (
             <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
-              📍
+              <PixelIcon name="pin" size={24} label="Contract location" />
             </span>
           ) : null}
           <div className="map-legend">
@@ -200,7 +216,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
 
         <aside className="region-dossier region-dossier--location" style={{ '--primal': PRIMALS[selected.primal].color }}>
           <div className="region-dossier__banner">
-            <span>{unlocked ? selected.icon : '⌁'}</span>
+            <span>
+              <PixelIcon name={unlocked ? (selected.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={24} />
+            </span>
             <div>
               <small>
                 {selected.tier} destination · {selected.region}
@@ -329,7 +347,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         </aside>
       </div>
 
-      <div className="location-mobile-list" aria-label="Destinations list">
+      <div className="location-mobile-list" aria-label="Destinations list" data-menu>
         {LOCATIONS.map((location) => {
           const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
           return (
@@ -338,7 +356,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
               className={`${selected.id === location.id ? 'is-selected' : ''} ${location.id === currentLocationId ? 'is-current' : ''}`}
               onClick={() => setSelectedId(location.id)}
             >
-              <span style={{ '--primal': PRIMALS[location.primal].color }}>{canReach ? location.icon : '⌁'}</span>
+              <span style={{ '--primal': PRIMALS[location.primal].color }}>
+                <PixelIcon name={canReach ? (location.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={12} />
+              </span>
               <div>
                 <strong>{canReach ? location.name : `${location.tier} frontier`}</strong>
                 <small>

@@ -1,25 +1,27 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { CLASSES, normalizeClassId } from '../data/content.js';
+import { normalizeClassId } from '../data/content.js';
 import { PRIMALS, RARITIES } from '../data/world.js';
+import { PixelCrest } from './PixelIcon.jsx';
 
-export function Crest({ variant = 'lantern', size = 'md' }) {
+const CREST_SCALES = { xs: 2, sm: 2, md: 3, lg: 4, xl: 6 };
+
+export function Crest({ size = 'md' }) {
   return (
-    <div className={`crest crest--${size}`} aria-label={`${variant} guild crest`}>
-      <span className="crest__shield" />
-      <span className="crest__mark">{variant === 'lantern' ? '✦' : variant === 'wolf' ? '◇' : variant === 'crown' ? '♛' : '◆'}</span>
+    <div className={`crest crest--${size}`}>
+      <PixelCrest scale={CREST_SCALES[size] || 3} />
     </div>
   );
 }
 
-const PRIMAL_BACKGROUNDS = {
-  Fire: 'radial-gradient(circle at 30% 24%, rgba(255,196,114,.42), transparent 36%), linear-gradient(160deg, #5a2420 0%, #251315 58%, #120b0d 100%)',
-  Air: 'radial-gradient(circle at 32% 26%, rgba(219,247,255,.4), transparent 38%), linear-gradient(160deg, #2b4661 0%, #162236 55%, #0b121c 100%)',
-  Water: 'radial-gradient(circle at 30% 24%, rgba(170,231,255,.38), transparent 36%), linear-gradient(160deg, #173e5f 0%, #0e2337 55%, #0a121c 100%)',
-  Plant: 'radial-gradient(circle at 30% 24%, rgba(190,255,178,.34), transparent 36%), linear-gradient(160deg, #24472c 0%, #13271a 55%, #0b140f 100%)',
-  Animal: 'radial-gradient(circle at 30% 24%, rgba(255,223,182,.3), transparent 36%), linear-gradient(160deg, #4b3723 0%, #24180f 55%, #120d08 100%)',
-  Psychic: 'radial-gradient(circle at 30% 24%, rgba(231,190,255,.34), transparent 36%), linear-gradient(160deg, #42285a 0%, #22142f 55%, #120b17 100%)',
-  Iron: 'radial-gradient(circle at 30% 24%, rgba(231,240,248,.28), transparent 36%), linear-gradient(160deg, #394654 0%, #1d2631 55%, #10161e 100%)',
-};
+/** URL of a public art file, safe under the GitHub Pages subpath. */
+export function artUrl(path) {
+  return `${import.meta.env.BASE_URL}${path}`;
+}
+
+/** Inline style that sets a scene backdrop (see `.scene` in art.css). */
+export function sceneStyle(scene, extra = {}) {
+  return { '--scene': `url(${artUrl(`art/scenes/${scene}.png`)})`, ...extra };
+}
 
 export function heroArtKey(hero = {}) {
   return normalizeClassId(hero.classId || 'Guardian').toLowerCase();
@@ -27,7 +29,6 @@ export function heroArtKey(hero = {}) {
 
 export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
   const classId = normalizeClassId(hero.classId);
-  const info = CLASSES[classId] || { glyph: '◆' };
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
   const rarity = RARITIES[hero.rarity] || RARITIES.Common;
   const artKey = heroArtKey(hero);
@@ -35,20 +36,43 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
     <div
       className={`hero-portrait hero-portrait--${size}`}
       style={{
-        '--portrait-hue': 0,
-        '--portrait-frame': rarity.color,
-        '--portrait-primal': primal.color,
-        '--portrait-bg': PRIMAL_BACKGROUNDS[primal.id] || PRIMAL_BACKGROUNDS.Fire,
+        '--portrait-frame': `var(--r-${rarity.id.toLowerCase()})`,
+        '--portrait-primal': `var(--p-${primal.id.toLowerCase()})`,
       }}
-      aria-label={`${hero.name}, ${classId}`}
+      role="img"
+      aria-label={`${hero.name}, ${rarity.id} ${classId}`}
     >
-      <div className="hero-portrait__halo" />
-      <div className="hero-portrait__frame" />
-      <img className="hero-portrait__art" src={`${import.meta.env.BASE_URL}art/portraits/${artKey}.png`} alt="" loading="lazy" />
-      <span className="hero-portrait__glyph">{info.glyph}</span>
+      <img className="hero-portrait__art" src={artUrl(`art/portraits/${artKey}.png`)} alt="" loading="lazy" />
       {showStatus && hero.status && hero.status !== 'available' ? <span className={`status-dot status-dot--${hero.status}`} title={hero.status} /> : null}
     </div>
   );
+}
+
+/**
+ * Arrow keys move between the buttons of any element marked `data-menu`
+ * (Up/Down, and Left/Right for horizontal menus); Enter activates natively.
+ * Install once near the root.
+ */
+export function useMenuKeys() {
+  useEffect(() => {
+    const onKey = (event) => {
+      if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || target.matches('input, select, textarea, [role="tab"]')) return;
+      const menu = target.closest('[data-menu]');
+      if (!menu) return;
+      const items = [...menu.querySelectorAll('button:not([disabled])')].filter((item) => item.closest('[data-menu]') === menu && item.offsetParent !== null);
+      const index = items.indexOf(target);
+      if (index < 0) return;
+      const forward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
+      const next =
+        event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (forward ? 1 : -1) + items.length) % items.length;
+      event.preventDefault();
+      items[next].focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 }
 
 export function HeroSprite({ hero, size = 'md', enemy = false }) {
@@ -157,8 +181,8 @@ export function Panel({ title = undefined, eyebrow = undefined, action = null, c
       {title || eyebrow || action ? (
         <header className="panel__header">
           <div>
-            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
             {title ? <h2>{title}</h2> : null}
+            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
           </div>
           {action ? <div className="panel__action">{action}</div> : null}
         </header>
@@ -227,8 +251,8 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
       <div ref={dialogRef} className={`modal modal--${width} ${className}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
         <header className="modal__header">
           <div>
-            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
             <h2>{title}</h2>
+            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
           </div>
           {!preventClose ? (
             <button ref={closeRef} className="icon-button" onClick={onClose} aria-label="Close">

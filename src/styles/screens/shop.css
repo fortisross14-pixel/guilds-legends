@@ -1,0 +1,57 @@
+/* Shop (buy/sell) and the Armory (equipment, consumables). */
+
+.shop { display: grid; gap: var(--s4); }
+.shop-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); grid-template-areas: 'list detail' 'gold detail'; gap: var(--s4); align-items: start; }
+.shop-layout > .tabs { grid-area: auto; }
+.shop-list { grid-area: list; padding: 6px; }
+.shop-list .tabs { margin: 0 0 6px; padding: 0 0 4px; border: 0; border-bottom: 1px solid var(--win-line); background: none; }
+.shop-item { width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 10px 6px 30px; font-size: 17px; }
+.shop-item__icon { color: var(--ink-dim); font-family: var(--font-prose); text-align: center; }
+.shop-item__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-item__price { color: var(--gold); }
+.shop-item__count { color: var(--ink-dim); }
+.shop-item:disabled .shop-item__price { color: var(--ink-faint); }
+.shop-empty { margin: 8px 10px; }
+.shop-gold { grid-area: gold; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; }
+.shop-gold > span { color: var(--ink-dim); }
+.shop-gold strong { display: flex; align-items: center; gap: 6px; color: var(--gold); font-size: var(--t-title); font-weight: 600; }
+.shop-detail { grid-area: detail; position: sticky; top: calc(var(--strip-h) + 24px); display: grid; gap: 10px; padding: 12px 14px 14px; }
+.shop-detail__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.shop-detail__head > div { display: flex; flex-direction: column; gap: 2px; }
+.shop-detail h2 { order: -1; margin: 0; font-size: var(--t-h2); }
+.shop-detail__price { color: var(--gold); font-size: var(--t-title); white-space: nowrap; }
+.shop-detail p { margin: 0; color: var(--ink); }
+.shop-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.shop-compare { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.shop-compare caption { padding-bottom: 6px; color: var(--ink-faint); font-family: var(--font-pixel); font-size: var(--t-label); text-align: left; }
+.shop-compare th, .shop-compare td { padding: 6px 8px; border-top: 1px dashed var(--win-line); font-weight: 400; text-align: left; vertical-align: middle; }
+.shop-compare th { color: var(--ink); font-size: var(--t-ui); }
+.shop-compare th .hero-portrait { display: inline-block; vertical-align: middle; margin-right: 8px; }
+.shop-compare td { color: var(--ink-dim); font-size: var(--t-label); }
+.shop-compare .is-up { color: var(--good); }
+.shop-compare .is-down { color: var(--bad); }
+.shop-compare .is-same { color: var(--ink-faint); }
+.shop-detail__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.shop-detail__actions small { color: var(--ink-dim); }
+
+/* Armory. */
+.equipment { display: grid; gap: var(--s4); }
+.item-list { display: grid; gap: 0; }
+.item-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px dashed var(--win-line); }
+.item-list > .item-row:first-child, .item-list > label + .item-row { border-top: 0; }
+.item-row > div { display: grid; gap: 2px; min-width: 0; }
+.item-row strong { font-weight: 600; }
+.equipment__use-target { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.equipment__use-target select { width: auto; min-width: 180px; }
+.equipment__heroes { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--s4); }
+.equipment-card__head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.equipment-slot { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 6px 10px; padding: 8px 0; border-top: 1px dashed var(--win-line); }
+.equipment-slot__name { color: var(--ink-faint); font-size: var(--t-label); text-transform: capitalize; }
+.equipment-slot strong { font-weight: 500; }
+.equipment-slot select, .equipment-slot .button { grid-column: 2; }
+.equipment-card__skills { margin: 8px 0 0; font-size: var(--t-small); }
+
+@media (max-width: 899px) {
+  .shop-layout { grid-template-columns: 1fr; grid-template-areas: 'list' 'detail' 'gold'; }
+  .shop-detail { position: static; }
+}
