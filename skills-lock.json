@@ -7,6 +7,13 @@
       "skillPath": "skills/animations/SKILL.md",
       "computedHash": "342f4448eed4b25a890793b7f14cad8b3393a16a915cf967edbcd6d2fd9d20d7"
     },
+    "develop-web-game": {
+      "source": "openai/skills",
+      "ref": "30444aed500c00c85294d12074f6e3ee794f808a",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/develop-web-game/SKILL.md",
+      "computedHash": "e779aebb4314bff3d239ef8f4d19ddb5a2d4986363a83b6ac7d11f511204e4c1"
+    },
     "dialogue-systems": {
       "source": "gamedev-skills/awesome-gamedev-agent-skills",
       "sourceType": "github",
