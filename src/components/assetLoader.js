@@ -39,6 +39,7 @@ function fitFont(context, text, maxWidth, start, family) {
  * label stays legible when shown at their logical size.
  */
 export function paintPlaceholder(asset) {
+  if (asset.tiles) return paintTileset(asset);
   const group = ASSET_GROUPS[asset.group] || ASSET_GROUPS.missing;
   const scale = Math.max(1, Math.min(4, Math.ceil(160 / Math.max(asset.w, asset.h))));
   const width = Math.round(asset.w * scale);
@@ -82,6 +83,33 @@ export function paintPlaceholder(asset) {
       context.globalAlpha = 1;
     }
   }
+  return canvas;
+}
+
+/** A tileset placeholder: one flat-colored tile per entry, exact size, with a little texture and its character. */
+function paintTileset(asset) {
+  const size = asset.h;
+  const canvas = document.createElement('canvas');
+  canvas.width = asset.tiles.length * size;
+  canvas.height = size;
+  const context = canvas.getContext('2d');
+  asset.tiles.forEach((tile, index) => {
+    const x = index * size;
+    context.fillStyle = tile.color;
+    context.fillRect(x, 0, size, size);
+    // Deterministic speckle so large areas read as ground, not flat paint.
+    for (let i = 0; i < 6; i += 1) {
+      const sx = x + ((index * 7 + i * 11) % (size - 4)) + 2;
+      const sy = ((index * 13 + i * 5) % (size - 4)) + 2;
+      context.fillStyle = i % 2 ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.14)';
+      context.fillRect(sx, sy, 3, 2);
+    }
+    if (tile.block) {
+      context.strokeStyle = 'rgba(0,0,0,.35)';
+      context.lineWidth = 2;
+      context.strokeRect(x + 1, 1, size - 2, size - 2);
+    }
+  });
   return canvas;
 }
 

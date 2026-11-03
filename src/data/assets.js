@@ -3,6 +3,9 @@
 // then `borrow` (older shared art standing in), and otherwise draws a labelled,
 // color-coded placeholder. Drop a file at `path` and it is used, no code change.
 // Keep docs/ASSETS.md in sync when you add or change an entry.
+import { TILES, TILE_SIZE } from './tiles.js';
+import { TOWNS } from './towns/index.js';
+import { WILD_AREA_LIST } from './wilds/index.js';
 
 /** Placeholder colors per group (background, ink). */
 export const ASSET_GROUPS = {
@@ -16,6 +19,9 @@ export const ASSET_GROUPS = {
   char: { label: 'Character sprite', fill: '#8a6a23', ink: '#fff1c7' },
   npc: { label: 'NPC sprite', fill: '#4f3d78', ink: '#e9defd' },
   ui: { label: 'Interface', fill: '#255a5a', ink: '#d2f3f0' },
+  portrait: { label: 'Portrait', fill: '#6a4a5e', ink: '#fbe3f1' },
+  enemy: { label: 'Enemy on the map', fill: '#7a3a22', ink: '#ffe0cc' },
+  tileset: { label: 'Tileset', fill: '#3a3a3a', ink: '#ffffff' },
   missing: { label: 'Unregistered', fill: '#7a1f6e', ink: '#ffd6f6' },
 };
 
@@ -61,27 +67,46 @@ const LIST = [
   { id: 'prop.opening.door', group: 'prop', path: 'art/walk/opening/door.png', w: 32, h: 92, use: 'Opening room: door to Dunmere' },
   { id: 'npc.opening.stranger', group: 'npc', path: 'art/walk/opening/stranger.png', w: 44, h: 28, use: 'Opening room: wounded stranger, lying down' },
 
-  // Dunmere, walkable.
-  { id: 'town.dunmere.ground', group: 'town', path: 'art/walk/dunmere/ground.png', w: 1400, h: 840, use: 'Dunmere: streets, square and edges' },
-  { id: 'town.dunmere.rooms', group: 'building', path: 'art/walk/dunmere/rooms.png', w: 188, h: 190, use: 'Dunmere: your rented rooms' },
-  { id: 'town.dunmere.guildhall.stage1', group: 'building', path: 'art/walk/dunmere/guildhall-stage1.png', w: 188, h: 190, use: 'Dunmere: Guild Hall, build stage 1' },
-  { id: 'town.dunmere.tavern', group: 'building', path: 'art/walk/dunmere/tavern.png', w: 188, h: 190, use: 'Dunmere: The Wayfarer tavern' },
-  { id: 'town.dunmere.shop', group: 'building', path: 'art/walk/dunmere/shop.png', w: 188, h: 190, use: 'Dunmere: Mira’s Supply' },
-  { id: 'town.dunmere.arena', group: 'building', path: 'art/walk/dunmere/arena.png', w: 188, h: 190, use: 'Dunmere: arena' },
-  { id: 'town.dunmere.herald', group: 'building', path: 'art/walk/dunmere/herald.png', w: 188, h: 190, use: 'Dunmere: Herald’s Office' },
-  { id: 'town.dunmere.noticeboard', group: 'prop', path: 'art/walk/dunmere/noticeboard.png', w: 56, h: 100, use: 'Dunmere: notice board' },
-  { id: 'prop.fountain', group: 'prop', path: 'art/walk/props/fountain.png', w: 160, h: 140, use: 'Town fountain' },
-  { id: 'prop.tree', group: 'prop', path: 'art/walk/props/tree.png', w: 60, h: 76, use: 'Town tree' },
+  // Walkable towns and wild areas: shared pieces. Buildings, NPCs, portraits,
+  // props and enemy groups are generated from the town and area data below.
+  { id: 'tiles.ground', group: 'tileset', path: 'art/walk/tiles/ground.png', w: TILES.length * TILE_SIZE, h: TILE_SIZE, tiles: TILES, use: 'Ground tiles for towns and wild areas, one row of 32 px tiles in src/data/tiles.js order' },
   { id: 'char.founder', group: 'char', path: 'art/walk/chars/founder.png', w: 26, h: 36, use: 'Player founder, walking (4-direction sheet later)' },
-  { id: 'npc.dunmere.innkeeper', group: 'npc', path: 'art/walk/npcs/innkeeper.png', w: 26, h: 36, use: 'Sella Rowan, innkeeper' },
-  { id: 'npc.dunmere.merchant', group: 'npc', path: 'art/walk/npcs/merchant.png', w: 26, h: 36, use: 'Bram Hallow, road merchant' },
-  { id: 'npc.dunmere.fighter', group: 'npc', path: 'art/walk/npcs/fighter.png', w: 26, h: 36, use: 'Nia Voss, local fighter' },
-  { id: 'npc.dunmere.traveler', group: 'npc', path: 'art/walk/npcs/traveler.png', w: 26, h: 36, use: 'Iven Quill, traveler' },
-  { id: 'npc.dunmere.herald', group: 'npc', path: 'art/walk/npcs/herald.png', w: 26, h: 36, use: 'Orren Pike, herald' },
+  { id: 'portrait.poi', group: 'portrait', path: 'art/portraits/npcs/poi.png', w: 160, h: 160, use: 'Dialogue portrait for places and objects (fountain, statue, wells…)' },
+  { id: 'prop.campfire', group: 'prop', path: 'art/walk/props/campfire.png', w: 64, h: 64, use: 'Wild-area camp: rest spot' },
+  { id: 'prop.signpost', group: 'prop', path: 'art/walk/props/signpost.png', w: 32, h: 48, use: 'Exit from a town or wild area' },
+  { id: 'prop.gather.herb', group: 'prop', path: 'art/walk/props/gather-herb.png', w: 28, h: 28, use: 'Gathering spot: herbs' },
+  { id: 'prop.gather.ore', group: 'prop', path: 'art/walk/props/gather-ore.png', w: 28, h: 28, use: 'Gathering spot: ore and shards' },
+  { id: 'prop.gather.coin', group: 'prop', path: 'art/walk/props/gather-coin.png', w: 28, h: 28, use: 'Gathering spot: coin pouches' },
 
   // Interface art.
   { id: 'ui.overworld', group: 'ui', path: 'ui/overworld.png', w: 200, h: 125, use: 'World map terrain' },
 ];
+
+// Generated from the town and wild-area data, so every placed thing has an entry.
+const slug = (id) => id.split('.').slice(1).join('-');
+function add(entry) {
+  if (!LIST.some((asset) => asset.id === entry.id)) LIST.push(entry);
+}
+Object.values(TOWNS).forEach((town) => {
+  town.buildings.forEach((building) =>
+    add({ id: building.asset, group: 'building', path: `art/walk/buildings/${slug(building.asset)}.png`, w: 5 * TILE_SIZE, h: 5 * TILE_SIZE, use: `${town.name}: ${building.label} (front with door)` }),
+  );
+  town.npcs.forEach((npc) => {
+    add({ id: `npc.${town.id}.${npc.id}`, group: 'npc', path: `art/walk/npcs/${town.id}-${npc.id}.png`, w: 26, h: 36, use: `${town.name}: ${npc.name}, ${npc.role} (walk sprite)` });
+    add({ id: `portrait.${town.id}.${npc.id}`, group: 'portrait', path: `art/portraits/npcs/${town.id}-${npc.id}.png`, w: 160, h: 160, use: `${town.name}: ${npc.name}, ${npc.role} (dialogue portrait)` });
+  });
+});
+[...Object.values(TOWNS), ...WILD_AREA_LIST].forEach((place) => {
+  (place.props || []).forEach((prop) =>
+    add({ id: prop.asset, group: 'prop', path: `art/walk/props/${slug(prop.asset)}.png`, w: prop.size[0] * TILE_SIZE, h: (prop.size[1] + 1) * TILE_SIZE, use: `${place.name}: ${prop.poi?.name || prop.id}` }),
+  );
+});
+WILD_AREA_LIST.forEach((area) => {
+  area.enemies.forEach((group) =>
+    add({ id: group.asset, group: 'enemy', path: `art/walk/enemies/${slug(group.asset)}.png`, w: 56, h: 44, use: `${area.name}: ${group.name} (standing on the map)` }),
+  );
+  if (area.boss) add({ id: area.boss.asset, group: 'enemy', path: `art/walk/enemies/${slug(area.boss.asset)}.png`, w: 80, h: 64, use: `${area.name}: ${area.boss.boss.name} (boss on the map)` });
+});
 
 export const ASSETS = Object.fromEntries(LIST.map((asset) => [asset.id, asset]));
 
