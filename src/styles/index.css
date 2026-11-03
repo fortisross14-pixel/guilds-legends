@@ -6,6 +6,7 @@
 @import './components/art.css';
 @import './layout/shell.css';
 @import './components/battle.css';
+@import './components/battle-juice.css';
 @import './components/moments.css';
 @import './components/mission-games.css';
 @import './screens/opening.css';

@@ -57,6 +57,20 @@ export default function MomentModal({ moment, state, onClose }) {
                     <b className="num">
                       +<CountUp value={entry.xp} duration={1100} /> XP
                     </b>
+                    {typeof entry.from === 'number' ? (
+                      <span
+                        className={`xp-bar ${entry.levelAfter > entry.levelBefore ? 'is-level-up' : ''}`}
+                        style={{
+                          '--from': `${Math.round(entry.from * 100)}%`,
+                          '--to': `${entry.levelAfter > entry.levelBefore ? 100 : Math.round(entry.to * 100)}%`,
+                          '--delay': `${800 + index * 160}ms`,
+                        }}
+                        aria-label={`XP bar, level ${entry.levelAfter}`}
+                      >
+                        <i />
+                        {entry.levelAfter > entry.levelBefore ? <em>Level up! Lv {entry.levelAfter}</em> : <small>Lv {entry.levelAfter}</small>}
+                      </span>
+                    ) : null}
                   </li>
                 );
               })}

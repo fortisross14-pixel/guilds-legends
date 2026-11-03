@@ -3,7 +3,6 @@ import {
   acknowledgeCouncilReport,
   acknowledgeReport,
   acknowledgeWelcome,
-  autoResolveActiveCombat,
   autoResolveActiveMissionGame,
   advanceToNextEvent,
   appointHero,
@@ -23,6 +22,8 @@ import {
   gatherAtSpot,
   restAtCamp,
   startWildBattle,
+  retryWildBattle,
+  retreatToCamp,
   createNewGame,
   designateSuccessor,
   dismissNotification,
@@ -936,7 +937,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     window.addEventListener('pointerdown', onPointer);
     return () => window.removeEventListener('pointerdown', onPointer);
   }, []);
-  const soundMemory = useRef({ crowns: state.guild.crowns, moment: null, log: 0, result: null });
+  // Battle sounds play in time with the battle animations (CombatArenaModal).
+  const soundMemory = useRef({ crowns: state.guild.crowns, moment: null });
   useEffect(() => {
     const memory = soundMemory.current;
     if (state.guild.crowns > memory.crowns + 5) playSound('coin');
@@ -946,18 +948,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       playSound({ levelUp: 'levelUp', victory: 'victory', rankings: 'fanfare', statusTitle: 'fanfare', nemesis: 'fanfare' }[moment.type] || 'confirm');
     }
     memory.moment = moment?.id || null;
-    const encounter = state.activeEncounter;
-    if (encounter) {
-      const fresh = encounter.log.slice(memory.log);
-      if (fresh.some((entry) => /knocked out/.test(entry.text))) playSound('crit');
-      else if (fresh.some((entry) => / \+\d+/.test(entry.text) && /Cure|Cura|Mend|Potion|Kit|Purify/.test(entry.text))) playSound('heal');
-      else if (fresh.some((entry) => /−\d+|for \d+/.test(entry.text))) playSound('hit');
-      memory.log = encounter.log.length;
-      if (encounter.result && memory.result !== encounter.id) {
-        memory.result = encounter.id;
-        playSound(encounter.result.playerWon ? 'victory' : 'defeat');
-      }
-    } else memory.log = 0;
   }, [state]);
 
   useEffect(() => {
@@ -1070,7 +1060,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       skipTutorial: () => {
         if (window.confirm('Skip the tutorial? You can play freely from here.')) commitState(skipTutorial(state));
       },
-      autoResolveCombat: () => applyResult(autoResolveActiveCombat(state)),
+      retryWildBattle: () => applyResult(retryWildBattle(state)),
+      retreatToCamp: () => applyResult(retreatToCamp(state), 'The party falls back to the camp.'),
       missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
       autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
       concludeCombat: () => applyResult(concludeCombatAndContinue(state)),
@@ -1365,7 +1356,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         ))}
       </nav>
       <PartyRail state={state} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
-      <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} />
+      <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       <IntroModal state={state} actions={actions} />

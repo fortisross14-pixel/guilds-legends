@@ -165,3 +165,12 @@
   .dialogue__portrait { display: none; }
   .dialogue blockquote { font-size: 19px; }
 }
+
+/* Victory: each hero's XP bar fills from where it was; a level-up shows a callout. */
+.moment__xp .xp-bar { grid-column: 1 / -1; position: relative; display: block; height: 8px; margin-top: -2px; border-radius: 2px; background: rgba(0, 0, 0, .45); }
+.moment__xp .xp-bar i { position: absolute; top: 0; bottom: 0; left: 0; width: var(--to); border-radius: 2px; background: linear-gradient(90deg, #a98bff, #e2c2ff); animation: xp-fill 1100ms var(--ease) var(--delay) both; }
+.moment__xp .xp-bar small, .moment__xp .xp-bar em { position: absolute; top: 10px; right: 0; color: var(--text-dim); font: 600 11px var(--font-ui); }
+.moment__xp .xp-bar em { color: var(--gold-bright); font-style: normal; letter-spacing: .06em; text-transform: uppercase; animation: rise-in 400ms var(--ease) calc(var(--delay) + 1100ms) both; }
+.moment__xp li:has(.xp-bar) { padding-bottom: 22px; }
+@keyframes xp-fill { from { width: var(--from); } to { width: var(--to); } }
+.is-skipped .xp-bar i, .is-skipped .xp-bar em { animation: none; }

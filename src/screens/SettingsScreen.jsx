@@ -72,6 +72,9 @@ export default function SettingsScreen({ state, actions, slot }) {
             <input type="checkbox" checked={Boolean(state.settings.joystick)} onChange={(event) => actions.updateSettings({ joystick: event.target.checked })} />{' '}
             Drag-anywhere joystick
           </label>
+          <label className="sound-setting">
+            <input type="checkbox" checked={state.settings.battleSpeed === 2} onChange={(event) => actions.updateSettings({ battleSpeed: event.target.checked ? 2 : 1 })} /> Fast battles (2× speed)
+          </label>
           <small className="muted">Off: tap where you want to go, or hold and drag to steer. On: drag anywhere to walk with a thumb stick; a quick tap still walks there.</small>
         </Panel>
 
