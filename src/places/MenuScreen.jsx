@@ -4,8 +4,12 @@ import SettingsScreen from '../screens/SettingsScreen.jsx';
 import ChronicleScreen from '../screens/ChronicleScreen.jsx';
 import GoalsScreen from '../screens/GoalsScreen.jsx';
 import LegacyScreen from '../screens/LegacyScreen.jsx';
+import CalendarScreen from './CalendarScreen.jsx';
+import QuestLogScreen from './QuestLogScreen.jsx';
 
 const PAGES = [
+  { id: 'calendar', name: 'Calendar', icon: '▦', description: 'Weeks ahead: tournaments, company returns, wage days. Advance to a date.' },
+  { id: 'quests', name: 'Quest log', icon: '✎', description: 'Active contracts, open promises and current objectives.' },
   { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
   { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline, field reports, eras and the hall of fame.' },
   { id: 'codex', name: 'Codex', icon: '✓', description: 'Goals, promotion path, achievements, and the legacy office.' },
@@ -49,6 +53,8 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
       </button>
       {page.id === 'settings' ? <SettingsScreen {...props} /> : null}
       {page.id === 'chronicle' ? <ChronicleScreen {...props} /> : null}
+      {page.id === 'calendar' ? <CalendarScreen {...props} /> : null}
+      {page.id === 'quests' ? <QuestLogScreen {...props} /> : null}
       {page.id === 'codex' ? (
         <>
           <Tabs active={codexTab} onChange={(tab) => setPlace({ ...place, tab })} items={CODEX_TABS} />

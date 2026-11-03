@@ -342,7 +342,11 @@ export default function MissionsScreen({ state, actions, navigate }) {
 
               <MainPartyNotice state={state} />
               <div className="formation-toolbar">
-                <Button size="sm" onClick={() => setAssignments(buildMainPartyFormation(state, formationType) || [])} disabled={!(state.guild.mainParty || []).length}>
+                <Button
+                  size="sm"
+                  onClick={() => setAssignments(buildMainPartyFormation(state, formationType) || [])}
+                  disabled={!(state.guild.mainParty || []).length}
+                >
                   Use main party
                 </Button>
                 <Button size="sm" onClick={autoBuild}>

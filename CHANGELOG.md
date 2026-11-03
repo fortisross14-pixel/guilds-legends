@@ -2,7 +2,18 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 4 (rankings and the scripted opening)
+## Unreleased — Wave 5 (your team, your time)
+
+- Weekly time: dates are { year, month, week }. +1 week, +1 month and "Wait until…" (the calendar) live in the top bar. Monthly systems run on week 1. Travel takes 1–6 weeks, missions 1–4 weeks, and injuries heal weekly.
+- Calendar page: a month grid by week with tournaments (enterable or locked), company returns, arrival, promises, wage days and season ends, plus "Advance to this date". The Upcoming strip shows the next 3 actionable events.
+- Party bar on every screen: each hero's HP, fatigue, status icon, main-party star and a warning dot.
+- Guild Hall rooms: Training Grounds, Infirmary, Barracks, Scouts' Table, Courtyard, Council Chamber, War Room, Treasury, Armory and Facilities. Move heroes between rooms, send everyone idle at once, or auto-assign.
+- Hero status screen: stats, equipment, skills (locked ones too), room, character, relationships, career, actions, and Previous/Next.
+- Main party of up to 4 pre-fills missions and tournament entry, with substitute hints.
+- Quest Log: active contracts (shown on the map with a pin), promises and objectives.
+- Fixes: old tutorial notices are cleared after skipping; the world map shows first, with its intro in a "?" tooltip.
+
+## Wave 4 (rankings and the scripted opening)
 
 - Three ladders, Strength, Legacy and Official (tournament points from the last 12 months), for guilds and heroes. They replace the old blended score.
 - Status titles from Unknown to Global Power. Promotion uses the Official ladder.

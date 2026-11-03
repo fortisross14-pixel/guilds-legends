@@ -45,7 +45,14 @@ export const ACTIVITY_BY_ID = Object.fromEntries(MONTHLY_ACTIVITIES.map((activit
 // others are management rooms.
 export const HALL_ROOMS = [
   { id: 'training', name: 'Training Grounds', icon: '⚔', activity: 'Training', bulk: true, description: 'Heroes train each month. Pick a focus per hero.' },
-  { id: 'infirmary', name: 'Infirmary', icon: '✚', activity: 'Infirmary', bulk: true, description: 'Injured heroes heal twice as fast here; healthy heroes recover health.' },
+  {
+    id: 'infirmary',
+    name: 'Infirmary',
+    icon: '✚',
+    activity: 'Infirmary',
+    bulk: true,
+    description: 'Injured heroes heal twice as fast here; healthy heroes recover health.',
+  },
   { id: 'barracks', name: 'Barracks', icon: '☾', activity: 'Rest', bulk: true, description: 'Resting heroes shed fatigue.' },
   { id: 'scouts', name: "Scouts' Table", icon: '⌖', activity: 'Scouting', description: 'Scouts find contracts and talent.' },
   { id: 'courtyard', name: 'Courtyard', icon: '✦', activity: 'Public Exhibition', description: 'Public exhibitions build fame.' },

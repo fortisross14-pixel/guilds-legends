@@ -41,7 +41,7 @@ test('create a campaign, visit every place and building, rest for a year', async
   }
 
   // Every menu page.
-  await page.locator('.sidebar nav button', { hasText: 'Menu' }).click();
+  await page.locator('.sidebar nav button', { hasText: 'Chronicle' }).click();
   const pages = await page.locator('.building-tile').count();
   for (let i = 0; i < pages; i += 1) {
     await page.locator('.building-tile').nth(i).click();
@@ -49,13 +49,10 @@ test('create a campaign, visit every place and building, rest for a year', async
     await page.locator('.menu-page__back').click();
   }
 
-  // Time moves by resting at the Guild Hall: 4 × 3 months.
-  await page.locator('.sidebar nav button', { hasText: 'Dunmere' }).click();
-  await page.locator('.building-tile--guildHall').click();
+  // Time: +1 month twelve times.
   const yearBefore = await page.locator('.topbar__date strong').innerText();
-  for (let i = 0; i < 4; i += 1) {
-    await page.locator('.rest-control select').selectOption('3');
-    await page.getByRole('button', { name: 'Wait / rest at the Guild Hall' }).click();
+  for (let i = 0; i < 12; i += 1) {
+    await page.getByRole('button', { name: '+1 month' }).click();
     await closeModals(page);
   }
   await expect(page.locator('.topbar__date strong')).not.toHaveText(yearBefore);

@@ -7,7 +7,7 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave 2 — The world is the game (map, towns, time) | ✅ Done (2026-11-02) |
 | Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) | ✅ Done (2026-11-02) |
 | Wave 4 — Rankings as the hook, and the scripted opening | ✅ Done (2026-11-02) |
-| Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | In progress |
+| Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | ✅ Done (2026-11-02) |
 | Wave 6 — Recruitment depth | Not started |
 | Wave 7 — Specialization and rivalries | Not started |
 
@@ -222,6 +222,20 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
    - The Upcoming strip no longer lists tournaments the guild can't enter.
 
 `simulateAutoplay` and `npm run sim` move to weeks, but only enough to keep running.
+
+### Wave 5 notes (choices where the brief was open)
+
+- Weeks are stored 0–3 and shown as weeks 1–4. Monthly systems run when a month starts, so wages are paid on week 1. "+1 month" is 4 weeks, landing on the same week of the next month.
+- The council report only opens when an advance crosses a month. A single quiet week doesn't pop a report. It covers the whole advance: the date range, total upkeep and loan payments, net gold, fame and legacy, and that month's room activities.
+- Travel weeks come from map distance (1–6). Contract durations are the old month values capped at 4 weeks. Each tournament's week comes from its id, so it's stable every year. Injuries last 2–4 weeks from road wounds, or 2 to 4 + 2×risk from missions. The Infirmary heals 2 weeks per week; anywhere else heals 1.
+- Rooms reuse the monthly activities. "Send all idle heroes here" only moves heroes from the three basic rooms (training, barracks, infirmary), so scouts, exhibitors and guild-duty heroes stay put, and injured heroes are never sent to train. "Auto-assign" follows the brief literally for everyone at home.
+- "Away" heroes: on a mission, in a tournament, on branch duty, or everyone while the guild travels. Heroes recovering from injury go back to Training automatically.
+- The calendar covers the next 12 months. Tournaments for next year are projected from their definitions. Unenterable ones are greyed out ("Unlocks at National"). Wage days and season ends are listed. Loan payments show inside the wage-day entry.
+- The Upcoming strip lists the next 3 actionable events: enterable tournaments, company returns, arrival and promise deadlines.
+- Main party: the mission builder pre-fills only with available main-party heroes placed by best role fit. If none are available it falls back to the saved formation. A notice names injured or away members and suggests substitutes (the strongest available non-party heroes). Tournament entry defaults to the first available main-party hero.
+- The parallel design pass's shell (World / Guild / Chronicle nav, PartyRail) was kept. PartyRail grew into the Wave 5 party bar, and the Calendar and Quest Log were added to the Chronicle menu.
+- The old Hall overview (next-step panel, objectives, expeditions) is gone. Objectives live in the Quest Log, and the next-step ribbon now shows on every screen.
+- Removed: the Guild Hall Overview/Roster/Equipment/Facilities tabs, HallScreen, CouncilPlanner ("Resolve month" / "Rest 1–3 months"), restAtGuildHall, and the hero dossier modal (replaced by the status screen).
 
 ## Wave 6 — Recruitment depth (not started)
 

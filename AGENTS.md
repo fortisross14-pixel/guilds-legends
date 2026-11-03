@@ -53,8 +53,8 @@ npm run build       # production build to dist/ (not committed)
 
 ```text
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
-src/places/               MapScreen (home), TownScreen (building tiles → building content), MenuScreen, routes.js
-src/components/           UI primitives (UI.jsx) and modals (combat, mission game, council)
+src/places/               MapScreen (home), TownScreen (buildings), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
+src/components/           UI primitives (UI.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
 src/screens/              Building/page content rendered inside places (Hall, Missions, Heroes, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
@@ -75,12 +75,12 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   outcomes.js             mission resolution: grades, injuries, rewards, reports, sagas
   encounters.js           active combat / mission-game actions and conclusion
   rivals.js               rival seasons, AI transfer market, rival institutions
-  time.js                 monthly council resolution, aging, advanceMonths
+  time.js                 weekly loop (advanceWeeks/advanceMonths/advanceToDate), monthly council resolution, aging
   recruitment.js          roster actions: recruit, release, refound, training, appointments
   dashboard.js            UI read models (getNextAction, getDashboardSummary), small UI actions
   state.js                createNewGame and default state pieces
   save.js                 compactForSave, migrateGame, validateGame
-  timeActions.js          travelTo + road events, continueJourney, restAtGuildHall, launchExpedition
+  timeActions.js          travelTo + road events, continueJourney, launchExpedition
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
 src/game/combat.js        Per-hero turn-based battles (commands, skills, items, tell, auto-battle)
@@ -100,8 +100,8 @@ docs/AUDIT_v1.9.md        Audit and improvement waves
 One plain JSON-serializable object, created by `createNewGame` and upgraded by `migrateGame`:
 
 - `schemaVersion`, `seed`, `rngState`: save version and RNG state (advance the RNG only via `commitRng`)
-- `date: { year, month }`: month 0–11; the campaign starts in 1187
-- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `facilities`, `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`
+- `date: { year, month, week }`: month 0–11, week 0–3 (4 weeks per month); the campaign starts in 1187. Durations (travel, missions, injuries) are in weeks
+- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `facilities`, `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
 - `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty` and `salary`
 - `historicHeroes[]`: archived player heroes (compacted)
 - `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee` and an optional `demand`
