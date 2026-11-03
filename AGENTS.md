@@ -64,10 +64,12 @@ src/data/                 Static content: classes, missions, formations, world m
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
   rooms.js                Rented room, hall purchase, buildable rooms (levels, cost, weeks, upkeep, requirements), hall stages
+  charters.js, patrons.js Founding charters and run paths; the three patrons, their levels, unlocks and rivalries
 src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map), TownScene, WildScene, DialogueBox, SceneHud
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
-  core.js                 clone, seeded RNG (rngFor/commitRng), uid, chronicle helpers, roster/guild queries
+  charter.js              founding charter effects and patron standing (data-only imports, so it sits first)
+  core.js                 clone, seeded RNG (rngFor/commitRng), uid, chronicle helpers, roster/guild queries, beds and hall stage
   reputation.js           family/region reputation, levels, perks, specialization title (pure helpers)
   heroes.js               hero generation, XP/levels (level-up moments), relationships, party role ratings and estimates
   inventory.js            guild inventory, gear, shops, loot, battle item settlement
@@ -82,6 +84,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   goals.js                goals, achievements, promotion, evaluateStateInPlace
   economy.js              upkeep (wages, rent, lease, rooms), patron loans and debt, travel
   hall.js                 the guild's home: rented beds, buying/leasing the hall, building rooms, weekly construction, next-upgrade suggestion
+  connections.js          patron rewards and exclusive contracts, the Connections read model, run path scores
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
   tournamentEntry.js      player tournament entry and starting tournament combat
@@ -131,6 +134,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `moments[]`: reward screens queued for the UI (victory, levelUp, recruit); presentation only
 - `world.roadEvents`, `pendingRoadEvent`: planned and current road events
 - `reputation: { families: { Combat: pts, … }, regions: { Crownlands: pts, … } }`
+- `guild.charter` (founding charter id), `patrons: { trade|temple|smiths: { points, granted, lastGift } }`, `paths` (monthly path scores and the best path, for the Chapter 1 ending), `stats.goldEarned`; contracts may carry `patron` and `exclusive`, candidates an `objection`
 - `rivalries: { [rivalId]: { score, boutsWon, boutsLost, contractsTaken, poachedFromUs, poachedFromThem, challengesWon, challengesLost, lastChallengeSeason } }`, `nemesisIds[]`, `challenge` (pending/accepted nemesis challenge or null)
 - `officialLedger[]` entries can also come from contracts and challenges (`source`)
 - `pendingEvent` (a town event, festival or story card waiting for a choice), `news[]` + `newsUnread`

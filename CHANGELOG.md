@@ -2,6 +2,14 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 4: identity
+
+- Founding charters at new game: Merchant House, Free Company, Scholars’ Lodge and Shield of the People, each with clear modifiers, a starting bonus and a signature goal. The charter shows in the top bar and the Herald and colours a few first conversations.
+- Three patrons: the Dunmere Trade House, the Temple of the Dawn and the Ironford Smiths’ Guild. Work for them, gift them and choose well in the story to go from Stranger to Ally (or Rival), unlocking discounts, exclusive contracts, a cleric recruit and a unique weapon. Patrons partly oppose each other. A Connections page in the Herald.
+- What you take shapes what you are offered: boards lean toward the work you are known for, and recruits reflect your charter (some refuse guilds they dislike, and say why).
+- Four run paths (Richest, Best connected, Strongest, Most legendary) with live scores in the Herald’s Path panel; the charter’s path is marked.
+- Removed the old council/baron/independent alignment choice; its decisions now speak to patrons.
+
 ## Unreleased — Phase 3: from banner to hall
 
 - New campaigns start in a rented room above the Wayfarer: one bed, the banner, a small chest. Hiring needs a free bed; rent more beds or build bunks.

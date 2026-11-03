@@ -220,6 +220,18 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `battle.enemy_15` | `art/enemies/enemy_15.png` | 320×288 | — | ready | Enemy battle sprite 15 (see src/data/enemies.js rosters) |
 | `battle.enemy_16` | `art/enemies/enemy_16.png` | 320×288 | — | ready | Enemy battle sprite 16 (see src/data/enemies.js rosters) |
 
+## Crest (`crest`, placeholder #5c4a1e)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `crest.charter.merchant` | `art/crests/charter-merchant.png` | 128×128 | — | placeholder | Charter crest: Merchant House (new game, top bar, Herald) |
+| `crest.charter.free` | `art/crests/charter-free.png` | 128×128 | — | placeholder | Charter crest: Free Company (new game, top bar, Herald) |
+| `crest.charter.scholars` | `art/crests/charter-scholars.png` | 128×128 | — | placeholder | Charter crest: Scholars’ Lodge (new game, top bar, Herald) |
+| `crest.charter.shield` | `art/crests/charter-shield.png` | 128×128 | — | placeholder | Charter crest: Shield of the People (new game, top bar, Herald) |
+| `crest.patron.trade` | `art/crests/patron-trade.png` | 128×128 | — | placeholder | Patron crest: The Dunmere Trade House (Connections) |
+| `crest.patron.temple` | `art/crests/patron-temple.png` | 128×128 | — | placeholder | Patron crest: The Temple of the Dawn (Connections) |
+| `crest.patron.smiths` | `art/crests/patron-smiths.png` | 128×128 | — | placeholder | Patron crest: The Ironford Smiths’ Guild (Connections) |
+
 ## Interface (`ui`, placeholder #255a5a)
 
 | Id | Path | Size | Borrows | Status | Used for |
