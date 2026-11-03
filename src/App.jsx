@@ -71,6 +71,9 @@ import {
   challengeNemesis,
   acceptChallenge,
   declineChallenge,
+  resolveTownEvent,
+  startSideJob,
+  markNewsRead,
   takePatronLoan,
   updateSettings,
   upgradeBranch,
@@ -91,6 +94,8 @@ import MissionGameModal from './components/MissionGameModal.jsx';
 import RoadEventModal from './components/RoadEventModal.jsx';
 import UpcomingStrip from './components/UpcomingStrip.jsx';
 import MomentModal from './components/MomentModal.jsx';
+import EventCardModal from './components/EventCardModal.jsx';
+import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
 import PartyRail from './components/PartyRail.jsx';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
 
@@ -915,6 +920,40 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     return () => window.clearTimeout(autosaveTimer.current);
   }, [state, saveNow]);
 
+  // Sound: settings, unlock on first gesture, and cues from state changes.
+  useEffect(() => configureSound({ sound: state.settings.sound, volume: state.settings.volume }), [state.settings.sound, state.settings.volume]);
+  useEffect(() => {
+    const onPointer = (event) => {
+      unlockAudio();
+      if (event.target.closest?.('.button, button')) playSound('click');
+    };
+    window.addEventListener('pointerdown', onPointer);
+    return () => window.removeEventListener('pointerdown', onPointer);
+  }, []);
+  const soundMemory = useRef({ crowns: state.guild.crowns, moment: null, log: 0, result: null });
+  useEffect(() => {
+    const memory = soundMemory.current;
+    if (state.guild.crowns > memory.crowns + 5) playSound('coin');
+    memory.crowns = state.guild.crowns;
+    const moment = state.moments?.[0];
+    if (moment && moment.id !== memory.moment) {
+      playSound({ levelUp: 'levelUp', victory: 'victory', rankings: 'fanfare', statusTitle: 'fanfare', nemesis: 'fanfare' }[moment.type] || 'confirm');
+    }
+    memory.moment = moment?.id || null;
+    const encounter = state.activeEncounter;
+    if (encounter) {
+      const fresh = encounter.log.slice(memory.log);
+      if (fresh.some((entry) => /knocked out/.test(entry.text))) playSound('crit');
+      else if (fresh.some((entry) => / \+\d+/.test(entry.text) && /Cure|Cura|Mend|Potion|Kit|Purify/.test(entry.text))) playSound('heal');
+      else if (fresh.some((entry) => /−\d+|for \d+/.test(entry.text))) playSound('hit');
+      memory.log = encounter.log.length;
+      if (encounter.result && memory.result !== encounter.id) {
+        memory.result = encounter.id;
+        playSound(encounter.result.playerWon ? 'victory' : 'defeat');
+      }
+    } else memory.log = 0;
+  }, [state]);
+
   useEffect(() => {
     document.documentElement.classList.toggle('reduced-motion', state.settings.reducedMotion);
     document.documentElement.classList.toggle('compact-mode', state.settings.compactMode);
@@ -940,6 +979,9 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       waitForCompany: () => applyResult(advanceToNextEvent(state)),
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept', years = 2) => applyResult(recruitCandidate(state, id, negotiation, years), 'A new hero has joined the banner.'),
+      resolveTownEvent: (optionId) => applyResult(resolveTownEvent(state, optionId)),
+      startSideJob: (jobId, heroIds) => applyResult(startSideJob(state, jobId, heroIds), 'Off they go. Back next week.'),
+      markNewsRead: () => commitState(markNewsRead(state)),
       declineContract: (missionId) => {
         if (window.confirm('Decline this contract? A rival guild will take it, and regional reputation drops a little.'))
           applyResult(declineContract(state, missionId));
@@ -1273,6 +1315,10 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <DecisionModal state={state} actions={actions} />
       <IntroModal state={state} actions={actions} />
       <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} />
+      <EventCardModal
+        card={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !state.activeMissionGame ? state.pendingEvent : null}
+        onChoose={actions.resolveTownEvent}
+      />
       <MomentModal
         moment={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !activeReport ? state.moments?.[0] : null}
         state={state}

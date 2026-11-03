@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { TIERS } from '../data/content.js';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings, unlockedLocations } from '../data/world.js';
-import { getTravelQuote } from '../game/engine.js';
+import { getStoryView, getTravelQuote } from '../game/engine.js';
+import { BLACKWOOD_MAP } from '../data/story.js';
 import { Badge, Button, EmptyState, Panel, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
 
 const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
@@ -155,6 +156,27 @@ export default function MapScreen({ state, actions, navigate, place }) {
               </button>
             );
           })}
+          {state.missions
+            .filter((mission) => mission.bossId && LOCATION_BY_ID[mission.locationId])
+            .map((mission) => (
+              <span
+                key={mission.id}
+                className="map-boss"
+                style={{ left: `${LOCATION_BY_ID[mission.locationId].x}%`, top: `${LOCATION_BY_ID[mission.locationId].y}%` }}
+                title={mission.title}
+              >
+                ☠
+              </span>
+            ))}
+          {getStoryView(state).blackwoodOpen ? (
+            <span
+              className="map-blackwood"
+              style={{ left: `${BLACKWOOD_MAP.x}%`, top: `${BLACKWOOD_MAP.y}%` }}
+              title="The Blackwood (reach it through the Dunmere contract)"
+            >
+              🌲 {BLACKWOOD_MAP.name}
+            </span>
+          ) : null}
           {pinId && LOCATION_BY_ID[pinId] ? (
             <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
               📍

@@ -4,6 +4,7 @@ import { FORMATION_TYPES, formationForMission } from '../data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
 import { operationalLocationIds, partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, RiskPips } from '../components/UI.jsx';
+import SideJobsPanel from './SideJobsPanel.jsx';
 
 function buildBestFormation(state, formationType) {
   const formation = FORMATION_TYPES[formationType];
@@ -488,6 +489,8 @@ export default function MissionsScreen({ state, actions, navigate }) {
           )}
         </aside>
       </div>
+
+      <SideJobsPanel state={state} actions={actions} locationId={currentLocationId} />
 
       <Panel title="Parties already beyond the gate" eyebrow="Active expeditions">
         {state.activeMissions.length ? (

@@ -56,7 +56,7 @@ src/App.jsx               Shell: save slots, the three-place nav, top bar, modal
 src/places/               MapScreen (home), TownScreen (buildings), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
 src/components/           UI primitives (UI.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
 src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, …)
-src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events
+src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   core.js                 clone, seeded RNG (rngFor/commitRng), uid, chronicle helpers, roster/guild queries
@@ -66,7 +66,9 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   candidates.js           recruitment market and recruitment promises
   universe.js             rival guilds, legends, title records, artifacts, contract board
   rankings.js             Strength/Legacy/Official ladders, official points ledger, status titles, rank snapshots
-  rivalry.js              rivalry scores, nemeses, rivals taking contracts, challenge matches
+  rivalry.js              rivalry scores, nemeses, rivals taking contracts, challenge matches (nemesis, duel, exhibition, wager)
+  stories.js              Blackwood story arc, regional boss contracts, shared event-effect rules
+  townLife.js             weekly town events and news, festivals, side jobs, friendly challenges and wagers
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
   contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
   goals.js                goals, achievements, promotion, evaluateStateInPlace
@@ -90,6 +92,7 @@ src/game/combat.js        Per-hero turn-based battles (commands, skills, items, 
 src/game/missionGames.js  Playable Diplomacy / Expedition / Intrigue challenges
 src/game/legacy.js        Branch, ambition and artifact definitions
 src/game/storage.js       IndexedDB save slots, export/import
+src/audio/sfx.js          Web Audio retro sound effects (playSound, configureSound, unlockAudio)
 src/styles/index.css      Imports the per-area CSS files (base/, layout/, components/, screens/) in cascade order
 scripts/sim.mjs           npm run sim: yearly balance table
 tests/e2e/smoke.spec.js   Playwright smoke test (npm run test:e2e)
@@ -120,6 +123,10 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `reputation: { families: { Combat: pts, … }, regions: { Crownlands: pts, … } }`
 - `rivalries: { [rivalId]: { score, boutsWon, boutsLost, contractsTaken, poachedFromUs, poachedFromThem, challengesWon, challengesLost, lastChallengeSeason } }`, `nemesisIds[]`, `challenge` (pending/accepted nemesis challenge or null)
 - `officialLedger[]` entries can also come from contracts and challenges (`source`)
+- `pendingEvent` (a town event, festival or story card waiting for a choice), `news[]` + `newsUnread`
+- `sideJobs[]` (board), `activeSideJobs[]` (running; heroes have status `sidejob`), `wager`
+- `story: { step, next, choice, rivalId, done, postedMissionId }`, `defeatedBosses[]`; story and boss contracts carry `story` / `bossId`
+- `settings.sound`, `settings.volume`
 - `tutorial`, `council` (last monthly report), `notifications[]`, `settings`, `flags`
 
 `validateGame(state)` returns a list of invariant violations; the UI runs it after every action. Keep it in sync with state shape changes.

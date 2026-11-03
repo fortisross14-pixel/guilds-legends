@@ -1,5 +1,5 @@
 import React from 'react';
-import { getHero, getPromotionRequirement } from '../game/engine.js';
+import { getHero, getPromotionRequirement, getStoryView } from '../game/engine.js';
 import { EmptyState, Panel, ProgressBar } from '../components/UI.jsx';
 
 // Active contracts, open promises and current objectives in one place.
@@ -10,8 +10,46 @@ export default function QuestLogScreen({ state, navigate }) {
   const goals = (state.goals || []).filter((goal) => !goal.completed).slice(0, 4);
   const promotion = getPromotionRequirement(state);
 
+  const story = getStoryView(state);
   return (
     <div className="quest-log">
+      <Panel
+        title="The Lantern in the Blackwood"
+        eyebrow={story.done ? 'Complete' : story.started ? `Chapter ${story.step + 1} of ${story.total}` : 'Not begun'}
+      >
+        {story.done ? (
+          <p className="quest-row">
+            <strong>{story.honorific}</strong> <small>Perk: {story.choice?.perk}</small>
+          </p>
+        ) : story.started ? (
+          <button className="quest-row" onClick={() => story.pin && navigate({ view: 'map', pin: story.pin })}>
+            <strong>{story.posted ? story.posted.title : story.beat?.title}</strong>
+            <small>
+              {story.posted ? `Special contract at the Notice Board in ${story.posted.locationName}` : 'The next lead will turn up in a few months.'}
+            </small>
+            {story.pin ? <span className="quest-row__map">Show on map 📍</span> : null}
+          </button>
+        ) : (
+          <p className="muted">Rumors about the old guild will reach you soon.</p>
+        )}
+      </Panel>
+      {(state.activeSideJobs || []).length || state.wager ? (
+        <Panel title="Side jobs and wagers" eyebrow="Short tasks">
+          {(state.activeSideJobs || []).map((job) => (
+            <p key={job.id} className="quest-row">
+              <strong>{job.title}</strong> <small>{job.heroIds.map((id) => getHero(state, id)?.name).join(', ')} · back next week</small>
+            </p>
+          ))}
+          {state.wager ? (
+            <p className="quest-row">
+              <strong>Wager with {state.wager.rivalName}</strong>{' '}
+              <small>
+                Finish a {state.wager.family} contract to win {state.wager.gold} gold
+              </small>
+            </p>
+          ) : null}
+        </Panel>
+      ) : null}
       <Panel title="Active contracts" eyebrow={`${state.activeMissions.length} compan${state.activeMissions.length === 1 ? 'y' : 'ies'} in the field`}>
         {state.activeMissions.length ? (
           state.activeMissions.map((mission) => (

@@ -13,6 +13,7 @@ const ACTIVITY_STATUS = {
 export function heroStatus(state, hero) {
   if (hero.status === 'mission') return { key: 'mission', label: 'On mission', icon: '⌖', away: true };
   if (hero.status === 'tournament') return { key: 'tournament', label: 'In tournament', icon: '♛', away: true };
+  if (hero.status === 'sidejob') return { key: 'sidejob', label: 'Side job', icon: '✎', away: true };
   if (hero.branchId) return { key: 'branch', label: 'Branch duty', icon: '⚑', away: true };
   if (state.world?.activeTravel) return { key: 'traveling', label: 'Traveling', icon: '➜', away: true };
   if (hero.status === 'injured')

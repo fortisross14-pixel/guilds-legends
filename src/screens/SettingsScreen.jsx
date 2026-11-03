@@ -48,6 +48,25 @@ export default function SettingsScreen({ state, actions, slot }) {
           </div>
         </Panel>
 
+        <Panel title="Sound" eyebrow="Retro sound effects">
+          <label className="sound-setting">
+            <input type="checkbox" checked={state.settings.sound !== false} onChange={(event) => actions.updateSettings({ sound: event.target.checked })} />{' '}
+            Sound on
+          </label>
+          <label className="sound-setting">
+            Volume
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={state.settings.volume ?? 0.6}
+              onChange={(event) => actions.updateSettings({ volume: Number(event.target.value) })}
+              disabled={state.settings.sound === false}
+            />
+          </label>
+        </Panel>
+
         <Panel title="Simulation" eyebrow="Campaign preferences">
           <div className="settings-form">
             <label>

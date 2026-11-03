@@ -10,7 +10,7 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | ✅ Done (2026-11-02) |
 | Wave 6 — Recruitment depth | ✅ Done (2026-11-02) |
 | Wave 7 — Specialization, rivalries and fixes | ✅ Done (2026-11-02) |
-| Wave 8 — Content and pacing | Not started |
+| Wave 8 — Content and pacing | ✅ Done (2026-11-02) |
 
 ## The goal: turn a stack of menus into a game
 
@@ -303,12 +303,44 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
   - The phone top bar shows the date, +1 week, a "⋯" menu (+1 month, Wait until…) and one rank chip with all three ranks.
 - Removed: the ribbon's progress bar and the ribbon on non-place screens.
 
-## Wave 8 — Content and pacing (not started)
+## Wave 8 — Content and pacing (done)
 
 - More to do between contracts: town events, rival challenges, short side jobs, so "+1 week" usually brings something.
 - More enemy types per region, plus one boss contract per region.
 - A story arc about the Blackwood, where the old Broken Lantern guild vanished (continuing the opening premise).
 - A few sound effects and a victory jingle, with a mute toggle.
+
+### Wave 8 notes (choices where the brief was open)
+
+- **Weekly roll** for the guild's town (and branch towns), skipped while travelling:
+  - 45% chance of an event card, at most one a week, and none while another card waits
+  - 35% chance of a news item, which goes to the News feed with no pop-up
+  - side-job results and story or boss notices also land in News
+
+  A throwaway two-year probe that took a side job every other week saw something happen in 65–71 of 104 weeks.
+- **Event cards don't pause time.** A card waits (forced choice, like road events) until answered, and no new card arrives meanwhile, so "+1 month" can't flood you.
+- **Events:** 29 in `src/data/events.js`: 8 opportunities, 7 troubles, 8 hero moments (personality, flaw and dream conditions), 6 news items. Chance options roll with the seeded RNG.
+- **Festivals:** one per season, on week 2 of the season's first month, in a town chosen by year. Being there gives a festival card; otherwise it's a news item. Festivals are on the calendar.
+- **Side jobs:**
+  - 3 per board in each operational town, refreshed monthly (the old-map event adds one); tier-scaled rewards.
+  - 1 week with 1–2 heroes, who show as "Side job" (away) in the party bar and Quest Log.
+  - Roll: the heroes' average stat, plus 6 for a helper, plus a random −12 to +12, against the difficulty.
+  - Success pays gold and XP, with a chance of an item or reputation. Failure pays a third of the gold.
+- **Friendly rival challenges:** 5% a week, from a same-tier rival (not a nemesis), when nothing else is pending.
+  - Kinds: friendly duel (1v1), exhibition (party battle), or wager.
+  - Duels and exhibitions use challenge combat with lighter stakes (×tier: 40 gold, 3 fame, 15 Official points).
+  - A wager: finish a contract of a given family within 8 weeks to win 80×tier gold; otherwise pay it.
+  - All of them feed the rivalry score and head-to-head record.
+- **Enemies:**
+  - 7 regional rosters (5–6 types each), built from five roles (brute, swift, caster, healer, tank) with stat multipliers and 1–2 abilities, reusing the 16 sprites. Mission battles use the contract region's roster.
+  - Bosses: one per region plus the Blackwood finale. Each leads 1–3 roster enemies, has a unique ability, an intro line in the battle log, and 3.2× HP.
+- **Boss contracts:** posted when the guild is Known (100+) in a region, at a reachable town there, and shown on the map with ☠. A win records the boss as defeated (Bestiary in the Codex, plus a Chronicle entry) and grants a unique trophy accessory, +150 regional reputation, +100 Combat reputation and +20 legacy. Boss and story contracts can't be declined and don't go to rivals.
+- **Blackwood arc:** 7 beats (journal → Greenhollow herbalist → a rival hunting the same ledger → Ironford ledger → Windmere survivor → the truth (choice) → the finale).
+  - It starts after 3 contracts, 60 fame or 6 months; later beats come 3–5 months apart, with a retry a month after a failed story contract.
+  - The final choice gives a guild honorific and a permanent perk: Keepers of the Lantern (+10% fame), Wardbreakers (+10% Combat pay) or The Quiet Lantern (−10% upkeep). The finale also gives the Lantern of the Lost Company accessory.
+  - The Blackwood is a marker on the map once the finale is posted. The finale contract is at Dunmere's Notice Board (no new travel location).
+- **Sound:** synthesized in code with the Web Audio API (no files, no CREDITS needed): click, confirm, hit, crit (on a knock-out), heal, level-up, victory, defeat, coin and fanfare. On/off and volume are in Settings, saved with the campaign's settings. Audio starts after the first click.
+- **News feed:** Chronicle → News, with an unread badge that clears when opened.
 
 ## End of each wave
 

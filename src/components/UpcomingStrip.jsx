@@ -3,7 +3,7 @@ import { MONTHS } from '../data/content.js';
 import { getUpcomingEvents } from '../game/engine.js';
 import { Button } from './UI.jsx';
 
-const KIND_ICONS = { tournament: '♛', mission: '⌖', travel: '➜', promise: '✎', contract: '✍', challenge: '⚔' };
+const KIND_ICONS = { tournament: '♛', mission: '⌖', travel: '➜', promise: '✎', contract: '✍', challenge: '⚔', festival: '♫', boss: '☠', story: '✦' };
 
 // The next three things the player can act on, with a link to the calendar.
 export default function UpcomingStrip({ state, actions, navigate }) {

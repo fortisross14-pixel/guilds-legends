@@ -2,7 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 7 (specialization, rivalries and fixes)
+## Unreleased — Wave 8 (content and pacing)
+
+- Weekly town events (29 cards and news items), seasonal festivals and a News feed. "+1 week" usually brings something.
+- Side jobs on every Notice Board: 1 week, 1–2 heroes, small rewards.
+- Friendly rival challenges: duels, exhibitions and wagers.
+- Regional enemy rosters with roles and abilities, and one boss contract per region (unique ability, trophy, Bestiary).
+- The Blackwood story arc: 7 beats over the first years, a final choice with a lasting perk and title, and a finale boss.
+- Retro sound effects with on/off and volume in Settings.
+
+## Wave 7 (specialization, rivalries and fixes)
 
 - Reputation per mission family and per region, with named levels and perks: better pay and fame, extra and early contracts, cheaper regional recruits, and a top-level bonus. Specialization titles (Monster Hunters, Envoys, Pathfinders, Shadow Hand).
 - Declined or expired contracts go to rival guilds, which gain fame, Legacy and Official points. There is a Decline button on the Notice Board.

@@ -6,9 +6,11 @@ import GoalsScreen from '../screens/GoalsScreen.jsx';
 import LegacyScreen from '../screens/LegacyScreen.jsx';
 import CalendarScreen from './CalendarScreen.jsx';
 import QuestLogScreen from './QuestLogScreen.jsx';
+import { BestiaryScreen, NewsScreen } from './NewsScreen.jsx';
 
 const PAGES = [
   { id: 'calendar', name: 'Calendar', icon: '▦', description: 'Weeks ahead: tournaments, company returns, wage days. Advance to a date.' },
+  { id: 'news', name: 'News', icon: '✉', description: 'Town talk, side-job results and world events.' },
   { id: 'quests', name: 'Quest log', icon: '✎', description: 'Active contracts, open promises and current objectives.' },
   { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
   { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline, field reports, eras and the hall of fame.' },
@@ -18,6 +20,7 @@ const PAGES = [
 const CODEX_TABS = [
   { id: 'goals', label: 'Goals & promotion', icon: '✓' },
   { id: 'legacy', label: 'Legacy office', icon: '♛' },
+  { id: 'bestiary', label: 'Bestiary & story', icon: '☠' },
 ];
 
 export default function MenuScreen({ state, actions, navigate, slot, place, setPlace }) {
@@ -36,7 +39,10 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
           {PAGES.map((item) => (
             <button key={item.id} className={`building-tile building-tile--${item.id}`} onClick={() => setPlace({ view: 'menu', page: item.id, tab: null })}>
               <span className="building-tile__icon">{item.icon}</span>
-              <strong>{item.name}</strong>
+              <strong>
+                {item.name}
+                {item.id === 'news' && state.newsUnread ? <span className="news-badge">{state.newsUnread}</span> : null}
+              </strong>
               <small>{item.description}</small>
             </button>
           ))}
@@ -45,7 +51,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
     );
   }
 
-  const codexTab = place.tab === 'legacy' ? 'legacy' : 'goals';
+  const codexTab = ['legacy', 'bestiary'].includes(place.tab) ? place.tab : 'goals';
   return (
     <div className={`menu-page menu-page--${page.id}`}>
       <button className="town-header__back menu-page__back" onClick={() => setPlace({ view: 'menu', page: null })}>
@@ -55,10 +61,11 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
       {page.id === 'chronicle' ? <ChronicleScreen {...props} /> : null}
       {page.id === 'calendar' ? <CalendarScreen {...props} /> : null}
       {page.id === 'quests' ? <QuestLogScreen {...props} /> : null}
+      {page.id === 'news' ? <NewsScreen {...props} /> : null}
       {page.id === 'codex' ? (
         <>
           <Tabs active={codexTab} onChange={(tab) => setPlace({ ...place, tab })} items={CODEX_TABS} />
-          {codexTab === 'goals' ? <GoalsScreen {...props} /> : <LegacyScreen {...props} />}
+          {codexTab === 'goals' ? <GoalsScreen {...props} /> : codexTab === 'legacy' ? <LegacyScreen {...props} /> : <BestiaryScreen {...props} />}
         </>
       ) : null}
     </div>
