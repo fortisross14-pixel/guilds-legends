@@ -2,7 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 8 (content and pacing)
+## Unreleased — 16-bit JRPG visual pass
+
+- New look: Dragon Quest-style windows (deep blue fill, white pixel frame), Pixelify Sans for the game voice and Atkinson Hyperlegible for reading text, command menus with a ▶ cursor and arrow-key navigation. Replaces "Midnight Guild Atlas". See `DESIGN.md` and `docs/UX_REDESIGN.md`.
+- Title screen with Continue / New Game menu; status strip and World / Guild / Chronicle command dock; party status windows.
+- Pixel overworld map with route lines, town tiles, a "You are here" pointer, boss and story markers; scene banners for towns and every building.
+- Front-view battle screen with command and message windows, party status windows, damage numbers and hit/heal effects.
+- Classic shop (buy/sell list, item window with per-hero stat comparison, gold window), JRPG hero status page, ladder tables, victory / level-up / rank-up moments, dialogue boxes for story and town events.
+- CSS rebuilt as one system (tokens, windows, menus) in the per-area files; 12 old stylesheets deleted. No engine changes.
+
+## Wave 8 (content and pacing)
 
 - Weekly town events (29 cards and news items), seasonal festivals and a News feed. "+1 week" usually brings something.
 - Side jobs on every Notice Board: 1 week, 1–2 heroes, small rewards.
