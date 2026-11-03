@@ -163,8 +163,8 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
   next.guild.crowns -= totalFee;
   tallySpend(next, 'recruits', totalFee);
   tallyGuild(next, 'recruits');
-  hero.signedFee = totalFee;
   const hero = clone(candidate);
+  hero.signedFee = totalFee;
   const acceptedDemand = acceptingPromise && candidate.demand ? { ...candidate.demand, status: 'active', acceptedSerial: campaignMonthSerial(next) } : null;
   const recruitedLocationId = hero.locationId || currentLocationId;
   delete hero.signingFee;
