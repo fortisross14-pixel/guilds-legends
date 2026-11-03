@@ -15,6 +15,7 @@ import {
   updateGuildTitleRecordInPlace,
 } from './tournaments.js';
 import { pushRankingsMomentInPlace, recordOfficialResultsInPlace } from './rankings.js';
+import { afterTournamentInPlace } from './seasons.js';
 
 function buildGuildTournamentField(state, tournament) {
   const eligible = state.rivals
@@ -272,6 +273,7 @@ function recordGuildTournamentInPlace(state, tournament, championGuildId, player
   state.universeStats.guildTournamentsResolved = (state.universeStats.guildTournamentsResolved || 0) + 1;
   recordOfficialResultsInPlace(state, tournament, 'guild');
   if (playerResult) {
+    afterTournamentInPlace(state, { heroIds: record.team.map((member) => member.heroId), finish: playerResult.finish });
     state.pendingReports.unshift({ kind: 'tournament', id: record.id });
     pushRankingsMomentInPlace(state, `Rankings after the ${tournament.name}`);
   }

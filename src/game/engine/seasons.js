@@ -5,7 +5,7 @@
 // the Chronicle (mission log, past reviews) and hero Career tabs.
 import { PATRONS, PATRON_LIST } from '../../data/patrons.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
-import { addChronicle, noteSeasonHighlight, pushMoment, seasonOf, tallyFamily, tallyGuild, tallyHero } from './core.js';
+import { addChronicle, getHero, noteSeasonHighlight, pushMoment, seasonOf, tallyFamily, tallyGuild, tallyHero } from './core.js';
 import { patronPoints } from './charter.js';
 import { getPlayerRanks, getPointsToPass, guildLadder } from './rankings.js';
 
@@ -60,7 +60,14 @@ export function considerRecordInPlace(state, scope, key, value, who = {}) {
   if (announce) {
     const display = `${definition.prefix || ''}${value.toLocaleString()}${definition.unit ? ` ${definition.unit}` : ''}`;
     seasonOf(state).broken.push({ scope, key, label: definition.label, display, name: book[key].name, previous: current.name });
-    pushMoment(state, { type: 'record', title: 'Record broken!', label: definition.label, display, holder: book[key].name, previous: `${current.name} (${current.year})` });
+    pushMoment(state, {
+      type: 'record',
+      title: 'Record broken!',
+      label: definition.label,
+      display,
+      holder: book[key].name,
+      previous: `${current.name} (${current.year})`,
+    });
   }
   return true;
 }
@@ -83,7 +90,7 @@ export function afterContractInPlace(state, { mission, grade, success, heroIds, 
     considerRecordInPlace(state, 'hero', 'careerWins', hero.career.wins || 0, { heroId, name: hero.name });
     considerRecordInPlace(state, 'hero', 'goldEarned', hero.career.goldForGuild, { heroId, name: hero.name });
   });
-  const score = (mission.difficulty || 50) + (success ? 100 - (estimate ?? 50) : estimate ?? 50);
+  const score = (mission.difficulty || 50) + (success ? 100 - (estimate ?? 50) : (estimate ?? 50));
   noteSeasonHighlight(state, success ? 'big' : 'worst', { title: mission.title, score, detail: `${grade} · ${estimate ?? '?'}% estimate`, kind: 'contract' });
   state.streak ||= { current: 0 };
   state.streak.current = success ? state.streak.current + 1 : 0;
@@ -124,15 +131,16 @@ export function afterBattleInPlace(state, encounter, result) {
 }
 
 /** The player finished a tournament: entries, best finish, titles and the hero's bouts. */
-export function afterTournamentInPlace(state, { heroId, finish, bouts = 0 }) {
+export function afterTournamentInPlace(state, { heroId = null, heroIds = [], finish, bouts = 0 }) {
   tallyGuild(state, 'entries');
   const season = seasonOf(state);
   season.g.bestFinish = Math.min(season.g.bestFinish || 99, finish);
-  tallyHero(state, heroId, 'bouts', bouts);
-  if (finish === 1) {
-    tallyGuild(state, 'titles');
-    tallyHero(state, heroId, 'titles');
-  }
+  const ids = heroId ? [heroId] : heroIds;
+  ids.forEach((id) => {
+    if (bouts) tallyHero(state, id, 'bouts', bouts);
+    if (finish === 1) tallyHero(state, id, 'titles');
+  });
+  if (finish === 1) tallyGuild(state, 'titles');
 }
 
 /** Monthly: rank series for the season chart, best ranks, and slow-moving hero records. */
@@ -204,8 +212,17 @@ function reactionLine(state, season) {
     return { speaker: PATRONS[patron.id].rep.name, role: PATRONS[patron.id].short, text: lines[patron.id] };
   }
   const nemesis = (state.rivals || []).find((rival) => (state.nemesisIds || []).includes(rival.id));
-  if (nemesis) return { speaker: nemesis.name, role: 'Your nemesis', text: good ? 'Enjoy the season. It will not last.' : 'Another season, another banner in the mud. Ours stays high.' };
-  return { speaker: 'The Dunmere crier', role: 'Town talk', text: good ? `${state.guild.name} had a season people will talk about.` : `${state.guild.name} had a season people would rather forget.` };
+  if (nemesis)
+    return {
+      speaker: nemesis.name,
+      role: 'Your nemesis',
+      text: good ? 'Enjoy the season. It will not last.' : 'Another season, another banner in the mud. Ours stays high.',
+    };
+  return {
+    speaker: 'The Dunmere crier',
+    role: 'Town talk',
+    text: good ? `${state.guild.name} had a season people will talk about.` : `${state.guild.name} had a season people would rather forget.`,
+  };
 }
 
 /**
@@ -222,7 +239,14 @@ export function closeSeasonInPlace(state, year) {
   season.g.legacy = state.guild.legacy - (season.g.legacyStart || 0);
   // Every guild's rank, for season-by-season head-to-heads.
   season.ladder = Object.fromEntries(
-    ['strength', 'official'].map((ladder) => [LADDER_KEYS[ladder], Object.fromEntries(guildLadder(state, ladder).filter((row) => !row.player).map((row) => [row.id, row.rank]))]),
+    ['strength', 'official'].map((ladder) => [
+      LADDER_KEYS[ladder],
+      Object.fromEntries(
+        guildLadder(state, ladder)
+          .filter((row) => !row.player)
+          .map((row) => [row.id, row.rank]),
+      ),
+    ]),
   );
 
   const scores = Object.entries(season.h).map(([heroId, stats]) => ({ heroId, name: heroName(state, heroId), score: heroSeasonScore(stats) }));
@@ -310,8 +334,18 @@ export function getRecordBook(state) {
   const strongest = guildLadder(state, 'strength').find((row) => !row.player);
   const ourTitles = (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0);
   return {
-    guild: Object.entries(GUILD_RECORDS).map(([key, definition]) => ({ key, label: definition.label, record: book.guild?.[key] || null, display: book.guild?.[key] ? displayRecord(definition, book.guild[key]) : '—' })),
-    hero: Object.entries(HERO_RECORDS).map(([key, definition]) => ({ key, label: definition.label, record: book.hero?.[key] || null, display: book.hero?.[key] ? displayRecord(definition, book.hero[key]) : '—' })),
+    guild: Object.entries(GUILD_RECORDS).map(([key, definition]) => ({
+      key,
+      label: definition.label,
+      record: book.guild?.[key] || null,
+      display: book.guild?.[key] ? displayRecord(definition, book.guild[key]) : '—',
+    })),
+    hero: Object.entries(HERO_RECORDS).map(([key, definition]) => ({
+      key,
+      label: definition.label,
+      record: book.hero?.[key] || null,
+      display: book.hero?.[key] ? displayRecord(definition, book.hero[key]) : '—',
+    })),
     rivals: [
       topTitles ? `${topTitles.name} holds the most titles in the world with ${topTitles.titles || 0}. ${state.guild.name} has ${ourTitles}.` : null,
       strongest ? `${strongest.name} tops the Strength ladder.` : null,
@@ -321,7 +355,7 @@ export function getRecordBook(state) {
 
 /** A hero's career by season, plus timeline, contracts and awards. Works for any hero. */
 export function getHeroCareer(state, heroId) {
-  const hero = allHeroes(state).find((item) => item.id === heroId) || null;
+  const hero = allHeroes(state).find((item) => item.id === heroId) || getHero(state, heroId) || null;
   const years = Object.values(state.seasons || {})
     .filter((season) => season.h?.[heroId])
     .sort((a, b) => a.year - b.year)
@@ -337,7 +371,7 @@ export function getHeroCareer(state, heroId) {
   return { hero, years, total, contracts, awards: hero?.awards || [], records, timeline: (hero?.history || []).slice(0, 40) };
 }
 
-/** The mission log: every contract and wild boss fight, newest first, with filter options. */
+/** The mission log: every contract, wild boss fight and tournament run, newest first, with filter options. */
 export function getMissionLog(state) {
   const names = (ids) => ids.map((id) => heroName(state, id));
   const contracts = (state.missionHistory || []).map((record) => ({
@@ -370,7 +404,27 @@ export function getMissionLog(state) {
     heroes: names(entry.heroIds),
     report: null,
   }));
-  const entries = [...contracts, ...bosses].sort((a, b) => b.year - a.year || b.month - a.month);
+  const tournaments = (state.tournamentHistory || [])
+    .filter((record) => record.playerResult)
+    .map((record) => {
+      const heroIds = record.team ? record.team.map((member) => member.heroId) : [record.playerResult.heroId].filter(Boolean);
+      return {
+        id: record.id,
+        kind: 'tournament',
+        year: record.year,
+        month: 8,
+        title: record.title,
+        family: 'Tournament',
+        locationId: record.location,
+        locationName: LOCATION_BY_ID[record.location]?.name || String(record.location || ''),
+        outcome: record.playerResult.finish === 1 ? 'won' : 'failed',
+        grade: record.playerResult.finish === 1 ? 'Champion' : `Top ${record.playerResult.finish}`,
+        heroIds,
+        heroes: names(heroIds),
+        report: { kind: 'tournament', id: record.id },
+      };
+    });
+  const entries = [...contracts, ...bosses, ...tournaments].sort((a, b) => b.year - a.year || b.month - a.month);
   return {
     entries,
     years: [...new Set(entries.map((entry) => entry.year))].sort((a, b) => b - a),
@@ -387,8 +441,21 @@ export function getHallOfFame(state) {
     .map((hero) => {
       const career = getHeroCareer(state, hero.id);
       const best = [...career.years].sort((a, b) => b.score - a.score)[0] || null;
-      const careerScore = (hero.career?.wins || 0) * 5 + (hero.career?.titles || 0) * 30 + (hero.career?.missions || 0) * 2 + (hero.awards?.length || 0) * 20 + career.records.length * 15;
-      return { hero, best, awards: hero.awards || [], records: career.records, careerScore, ending: hero.status === 'dead' ? 'Fell in service' : 'Retired', inducted: careerScore >= 60 || (hero.awards || []).length > 0 || career.records.length > 0 };
+      const careerScore =
+        (hero.career?.wins || 0) * 5 +
+        (hero.career?.titles || 0) * 30 +
+        (hero.career?.missions || 0) * 2 +
+        (hero.awards?.length || 0) * 20 +
+        career.records.length * 15;
+      return {
+        hero,
+        best,
+        awards: hero.awards || [],
+        records: career.records,
+        careerScore,
+        ending: hero.status === 'dead' ? 'Fell in service' : 'Retired',
+        inducted: careerScore >= 60 || (hero.awards || []).length > 0 || career.records.length > 0,
+      };
     })
     .filter((entry) => entry.inducted)
     .sort((a, b) => b.careerScore - a.careerScore);
@@ -403,7 +470,9 @@ export function getLadderHistory(state) {
     current: ranks[ladder],
     best: state.records?.guild?.[`best${ladder[0].toUpperCase()}${ladder.slice(1)}`]?.value || ranks[ladder].rank,
     toPass: getPointsToPass(state, ladder),
-    seasons: seasons.map((season) => ({ year: season.year, end: season.ranksEnd?.[key] ?? season.series?.at(-1)?.[key] ?? null, best: season.best?.[key] ?? null })).filter((row) => row.end),
+    seasons: seasons
+      .map((season) => ({ year: season.year, end: season.ranksEnd?.[key] ?? season.series?.at(-1)?.[key] ?? null, best: season.best?.[key] ?? null }))
+      .filter((row) => row.end),
   }));
 }
 
@@ -417,7 +486,11 @@ export function getHeadToHead(state, rivalId) {
   const seasons = Object.values(state.seasons || {})
     .filter((season) => season.ladder)
     .sort((a, b) => a.year - b.year)
-    .map((season) => ({ year: season.year, ours: { s: season.ranksEnd?.s, o: season.ranksEnd?.o }, theirs: { s: season.ladder.s?.[rivalId], o: season.ladder.o?.[rivalId] } }));
+    .map((season) => ({
+      year: season.year,
+      ours: { s: season.ranksEnd?.s, o: season.ranksEnd?.o },
+      theirs: { s: season.ladder.s?.[rivalId], o: season.ladder.o?.[rivalId] },
+    }));
   return {
     rival,
     nemesis: (state.nemesisIds || []).includes(rivalId),
