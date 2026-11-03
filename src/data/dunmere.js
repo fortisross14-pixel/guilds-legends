@@ -42,7 +42,7 @@ export function dialogueForDunmereNpc(npcId, state) {
     speaker: 'Nia Voss',
     lines: completedOldRoad
       ? [`So the stories are true. The road is open and ${guild} did it. The Harvest Melee will be more interesting now.`]
-      : [`I like a company that starts small. I like it better if it survives. The Arena hosts the Harvest Melee when the season turns.`],
+      : [`I like a company that starts small. I like it better if it survives. Come back when Dunmere has a reason to remember your name.`],
     door: 'arena',
   };
   if (npcId === 'traveler') return { speaker: 'Iven Quill', lines: [`Ironford? Follow the river east. You can hear the foundries before you see the walls.`, `A world feels larger when you learn it from someone who has walked it.`], door: null };

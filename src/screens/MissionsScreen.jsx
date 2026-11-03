@@ -60,7 +60,16 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const [operationLocationId, setOperationLocationId] = useState(currentLocationId);
   const activeLocationId = operationalIds.includes(operationLocationId) ? operationLocationId : currentLocationId;
   const currentLocation = LOCATION_BY_ID[activeLocationId];
-  const localMissions = useMemo(() => state.missions.filter((mission) => mission.locationId === activeLocationId), [state.missions, activeLocationId]);
+  const localMissions = useMemo(() => {
+    const requiresIntroduction = state.flags?.opening?.phase === 'complete';
+    return state.missions.filter(
+      (mission) => {
+        if (mission.locationId !== activeLocationId) return false;
+        if (requiresIntroduction && !state.tutorial.completed) return mission.templateId === 'wolves-old-road' && Boolean(state.flags?.oldRoadIntroduced);
+        return mission.templateId !== 'wolves-old-road' || !requiresIntroduction || state.flags?.oldRoadIntroduced;
+      },
+    );
+  }, [state.missions, state.flags, state.tutorial.completed, activeLocationId]);
   const [selectedId, setSelectedId] = useState(localMissions[0]?.id || null);
   const [formationType, setFormationType] = useState('Combat');
   const [assignments, setAssignments] = useState([]);
@@ -77,6 +86,8 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const families = ['All', ...new Set(localMissions.map((mission) => mission.family))];
   const availableHeroes = state.heroes.filter((hero) => hero.status === 'available');
   const traveling = Boolean(state.world?.activeTravel);
+  const oldRoadKnown = Boolean(state.flags?.oldRoadIntroduced);
+  const oldRoadComplete = state.missionHistory.some((mission) => mission.templateId === 'wolves-old-road');
 
   useEffect(() => {
     if (selected && selected.id !== selectedId) setSelectedId(selected.id);
@@ -188,6 +199,16 @@ export default function MissionsScreen({ state, actions, navigate }) {
           Change region
         </Button>
       </div>
+
+      {oldRoadKnown && !oldRoadComplete ? (
+        <section className="first-contract-callout">
+          <span>BRAM HALLOW’S REQUEST</span>
+          <div>
+            <strong>Wolves on the Old Road</strong>
+            <p>The merchant needs a company to make the road safe again. Build a two-hero Combat arrangement, then send it out.</p>
+          </div>
+        </section>
+      ) : null}
 
       <div className="mission-layout">
         <div className="mission-board" data-menu>

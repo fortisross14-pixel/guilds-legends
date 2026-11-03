@@ -53,6 +53,10 @@ export function recordDunmereExploration(state, targetId, position) {
   town.discovered = [...new Set([...(town.discovered || []), targetId])];
   town.conversations ||= {};
   if (targetId.startsWith('npc:')) town.conversations[targetId.slice(4)] = true;
+  if (targetId === 'npc:merchant') next.flags.oldRoadIntroduced = true;
+  if (targetId === 'npc:fighter' && next.missionHistory?.some((mission) => mission.templateId === 'wolves-old-road')) {
+    next.flags.harvestMeleeIntroduced = true;
+  }
   if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
     town.x = Math.round(position.x);
     town.y = Math.round(position.y);

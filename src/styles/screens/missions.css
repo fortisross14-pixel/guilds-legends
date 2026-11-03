@@ -11,6 +11,7 @@
 .travel-lock p { margin: 2px 0 0; font-size: var(--t-small); }
 
 .mission-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--s4); align-items: start; margin-bottom: var(--s4); }
+.first-contract-callout { display: flex; align-items: center; gap: 16px; margin: 0 0 var(--s4); padding: 13px 18px; border: 1px solid rgba(230,191,110,.44); background: linear-gradient(90deg, rgba(230,191,110,.16), rgba(20,18,25,.68) 54%); box-shadow: 0 0 24px rgba(230,191,110,.08); }.first-contract-callout > span { color: var(--gold-bright); font: 600 10px var(--font-label); letter-spacing: .12em; white-space: nowrap; }.first-contract-callout div { display: grid; gap: 2px; }.first-contract-callout strong { font-family: var(--font-display); font-size: 20px; }.first-contract-callout p { margin: 0; color: var(--text-dim); font-size: 13px; }
 
 /* The contract list window. */
 .mission-board { display: grid; padding: 6px; }

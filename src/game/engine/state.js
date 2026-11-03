@@ -160,6 +160,8 @@ export function createNewGame(options = {}) {
       // The exploration layer owns visual movement; this tiny serializable record
       // only preserves consequential opening progress across a refresh.
       opening: { phase: 'house', choices: [] },
+      oldRoadIntroduced: false,
+      harvestMeleeIntroduced: false,
       firstMissionInspected: false,
       firstHeroInspected: false,
       goalsInspected: false,
