@@ -35,6 +35,12 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
     setPlace({ view: 'town', building: id, tab: null });
   };
 
+  // Exploration owns the entire viewport. Keeping it below this animated screen
+  // would turn its fixed canvas into a descendant-sized strip.
+  if (!building && locationId === 'dunmere' && state.flags?.opening?.phase === 'complete') {
+    return <DunmereExploration state={state} actions={actions} openBuilding={openBuilding} />;
+  }
+
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
       <SceneBackdrop scene={BUILDING_SCENES[building] || 'scene_07'} dim={building ? 0.58 : 0.28} />
@@ -86,8 +92,6 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
           {building === 'shop' ? <ShopScreen {...props} /> : null}
           {building === 'herald' ? <RankingsScreen {...props} /> : null}
         </div>
-      ) : locationId === 'dunmere' && state.flags?.opening?.phase === 'complete' ? (
-        <DunmereExploration state={state} actions={actions} openBuilding={openBuilding} />
       ) : (
         <div className="town-body">
           <nav className="building-grid" aria-label={`Buildings in ${town.name}`} data-menu>
