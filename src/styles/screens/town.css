@@ -1,85 +1,91 @@
-/* Town, building headers, Guild Hall rooms and the Chronicle menu. */
+/* Town, buildings, Guild Hall rooms and the Chronicle menu. The scene fills the
+   viewport (SceneBackdrop); the place name and menus float over it. */
 
-/* Scene banner with the place name in a window. */
-.town-scene { position: relative; display: flex; align-items: flex-end; min-height: 216px; margin: 0 0 var(--s4); padding: 12px; border: 4px solid transparent; border-image: var(--frame) 4 / 4px stretch; background-position: center 72%; background-clip: padding-box; }
-.town-scene--building { min-height: 176px; }
-.town-scene__name { display: flex; flex-direction: column; gap: 2px; max-width: calc(100% - 8px); padding: 8px 14px 10px; }
-.town-scene__name h1 { order: -1; margin: 0; }
-.town-scene__name .eyebrow { color: var(--ink-dim); }
-.town-scene__name h1 .town-header__building { color: var(--ink); }
-.town-header:not(.town-scene) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: var(--s4); }
-.town-header:not(.town-scene) > div:first-child { display: flex; flex-direction: column; }
-.town-header:not(.town-scene) h1 { order: -1; margin: 0; }
-.town-scene .town-header__back { position: absolute; top: 10px; left: 10px; z-index: 2; }
-.town-scene .heading-metrics { position: absolute; top: 10px; right: 10px; z-index: 2; }
-.town-header__building { color: var(--ink-dim); }
+/* Place title: large serif over the art, no box. */
+.place-title { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'back back' 'name meta'; align-items: end; gap: 10px 16px; margin: 4px 0 var(--s5); }
+.place-title .town-header__back { grid-area: back; justify-self: start; }
+.place-title__name { grid-area: name; display: flex; flex-direction: column; gap: 2px; text-shadow: 0 2px 18px rgba(0, 0, 0, .85), 0 0 2px rgba(0, 0, 0, .9); }
+.place-title__name h1 { order: -1; margin: 0; font-size: clamp(40px, 5vw, 64px); font-weight: 700; letter-spacing: .01em; line-height: .95; }
+.place-title__name .eyebrow { color: var(--text); opacity: .85; }
+.place-title--building .place-title__name h1 { font-size: clamp(34px, 4vw, 52px); }
+.place-title .heading-metrics { grid-area: meta; }
+.town-header:not(.place-title) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: var(--s5); text-shadow: 0 2px 16px rgba(0, 0, 0, .85); }
+.town-header:not(.place-title) > div:first-child { display: flex; flex-direction: column; }
+.town-header:not(.place-title) h1 { order: -1; margin: 0; font-size: clamp(38px, 4.5vw, 56px); font-weight: 700; }
+.town-header__building { color: var(--text-dim); }
 
-.town-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s4); align-items: start; }
-.town-info { display: grid; gap: 10px; padding: 12px 14px; }
-.town-info p { margin: 0; color: var(--ink); }
+/* Town square: building menu on the left, the town's note on the right; the art between. */
+.town-body { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: var(--s5); align-items: start; }
+.town-info { justify-self: end; max-width: 340px; display: grid; gap: 12px; padding: 18px 20px; }
+.town-info p { margin: 0; color: var(--text); font-family: var(--font-display); font-size: 19px; font-style: italic; line-height: 1.4; }
 .town-info .heading-metrics { justify-content: flex-start; }
-.town-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: var(--s4); padding: 10px 14px; }
-.town-notice span { color: var(--ink-dim); font-family: var(--font-prose); font-size: var(--t-small); }
+.town-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: var(--s4); padding: 14px 18px; }
+.town-notice span { color: var(--text-dim); font-size: var(--t-small); }
 
-/* Buildings, rooms and Chronicle pages as a command menu. */
-.building-grid { display: grid; margin: 0 0 var(--s4); padding: 6px; }
-.building-tile { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; gap: 0 12px; width: 100%; min-height: 64px; padding: 8px 12px 8px 32px; }
-.building-tile + .building-tile { border-top: 1px dashed var(--win-line); }
-.building-tile__icon { grid-row: 1 / span 2; display: grid; place-items: center; width: 40px; height: 40px; color: var(--ink-dim); }
-.building-tile:hover .building-tile__icon, .building-tile:focus-visible .building-tile__icon { color: var(--ink); }
-.building-tile strong { grid-column: 2; font-size: 19px; font-weight: 600; }
-.building-tile small { grid-column: 2; color: var(--ink-dim); }
-.building-tile .badge { grid-column: 3; grid-row: 1 / span 2; }
+/* Buildings, rooms and Chronicle pages: a refined menu panel. */
+.building-grid { display: grid; gap: 0; margin: 0 0 var(--s4); padding: 10px 10px; }
+.building-tile { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; gap: 0 14px; width: 100%; min-height: 66px; padding: 10px 14px 10px 34px; }
+.building-tile + .building-tile { border-top: 1px solid var(--line-soft); }
+.building-tile__icon { grid-row: 1 / span 2; display: grid; place-items: center; width: 36px; height: 36px; color: var(--brass); transition: color var(--fast) var(--ease), filter var(--fast) var(--ease); }
+.building-tile__icon .pixel-icon { width: 24px; height: 24px; }
+.building-tile:hover .building-tile__icon, .building-tile:focus-visible .building-tile__icon { color: var(--gold-bright); filter: drop-shadow(0 0 8px rgba(246, 210, 140, .6)); }
+.building-tile strong { grid-column: 2; font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.1; }
+.building-tile small { grid-column: 2; color: var(--text-dim); }
+.building-tile .badge { grid-column: 3; grid-row: 1 / span 2; min-width: 26px; justify-content: center; border-radius: 13px; }
 .building > .tabs { margin-bottom: var(--s4); }
 
 /* Guild Hall. */
-.hall-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-bottom: 10px; padding: 8px 12px; font-size: var(--t-ui); }
-.hall-summary > span:nth-of-type(1) { color: var(--gold); }
-.room-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
-.room-actions label { display: grid; gap: 4px; min-width: 200px; }
-.hall-room__title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 6px 0 2px; font-size: var(--t-h2); }
-.hall-room__title .town-header__back { font-size: var(--t-ui); }
-.hall-room > .muted { margin: 0 0 10px; }
-.hall-room .panel + .panel, .hall-rooms .panel + .panel { margin-top: var(--s4); }
+.hall-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 22px; margin-bottom: var(--s4); padding: 12px 18px; font-size: 14px; }
+.hall-summary strong { font-family: var(--font-display); font-size: 19px; }
+.hall-summary > span { color: var(--text-dim); }
+.hall-summary > span:nth-of-type(1) { color: var(--gold-bright); font-weight: 700; }
+.hall-rooms .building-grid { max-width: 520px; }
+.room-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin-bottom: var(--s4); }
+.room-actions label { display: grid; gap: 4px; min-width: 220px; }
+.hall-room__title { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 4px 0 4px; font-size: 34px; text-shadow: 0 2px 16px rgba(0, 0, 0, .85); }
+.hall-room__title .pixel-icon { color: var(--brass); }
+.hall-room > .muted { margin: 0 0 var(--s4); color: var(--text); text-shadow: 0 1px 10px rgba(0, 0, 0, .9); }
 .hall-room .panel { margin-bottom: var(--s4); }
 
-/* Heroes listed as status rows. */
-.room-hero { display: grid; grid-template-columns: minmax(220px, 1.3fr) minmax(140px, 1fr) auto; align-items: center; gap: 10px 16px; padding: 8px 0; border-top: 1px dashed var(--win-line); }
-.panel__body > .room-hero:first-child { border-top: 0; padding-top: 0; }
-.room-hero.is-away { opacity: .7; }
-.room-hero__who { display: flex; align-items: center; gap: 12px; min-width: 0; padding-top: 4px; padding-bottom: 4px; }
+/* Heroes as status rows. */
+.room-hero { display: grid; grid-template-columns: minmax(220px, 1.3fr) minmax(140px, 1fr) auto; align-items: center; gap: 10px 20px; padding: 10px 0; border-top: 1px solid var(--line-soft); }
+.panel__body > .room-hero:first-child { border-top: 0; }
+.room-hero.is-away { opacity: .65; }
+.room-hero__who { display: flex; align-items: center; gap: 14px; min-width: 0; padding-top: 4px; padding-bottom: 4px; }
 .room-hero__who > span { display: grid; gap: 2px; min-width: 0; }
-.room-hero__who strong { font-size: 18px; font-weight: 600; }
-.room-hero__who small { color: var(--ink-dim); }
-.room-hero__bars { display: grid; gap: 6px; }
-.room-hero__controls { display: flex; flex-wrap: wrap; gap: 8px; }
-.room-hero__controls label { display: grid; gap: 4px; min-width: 150px; }
-.room-hero__away { color: var(--ink-faint); font-family: var(--font-pixel); font-size: var(--t-label); }
-.war-room__member { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 0; border-top: 1px dashed var(--win-line); color: var(--ink); font-family: var(--font-pixel); font-size: var(--t-ui); }
+.room-hero__who strong { font-family: var(--font-display); font-size: 21px; font-weight: 700; line-height: 1.1; }
+.room-hero__who small { color: var(--text-dim); }
+.room-hero__bars { display: grid; gap: 8px; }
+.room-hero__controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.room-hero__controls label { display: grid; gap: 4px; min-width: 160px; }
+.room-hero__away { color: var(--text-faint); font-family: var(--font-label); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.war-room__member { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 0; border-top: 1px solid var(--line-soft); color: var(--text); font-size: 14px; }
 .war-room__member:first-child { border-top: 0; }
-.war-room__formation { margin: 6px 0; }
-.treasury-table { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; margin: 0; font-family: var(--font-pixel); }
-.treasury-table dt { color: var(--ink-dim); }
-.treasury-table dd { margin: 0; color: var(--ink); font-family: var(--font-pixel); text-align: right; font-variant-numeric: tabular-nums; }
-.treasury-table dt:last-of-type, .treasury-table dd:last-of-type { padding-top: 4px; border-top: 1px solid var(--win-line); }
-.main-party-notice { margin: 4px 0 8px; font-size: var(--t-small); }
+.war-room__formation { margin: 8px 0; }
+.treasury-table { display: grid; grid-template-columns: 1fr auto; gap: 6px 18px; margin: 0; }
+.treasury-table dt { color: var(--text-dim); }
+.treasury-table dd { margin: 0; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+.treasury-table dt:last-of-type, .treasury-table dd:last-of-type { padding-top: 6px; border-top: 1px solid var(--line); color: var(--gold-bright); font-weight: 700; }
+.main-party-notice { margin: 4px 0 10px; font-size: var(--t-small); }
 .main-party-notice--warning { color: var(--warn); }
 .rest-control { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
 /* Chronicle menu pages. */
-.menu-page__back { margin-bottom: 12px; }
-.menu-page > .tabs { margin-top: 0; }
+.menu-page__back { margin-bottom: var(--s4); }
+.screen--menu .building-grid { max-width: 560px; }
 
 @media (max-width: 1099px) {
   .town-body { grid-template-columns: 1fr; }
+  .town-info { justify-self: stretch; max-width: none; }
 }
 @media (max-width: 759px) {
-  .town-scene { min-height: 168px; padding: 8px; }
-  .town-scene--building { min-height: 160px; }
-  .town-scene .heading-metrics { display: none; }
-  .building-tile { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 0 10px; padding-right: 8px; }
-  .building-tile__icon { width: 36px; }
-  .building-tile strong { font-size: 17px; }
+  .place-title { grid-template-areas: 'back' 'name' 'meta'; grid-template-columns: 1fr; margin-top: 30vh; }
+  .place-title--building { margin-top: 18vh; }
+  .place-title .heading-metrics { justify-content: flex-start; }
+  .building-grid { border-radius: 14px; }
+  .building-tile { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 0 12px; padding-right: 8px; }
+  .building-tile strong { font-size: 20px; }
   .room-hero { grid-template-columns: 1fr; }
   .room-actions label { min-width: 0; width: 100%; }
+  .screen--menu .town-header { margin-top: 22vh; }
 }

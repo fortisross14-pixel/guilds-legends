@@ -1,6 +1,6 @@
-/* 16-bit JRPG design system. Tokens live in base/tokens.css; see DESIGN.md.
+/* HD-2D design system. Tokens live in base/tokens.css; see DESIGN.md.
    Files are imported in cascade order: base, layout, components, screens, then breakpoints. */
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700&display=swap');
 @import './base/tokens.css';
 @import './base/base.css';
 @import './components/art.css';

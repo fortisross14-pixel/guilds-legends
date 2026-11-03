@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Tabs } from '../components/UI.jsx';
+import { Button, SceneBackdrop, Tabs } from '../components/UI.jsx';
 import PixelIcon, { PAGE_ICONS } from '../components/PixelIcon.jsx';
 import SettingsScreen from '../screens/SettingsScreen.jsx';
 import ChronicleScreen from '../screens/ChronicleScreen.jsx';
@@ -31,6 +31,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
   if (!page) {
     return (
       <div className="screen screen--menu">
+        <SceneBackdrop scene="scene_09" dim={0.45} focus="50% 45%" />
         <header className="town-header">
           <div>
             <h1>The Chronicle</h1>
@@ -58,6 +59,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
   const codexTab = ['legacy', 'bestiary'].includes(place.tab) ? place.tab : 'goals';
   return (
     <div className={`menu-page menu-page--${page.id}`}>
+      <SceneBackdrop scene="scene_09" dim={0.62} focus="50% 45%" />
       <Button size="sm" className="town-header__back menu-page__back" onClick={() => setPlace({ view: 'menu', page: null })}>
         ◀ Chronicle
       </Button>

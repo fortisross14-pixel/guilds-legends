@@ -4,87 +4,88 @@
 
 ## Direction
 
-**16-bit JRPG.** The game should read like Final Fantasy III/VI and early Dragon Quest on a modern screen. Every panel is a window: a solid deep-blue fill inside a crisp white pixel frame. Menus are short vertical command lists with a ▶ cursor. Numbers, names and commands are set in a pixel face; only longer reading text uses a clean prose face. Interface pixel art (frames, cursor, icons, crest, overworld) is drawn on a pixel grid and always rendered with `image-rendering: pixelated`. The character and scene art in `public/art/` is a detailed HD-2D pack (see `public/ART_LIBRARY_PLAN.md`): shown at 1× or larger it stays crisp; shrunk for avatars it is smoothed, because nearest-neighbour downscaling of detailed art drops pixels.
+**HD-2D: a 2026 game with a retro soul.** References: Octopath Traveler I & II, Triangle Strategy, Dragon Quest III HD-2D, Live A Live (2022), Sea of Stars. Pixel-art characters and worlds, presented with modern light, depth, elegant typography and restrained menus.
 
-What it refuses: glass, blur, soft drop shadows, gradients on panels, pill buttons, card grids of equal tiles, eyebrow labels above headings, and gold used as decoration.
+- **Art first.** Scenes, the overworld and character art fill the viewport edge to edge. The interface floats over them; it never boxes the art in.
+- **One panel level.** Overlays are dark translucent panels with a thin brass edge. Inside a panel, grouping comes from spacing, hairlines and type, never from another box.
+- **Light and depth.** Backdrops get a vignette, a soft top-and-bottom depth-of-field blur, a warm bloom and drifting dust. Selections glow; they are never solid blocks.
+- **No pixel font in the interface.** Pixel style lives in the art.
+
+What it refuses: flat saturated blue, white box frames, nested boxes, pixel-font UI text, pill buttons, dashboard card grids, and gold used as decoration.
 
 ## Palette
 
-Sampled from the art in `public/art/` (portrait navies `#112244` / `#223388`, scene sky `#5599ff`, warm skin and gold `#eebb55`, mage purples `#8855aa`). All tokens live in `src/styles/base/tokens.css`.
+Tokens live in `src/styles/base/tokens.css`. Inks are sampled from the dark tones of the scene art (shadowed stone, tavern wood, night sky).
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--ground` | `#05081a` | page behind the windows |
-| `--win` | `#12205e` | window fill |
-| `--win-deep` | `#0a1440` | inset boxes, inputs, bar tracks |
-| `--win-line` | `#34489a` | dividers inside a window |
-| `--win-sel` | `#24398f` | selected / hovered menu row |
-| `--edge` | `#f4f1ea` | window frame (white) |
-| `--ink` | `#f6f3ea` | text |
-| `--ink-dim` | `#b4bfe6` | secondary text |
-| `--ink-faint` | `#8494cc` | tertiary text, disabled |
-| `--cursor` | `#ffffff` | ▶ cursor |
-| `--focus` | `#7fb2ff` | focus outline |
-| `--hp` | `#5ad16a` | HP bars, success |
-| `--mp` | `#5599ff` | MP bars, info |
-| `--dmg` | `#ff5a4a` | damage numbers, danger, defeat |
-| `--heal` | `#7dff9a` | heal numbers |
-| `--xp` | `#c08af0` | XP, story, rarity-neutral purple accents |
-| `--gold` | `#ffcf4a` | money, prestige, titles, rank-ups. Nothing else |
-| `--warn` | `#ffc857` | warnings |
+| `--ink-0` | `#0b0c12` | page ground, deepest shadow |
+| `--ink-1` | `#14131a` | panel base (blue-brown black) |
+| `--panel` | `rgba(20, 18, 25, .84)` → `rgba(11, 10, 15, .9)` | translucent panel fill (vertical gradient) |
+| `--panel-solid` | `#16141b` | panel fill where blur is unsupported |
+| `--brass` | `#c9a66b` | panel edge, ornaments, icons |
+| `--line` | `rgba(201, 166, 107, .32)` | panel edge |
+| `--line-soft` | `rgba(236, 222, 196, .1)` | hairlines inside panels |
+| `--text` | `#ece4d2` | primary text (ivory) |
+| `--text-dim` | `#b6ab96` | secondary text |
+| `--text-faint` | `#8c8270` | tertiary text, disabled |
+| `--gold` | `#e6bf6e` | money, prestige, primary action |
+| `--gold-bright` | `#f6dc9a` | glows, cursor gem |
+| `--glow` | `rgba(246, 210, 140, .16)` | selected-row light sweep |
+| `--parchment` | `#efe3c6` | dialogue and story panels |
+| `--parchment-ink` | `#2c2216` | text on parchment |
+| `--hp` | `#74c07a` | HP, success |
+| `--mp` | `#6b97d8` | MP, info |
+| `--dmg` | `#dc5f4f` | damage, danger |
+| `--heal` | `#93e6a0` | heal numbers |
+| `--xp` | `#ad8fd9` | XP, story accents |
+| `--warn` | `#e3a957` | warnings |
 
-Rarity (portrait frame and rarity tags only): common `#c4c8d4`, uncommon `#6fd884`, rare `#5fb0ff`, epic `#c084fc`, legend `#ffcf4a`.
-
-Primal (portrait ground, affinity tags, map tint only): fire `#ff7a3d`, air `#a8ecf7`, water `#4f9dff`, plant `#6fd06a`, animal `#e0a865`, psychic `#c88af2`, iron `#b0bacb`.
+Rarity (frames, glows, rarity tags): common `#b9b3a6`, uncommon `#7cc48b`, rare `#72a9e6`, epic `#b58be3`, legend `#e8c36c` (with shimmer). Primal (portrait ground, affinity tags, map tint): fire `#e07a4a`, air `#9ccfd9`, water `#5f98d6`, plant `#7cb86d`, animal `#c99a66`, psychic `#b28ad9`, iron `#a3abb8`.
 
 ## Type
 
-- **Pixel face: Pixelify Sans** (Google Fonts, 400–700). Headings, menu entries, buttons, numbers, battle text, labels, the status strip. Minimum 14px; below that it stops reading cleanly.
-- **Prose face: Atkinson Hyperlegible** (Google Fonts, 400/700). Descriptions, story text, chronicle entries, `<p>`, `<small>`, `<blockquote>`, hints. Used for anything that would need to be smaller than 14px.
-- Scale (pixel): 14 label · 16 menu/body · 20 window title · 24 section · 32 screen title · 40–72 logo. Prose: 15px body, 13px small, line-height 1.5.
-- Numbers use `font-variant-numeric: tabular-nums` (`.num`, stats, gold, ranks).
-- Labels are uppercase only at 14px with 0.04em tracking. No eyebrow kicker above a heading: subtitles sit under the title.
+- **Cormorant Garamond** (600/700): titles, place names, character names, ceremonies, big numbers in ceremonies.
+- **Cinzel** (500/600): small-caps labels, section labels, tab and nav labels, with 0.08–0.14em tracking. Never below 11px.
+- **Manrope** (400–700): text, menus, data, buttons; `tabular-nums` for stats, gold and ranks.
+- Scale: labels 11–12 Cinzel · body 14–15 Manrope · menu 15–16 Manrope · names 20–26 Cormorant · screen titles 34–44 Cormorant · logo 64–92 Cormorant.
 
-## Windows
+## Panels
 
-One frame for everything: `.win` (and the component classes that share it, such as `.panel`, `.modal`, `.party-rail__member`).
+- `.panel` recipe (shared by every overlay: panels, modals, dock, status bar, party plates, battle plates, shop and map panels): vertical ink gradient at 84–90% opacity, `backdrop-filter: blur(14px) saturate(1.15)`, 1px brass edge at ~32% opacity, 4px radius, soft drop shadow, an inner top highlight, and four small brass corner flourishes (inline SVG background layers, `--orn-*`).
+- Groups inside a panel: hairline rules (`--line-soft`) and spacing only. Former inset boxes become hairline-bounded bands with a faint horizontal light.
+- Dialogue: parchment panel (`--parchment`) with ink text, a brass name plate and the speaker portrait.
 
-- 4px pixel frame drawn as a 9-slice `border-image` (an inline SVG in `--frame`): 1px black outline, 3px white edge, chamfered pixel corners.
-- Fill is solid `--win`, clipped to the padding box. No gradients, blur or soft shadows.
-- Inside a window, groups are separated by 1px `--win-line` rules or by an inset box (`--win-deep` fill, 1px `--win-line` border, square corners). Windows are never nested inside windows.
-- Windows sit directly on `--ground` or on a pixel scene.
+## Menus and buttons
 
-## Menus
+- Menus (`data-menu` lists): generous rows, hairline dividers, and one **glowing gem cursor** per menu that glides (220ms ease) to the hovered, focused or selected row (`useMenuKeys` in `UI.jsx`). The active row gets a soft horizontal light sweep, never a solid block. Arrow keys move, Enter activates.
+- Buttons: Manrope text with a fine brass frame; glow on hover and focus. Primary actions are warm gold (gold text, gold edge, gold glow). Danger actions use the damage red edge.
+- Tabs: Cinzel small-caps labels on a hairline; the active tab gets a gold underline and glow.
 
-- **Command list** (`.cmd-menu` / `data-menu`): a vertical list of entries in the pixel face. The ▶ cursor (a pixel triangle mask in `--cursor-img`) appears on the hovered, focused or selected entry; the row tints to `--win-sel`. Arrow keys move between entries and Enter activates (`useMenuKeys` in `UI.jsx`).
-- **Buttons** are framed command buttons: the small pixel frame, `--win` fill, pixel label, the cursor on hover/focus. Primary uses a brighter blue fill, danger a deep red fill. No pills.
-- **Tabs** are a row of commands in a strip; the active tab carries the cursor and the selected fill.
-- **Lists replace card grids** for town buildings, Guild Hall rooms, the notice board, the tavern, the shop and the Chronicle pages.
+## Art and atmosphere
 
-## Components
-
-- `HeroPortrait`: square frame in the rarity colour, the primal ground image (`art/primals/<primal>.png`) behind the class medallion. Sizes: xs 36, sm/md 68, lg/xl 132 (frame included).
-- `HeroSprite` and enemy art: 320×288 full figures in a 10:9 box, `object-fit: contain`, anchored bottom. Enemies are 220px wide on desktop, 160px on tablet and about 80px on phone.
-- Scenes (`public/art/scenes`, 1280×576): `.scene` sets them with `background-size: cover` and a focal point (`--focus-x`, `--focus-y`). Assignments: title and town square = 07 fountain; Guild Hall = 09 strategy hall; Herald = 03 throne hall; shop = 01 harbor market; tavern = 08; notice board = 10; arena and tournament battles = 02 stone arena; other battles by the location's primal (Fire/Iron 12 frontier camp, Plant/Animal 11 forest road, Water 04 waterfall temple, Air 05 sky ruins, Psychic 06 crystal caverns).
-- `ProgressBar`: 8px pixel bar, black track, solid fill, 1px highlight; width changes in steps.
-- Status strip (top bar): date, time commands, location, gold, three rank arrows and status title, each a cell in one window.
-- Command dock: World / Guild / Chronicle. Left column on desktop, icon column on tablet, bottom bar on phone.
-- Party bar: each hero is a small status window (portrait, name, Lv, HP and fatigue bars, status icon).
-- Battle: front view. Scene backdrop with enemies centred, tell window on top, command window (▶ cursor) and message window at the bottom, party status windows along the bottom. Damage and heal numbers pop over the unit; effect sprites flash on hits and heals.
-- Moments (victory, level up, recruit, rank up, rankings, council, event cards): centred windows. Story beats are dialogue boxes with a speaker tab.
+- `SceneBackdrop` (in `UI.jsx`): fixed full-viewport scene behind town, Guild Hall, Chronicle and building screens; layers: the scene (`cover`, slow drift), top and bottom depth-of-field blur (masked `backdrop-filter`), warm bloom, vignette, a scrim for text contrast, and drifting dust motes.
+- World map: the pixel overworld fills the viewport with a slow drift and edge fog; locked towns sit under fog; reachable routes glow.
+- Portraits: class medallion on the primal ground, a thin rarity-colour frame and glow; Epic and Legend frames shimmer.
+- Sprites and enemies: `object-fit: contain`, soft elliptical ground shadow, gentle idle bob.
 - Effects: hits flash `effect_14` (slash), heals `effect_08`, rewards `effect_12`.
-- Pixel icons (`PixelIcon` in `src/components/PixelIcon.jsx`): 12×12 one-colour bitmaps drawn as SVG rects with `shape-rendering: crispEdges`, used for navigation, buildings, rooms, Chronicle pages and status-strip resources.
+- Icons: the 12×12 pixel icon set (`PixelIcon`) is drawn in brass with a soft glow, as engraved glyphs.
 
 ## Motion
 
-Short and snappy: 100–200ms with `steps()` where it reads as pixel motion. Window open (scale 0.96 → 1 in steps), cursor nudge, damage numbers popping up, HP bars draining in steps. Ceremony (a short fanfare bounce and effect sprite) only for victory, level-up and rank-up. `prefers-reduced-motion` and the in-game setting make every change instant.
+- Panels fade and rise in (260ms, `cubic-bezier(.2,.8,.2,1)`); the cursor glides (220ms); hover glows 160ms.
+- HP and MP bars ease down (300ms) with a lagging damage ghost (700ms after a 250ms delay).
+- Numbers count up in ceremonies; dialogue types out (skippable with a click or key).
+- Ceremonies (victory, level up, rank up, title change, story beats): a light burst, a slow title reveal and rising sparks, 600–1200ms.
+- Ambient: dust motes, backdrop drift, sprite idle bob, rarity shimmer.
+- `prefers-reduced-motion` and the in-game setting stop ambient motion, make transitions instant and show typed text at once.
 
-## Responsive
+## Layout
 
-- **Phone (≤ 759px):** one window column, bottom command dock, party bar above it showing portraits and HP only, compact status strip. No horizontal page scroll.
-- **Tablet (760–1099px):** icon-only side dock, two-column layouts where they fit.
-- **Desktop (≥ 1100px):** labelled side dock, side-by-side windows (map + location window, list + detail), content capped at 1280px.
+- **Desktop (≥ 1100px):** a slim translucent dock floats on the left; one slim status bar on top (date, time, location, gold, ranks, title, and a Journal toggle that opens upcoming events and the next step); content panels float over the backdrop; the party bar is a row of slim plates at the bottom, collapsible.
+- **Tablet (760–1099px):** icon dock, same overlays.
+- **Phone (< 760px):** art stays visible at the top of each place; detail panels become bottom sheets (rounded top, full width); bottom dock; party plates shrink to portrait + HP.
 
 ## Accessibility
 
-44px minimum targets, visible focus (cursor + `--focus` outline), `aria-label` on icon-only buttons, readable contrast (`--ink-dim` on `--win` is above 7:1, `--ink-faint` above 4.5:1), and the prose face for any text below 14px.
+44px targets, visible focus (gem cursor + gold outline), `aria-label` on icon buttons, text over art always on a panel or a scrim that keeps 4.5:1, and every ambient effect removed under reduced motion.

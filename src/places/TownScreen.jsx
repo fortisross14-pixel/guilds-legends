@@ -1,6 +1,6 @@
 import React from 'react';
 import { BUILDINGS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
-import { Badge, Button, PrimalBadge, sceneStyle } from '../components/UI.jsx';
+import { Badge, Button, PrimalBadge, SceneBackdrop } from '../components/UI.jsx';
 import PixelIcon, { BUILDING_ICONS } from '../components/PixelIcon.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import MissionsScreen from '../screens/MissionsScreen.jsx';
@@ -36,13 +36,14 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
-      <header className={`town-header town-scene scene ${building ? 'town-scene--building' : ''}`} style={sceneStyle(BUILDING_SCENES[building] || 'scene_07')}>
+      <SceneBackdrop scene={BUILDING_SCENES[building] || 'scene_07'} dim={building ? 0.58 : 0.28} />
+      <header className={`town-header place-title ${building ? 'place-title--building' : ''}`}>
         {building ? (
           <Button size="sm" className="town-header__back" onClick={() => setPlace({ view: 'town', building: null })}>
             ◀ {town.name}
           </Button>
         ) : null}
-        <div className="town-scene__name">
+        <div className="place-title__name">
           <h1>{building ? BUILDINGS[building].name : town.name}</h1>
           <span className="eyebrow">{building ? `${town.name} · ${town.region}` : `${town.region} · ${town.tier}`}</span>
         </div>

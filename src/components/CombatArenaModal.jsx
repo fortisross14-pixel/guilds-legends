@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { COMMANDS } from '../game/combat.js';
 import { SKILLS, STATUS_LABELS, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
-import { Badge, Button, HeroSprite, Modal, ProgressBar, artUrl, sceneStyle } from './UI.jsx';
+import { Badge, Button, HeroSprite, Modal, Motes, ProgressBar, artUrl, sceneStyle } from './UI.jsx';
 import PixelIcon, { COMMAND_ICONS } from './PixelIcon.jsx';
 
 // Battle backdrop: the arena for tournaments, otherwise the scene of the
@@ -124,7 +124,9 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       const scope = pending ? document.querySelector('.battle-screen') : commandsRef.current;
-      const first = scope?.querySelector(pending ? '.is-targetable' : '.battle-commands__menu button:not(:disabled), .battle-commands__list button:not(:disabled)');
+      const first = scope?.querySelector(
+        pending ? '.is-targetable' : '.battle-commands__menu button:not(:disabled), .battle-commands__list button:not(:disabled)',
+      );
       first?.focus({ preventScroll: true });
     });
     return () => window.cancelAnimationFrame(frame);
@@ -211,6 +213,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
     >
       <div className={`battle-screen battle-screen--${encounter.mode}`}>
         <section className="battle-stage scene" style={sceneStyle(battleScene(encounter, locationPrimal))} aria-label="Battlefield">
+          <Motes />
           {encounter.guaranteed && !finished && !hintsHidden ? (
             <aside className="battle-hints">
               <strong>First battle</strong>
@@ -234,9 +237,10 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
           )}
 
           <div className="battle-enemies" aria-label="Enemies" data-menu>
-            {encounter.enemies.map((unit) => (
+            {encounter.enemies.map((unit, index) => (
               <button
                 key={unit.id}
+                style={{ '--i': index }}
                 className={`battle-enemy ${unit.ko ? 'is-ko' : ''} ${targetable(unit) ? 'is-targetable' : ''} ${intent?.actorId === unit.id ? 'is-telling' : ''}`}
                 onClick={() => pickTarget(unit)}
                 disabled={!targetable(unit)}
@@ -265,7 +269,16 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
           ) : null}
         </section>
 
-        <div className="battle-hud">
+        <div
+          className="battle-hud"
+          style={{
+            '--active': Math.max(
+              0,
+              encounter.party.findIndex((unit) => unit.id === active?.id),
+            ),
+            '--count': encounter.party.length,
+          }}
+        >
           <section className="battle-commands" ref={commandsRef} aria-label="Commands">
             {finished ? (
               <span className="battle-commands__who">The battle is over</span>
@@ -371,7 +384,13 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
                     Lv {unit.level} {unit.classId}
                     {unit.ko ? ' · KO' : ''}
                   </small>
-                  <ProgressBar value={unit.hp} max={unit.maxHp} tone={unit.hp / unit.maxHp > 0.3 ? 'green' : 'red'} compact label={`HP ${unit.hp}/${unit.maxHp}`} />
+                  <ProgressBar
+                    value={unit.hp}
+                    max={unit.maxHp}
+                    tone={unit.hp / unit.maxHp > 0.3 ? 'green' : 'red'}
+                    compact
+                    label={`HP ${unit.hp}/${unit.maxHp}`}
+                  />
                   <ProgressBar value={unit.mp} max={unit.maxMp} tone="blue" compact label={`MP ${unit.mp}/${unit.maxMp}`} />
                   <Statuses unit={unit} />
                   {!finished ? <em className="battle-hero__command">{commandLabel(commands[unit.id], unit)}</em> : null}

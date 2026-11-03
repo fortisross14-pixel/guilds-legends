@@ -1,14 +1,31 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { normalizeClassId } from '../data/content.js';
 import { PRIMALS, RARITIES } from '../data/world.js';
-import { PixelCrest } from './PixelIcon.jsx';
+const CREST_SIZES = { xs: 26, sm: 32, md: 42, lg: 56, xl: 84 };
 
-const CREST_SCALES = { xs: 2, sm: 2, md: 3, lg: 4, xl: 6 };
-
+// The guild crest: an engraved shield with a lantern star, in brass and wine.
 export function Crest({ size = 'md' }) {
+  const width = CREST_SIZES[size] || 42;
   return (
     <div className={`crest crest--${size}`}>
-      <PixelCrest scale={CREST_SCALES[size] || 3} />
+      <svg width={width} height={Math.round(width * 1.15)} viewBox="0 0 40 46" role="img" aria-label="Guild crest">
+        <defs>
+          <linearGradient id="crest-brass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#f6dc9a" />
+            <stop offset=".55" stopColor="#c9a05a" />
+            <stop offset="1" stopColor="#7d5a26" />
+          </linearGradient>
+          <linearGradient id="crest-field" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#7a2232" />
+            <stop offset="1" stopColor="#3a0f18" />
+          </linearGradient>
+        </defs>
+        <path d="M20 1.5 37 7v13.5C37 32 29.5 40.5 20 44.5 10.5 40.5 3 32 3 20.5V7z" fill="url(#crest-brass)" />
+        <path d="M20 5 33.5 9.6v11c0 9.6-6 16.8-13.5 20.3C12.5 37.4 6.5 30.2 6.5 20.6v-11z" fill="url(#crest-field)" />
+        <path d="M20 10.5l2.3 7.2 7.2 2.3-7.2 2.3L20 29.5l-2.3-7.2-7.2-2.3 7.2-2.3z" fill="#fff1cf" />
+        <circle cx="20" cy="20" r="2.2" fill="#f6dc9a" />
+      </svg>
     </div>
   );
 }
@@ -34,7 +51,7 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
   const artKey = heroArtKey(hero);
   return (
     <div
-      className={`hero-portrait hero-portrait--${size}`}
+      className={`hero-portrait hero-portrait--${size} hero-portrait--r-${rarity.id.toLowerCase()}`}
       style={{
         '--portrait-frame': `var(--r-${rarity.id.toLowerCase()})`,
         '--portrait-primal': `var(--p-${primal.id.toLowerCase()})`,
@@ -54,7 +71,80 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
  * (Up/Down, and Left/Right for horizontal menus); Enter activates natively.
  * Install once near the root.
  */
+const MENU_ROW = 'button:not([disabled])';
+const SELECTED_ROW = '.is-selected, .is-active, [aria-current="page"], [aria-selected="true"], [aria-pressed="true"], [aria-checked="true"]';
+
+function rowsOf(menu) {
+  return [...menu.querySelectorAll(MENU_ROW)].filter((item) => item.closest('[data-menu]') === menu && item.offsetParent !== null);
+}
+
+// Moves the menu's shared gem cursor next to `row` (or to the selected row, or hides it).
+function placeGem(menu, row) {
+  if (!menu || menu.dataset.menu === 'plain') return;
+  let gem = menu.querySelector(':scope > .glide-gem');
+  if (!gem) {
+    gem = document.createElement('span');
+    gem.className = 'glide-gem';
+    gem.setAttribute('aria-hidden', 'true');
+    menu.prepend(gem);
+    menu.classList.add('has-glide');
+  }
+  const target = row || rowsOf(menu).find((item) => item.matches(SELECTED_ROW));
+  if (!target) {
+    gem.classList.remove('is-on');
+    return;
+  }
+  const box = menu.getBoundingClientRect();
+  const r = target.getBoundingClientRect();
+  const x = r.left - box.left + menu.scrollLeft + 10;
+  const y = r.top - box.top + menu.scrollTop + r.height / 2 - 6;
+  gem.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  gem.classList.add('is-on');
+}
+
+function focusedRow(menu) {
+  const active = document.activeElement;
+  return active && menu.contains(active) && active.matches(MENU_ROW) ? active : null;
+}
+
+/** Places every menu's gem on its focused or selected row. */
+export function syncMenuCursors(root = document) {
+  root.querySelectorAll('[data-menu]').forEach((menu) => placeGem(menu, focusedRow(menu)));
+}
+
 export function useMenuKeys() {
+  // The gem glides to whatever row is hovered or focused, and back to the selected row after.
+  useEffect(() => {
+    const rowAt = (target) => {
+      const row = target instanceof Element ? target.closest(MENU_ROW) : null;
+      const menu = row?.closest('[data-menu]');
+      return menu && rowsOf(menu).includes(row) ? { menu, row } : null;
+    };
+    const onOver = (event) => {
+      const hit = rowAt(event.target);
+      if (hit) placeGem(hit.menu, hit.row);
+    };
+    const onOut = (event) => {
+      const menu = event.target instanceof Element ? event.target.closest('[data-menu]') : null;
+      if (!menu || (event.relatedTarget instanceof Node && menu.contains(event.relatedTarget))) return;
+      placeGem(menu, focusedRow(menu));
+    };
+    document.addEventListener('pointerover', onOver);
+    document.addEventListener('focusin', onOver);
+    document.addEventListener('pointerout', onOut);
+    document.addEventListener('focusout', onOut);
+    return () => {
+      document.removeEventListener('pointerover', onOver);
+      document.removeEventListener('focusin', onOver);
+      document.removeEventListener('pointerout', onOut);
+      document.removeEventListener('focusout', onOut);
+    };
+  }, []);
+  // After every render of the host, re-seat gems on the selected rows.
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => syncMenuCursors());
+    return () => window.cancelAnimationFrame(frame);
+  });
   useEffect(() => {
     const onKey = (event) => {
       if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -103,7 +193,7 @@ export function PrimalBadge({ primal, compact = false }) {
 export function RarityBadge({ rarity }) {
   const info = RARITIES[rarity] || { color: '#8f99a5', id: rarity || 'Common' };
   return (
-    <span className="rarity-badge" style={{ '--rarity-color': info.color }}>
+    <span className={`rarity-badge rarity-badge--${String(info.id).toLowerCase()}`} style={{ '--rarity-color': `var(--r-${String(info.id).toLowerCase()}, ${info.color})` }}>
       {info.id}
     </span>
   );
@@ -140,6 +230,7 @@ export function ProgressBar({ value, max = 100, label = undefined, tone = 'gold'
         aria-valuemax={Math.round(max)}
         aria-valuenow={Math.round(value)}
       >
+        <span className="progress__ghost" style={{ width: `${pct}%` }} />
         <span className={`progress__fill progress__fill--${tone}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -347,4 +438,106 @@ export function NumberDelta({ value }) {
 export function RankChange({ change }) {
   if (!change) return <span className="rank-change rank-change--flat">–</span>;
   return <span className={`rank-change rank-change--${change > 0 ? 'up' : 'down'}`}>{change > 0 ? `▲${change}` : `▼${-change}`}</span>;
+}
+
+// Deterministic positions for the dust motes (no randomness in render).
+const MOTES = Array.from({ length: 18 }, (_, index) => ({
+  left: (index * 37 + 11) % 100,
+  top: 30 + ((index * 53) % 65),
+  size: 2 + (index % 3),
+  delay: (index * 1.7) % 12,
+  duration: 9 + (index % 5) * 2.5,
+  dx: ((index % 4) - 1.5) * 26,
+  opacity: 0.35 + (index % 4) * 0.15,
+}));
+
+/**
+ * A full-viewport scene behind a place: the art with a slow drift, depth-of-field
+ * blur at the top and bottom edges, warm bloom, vignette, a contrast scrim and dust.
+ */
+export function SceneBackdrop({ scene, focus = '50% 60%', dim = 0.35 }) {
+  return createPortal(
+    <div className="scene-backdrop" style={{ '--scene': `url(${artUrl(`art/scenes/${scene}.png`)})`, '--focus': focus, '--dim': dim }} aria-hidden="true">
+      <div className="scene-backdrop__art" />
+      <div className="scene-backdrop__dof scene-backdrop__dof--top" />
+      <div className="scene-backdrop__dof scene-backdrop__dof--bottom" />
+      <div className="scene-backdrop__bloom" />
+      <div className="scene-backdrop__vignette" />
+      <Motes />
+    </div>,
+    document.body,
+  );
+}
+
+/** Drifting dust motes for a scene (hidden under reduced motion). */
+export function Motes() {
+  return (
+    <div className="motes" aria-hidden="true">
+      {MOTES.map((mote, index) => (
+        <i
+          key={index}
+          style={{
+            left: `${mote.left}%`,
+            top: `${mote.top}%`,
+            width: mote.size,
+            height: mote.size,
+            animationDelay: `${mote.delay}s`,
+            animationDuration: `${mote.duration}s`,
+            '--dx': `${mote.dx}px`,
+            '--o': mote.opacity,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function prefersReducedMotion() {
+  if (typeof window === 'undefined') return true;
+  return document.documentElement.classList.contains('reduced-motion') || Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+}
+
+/** Text that types itself out; `done` shows it all. Screen readers get the full text at once. */
+export function TypeText({ text = '', speed = 22, done = false }) {
+  const [count, setCount] = useState(() => (prefersReducedMotion() ? text.length : 0));
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setCount(text.length);
+      return undefined;
+    }
+    setCount(0);
+    const timer = window.setInterval(() => setCount((current) => (current >= text.length ? current : current + 2)), speed);
+    return () => window.clearInterval(timer);
+  }, [text, speed]);
+  const shown = done ? text.length : Math.min(count, text.length);
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {text.slice(0, shown)}
+        <span className="type-text__rest">{text.slice(shown)}</span>
+      </span>
+    </>
+  );
+}
+
+/** A number that counts up from 0 (instant under reduced motion). */
+export function CountUp({ value = 0, duration = 900 }) {
+  const [shown, setShown] = useState(() => (prefersReducedMotion() ? value : 0));
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setShown(value);
+      return undefined;
+    }
+    const start = performance.now();
+    let frame = 0;
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / duration);
+      setShown(Math.round(value * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [value, duration]);
+  return <>{shown.toLocaleString()}</>;
 }

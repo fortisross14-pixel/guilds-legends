@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { TIERS } from '../data/content.js';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings, unlockedLocations } from '../data/world.js';
 import { getStoryView, getTravelQuote } from '../game/engine.js';
@@ -97,122 +98,128 @@ export default function MapScreen({ state, actions, navigate, place }) {
       ) : null}
 
       <div className="world-layout world-layout--locations">
-        <section className="world-map world-map--locations map-frame" aria-label="Fictional world travel map">
-          <div className="world-map__terrain" style={{ '--overworld': `url(${artUrl('ui/overworld.png')})` }} />
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
-            {MAP_ROUTES.map((route) => (
-              <path
-                key={`under-${route.chain.join('-')}`}
-                className={`map-route map-route--under${route.dim ? ' map-route--dim' : ''}`}
-                d={routePath(route.chain)}
-                vectorEffect="non-scaling-stroke"
-              />
-            ))}
-            {MAP_ROUTES.map((route) => (
-              <path
-                key={route.chain.join('-')}
-                className={`map-route${route.dim ? ' map-route--dim' : ''}`}
-                d={routePath(route.chain)}
-                vectorEffect="non-scaling-stroke"
-              />
-            ))}
-            {travel && LOCATION_BY_ID[travel.fromId] && LOCATION_BY_ID[travel.toId] ? (
-              <>
-                <path
-                  className="map-route map-route--travel"
-                  d={`M${LOCATION_BY_ID[travel.fromId].x} ${LOCATION_BY_ID[travel.fromId].y} L${LOCATION_BY_ID[travel.toId].x} ${LOCATION_BY_ID[travel.toId].y}`}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </>
-            ) : null}
-          </svg>
-          {travel && LOCATION_BY_ID[travel.fromId] && LOCATION_BY_ID[travel.toId] ? (
-            <span
-              className="map-party-marker"
-              title="Your guild on the road"
-              style={{
-                left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
-                top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
-              }}
-            >
-              <PixelIcon name="flag" size={24} />
-            </span>
-          ) : null}
-          {LOCATIONS.map((location) => {
-            const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
-            const isCurrent = location.id === currentLocationId;
-            const isDestination = travel?.toId === location.id;
-            return (
-              <button
-                key={location.id}
-                className={`location-node ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
-                style={{ left: `${location.x}%`, top: `${location.y}%`, '--primal': PRIMALS[location.primal].color }}
-                onClick={() => setSelectedId(location.id)}
-                aria-label={`${location.name}, ${location.tier}, ${location.primal}`}
-              >
-                {isCurrent && !travel ? (
-                  <em className="location-node__here">
-                    <span>You are here</span>
-                    <PixelIcon name="pointer" size={12} />
-                  </em>
+        {createPortal(
+          <section className="world-map world-map--locations" aria-label="Fictional world travel map">
+            <div className="world-map__plane">
+              <div className="world-map__terrain" style={{ '--overworld': `url(${artUrl('ui/overworld.png')})` }} />
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
+                {MAP_ROUTES.map((route) => (
+                  <path
+                    key={`under-${route.chain.join('-')}`}
+                    className={`map-route map-route--under${route.dim ? ' map-route--dim' : ''}`}
+                    d={routePath(route.chain)}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
+                {MAP_ROUTES.map((route) => (
+                  <path
+                    key={route.chain.join('-')}
+                    className={`map-route${route.dim ? ' map-route--dim' : ''}`}
+                    d={routePath(route.chain)}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
+                {travel && LOCATION_BY_ID[travel.fromId] && LOCATION_BY_ID[travel.toId] ? (
+                  <>
+                    <path
+                      className="map-route map-route--travel"
+                      d={`M${LOCATION_BY_ID[travel.fromId].x} ${LOCATION_BY_ID[travel.fromId].y} L${LOCATION_BY_ID[travel.toId].x} ${LOCATION_BY_ID[travel.toId].y}`}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </>
                 ) : null}
-                <span className="location-node__icon">
-                  <PixelIcon name={canReach ? (isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
+              </svg>
+              {travel && LOCATION_BY_ID[travel.fromId] && LOCATION_BY_ID[travel.toId] ? (
+                <span
+                  className="map-party-marker"
+                  title="Your guild on the road"
+                  style={{
+                    left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
+                    top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
+                  }}
+                >
+                  <PixelIcon name="flag" size={24} />
                 </span>
-                <strong>{canReach ? location.name : location.tier}</strong>
-                <small>
-                  {isCurrent
-                    ? 'HQ here'
-                    : (state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id)
-                      ? 'Branch'
-                      : canReach
-                        ? location.primal
-                        : 'Locked'}
-                </small>
-              </button>
-            );
-          })}
-          {state.missions
-            .filter((mission) => mission.bossId && LOCATION_BY_ID[mission.locationId])
-            .map((mission) => (
-              <span
-                key={mission.id}
-                className="map-boss"
-                style={{ left: `${LOCATION_BY_ID[mission.locationId].x}%`, top: `${LOCATION_BY_ID[mission.locationId].y}%` }}
-                title={mission.title}
-              >
-                <PixelIcon name="skull" size={24} label={`Boss: ${mission.title}`} />
+              ) : null}
+              {LOCATIONS.map((location) => {
+                const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
+                const isCurrent = location.id === currentLocationId;
+                const isDestination = travel?.toId === location.id;
+                return (
+                  <button
+                    key={location.id}
+                    className={`location-node ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
+                    style={{ left: `${location.x}%`, top: `${location.y}%`, '--primal': PRIMALS[location.primal].color }}
+                    onClick={() => setSelectedId(location.id)}
+                    aria-label={`${location.name}, ${location.tier}, ${location.primal}`}
+                  >
+                    {isCurrent && !travel ? (
+                      <em className="location-node__here">
+                        <span>You are here</span>
+                        <PixelIcon name="pointer" size={12} />
+                      </em>
+                    ) : null}
+                    <span className="location-node__icon">
+                      <PixelIcon name={canReach ? (isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
+                    </span>
+                    <strong>{canReach ? location.name : location.tier}</strong>
+                    <small>
+                      {isCurrent
+                        ? 'HQ here'
+                        : (state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id)
+                          ? 'Branch'
+                          : canReach
+                            ? location.primal
+                            : 'Locked'}
+                    </small>
+                  </button>
+                );
+              })}
+              {state.missions
+                .filter((mission) => mission.bossId && LOCATION_BY_ID[mission.locationId])
+                .map((mission) => (
+                  <span
+                    key={mission.id}
+                    className="map-boss"
+                    style={{ left: `${LOCATION_BY_ID[mission.locationId].x}%`, top: `${LOCATION_BY_ID[mission.locationId].y}%` }}
+                    title={mission.title}
+                  >
+                    <PixelIcon name="skull" size={24} label={`Boss: ${mission.title}`} />
+                  </span>
+                ))}
+              {getStoryView(state).blackwoodOpen ? (
+                <span
+                  className="map-blackwood"
+                  style={{ left: `${BLACKWOOD_MAP.x}%`, top: `${BLACKWOOD_MAP.y}%` }}
+                  title="The Blackwood (reach it through the Dunmere contract)"
+                >
+                  <PixelIcon name="tree" size={24} /> {BLACKWOOD_MAP.name}
+                </span>
+              ) : null}
+              {pinId && LOCATION_BY_ID[pinId] ? (
+                <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
+                  <PixelIcon name="pin" size={24} label="Contract location" />
+                </span>
+              ) : null}
+            </div>
+            <div className="world-map__fog" aria-hidden="true" />
+            <div className="map-legend">
+              <span>
+                <i className="legend-dot is-known" />
+                Reachable
               </span>
-            ))}
-          {getStoryView(state).blackwoodOpen ? (
-            <span
-              className="map-blackwood"
-              style={{ left: `${BLACKWOOD_MAP.x}%`, top: `${BLACKWOOD_MAP.y}%` }}
-              title="The Blackwood (reach it through the Dunmere contract)"
-            >
-              <PixelIcon name="tree" size={24} /> {BLACKWOOD_MAP.name}
-            </span>
-          ) : null}
-          {pinId && LOCATION_BY_ID[pinId] ? (
-            <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
-              <PixelIcon name="pin" size={24} label="Contract location" />
-            </span>
-          ) : null}
-          <div className="map-legend">
-            <span>
-              <i className="legend-dot is-known" />
-              Reachable
-            </span>
-            <span>
-              <i className="legend-dot is-rumor" />
-              Future frontier
-            </span>
-            <span>
-              <i className="legend-dot is-current" />
-              Guild position
-            </span>
-          </div>
-        </section>
+              <span>
+                <i className="legend-dot is-rumor" />
+                Future frontier
+              </span>
+              <span>
+                <i className="legend-dot is-current" />
+                Guild position
+              </span>
+            </div>
+          </section>,
+          document.body,
+        )}
 
         <aside className="region-dossier region-dossier--location" style={{ '--primal': PRIMALS[selected.primal].color }}>
           <div className="region-dossier__banner">
@@ -373,6 +380,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         })}
       </div>
 
+      <div className="world-spacer" aria-hidden="true" />
       <div className="dashboard-grid dashboard-grid--world">
         <Panel title="Primal strategy" eyebrow="Combat and culture">
           <div className="primal-wheel-list">

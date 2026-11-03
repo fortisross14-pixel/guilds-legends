@@ -1,61 +1,109 @@
-/* Art: portraits, sprites, enemies, scenes, effects and the crest.
-   The art pack (public/art, see public/ART_LIBRARY_PLAN.md) is HD-2D pixel art:
-   portraits 320×320 medallions, sprites/enemies 320×288 full figures, effects
-   152×130, scenes 1280×576. Shown at 1× or larger it stays pixelated; shrunk
-   for avatars it is smoothed (`auto`), because nearest-neighbour downscaling of
-   detailed art drops pixels. Interface icons, the crest and the overworld are
-   true pixel art and are always pixelated. */
+/* Art and atmosphere: portraits, sprites, scene backdrops, dust, effects.
+   The art pack (public/art, see public/ART_LIBRARY_PLAN.md) is HD-2D: portraits
+   320×320 medallions, sprites/enemies 320×288 full figures, effects 152×130,
+   scenes 1280×576. The interface lights it; it never boxes it in. */
 
-/* Portrait: primal ground image + class medallion, square frame in rarity colour. */
+/* Portrait: primal ground image + class medallion, a thin rarity frame and glow. */
 .hero-portrait {
   --size: 64px;
+  --rarity: var(--r-common);
   position: relative;
   flex: none;
   width: var(--size);
   height: var(--size);
-  border: 2px solid var(--portrait-frame, var(--r-common));
-  outline: 1px solid #000;
-  background: color-mix(in srgb, var(--portrait-primal, var(--p-iron)) 30%, #0a1030) var(--portrait-ground, none) center / cover no-repeat;
   overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--rarity) 70%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--portrait-primal, var(--p-iron)) 28%, #0e0c12) var(--portrait-ground, none) center / cover no-repeat;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 14px color-mix(in srgb, var(--rarity) 28%, transparent), 0 6px 14px rgba(0, 0, 0, .45);
 }
+.hero-portrait--r-uncommon { --rarity: var(--r-uncommon); }
+.hero-portrait--r-rare { --rarity: var(--r-rare); }
+.hero-portrait--r-epic { --rarity: var(--r-epic); }
+.hero-portrait--r-legend { --rarity: var(--r-legend); }
 .hero-portrait--xs { --size: 36px; }
-.hero-portrait--sm, .hero-portrait--md { --size: 68px; }
-.hero-portrait--lg, .hero-portrait--xl { --size: 132px; }
-.hero-portrait__art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.hero-portrait--sm, .hero-portrait--md { --size: 64px; }
+.hero-portrait--lg, .hero-portrait--xl { --size: 128px; }
+.hero-portrait__art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+/* Epic and Legend frames carry a slow glint. */
+.hero-portrait--r-epic::after, .hero-portrait--r-legend::after, .rarity-badge::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 246, 220, .45), transparent);
+  pointer-events: none;
+  animation: shimmer 4.5s ease-in-out infinite;
+}
+.rarity-badge::after { display: none; }
+.rarity-badge--epic::after, .rarity-badge--legend::after { display: block; }
 .status-dot {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: 3px;
+  bottom: 3px;
   z-index: 2;
-  width: 10px;
-  height: 10px;
-  outline: 1px solid #000;
-  background: var(--ink-faint);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .7);
+  background: var(--text-faint);
 }
-.status-dot--injured { background: var(--dmg); }
+.status-dot--injured { background: var(--dmg); box-shadow: 0 0 0 1px rgba(0, 0, 0, .7), 0 0 8px var(--dmg); }
 .status-dot--mission, .status-dot--tournament, .status-dot--sidejob { background: var(--warn); }
-.status-dot--dead { background: #000; outline-color: var(--ink-faint); }
-.status-dot--retired { background: var(--ink-dim); }
+.status-dot--dead { background: #000; }
+.status-dot--retired { background: var(--text-dim); }
 
-/* Sprites fill their 320×288 canvas, so a box with the same 10:9 ratio shows the whole figure. */
+/* Sprites: whole 320×288 figures in a 10:9 box, standing on a soft ground shadow. */
 .hero-sprite { --w: 80px; position: relative; display: block; flex: none; width: var(--w); aspect-ratio: 10 / 9; }
-.hero-sprite img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; image-rendering: auto; }
+.hero-sprite img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+.hero-sprite::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: -2%; height: 12%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0, 0, 0, .55), transparent 70%); }
 .hero-sprite--md { --w: 120px; }
 .hero-sprite--lg, .hero-sprite--xl { --w: 160px; }
 .hero-sprite--enemy img { transform: scaleX(-1); }
 
-/* Scene backdrops (1280×576): set --scene inline; cover with a focal point. */
-.scene {
-  background-color: var(--ground);
-  background-image: var(--scene);
-  background-repeat: no-repeat;
-  background-position: var(--focus-x, 50%) var(--focus-y, 70%);
-  background-size: cover;
+/* Any element can carry a scene as its background (battle stage). */
+.scene { background-color: var(--ground); background-image: var(--scene); background-position: 50% 70%; background-repeat: no-repeat; background-size: cover; }
+
+/* Scene backdrop: fixed behind a place. */
+.scene-backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--ground); }
+.scene-backdrop__art {
+  position: absolute;
+  inset: -3%;
+  background: var(--scene) var(--focus, 50% 60%) / cover no-repeat;
+  filter: saturate(1.08) contrast(1.04);
+  animation: drift 48s ease-in-out infinite alternate;
+}
+/* Depth of field: the top and bottom edges go soft, like a tilt-shift lens. */
+.scene-backdrop__dof { position: absolute; left: 0; right: 0; height: 26%; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+.scene-backdrop__dof--top { top: 0; -webkit-mask-image: linear-gradient(180deg, #000 10%, transparent); mask-image: linear-gradient(180deg, #000 10%, transparent); }
+.scene-backdrop__dof--bottom { bottom: 0; -webkit-mask-image: linear-gradient(0deg, #000 10%, transparent); mask-image: linear-gradient(0deg, #000 10%, transparent); }
+/* Warm bloom from the upper light, then the vignette and a contrast scrim. */
+.scene-backdrop__bloom { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 45% at 62% 18%, rgba(255, 214, 150, .22), transparent 70%); mix-blend-mode: screen; }
+.scene-backdrop__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 45%, transparent 40%, rgba(5, 5, 9, .78) 100%),
+    linear-gradient(180deg, rgba(8, 8, 12, calc(var(--dim) + .15)) 0%, rgba(8, 8, 12, var(--dim)) 30%, rgba(8, 8, 12, calc(var(--dim) + .1)) 70%, rgba(8, 8, 12, .85) 100%);
 }
 
-/* Effect sprites (hits, heals, rewards). */
-.fx { position: absolute; z-index: 3; width: 112px; height: auto; pointer-events: none; animation: flash-fx 420ms steps(6) both; }
-.fx-badge { display: block; width: 152px; height: auto; margin: -24px auto -12px; animation: fanfare 600ms steps(6) both; }
+/* Dust motes. */
+.motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.motes i { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255, 236, 190, .95), rgba(255, 210, 140, 0) 70%); box-shadow: 0 0 6px rgba(255, 220, 160, .6); opacity: 0; animation: mote 12s linear infinite; }
 
-/* The crest (pixel shield). */
-.crest { display: grid; place-items: center; flex: none; }
+/* Effects (hits, heals, rewards). */
+.fx { position: absolute; z-index: 3; width: 112px; height: auto; pointer-events: none; mix-blend-mode: screen; animation: flash-fx 480ms var(--ease) both; }
+.fx-badge { display: block; width: 168px; height: auto; margin: -36px auto -18px; mix-blend-mode: screen; filter: drop-shadow(0 0 22px rgba(246, 210, 140, .55)); animation: burst-in 900ms var(--ease) both; }
+@keyframes burst-in { 0% { opacity: 0; transform: scale(.5); } 40% { opacity: 1; transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
+
+/* Screen-reader-only text and typed text. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.type-text__rest { visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .motes, .scene-backdrop__art { animation: none !important; }
+  .motes { display: none; }
+}
+.reduced-motion .motes { display: none; }

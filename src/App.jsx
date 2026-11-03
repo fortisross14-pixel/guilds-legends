@@ -83,7 +83,7 @@ import {
 import { deleteGame, exportGame, importGame, listSaveSlots, loadGame, saveGame } from './game/storage.js';
 import { CLASSES, MONTHS } from './data/content.js';
 import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, RankChange, sceneStyle, useMenuKeys } from './components/UI.jsx';
+import { Badge, Button, Crest, HeroPortrait, Modal, RankChange, SceneBackdrop, useMenuKeys } from './components/UI.jsx';
 import PixelIcon, { LADDER_ICONS, PLACE_ICONS } from './components/PixelIcon.jsx';
 import MapScreen from './places/MapScreen.jsx';
 import TownScreen from './places/TownScreen.jsx';
@@ -154,11 +154,14 @@ function formatPlayed(value) {
 function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
   useMenuKeys();
   return (
-    <div className="home-screen scene" style={sceneStyle('scene_07')}>
+    <div className="home-screen">
+      <SceneBackdrop scene="scene_01" dim={0.18} focus="50% 50%" />
       <div className="home-screen__inner">
         <header className="title-logo">
           <Crest size="xl" />
-          <h1>Guilds of Legend</h1>
+          <h1>
+            Guilds <span className="title-logo__small">of</span> Legend
+          </h1>
           <p>Discover imperfect heroes. Give them a banner. Survive their failures. Preserve their names after they are gone.</p>
         </header>
         <nav className="save-menu" aria-label="Save slots">
@@ -822,18 +825,18 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [place, setPlaceState] = useState({ view: 'map' });
   const [heroModalId, setHeroModalId] = useState(null);
   const [timeMenuOpen, setTimeMenuOpen] = useState(false);
-  // The ribbon's collapsed state is a per-viewer convenience kept in localStorage.
-  const [ribbonCollapsed, setRibbonCollapsed] = useState(() => {
+  // The journal (next step + upcoming events) is a per-viewer convenience kept in localStorage.
+  const [journalOpen, setJournalOpen] = useState(() => {
     try {
-      return window.localStorage.getItem('gol.ribbonCollapsed') === '1';
+      return window.localStorage.getItem('gol.journalOpen') === '1';
     } catch {
       return false;
     }
   });
-  const toggleRibbon = () => {
-    setRibbonCollapsed((current) => {
+  const toggleJournal = () => {
+    setJournalOpen((current) => {
       try {
-        window.localStorage.setItem('gol.ribbonCollapsed', current ? '0' : '1');
+        window.localStorage.setItem('gol.journalOpen', current ? '0' : '1');
       } catch {
         /* storage unavailable: keep the in-memory choice */
       }
@@ -1168,14 +1171,9 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
       <div className="game-main">
         <header className="topbar">
-          <button className="topbar__mobile-brand" onClick={() => navigate('town')}>
-            <Crest size="xs" />
-            <span>{state.guild.name}</span>
-          </button>
           <button className="topbar__date" onClick={() => navigate('calendar')} title="Open the calendar">
-            <PixelIcon name="calendar" size={24} />
-            <span>
-              {MONTHS[state.date.month]} · week {(state.date.week || 0) + 1}
+            <span className="topbar__month">
+              {MONTHS[state.date.month]} · Week {(state.date.week || 0) + 1}
             </span>
             <strong>{state.date.year}</strong>
           </button>
@@ -1217,7 +1215,6 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
             <span className="topbar__gold" title="Treasury">
               <PixelIcon name="coin" size={24} />
               <b>{summary.crowns.toLocaleString()}</b>
-              <small>G</small>
             </span>
             {LADDERS.map((ladder) => (
               <span
@@ -1228,7 +1225,6 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
                 <PixelIcon name={LADDER_ICONS[ladder]} size={24} label={LADDER_LABELS[ladder]} />
                 <b>#{summary.ranks[ladder].rank}</b>
                 <RankChange change={summary.movement[ladder]} />
-                <small>{LADDER_LABELS[ladder].toLowerCase()}</small>
               </span>
             ))}
             <button className="topbar__rank-chip" onClick={() => navigate('rankings')} title="Strength · Legacy · Official ranks">
@@ -1238,52 +1234,61 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               {summary.statusTitle}
             </button>
           </div>
+          <button
+            className={`topbar__journal topbar__journal--${nextAction.kind}`}
+            onClick={toggleJournal}
+            aria-expanded={journalOpen}
+            aria-controls="journal"
+            title="Journal: next step and upcoming events"
+          >
+            <span className="topbar__journal-mark" aria-hidden="true">
+              {nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}
+            </span>
+            <span className="topbar__journal-title">{nextAction.title}</span>
+            <i aria-hidden="true">{journalOpen ? '▴' : '▾'}</i>
+          </button>
         </header>
+        {journalOpen ? (
+          <div className="journal" id="journal" role="region" aria-label="Journal">
+            <section className={`objective-ribbon objective-ribbon--${nextAction.kind}`}>
+              <span className="objective-ribbon__mark">{nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}</span>
+              <div className="objective-ribbon__text">
+                <strong className="objective-ribbon__title">{nextAction.title}</strong>
+                <span className="objective-ribbon__body">
+                  {nextAction.body}
+                  {typeof nextAction.progress === 'number' && typeof nextAction.target === 'number' ? ` (${nextAction.progress}/${nextAction.target})` : ''}
+                </span>
+              </div>
+              <div className="objective-ribbon__actions">
+                <Button
+                  size="sm"
+                  variant={nextAction.kind === 'critical' ? 'danger' : 'primary'}
+                  onClick={() => {
+                    if (nextAction.target === 'acknowledgeWelcome') {
+                      actions.acknowledgeWelcome();
+                      navigate('town');
+                    } else if (nextAction.target === 'finishTutorial') actions.finishTutorial();
+                    else navigate(nextAction.screen || 'hall');
+                  }}
+                >
+                  {nextAction.kind === 'critical' ? 'Resolve' : nextAction.target === 'finishTutorial' ? 'Finish tutorial' : 'Go'}
+                </Button>
+                {nextAction.kind === 'tutorial' ? (
+                  <Button size="sm" variant="secondary" onClick={actions.skipTutorial}>
+                    Skip tutorial
+                  </Button>
+                ) : null}
+              </div>
+            </section>
+            <UpcomingStrip state={state} actions={actions} navigate={navigate} />
+          </div>
+        ) : null}
         {message ? (
           <button className={`message-bar message-bar--${message.tone}`} onClick={() => setMessage(null)}>
             <span>{message.tone === 'red' ? '!' : message.tone === 'green' ? '✓' : '◆'}</span>
             <p>{message.text}</p>
             <i>×</i>
           </button>
-        ) : null}
-        <UpcomingStrip state={state} actions={actions} navigate={navigate} />
-        {place.view === 'map' || place.view === 'town' ? (
-          <aside className={`objective-ribbon objective-ribbon--compact objective-ribbon--${nextAction.kind} ${ribbonCollapsed ? 'is-collapsed' : ''}`}>
-            <span className="objective-ribbon__mark">{nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}</span>
-            <strong className="objective-ribbon__title">{nextAction.title}</strong>
-            {!ribbonCollapsed ? (
-              <span className="objective-ribbon__body">
-                {nextAction.body}
-                {typeof nextAction.progress === 'number' && typeof nextAction.target === 'number' ? ` (${nextAction.progress}/${nextAction.target})` : ''}
-              </span>
-            ) : null}
-            <Button
-              size="sm"
-              variant={nextAction.kind === 'critical' ? 'danger' : 'primary'}
-              onClick={() => {
-                if (nextAction.target === 'acknowledgeWelcome') {
-                  actions.acknowledgeWelcome();
-                  navigate('town');
-                } else if (nextAction.target === 'finishTutorial') actions.finishTutorial();
-                else navigate(nextAction.screen || 'hall');
-              }}
-            >
-              {nextAction.kind === 'critical' ? 'Resolve' : nextAction.target === 'finishTutorial' ? 'Finish tutorial' : 'Go'}
-            </Button>
-            {nextAction.kind === 'tutorial' && !ribbonCollapsed ? (
-              <Button size="sm" variant="secondary" onClick={actions.skipTutorial}>
-                Skip tutorial
-              </Button>
-            ) : null}
-            <button
-              className="objective-ribbon__toggle"
-              onClick={toggleRibbon}
-              aria-expanded={!ribbonCollapsed}
-              aria-label={ribbonCollapsed ? 'Expand' : 'Collapse'}
-            >
-              {ribbonCollapsed ? '▾' : '▴'}
-            </button>
-          </aside>
         ) : null}
         <main className="screen-container" key={`${place.view}-${place.building || ''}-${place.page || ''}`}>
           {renderedScreen}
@@ -1312,6 +1317,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <EventCardModal
         card={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !state.activeMissionGame ? state.pendingEvent : null}
         onChoose={actions.resolveTownEvent}
+        heroes={state.heroes}
       />
       <MomentModal
         moment={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !activeReport ? state.moments?.[0] : null}

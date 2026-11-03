@@ -110,38 +110,3 @@ export const EVENT_ICONS = {
   season: 'star',
   reputation: 'shield',
 };
-
-// The guild crest: a 14×16 multi-colour pixel shield (gold rim, red field, lantern star).
-const CREST_ROWS = [
-  '..GGGGGGGGGG..',
-  '.GRRRRRRRRRRG.',
-  'GRRRRRRRRRRRRG',
-  'GRRRRRWWRRRRRG',
-  'GRRRRRWWRRRRRG',
-  'GRRRWWWWWWRRRG',
-  'GRRRRWWWWRRRRG',
-  'GRRRRRWWRRRRRG',
-  'GRRRRWRRWRRRRG',
-  '.GRRRRRRRRRRG.',
-  '.GRRRRRRRRRRG.',
-  '..GRRRRRRRRG..',
-  '...GRRRRRRG...',
-  '....GRRRRG....',
-  '.....GRRG.....',
-  '......GG......',
-];
-const CREST_COLORS = { G: '#ffcf4a', R: '#a3263a', W: '#fff6dc' };
-const CREST_PATHS = Object.entries(CREST_COLORS).map(([key, color]) => [
-  color,
-  cells(CREST_ROWS.map((row) => row.replace(new RegExp(`[^${key}]`, 'g'), '.').replaceAll(key, '#'))),
-]);
-
-export function PixelCrest({ scale = 3, label = 'Guild crest' }) {
-  return (
-    <svg className="pixel-crest" width={14 * scale} height={16 * scale} viewBox="0 0 14 16" shapeRendering="crispEdges" role="img" aria-label={label}>
-      {CREST_PATHS.map(([color, d]) => (
-        <path key={color} d={d} fill={color} />
-      ))}
-    </svg>
-  );
-}

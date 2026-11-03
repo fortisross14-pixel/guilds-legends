@@ -1,23 +1,38 @@
-import React from 'react';
-import { Modal } from './UI.jsx';
-import PixelIcon from './PixelIcon.jsx';
+import React, { useEffect, useState } from 'react';
+import { Crest, HeroPortrait, Modal, TypeText } from './UI.jsx';
+
+// The hero an event is about (named in its text), for the dialogue portrait.
+function heroInText(heroes = [], text = '') {
+  return heroes.find((hero) => !['dead', 'retired'].includes(hero.status) && hero.name && text.includes(hero.name)) || null;
+}
+
+/** A parchment dialogue box: portrait, speaker plate, typed text (click to finish). */
+export function Dialogue({ speaker, text, hero = null }) {
+  const [done, setDone] = useState(false);
+  useEffect(() => setDone(false), [text]);
+  return (
+    <div className={`dialogue ${done ? 'is-done' : ''}`} onClick={() => setDone(true)} role="group" aria-label={`${speaker} says`}>
+      <div className="dialogue__portrait">{hero ? <HeroPortrait hero={hero} size="lg" showStatus={false} /> : <Crest size="lg" />}</div>
+      <div className="dialogue__body">
+        <span className="dialogue__speaker">{hero ? hero.name : speaker}</span>
+        <blockquote>
+          <TypeText text={text} done={done} />
+        </blockquote>
+        <span className="dialogue__more" aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
 
 // Town events, festivals and story beats: a dialogue box with 2–3 choices.
-export default function EventCardModal({ card, onChoose }) {
+export default function EventCardModal({ card, onChoose, heroes = [] }) {
   if (!card) return null;
   const speaker = card.source === 'story' ? 'The Lantern in the Blackwood' : card.source === 'festival' ? card.festival || 'Festival' : 'Town crier';
   const subtitle = card.source === 'story' ? 'Story' : card.source === 'festival' ? 'Festival' : 'This week in town';
   return (
-    <Modal open title={card.title} eyebrow={subtitle} preventClose width="medium">
+    <Modal open title={card.title} eyebrow={subtitle} preventClose width="medium" className="modal--story">
       <div className={`decision-scene event-card event-card--${card.source}`}>
-        <div className="dialogue">
-          <span className="dialogue__speaker">
-            <PixelIcon name={card.source === 'story' ? 'book' : card.source === 'festival' ? 'star' : 'horn'} size={12} />
-            {speaker}
-          </span>
-          <blockquote>{card.text}</blockquote>
-          <span className="dialogue__more" aria-hidden="true" />
-        </div>
+        <Dialogue speaker={speaker} text={card.text} hero={card.source === 'story' ? null : heroInText(heroes, card.text)} />
         <div className="decision-options" data-menu>
           {card.options.map((option, index) => (
             <button key={option.id} onClick={() => onChoose(option.id)}>
