@@ -13,6 +13,7 @@ A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation
 - Gameplay changes follow the current wave in `docs/GAME_VISION.md`. No balance tuning yet; that happens after the final wave.
 - Small, focused commits, one logical change each.
 - If a spec or audit item looks wrong or unclear, write it down and skip it. Don't guess.
+- UI changes follow [`docs/UX.md`](docs/UX.md): tap / drag / long-press / swipe / hold, a tap fallback for every drag, one interruption at a time, "gold" and the rest of the glossary.
 
 ## The UI → engine pattern
 
@@ -54,8 +55,8 @@ npm run build       # production build to dist/ (not committed)
 
 ```text
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
-src/places/               MapScreen (world map, wild-area cards), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, mission log, season reviews, codex, CalendarScreen, QuestLogScreen), routes.js
-src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door), ChapterEnd
+src/places/               MapScreen (world map, wild-area cards), RestDial (the hall's rest timeline), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, mission log, season reviews, codex, CalendarScreen, QuestLogScreen), routes.js
+src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door), ChapterEnd; touch: gestures.js (long-press, swipe, vibration), useDraggable.js (drag and drop onto data-drop targets), usePanZoom.js, DraggableHero.jsx
 src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, ArenaScreen + GuildChampionships, LoreCodex, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
@@ -115,6 +116,7 @@ tests/e2e/smoke.spec.js   Playwright smoke test (npm run test:e2e)
 tests/engine.test.js      Engine regression tests (fast)
 tests/long.test.js        Long seeded simulations
 docs/AUDIT_v1.9.md        Audit and improvement waves
+docs/UX.md                Touch-first UX: gesture language, screens and navigation, flows, glossary (follow it for any UI change)
 ```
 
 ## GameState shape (brief)

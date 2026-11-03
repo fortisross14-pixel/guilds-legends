@@ -270,7 +270,17 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - **Main quest guidance:** a quest marker on the world map and in town, and a quest log entry with the next step.
 - **Chapter end:** the Wren banner scene, a chapter summary (season-review style) and a teaser for Chapter 2. Free play continues afterwards.
 
-### Phase 7A — Touch-first UI/UX
+### Phase 7A — Touch-first UI/UX ✅ Done (2026-11-03)
+
+**Notes** (details, flows and open issues in [`docs/UX.md`](UX.md)):
+- **Gestures** live in `src/components/gestures.js` (long-press, swipe, vibration), `useDraggable.js` (pointer drag and drop onto `data-drop` targets, with a ghost label) and `usePanZoom.js`. Settings: Drag gestures / Tap only, vibration, show hints again (`settings.gestures`, `haptics`, `seenHints`).
+- **Combat:** drag a hero onto a unit; resting on it opens a radial menu of only the valid actions (release on one to act); previews on targets (damage or heal, hit chance, WEAK/RESIST, ☠ when lethal); area actions light every affected unit; tap hero, target, action as the fallback; long-press any unit or turn-order icon for its card; hold to fast-forward; Undo, Auto and speed stay.
+- **Exploring:** no context button (tap to go; the joystick is optional); icons over doors and people; long-press a label to peek; the goal chip walks to the current story step or opens the map; the world map pans and pinches; dialogue holds to fast-forward and swipes up for a log.
+- **Guild:** the party bar's heroes drag onto hall rooms (tiles show who is inside), War room zones and contract slots; items drag onto heroes in the Armory (live stat preview) and onto hero rows in the shop; the rest dial (1–91 days, snapping to just before events) replaces the three rest buttons (`restAtHall(days, tasks)`); recruits swipe as cards; hero pages swipe and explain stats and skills on long-press.
+- **Layout:** one interruption queue in `App.jsx`; back via the top-bar ◀ or a left-edge swipe; bottom panels swipe down to close; disabled buttons say why (`Button why=`); money is "gold" everywhere the player reads it; long menu descriptions cut.
+- **Removed:** the battle command lists (Attack/Skill/Item menus, confirm step) and their CSS, the walk context button and its CSS, the Armory's equip and "Use on" dropdowns, the three fixed rest buttons (`HALL_REST_WEEKS`).
+- **Choices to review:** the drag dwell (260 ms) before the radial opens, the 400 ms long-press, and the rest dial's uneven scale (days, weeks, months) are first guesses.
+
 - One gesture language for the whole game (tap, drag and drop, long-press to inspect, swipe, hold to fast-forward; no double-tap; every gesture has a tap fallback and a "Tap only" setting), written at the top of `docs/UX.md`.
 - Combat by dragging a hero onto a target, with a radial menu of valid actions, previews, long-press unit cards, undo, hold to fast-forward and vibration.
 - Exploring by tapping (no context button by default), icons over people and doors, long-press peeks, a goal chip that walks you to the quest, a pan-and-zoom world map, dialogue with hold and a log.

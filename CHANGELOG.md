@@ -2,6 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 7A: touch-first UI/UX
+
+- Battles by drag: drag a hero onto a target and pick from a radial menu under your thumb, with damage, hit chance and a ☠ when a blow would finish. Long-press anyone to inspect; hold to fast-forward; the phone buzzes on big hits. Tapping still works.
+- Walk by tapping; doors and people show what they do, and a long-press peeks inside. The goal chip takes you to the next story step. The world map pans and zooms.
+- Drag heroes onto Guild Hall rooms, the main party and contract slots; drag gear and potions onto heroes. Rest with a dial that stops just before the next event.
+- Swipe through recruits and hero pages; swipe notices away; swipe from the left edge to go back. Panels slide up from the bottom and swipe down to close.
+- Disabled buttons tell you why. Money is called gold everywhere.
+- New setting: Drag gestures or Tap only, plus vibration on/off. A written guide: docs/UX.md.
+
 ## Unreleased — Phase 6b: The Last Banner, Chapter 1
 
 - A new prologue: a knock at your door in Dunmere, a dying guildmaster, a banner that should not exist. Choose what to do when someone tries the door; each choice gives a different first clue. Then name your guild.
