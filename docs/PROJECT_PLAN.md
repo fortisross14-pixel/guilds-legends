@@ -127,7 +127,21 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - **World map:** tap a location to see a short card, then travel. A "you are here" marker; the main quest marker always shows.
 - Remove the old Dunmere-only exploration code, now superseded.
 
-### Phase 2 — Combat that feels exciting
+### Phase 2 — Combat that feels exciting ✅ Done (2026-11-03)
+
+**Notes:**
+- **Kept round-based combat** (every hero gets a command, then everyone acts in initiative order). Initiative is now rolled when the round is planned, so the **turn order bar** shows this round in order and the next round by speed; stunned units are marked. Each round records an event list (`encounter.events`) that the battle screen replays beat by beat.
+- **Touch flow:** tap a command, then tap the target on the field (enemy sprite or ally plate). Every valid target shows its damage/heal range and WEAK/RESIST; the selected one adds hit and crit chance. Tap it again (or Confirm) to act; tap empty ground to cancel. Area and self skills select all valid targets at once. Skill and item descriptions are shown inline.
+- **Rolls:** physical hits can miss (70–99% by speed) and crit (×1.5); primal matchups show as WEAK (×1.25) / RESIST (×0.8).
+- **Feedback:** lunge, hit flash and knockback, screen shake on crits and big moments, floating numbers with MISS/CRIT/WEAK/RESIST tags, HP and MP bars that ease down with a lagging ghost, KO tilt and fade, victory hop, effect sprites `fx.slash/pierce/fire/ice/lightning/heal/buff/debuff/poison` (borrowing the old effect art). Beats are ~420 ms (half at 2×). Sounds now play with the animations.
+- **Enemy AI:** profiles in `src/data/enemies.js` (brute, caster, healer, skirmisher, tank), utility-style choices in `planFor`. Brutes hit the lowest defense and enrage below 40%; casters pick the hero weak to their primal and retreat (guard 2 rounds) when hurt; healers heal the most-damaged ally, otherwise War Chant / Renew; skirmishers pick off the lowest HP and monsters may flee when alone; tanks taunt and guard. Every enemy shows its plan as an intent chip; the tell is the boss's (or strongest enemy's) plan in the profile's voice.
+- **Bosses** (`AREA_BOSSES`): the Grey Alpha (Old Road) summons two wolves at 50%; Captain Rook (Thornwood) turns from tank to brute with Attack up and alternates Blade Dance; the Lantern-eater's brood (Blackwood) charges Lantern Nova every 4 rounds, every 2 below 50%. A Defend halves it; a stun or one hit of 12% max HP interrupts the charge. The story's Hollow Warden got the same charged attack. Intro line and phase banners.
+- **Statuses:** poison, burn, stun, guard, attack up, attack down, regen (plus taunt for tanks). Old "buff"/"exposed" became attack up/down; Expose Weakness is now Sap Strength. New skills: Cleric Renew (lv 4), enemy War Chant and Lantern Nova. Stun now costs the unit's next turn (it no longer can expire unused). Icons with turns on every plate; tap a unit for details.
+- **Flow:** 1×/2× speed (Settings and in battle, remembered), auto-battle toggle mid-battle (plays rounds animated), Retry battle / Retreat to camp after a wipe in the wild, victory result with XP bars filling and level-up callouts.
+- **Encounters:** 3–4 groups per wild area with mixed profiles (Old Road changes after the Wolves contract); Blackwood contracts use the Blackwood roster.
+- **Removed:** the instant "Auto" resolve button and its App action, the HP-diff damage pops, badge statuses, `STATUS_LABELS`, the log-parsing battle sounds in App, the old Thornback and Grey Matron bosses, and dead progress-bar battle CSS.
+- **Not checked:** only the build and the Pages deploy. Some old combat tests may now disagree (misses, stun timing); they are left for Phase 8.
+
 - **Turn order bar** at the top, showing upcoming turns.
 - **Touch flow:** tap a hero's command (Attack, Skill, Item, Defend), then tap the target directly on the battlefield. Show a preview of expected damage or heal and a hit chance.
 - **Feedback:**

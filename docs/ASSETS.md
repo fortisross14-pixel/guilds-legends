@@ -146,6 +146,41 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
 | `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | — | placeholder | Ironford: Mags, Barkeep (dialogue portrait) |
 
+## Battle effect (`fx`, placeholder #5a2a6a)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `fx.slash` | `art/fx/slash.png` | 152×130 | `art/effects/effect_14.png` | borrowed | Physical hit: slash |
+| `fx.pierce` | `art/fx/pierce.png` | 152×130 | `art/effects/effect_07.png` | borrowed | Physical hit: arrows, daggers |
+| `fx.fire` | `art/fx/fire.png` | 152×130 | `art/effects/effect_01.png` | borrowed | Fire spells, burn ticks, bombs |
+| `fx.ice` | `art/fx/ice.png` | 152×130 | `art/effects/effect_02.png` | borrowed | Water spells (ice) |
+| `fx.lightning` | `art/fx/lightning.png` | 152×130 | `art/effects/effect_06.png` | borrowed | Air, Iron and other spells (lightning) |
+| `fx.heal` | `art/fx/heal.png` | 152×130 | `art/effects/effect_08.png` | borrowed | Heals, revives, regen ticks |
+| `fx.buff` | `art/fx/buff.png` | 152×130 | `art/effects/effect_09.png` | borrowed | Buffs, guard, taunt |
+| `fx.debuff` | `art/fx/debuff.png` | 152×130 | `art/effects/effect_13.png` | borrowed | Debuffs, stuns, charging |
+| `fx.poison` | `art/fx/poison.png` | 152×130 | `art/effects/effect_11.png` | borrowed | Poison ticks |
+
+## Battle sprite (`battler`, placeholder #6a3a1a)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `battle.enemy_01` | `art/enemies/enemy_01.png` | 320×288 | — | ready | Enemy battle sprite 01 (see src/data/enemies.js rosters) |
+| `battle.enemy_02` | `art/enemies/enemy_02.png` | 320×288 | — | ready | Enemy battle sprite 02 (see src/data/enemies.js rosters) |
+| `battle.enemy_03` | `art/enemies/enemy_03.png` | 320×288 | — | ready | Enemy battle sprite 03 (see src/data/enemies.js rosters) |
+| `battle.enemy_04` | `art/enemies/enemy_04.png` | 320×288 | — | ready | Enemy battle sprite 04 (see src/data/enemies.js rosters) |
+| `battle.enemy_05` | `art/enemies/enemy_05.png` | 320×288 | — | ready | Enemy battle sprite 05 (see src/data/enemies.js rosters) |
+| `battle.enemy_06` | `art/enemies/enemy_06.png` | 320×288 | — | ready | Enemy battle sprite 06 (see src/data/enemies.js rosters) |
+| `battle.enemy_07` | `art/enemies/enemy_07.png` | 320×288 | — | ready | Enemy battle sprite 07 (see src/data/enemies.js rosters) |
+| `battle.enemy_08` | `art/enemies/enemy_08.png` | 320×288 | — | ready | Enemy battle sprite 08 (see src/data/enemies.js rosters) |
+| `battle.enemy_09` | `art/enemies/enemy_09.png` | 320×288 | — | ready | Enemy battle sprite 09 (see src/data/enemies.js rosters) |
+| `battle.enemy_10` | `art/enemies/enemy_10.png` | 320×288 | — | ready | Enemy battle sprite 10 (see src/data/enemies.js rosters) |
+| `battle.enemy_11` | `art/enemies/enemy_11.png` | 320×288 | — | ready | Enemy battle sprite 11 (see src/data/enemies.js rosters) |
+| `battle.enemy_12` | `art/enemies/enemy_12.png` | 320×288 | — | ready | Enemy battle sprite 12 (see src/data/enemies.js rosters) |
+| `battle.enemy_13` | `art/enemies/enemy_13.png` | 320×288 | — | ready | Enemy battle sprite 13 (see src/data/enemies.js rosters) |
+| `battle.enemy_14` | `art/enemies/enemy_14.png` | 320×288 | — | ready | Enemy battle sprite 14 (see src/data/enemies.js rosters) |
+| `battle.enemy_15` | `art/enemies/enemy_15.png` | 320×288 | — | ready | Enemy battle sprite 15 (see src/data/enemies.js rosters) |
+| `battle.enemy_16` | `art/enemies/enemy_16.png` | 320×288 | — | ready | Enemy battle sprite 16 (see src/data/enemies.js rosters) |
+
 ## Interface (`ui`, placeholder #255a5a)
 
 | Id | Path | Size | Borrows | Status | Used for |
@@ -176,12 +211,14 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `enemy.group.wolves` | `art/walk/enemies/group-wolves.png` | 56×44 | — | placeholder | The Old Road: Grey wolf pack (standing on the map) |
+| `enemy.group.wolves` | `art/walk/enemies/group-wolves.png` | 56×44 | — | placeholder | The Old Road: Grey wolf pair (standing on the map) |
 | `enemy.group.bandits` | `art/walk/enemies/group-bandits.png` | 56×44 | — | placeholder | The Old Road: Bandit lookouts (standing on the map) |
-| `enemy.boss.matron` | `art/walk/enemies/boss-matron.png` | 80×64 | — | placeholder | The Old Road: The Grey Matron (boss on the map) |
+| `enemy.group.witch` | `art/walk/enemies/group-witch.png` | 56×44 | — | placeholder | The Old Road: Hedge witch and guards (standing on the map) |
+| `enemy.boss.alpha` | `art/walk/enemies/boss-alpha.png` | 80×64 | — | placeholder | The Old Road: The Grey Alpha (boss on the map) |
 | `enemy.group.stalkers` | `art/walk/enemies/group-stalkers.png` | 56×44 | — | placeholder | Thornwood edge: Thorn stalkers (standing on the map) |
-| `enemy.group.spores` | `art/walk/enemies/group-spores.png` | 56×44 | — | placeholder | Thornwood edge: Spore callers (standing on the map) |
-| `enemy.boss.thornback` | `art/walk/enemies/boss-thornback.png` | 80×64 | — | placeholder | Thornwood edge: The Thornback (boss on the map) |
+| `enemy.group.spores` | `art/walk/enemies/group-spores.png` | 56×44 | — | placeholder | Thornwood edge: Spore callers and a mender (standing on the map) |
+| `enemy.group.barkhides` | `art/walk/enemies/group-barkhides.png` | 56×44 | — | placeholder | Thornwood edge: Barkhide brutes (standing on the map) |
+| `enemy.boss.captain` | `art/walk/enemies/boss-captain.png` | 80×64 | — | placeholder | Thornwood edge: Captain Rook (boss on the map) |
 | `enemy.group.hollow` | `art/walk/enemies/group-hollow.png` | 56×44 | — | placeholder | The Blackwood: Hollow knights (standing on the map) |
 | `enemy.group.shades` | `art/walk/enemies/group-shades.png` | 56×44 | — | placeholder | The Blackwood: Veil shades (standing on the map) |
 | `enemy.boss.brood` | `art/walk/enemies/boss-brood.png` | 80×64 | — | placeholder | The Blackwood: Brood of the Lantern-eater (boss on the map) |

@@ -96,7 +96,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   exploration.js          walkable scenes: dialogue conditions/effects, scene positions, wild areas (enter, gather, camp, battles)
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
-src/game/combat.js        Per-hero turn-based battles (commands, skills, items, tell, auto-battle)
+src/game/combat.js        Per-hero turn-based battles: commands, hit/crit/primal rolls, statuses, enemy AI profiles, boss phases, tell, turn order, target previews, auto-battle; each round records `encounter.events` that CombatArenaModal replays as animations
 src/game/missionGames.js  Playable Diplomacy / Expedition / Intrigue challenges
 src/game/legacy.js        Branch, ambition and artifact definitions
 src/game/storage.js       IndexedDB save slots, export/import

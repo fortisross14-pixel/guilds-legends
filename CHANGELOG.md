@@ -2,6 +2,14 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 2: combat
+
+- Turn order bar, and a tap-command-then-tap-target flow with damage/heal previews, hit chance and WEAK/RESIST on every target.
+- Battles animate: lunges, hit flashes, crit shakes, floating numbers with MISS/CRIT/WEAK tags, easing HP/MP bars with a damage ghost, KO and victory poses, effect sprites, sounds in time.
+- Enemies have personalities (brutes, casters, healers, skirmishers, tanks) and show their plans; three bosses with phases: the Grey Alpha's summons, Captain Rook's switch to aggression, and the Lantern-eater brood's charged Lantern Nova you can blunt or interrupt.
+- Statuses: poison, burn, stun, guard, attack up/down and regen, with icons and turn counts.
+- 1×/2× speed, auto-battle toggle, retry or retreat after a wipe in the wild, XP bars on the victory screen.
+
 ## Unreleased — Phase 1: explore
 
 - Walkable Dunmere, Greenhollow and Ironford, each with its own tile layout, landmark and 6–7 townsfolk who give hints, rumors, small favours, recruit offers or open buildings.
