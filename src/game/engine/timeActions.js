@@ -5,7 +5,7 @@
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
-import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone, commitRng, completeTutorialTargetInPlace, finalize, hashString, rngFor, tallySpend, travellingPartyIds, uid } from './core.js';
+import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone, commitRng, finalize, hashString, rngFor, tallySpend, travellingPartyIds, uid } from './core.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
@@ -169,8 +169,7 @@ export function resolveRoadEvent(state, optionId) {
   addChronicle(next, { type: 'travel', importance: 1, title: definition.title, text: result, tags: ['travel', 'road-event', event.type] });
   next.notifications.push({ id: `road-${event.id}`, tone: 'blue', title: definition.title, text: result });
   if (event.scripted) {
-    // The opening march: after the road event, time runs until the wolves.
-    completeTutorialTargetInPlace(next, 'roadEvent');
+    // The story march (mission 3): after the road event, time runs until the wolves.
     const mission = next.activeMissions.find((item) => item.locationId === event.toId) || next.activeMissions[0];
     return mission ? advanceUntilMissionReturns(next, mission.id, true) : { state: finalize(next), error: null };
   }
@@ -186,8 +185,8 @@ export function launchExpedition(state, missionId, formationType, assignments) {
   const mission = state.missions.find((item) => item.id === missionId);
   const launched = launchMission(state, missionId, formationType, assignments);
   if (launched.error) return launched;
-  // Scripted opening: a guaranteed easy road event on the way to the first contract.
-  if (mission?.templateId === 'wolves-old-road' && !launched.state.tutorial.completed && !launched.state.flags.openingPeddler) {
+  // Story mission 3: a guaranteed easy road event on the way to the first contract.
+  if (mission?.story === 'm3.contract' && !launched.state.flags.openingPeddler) {
     launched.state.flags.openingPeddler = true;
     launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', day: 0, scripted: true, toId: mission.locationId };
     return launched;

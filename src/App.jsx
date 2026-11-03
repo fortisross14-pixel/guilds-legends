@@ -2,7 +2,6 @@ import React, { Component, useCallback, useEffect, useMemo, useRef, useState } f
 import {
   acknowledgeCouncilReport,
   acknowledgeReport,
-  acknowledgeWelcome,
   autoResolveActiveMissionGame,
   appointHero,
   assignArtifact,
@@ -10,7 +9,9 @@ import {
   assignMentor,
   clearNotifications,
   clone,
-  completeFallenBannerOpening,
+  completePrologue,
+  finishStoryScene,
+  playStoryScene,
   talkTo,
   chooseDialogueOption,
   saveScenePosition,
@@ -43,7 +44,6 @@ import {
   inspectMission,
   isGuildDefunct,
   launchExpedition,
-  notePartySelection,
   recruitCandidate,
   refoundGuild,
   releaseHero,
@@ -64,8 +64,6 @@ import {
   unequipItem,
   useItemOnHero,
   acknowledgeMoment,
-  noteTutorialStep,
-  skipTutorial,
   LADDERS,
   LADDER_LABELS,
   continueJourney,
@@ -113,7 +111,8 @@ import EventCardModal from './components/EventCardModal.jsx';
 import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
 import PartyRail from './components/PartyRail.jsx';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
-import FallenBannerOpening from './components/FallenBannerOpening.jsx';
+import Prologue from './components/Prologue.jsx';
+import DialogueBox from './explore/DialogueBox.jsx';
 import Asset from './components/Asset.jsx';
 import { CHARTERS, CHARTER_LIST, PATHS } from './data/charters.js';
 import { specializationTitle } from './game/engine.js';
@@ -226,7 +225,6 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
 }
 
 function CreateCampaignModal({ open, slot, onClose, onCreate }) {
-  const [guildName, setGuildName] = useState('The Broken Lantern');
   const [founderName, setFounderName] = useState('Rowan Vale');
   const [founderClass, setFounderClass] = useState('Guardian');
   const [founderPrimal, setFounderPrimal] = useState('Fire');
@@ -237,7 +235,6 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
   useEffect(() => {
     if (open) {
       setCharter('free');
-      setGuildName('The Broken Lantern');
       setFounderName('Rowan Vale');
       setFounderClass('Guardian');
       setFounderPrimal('Fire');
@@ -254,10 +251,6 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
           <Crest size="xl" />
         </div>
         <div className="new-campaign__fields">
-          <label>
-            Guild name
-            <input value={guildName} maxLength={38} onChange={(event) => setGuildName(event.target.value)} />
-          </label>
           <label>
             Your name
             <input value={founderName} maxLength={36} onChange={(event) => setFounderName(event.target.value)} />
@@ -322,19 +315,19 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
           </div>
         </fieldset>
         <div className="new-campaign__premise">
-          <strong>The Broken Lantern scenario</strong>
+          <strong>The Last Banner</strong>
           <p>
-            The previous guild disappeared in the Blackwood. You begin alone in a rented hall. Your first objective is to hire one companion, then prove the new
-            company on the Old Road.
+            Dunmere, 1187. You are nobody: a small house, one bed, no guild. Tonight a dying man knocks on your door with a banner that should not exist. You name
+            your guild at the end of the prologue.
           </p>
         </div>
         <Button
           variant="primary"
           size="lg"
-          disabled={!guildName.trim() || !founderName.trim()}
-          onClick={() => onCreate({ guildName: guildName.trim(), founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText, charter })}
+          disabled={!founderName.trim()}
+          onClick={() => onCreate({ founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText, charter })}
         >
-          Raise the banner
+          Begin
         </Button>
       </div>
     </Modal>
@@ -391,28 +384,6 @@ function RefoundModal({ state, open, onRefound, onReturnHome }) {
             Refound the guild
           </Button>
           <Button onClick={onReturnHome}>Return to save slots</Button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-function IntroModal({ state, actions }) {
-  if (state.tutorial.completed || state.tutorial.step !== 0) return null;
-  return (
-    <Modal open title="The Broken Lantern" eyebrow={`Dunmere · Year ${state.date.year}`} preventClose width="medium">
-      <div className="intro-card">
-        <Crest size="xl" />
-        <p>The old guild of the Broken Lantern marched into the Blackwood and never came back. All that is left is its banner, and you, its new founder.</p>
-        <p>
-          Hire a companion at the Tavern, take a contract from the Notice Board, and win your first fight. Then the rankings will start to notice{' '}
-          {state.guild.name}.
-        </p>
-        <div className="save-actions">
-          <Button variant="primary" size="lg" onClick={actions.acknowledgeWelcome}>
-            Raise the banner
-          </Button>
-          <Button onClick={actions.skipTutorial}>Skip tutorial</Button>
         </div>
       </div>
     </Modal>
@@ -865,7 +836,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [place, setPlaceState] = useState({ view: 'town' });
   // Arriving somewhere (the opening ends, a journey ends, entering or leaving a
   // wild area) puts the player in that place's walkable scene.
-  const arrivalKey = `${state.world?.currentLocationId}|${state.world?.activeTravel ? 'road' : 'here'}|${state.world?.wildAreaId || ''}|${state.flags?.opening?.phase}`;
+  const arrivalKey = `${state.world?.currentLocationId}|${state.world?.activeTravel ? 'road' : 'here'}|${state.world?.wildAreaId || ''}|${state.story?.prologue}`;
   const lastArrival = useRef(arrivalKey);
   useEffect(() => {
     if (lastArrival.current === arrivalKey) return;
@@ -873,6 +844,11 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     if (!state.world?.activeTravel) setPlaceState({ view: 'town' });
   }, [arrivalKey, state.world?.activeTravel]);
   const [heroModalId, setHeroModalId] = useState(null);
+  const [storyScene, setStoryScene] = useState(null);
+  const blocked = Boolean(state.activeEncounter || state.activeMissionGame || state.pendingDecisions.length || state.pendingRoadEvent);
+  useEffect(() => {
+    if (!storyScene && !blocked && state.story?.scene?.conversation) setStoryScene(state.story.scene.conversation);
+  }, [storyScene, blocked, state.story?.scene?.conversation]);
   // The journal (next step + upcoming events) is a per-viewer convenience kept in localStorage.
   const [journalOpen, setJournalOpen] = useState(() => {
     try {
@@ -984,8 +960,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
 
   const actions = useMemo(
     () => ({
-      acknowledgeWelcome: () => commitState(acknowledgeWelcome(state)),
-      completeFallenBannerOpening: (choices) => commitState(completeFallenBannerOpening(state, choices)),
+      completePrologue: (options) => applyResult(completePrologue(state, options)),
+      // Story scenes (src/data/dialogue/story.js): play one now, or close the one showing.
+      playStoryScene: (missionId) => applyResult(playStoryScene(state, missionId)),
+      finishStoryScene: (conversationId) => commitState(finishStoryScene(state, conversationId)),
       // Walkable scenes (src/explore). talk/chooseDialogue return UI follow-ups ({ open, recruit }).
       talk: (id, visit) => {
         const result = talkTo(state, id, visit);
@@ -997,10 +975,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(result);
         return result.error ? null : result.ui || {};
       },
-      visitBuilding: (sceneId, targetId, position, building) => {
-        let next = recordSceneVisit(state, sceneId, targetId, position);
-        if (building === 'herald') next = noteTutorialStep(next, 'visitHerald');
-        commitState(next);
+      visitBuilding: (sceneId, targetId, position) => {
+        commitState(recordSceneVisit(state, sceneId, targetId, position));
       },
       savePosition: (sceneId, position) => {
         const next = saveScenePosition(state, sceneId, position);
@@ -1018,10 +994,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       },
       fightWild: (areaId, groupId, position) => applyResult(startWildBattle(state, areaId, groupId, position)),
       inspectMission: (id) => commitState(inspectMission(state, id)),
-      notePartySelection: (id, formationType, assignments) => {
-        const next = notePartySelection(state, id, formationType, assignments);
-        if (next.tutorial.step !== state.tutorial.step) commitState(next);
-      },
       launchMission: (id, formationType, assignments) => applyResult(launchExpedition(state, id, formationType, assignments), 'The company has set out.'),
       saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
       // Time only moves through actions: travel, contracts the founder joins,
@@ -1082,14 +1054,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       unequipItem: (heroId, slot) => applyResult(unequipItem(state, heroId, slot)),
       useItem: (itemId, heroId) => applyResult(useItemOnHero(state, itemId, heroId)),
       acknowledgeMoment: () => commitState(acknowledgeMoment(state)),
-      noteTutorial: (target) => {
-        const next = noteTutorialStep(state, target);
-        if (next !== state) commitState(next);
-      },
-      finishTutorial: () => commitState(noteTutorialStep(state, 'finishTutorial')),
-      skipTutorial: () => {
-        if (window.confirm('Skip the tutorial? You can play freely from here.')) commitState(skipTutorial(state));
-      },
       retryWildBattle: () => applyResult(retryWildBattle(state)),
       retreatToCamp: () => applyResult(retreatToCamp(state), 'The party falls back to the camp.'),
       missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
@@ -1106,8 +1070,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         setReportModalRef(null);
       },
       openHero: (id) => {
-        const next = inspectHero(state, id);
-        if (next.tutorial.step !== state.tutorial.step) commitState(next);
+        if (!state.flags.firstHeroInspected) commitState(inspectHero(state, id));
         setHeroModalId(id);
       },
       releaseHero: (id) => {
@@ -1200,8 +1163,8 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     else setReportModalRef(null);
   };
 
-  if (state.flags?.opening?.phase && state.flags.opening.phase !== 'complete') {
-    return <FallenBannerOpening state={state} onComplete={actions.completeFallenBannerOpening} />;
+  if (state.story?.prologue !== 'done') {
+    return <Prologue state={state} onComplete={actions.completePrologue} />;
   }
 
   return (
@@ -1310,21 +1273,10 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
                 <Button
                   size="sm"
                   variant={nextAction.kind === 'critical' ? 'danger' : 'primary'}
-                  onClick={() => {
-                    if (nextAction.target === 'acknowledgeWelcome') {
-                      actions.acknowledgeWelcome();
-                      navigate('town');
-                    } else if (nextAction.target === 'finishTutorial') actions.finishTutorial();
-                    else navigate(nextAction.screen || 'hall');
-                  }}
+                  onClick={() => (nextAction.canTalk ? actions.playStoryScene(nextAction.missionId) : navigate(nextAction.screen || 'hall'))}
                 >
-                  {nextAction.kind === 'critical' ? 'Resolve' : nextAction.target === 'finishTutorial' ? 'Finish tutorial' : 'Go'}
+                  {nextAction.kind === 'critical' ? 'Resolve' : nextAction.canTalk ? 'Talk now' : 'Go'}
                 </Button>
-                {nextAction.kind === 'tutorial' ? (
-                  <Button size="sm" variant="secondary" onClick={actions.skipTutorial}>
-                    Skip tutorial
-                  </Button>
-                ) : null}
               </div>
             </section>
             <UpcomingStrip state={state} actions={actions} navigate={navigate} />
@@ -1359,7 +1311,21 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
-      <IntroModal state={state} actions={actions} />
+      {storyScene ? (
+        <div className="story-scene">
+          <DialogueBox
+            key={storyScene}
+            state={state}
+            actions={actions}
+            conversationId={storyScene}
+            onClose={() => {
+              actions.finishStoryScene(storyScene);
+              setStoryScene(null);
+            }}
+            onOpenBuilding={(building) => navigate({ view: 'town', building, tab: null })}
+          />
+        </div>
+      ) : null}
       <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} />
       <EventCardModal
         card={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !state.activeMissionGame ? state.pendingEvent : null}

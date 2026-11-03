@@ -12,6 +12,7 @@ import { LOCATION_BY_ID } from '../../data/world.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { createDuelEncounter } from '../combat.js';
+import { artifactEffectFromPrestige } from '../legacy.js';
 import {
   addChronicle,
   addHeroHistory,
@@ -538,6 +539,67 @@ export function storyContractResolvedInPlace(state, contract, success) {
   record.attempts = (record.attempts || 0) + 1;
   record.retryDay = campaignDaySerial(state) + 7;
   pushNewsInPlace(state, { title: `Story setback: ${contract.title}`, text: 'The lead goes cold for a week. The contract will be posted again.', tone: 'red' });
+}
+
+// ---------------------------------------------------------------- the prologue
+
+/** The banner as a relic of the old guild, with its provenance. */
+function bannerRelic(state) {
+  return {
+    id: 'artifact-last-banner',
+    name: 'The Last Banner',
+    relic: true,
+    discoveredYear: state.date.year,
+    originMission: PROLOGUE.title,
+    ownerId: null,
+    legend: `Carried by the Broken Lantern. Taken by Cassian Rook. Recovered in Dunmere, Year ${state.date.year}. Preserved by the founder of ${state.guild.name}.`,
+    prestige: 12,
+    effect: artifactEffectFromPrestige(12, 'The Last Banner'),
+    ownerHistory: [{ year: state.date.year, month: state.date.month, heroId: null, heroName: 'Guild Vault', action: 'inherited' }],
+  };
+}
+
+/** Writes the founding into the founder's history and the chronicle (after the guild is named). */
+export function foundGuildInPlace(state, guildName) {
+  if (guildName) state.guild.name = String(guildName).trim().slice(0, 38) || state.guild.name;
+  const founder = state.heroes.find((hero) => hero.id === state.guild.founderHeroId);
+  if (founder) {
+    founder.origin = `Founder of ${state.guild.name}`;
+    addHeroHistory(founder, state, { type: 'founding', title: `Founded ${state.guild.name}`, text: 'Raised a new guild under the Broken Lantern’s last banner, the morning after Cassian Rook died on the floor.' });
+  }
+  if (!state.artifacts.some((artifact) => artifact.id === 'artifact-last-banner')) state.artifacts.push(bannerRelic(state));
+  ['broken-lantern', 'the-banner', 'cassian-rook', 'door-emblem'].forEach((id) => unlockCodexInPlace(state, id, true));
+  addChronicle(state, {
+    type: 'founding',
+    importance: 5,
+    title: `${state.guild.founder} raises the banner of ${state.guild.name}`,
+    text: 'A dying guildmaster brought the Broken Lantern’s banner to a house in Dunmere. The next morning, a new guild had a name.',
+    heroIds: founder ? [founder.id] : [],
+    tags: ['founding', 'story'],
+  });
+}
+
+/**
+ * The prologue's end: the first choice gives its clue (src/data/story.js
+ * PROLOGUE.rewards), the guild gets its name, and Act I begins.
+ */
+export function completePrologue(state, { choice, guildName } = {}) {
+  if (storyState(state).prologue === 'done') return { state, error: null };
+  if (!String(guildName || '').trim()) return { state, error: 'Name your guild.' };
+  const next = clone(state);
+  const story = storyInPlace(next);
+  const pick = PROLOGUE.choices.some((item) => item.id === choice) ? choice : 'banner';
+  story.prologue = 'done';
+  story.choices.prologue = pick;
+  const reward = PROLOGUE.rewards[pick] || {};
+  if (reward.flag) {
+    next.flags.dialogue ||= {};
+    next.flags.dialogue[reward.flag] = true;
+  }
+  if (reward.evidence) addEvidenceInPlace(next, reward.evidence);
+  (reward.codex || []).forEach((id) => unlockCodexInPlace(next, id, true));
+  foundGuildInPlace(next, guildName);
+  return { state: finalize(next), error: null };
 }
 
 // ---------------------------------------------------------------- read models

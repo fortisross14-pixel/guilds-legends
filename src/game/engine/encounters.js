@@ -1,10 +1,9 @@
 // @ts-check
 // Active combat and mission-game actions, and concluding them.
-import { ONBOARDING_STEPS } from '../../data/content.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
-import { addChronicle, campaignWeekSerial, clone, commitRng, completeTutorialTargetInPlace, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
+import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
 import { storyDuelResultInPlace } from './story.js';
@@ -261,7 +260,6 @@ export function concludeActiveCombat(state, mutate = false) {
     decision.prompt = `${combatResult.playerWon ? 'The hostile force breaks.' : 'The company is forced back.'} ${decision.prompt}`;
     next.pendingDecisions.push(decision);
     next.activeEncounter = null;
-    if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'completeCombat') completeTutorialTargetInPlace(next, 'completeCombat');
     addChronicle(next, {
       type: combatResult.playerWon ? 'combat-victory' : 'combat-defeat',
       importance: mission.risk >= 4 ? 4 : 2,

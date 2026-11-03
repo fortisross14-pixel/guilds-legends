@@ -11,3 +11,12 @@
 .opening-identity__card h1 { margin: 0; font-size: clamp(34px, 7vw, 58px); }
 .opening-identity__card p { color: var(--text-dim); }
 .opening-identity__card .button { margin-top: 16px; min-height: 48px; }
+
+/* The prologue (Phase 6b) and story scenes shown over any screen. */
+.prologue-dialogue { position: absolute; z-index: 7; }
+.dialogue__text.is-narration { font-style: italic; }
+.opening-identity__banner { display: block; width: 120px; height: 160px; margin: 0 auto 12px; object-fit: contain; }
+.opening-identity__field { display: grid; gap: 6px; margin-top: 12px; text-align: left; font-weight: 600; }
+.opening-identity__field input { min-height: 48px; font-size: 18px; }
+.story-scene { position: fixed; inset: 0; z-index: 90; background: rgba(6, 5, 9, 0.55); }
+.story-scene .dialogue { position: absolute; inset: 0; }

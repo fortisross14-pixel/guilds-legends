@@ -3,7 +3,7 @@
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { resolveRoadEvent } from './timeActions.js';
 import { FORMATION_TYPES, formationForMission } from '../../data/formations.js';
-import { WEEKS_PER_MONTH, activeHeroCount, campaignWeekSerial, clone, completeTutorialTargetInPlace, freeBeds } from './core.js';
+import { WEEKS_PER_MONTH, activeHeroCount, campaignWeekSerial, clone, freeBeds } from './core.js';
 import { acquireHall, buildRoom, getHallView, rentBed } from './hall.js';
 import { roleRating } from './heroes.js';
 import { launchMission } from './missions.js';
@@ -48,7 +48,6 @@ export function simulateAutoplay(initialState, months = 240) {
     // every acknowledgement.
     if (state.pendingReports?.length) {
       state.pendingReports = [];
-      completeTutorialTargetInPlace(state, 'viewMissionReport');
     }
 
     if (state.activeEncounter) {
@@ -81,7 +80,6 @@ export function simulateAutoplay(initialState, months = 240) {
       state = resolveDecision(state, decision.id, option.id, true).state;
       if (state.pendingReports?.length) {
         state.pendingReports = [];
-        completeTutorialTargetInPlace(state, 'viewMissionReport');
       }
       continue;
     }

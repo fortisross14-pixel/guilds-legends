@@ -19,6 +19,14 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `bg.town.ironford` | `art/bg/town-ironford.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Ironford town directory |
 | `bg.town.default` | `art/bg/town-default.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Any other town directory |
 | `bg.town.windmere` | `art/bg/town-windmere.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Windmere town directory (no walkable layout yet) |
+| `bg.story.house` | `art/bg/story-house.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Prologue: the player’s house at night, rain and firelight |
+| `bg.story.warning` | `art/bg/story-warning.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act I ending: outside the Dunmere arena after the Harvest Melee |
+| `bg.story.greenhollow` | `art/bg/story-greenhollow.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: Maren Bell’s herb room in Greenhollow |
+| `bg.story.archive` | `art/bg/story-archive.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: the Ironford archive vault |
+| `bg.story.windmere` | `art/bg/story-windmere.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: the cliffside ring at Windmere |
+| `bg.story.thornwood` | `art/bg/story-thornwood.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: the trapper’s hut at the Thornwood edge (Wren) |
+| `bg.story.banner` | `art/bg/story-banner.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Chapter 1 ending: the Guild Hall, Wren facing the banner |
+| `bg.story.chapter` | `art/bg/story-chapter.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Chapter summary and the Chapter 2 teaser |
 | `bg.season.review` | `art/bg/season-review.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Season review cards (end of each year, re-opened from the record book) |
 
 ## Building exterior (`building`, placeholder #5a4636)
@@ -98,17 +106,17 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `room.opening.floor` | `art/walk/opening/floor.png` | 960×540 | — | placeholder | Opening room: floor and walls |
+| `room.house.floor` | `art/walk/house/floor.png` | 960×540 | — | placeholder | Player’s house: floor and walls, a hearth glow, rain on the windows (prologue) |
 
 ## Prop (`prop`, placeholder #55602e)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `prop.opening.table` | `art/walk/opening/table.png` | 224×40 | — | placeholder | Opening room: table (top left) |
-| `prop.opening.shelf` | `art/walk/opening/shelf.png` | 218×40 | — | placeholder | Opening room: shelf (top right) |
-| `prop.opening.bench` | `art/walk/opening/bench.png` | 255×36 | — | placeholder | Opening room: bench (bottom left) |
-| `prop.opening.chest` | `art/walk/opening/chest.png` | 110×44 | — | placeholder | Opening room: chest (bottom right) |
-| `prop.opening.door` | `art/walk/opening/door.png` | 32×92 | — | placeholder | Opening room: door to Dunmere |
+| `prop.house.hearth` | `art/walk/house/hearth.png` | 190×52 | — | placeholder | Player’s house: the hearth (top left) |
+| `prop.house.table` | `art/walk/house/table.png` | 160×64 | — | placeholder | Player’s house: table and two stools (middle) |
+| `prop.house.bed` | `art/walk/house/bed.png` | 190×70 | — | placeholder | Player’s house: the one bed (top right) |
+| `prop.house.chest` | `art/walk/house/chest.png` | 120×44 | — | placeholder | Player’s house: small chest (bottom left) |
+| `prop.house.door` | `art/walk/house/door.png` | 32×92 | — | placeholder | Player’s house: the front door (later scratched with the Argent Crown emblem) |
 | `prop.campfire` | `art/walk/props/campfire.png` | 64×64 | — | placeholder | Wild-area camp: rest spot |
 | `prop.signpost` | `art/walk/props/signpost.png` | 32×48 | — | placeholder | Exit from a town or wild area |
 | `prop.gather.herb` | `art/walk/props/gather-herb.png` | 28×28 | — | placeholder | Gathering spot: herbs |
@@ -136,9 +144,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `npc.opening.stranger` | `art/walk/opening/stranger.png` | 44×28 | — | placeholder | Opening room: wounded stranger, lying down |
-| `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | placeholder | Dunmere: Sella Rowan, Innkeeper (walk sprite) |
-| `npc.dunmere.merchant` | `art/walk/npcs/dunmere-merchant.png` | 26×36 | — | placeholder | Dunmere: Bram Hallow, Road merchant (walk sprite) |
+| `npc.house.rook` | `art/walk/house/rook.png` | 44×28 | — | placeholder | Player’s house: Cassian Rook, wounded, on the floor |
+| `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | placeholder | Dunmere: Mara Fen, Innkeeper (walk sprite) |
+| `npc.dunmere.merchant` | `art/walk/npcs/dunmere-merchant.png` | 26×36 | — | placeholder | Dunmere: Corwin Pell, Road merchant (walk sprite) |
 | `npc.dunmere.fighter` | `art/walk/npcs/dunmere-fighter.png` | 26×36 | — | placeholder | Dunmere: Nia Voss, Local fighter (walk sprite) |
 | `npc.dunmere.traveler` | `art/walk/npcs/dunmere-traveler.png` | 26×36 | — | placeholder | Dunmere: Iven Quill, Traveler (walk sprite) |
 | `npc.dunmere.herald` | `art/walk/npcs/dunmere-herald.png` | 26×36 | — | placeholder | Dunmere: Orren Pike, Herald (walk sprite) |
@@ -176,8 +184,19 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.poi` | `art/portraits/npcs/poi.png` | 160×160 | — | placeholder | Dialogue portrait for places and objects (fountain, statue, wells…) |
 | `portrait.arena.referee` | `art/portraits/npcs/arena-referee.png` | 160×160 | — | placeholder | Arena referee at the fighting ground (starts bouts) |
 | `portrait.arena.registrar` | `art/portraits/npcs/arena-registrar.png` | 160×160 | — | placeholder | Arena registrar at the sign-up desk |
-| `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | — | placeholder | Dunmere: Sella Rowan, Innkeeper (dialogue portrait) |
-| `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | — | placeholder | Dunmere: Bram Hallow, Road merchant (dialogue portrait) |
+| `portrait.story.rook` | `art/portraits/story/rook.png` | 160×160 | — | placeholder | Lord Cassian Rook: battered armor, silver insignia, dying (prologue) |
+| `portrait.story.thorne` | `art/portraits/story/thorne.png` | 160×160 | — | placeholder | Garrick Thorne: guildmaster of the Argent Crown, charming and cold |
+| `portrait.story.mara` | `art/portraits/story/mara.png` | 160×160 | — | placeholder | Mara Fen: keeper of the Wayfarer, practical and funny |
+| `portrait.story.nessa` | `art/portraits/story/nessa.png` | 160×160 | — | placeholder | Nessa Thornfield: young Ranger, hunter and guide |
+| `portrait.story.bram` | `art/portraits/story/bram.png` | 160×160 | — | placeholder | Bram Calder: proud Duelist from Dunmere |
+| `portrait.story.wren` | `art/portraits/story/wren.png` | 160×160 | — | placeholder | Wren: the Broken Lantern’s last scout, living as “Linnet” |
+| `portrait.story.herbalist` | `art/portraits/story/herbalist.png` | 160×160 | — | placeholder | Maren Bell: retired herbalist of Greenhollow |
+| `portrait.story.quartermaster` | `art/portraits/story/quartermaster.png` | 160×160 | — | placeholder | Oswin Tull: former Argent Crown quartermaster, now an archive keeper in Ironford |
+| `portrait.story.champion` | `art/portraits/story/champion.png` | 160×160 | — | placeholder | Halden Marsh: aging Windmere champion |
+| `portrait.story.representative` | `art/portraits/story/representative.png` | 160×160 | — | placeholder | The Argent Crown’s well-dressed representative |
+| `portrait.story.stablemaster` | `art/portraits/story/stablemaster.png` | 160×160 | — | placeholder | Gideon Rusk: owner of the old stable on Banner Plaza |
+| `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | — | placeholder | Dunmere: Mara Fen, Innkeeper (dialogue portrait) |
+| `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | — | placeholder | Dunmere: Corwin Pell, Road merchant (dialogue portrait) |
 | `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | — | placeholder | Dunmere: Nia Voss, Local fighter (dialogue portrait) |
 | `portrait.dunmere.traveler` | `art/portraits/npcs/dunmere-traveler.png` | 160×160 | — | placeholder | Dunmere: Iven Quill, Traveler (dialogue portrait) |
 | `portrait.dunmere.herald` | `art/portraits/npcs/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Orren Pike, Herald (dialogue portrait) |
@@ -242,11 +261,13 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `crest.patron.trade` | `art/crests/patron-trade.png` | 128×128 | — | placeholder | Patron crest: The Dunmere Trade House (Connections) |
 | `crest.patron.temple` | `art/crests/patron-temple.png` | 128×128 | — | placeholder | Patron crest: The Temple of the Dawn (Connections) |
 | `crest.patron.smiths` | `art/crests/patron-smiths.png` | 128×128 | — | placeholder | Patron crest: The Ironford Smiths’ Guild (Connections) |
+| `crest.argent-crown` | `art/crests/argent-crown.png` | 128×128 | — | placeholder | The Argent Crown’s emblem (scratched into the door, Herald, rival pages) |
 
 ## Interface (`ui`, placeholder #255a5a)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
+| `relic.banner` | `art/relics/last-banner.png` | 120×160 | — | placeholder | The Last Banner: torn, bloodstained, a golden lantern (naming card, Trophy hall, Lore codex) |
 | `award.mvp` | `art/awards/award-mvp.png` | 64×64 | — | placeholder | MVP of the season (review, career tab, hall of fame) |
 | `award.rookie` | `art/awards/award-rookie.png` | 64×64 | — | placeholder | Rookie of the year |
 | `award.signing` | `art/awards/award-signing.png` | 64×64 | — | placeholder | Best signing of the year |
@@ -266,7 +287,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `enemy.group.stalkers` | `art/walk/enemies/group-stalkers.png` | 56×44 | — | placeholder | Thornwood edge: Thorn stalkers (standing on the map) |
 | `enemy.group.spores` | `art/walk/enemies/group-spores.png` | 56×44 | — | placeholder | Thornwood edge: Spore callers and a mender (standing on the map) |
 | `enemy.group.barkhides` | `art/walk/enemies/group-barkhides.png` | 56×44 | — | placeholder | Thornwood edge: Barkhide brutes (standing on the map) |
-| `enemy.boss.captain` | `art/walk/enemies/boss-captain.png` | 80×64 | — | placeholder | Thornwood edge: Captain Rook (boss on the map) |
+| `enemy.boss.captain` | `art/walk/enemies/boss-captain.png` | 80×64 | — | placeholder | Thornwood edge: Captain Vask (boss on the map) |
 | `enemy.group.hollow` | `art/walk/enemies/group-hollow.png` | 56×44 | — | placeholder | The Blackwood: Hollow knights (standing on the map) |
 | `enemy.group.shades` | `art/walk/enemies/group-shades.png` | 56×44 | — | placeholder | The Blackwood: Veil shades (standing on the map) |
 | `enemy.boss.brood` | `art/walk/enemies/boss-brood.png` | 80×64 | — | placeholder | The Blackwood: Brood of the Lantern-eater (boss on the map) |

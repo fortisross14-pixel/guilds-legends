@@ -9,7 +9,6 @@ import {
   campaignMonthSerial,
   clone,
   commitRng,
-  completeTutorialTargetInPlace,
   finalize,
   getCurrentLocation,
   getHero,
@@ -217,7 +216,6 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
           remaining.demand = candidateDemandFor(remaining, next, rr);
         }
       });
-    completeTutorialTargetInPlace(next, 'recruitCompanion');
   }
   addChronicle(next, {
     type: 'recruitment',
@@ -338,7 +336,6 @@ export function inspectHero(state, heroId) {
   const next = clone(state);
   if (getHero(next, heroId)) {
     next.flags.firstHeroInspected = true;
-    completeTutorialTargetInPlace(next, 'inspectHero');
   }
   return finalize(next);
 }

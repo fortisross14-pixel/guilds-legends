@@ -1,11 +1,10 @@
 import React from 'react';
-import { ONBOARDING_STEPS, TIERS } from '../data/content.js';
+import { TIERS } from '../data/content.js';
 import { getGoalMetric, getPromotionRequirement } from '../game/engine.js';
 import { Badge, Panel, ProgressBar } from '../components/UI.jsx';
 
 export default function GoalsScreen({ state }) {
   const promotion = getPromotionRequirement(state);
-  const completedTutorial = state.tutorial.step;
   const completedGoals = state.goals.filter((goal) => goal.completed).length;
   const achievements = state.achievements.filter((achievement) => achievement.unlocked).length;
 
@@ -15,7 +14,7 @@ export default function GoalsScreen({ state }) {
         <div>
           <span className="eyebrow">Specific first, strategic later</span>
           <h1>Orders, Ambitions & Achievements</h1>
-          <p>The guild begins with exact instructions. As the player understands the loop, goals become longer and leave the method open.</p>
+          <p>Goals get longer as the guild grows, and leave the method open. The tutorial lives in the story’s Act I (Quest Log).</p>
         </div>
         <div className="heading-metrics">
           <Badge tone="green">
@@ -28,11 +27,6 @@ export default function GoalsScreen({ state }) {
       </header>
 
       <div className="goal-summary">
-        <div>
-          <span>Opening orders</span>
-          <strong>{state.tutorial.completed ? 'Complete' : `${completedTutorial}/${ONBOARDING_STEPS.length}`}</strong>
-          <ProgressBar value={completedTutorial} max={ONBOARDING_STEPS.length} tone="green" compact />
-        </div>
         <div>
           <span>Campaign goals</span>
           <strong>
@@ -48,25 +42,6 @@ export default function GoalsScreen({ state }) {
           <ProgressBar value={achievements} max={state.achievements.length} tone="purple" compact />
         </div>
       </div>
-
-      <Panel title="The learning path" eyebrow="First minutes">
-        <div className="tutorial-path">
-          {ONBOARDING_STEPS.map((step, index) => {
-            const complete = index < state.tutorial.step || state.tutorial.completed;
-            const current = index === state.tutorial.step && !state.tutorial.completed;
-            return (
-              <article key={step.id} className={`${complete ? 'is-complete' : ''} ${current ? 'is-current' : ''}`}>
-                <span>{complete ? '✓' : index + 1}</span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                  <small>Reward: {step.reward} crowns</small>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </Panel>
 
       <div className="goal-era-list">
         {TIERS.slice(0, 5).map((tier, tierIndex) => {

@@ -1,6 +1,5 @@
 // @ts-check
 // Mission resolution: grades, injuries, relationships, rewards, reports, sagas.
-import { ONBOARDING_STEPS } from '../../data/content.js';
 import { formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { artifactEffectFromPrestige } from '../legacy.js';
@@ -13,7 +12,6 @@ import {
   clearHeroAppointmentInPlace,
   clone,
   commitRng,
-  completeTutorialTargetInPlace,
   dateLabel,
   earnGoldInPlace,
   tallyGuild,
@@ -316,7 +314,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     const charterXp = missionFamily(mission) === 'Combat' ? charterEffect(next, 'combatXp') : 1;
     let xpGain = Math.round((42 + mission.risk * 18 + mission.duration * 8) * xpMultiplier * charterXp);
     // The scripted first contract always ends with a level-up moment.
-    if (mission.templateId === 'wolves-old-road' && !next.tutorial.completed) xpGain = Math.max(xpGain, xpForNextLevel(hero.level) - (hero.xp || 0));
+    if (mission.story === 'm3.contract') xpGain = Math.max(xpGain, xpForNextLevel(hero.level) - (hero.xp || 0));
     const levelBefore = hero.level;
     applyXpInPlace(hero, xpGain, next, `${mission.title} (${grade.toLowerCase()})`);
     hero.career.xpEarned = (hero.career.xpEarned || 0) + xpGain;
@@ -550,7 +548,6 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     queueDueCombatMissionInPlace(next);
     queueDueMissionGameInPlace(next);
   }
-  if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'resolveChoice') completeTutorialTargetInPlace(next, 'resolveChoice');
   commitRng(next, rng);
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null, result: record };
@@ -577,7 +574,6 @@ export function acknowledgeReport(state, reference) {
   const next = clone(state);
   const id = typeof reference === 'string' ? reference : reference?.id;
   next.pendingReports = (next.pendingReports || []).filter((item) => item.id !== id);
-  completeTutorialTargetInPlace(next, 'viewMissionReport');
   return finalize(next);
 }
 

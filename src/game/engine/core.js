@@ -1,6 +1,6 @@
 // @ts-check
 // Primitives (clone, RNG, ids), chronicle/history helpers, roster and guild queries.
-import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
+import { MONTHS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
 import { HALL_PURCHASE, HALL_STAGES, RENTED_ROOM, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
@@ -348,31 +348,6 @@ export function clearHeroAppointmentInPlace(state, hero) {
     if (heroId === hero.id) delete state.guild.appointments[appointmentId];
   });
   hero.appointment = null;
-}
-
-export function completeTutorialTargetInPlace(state, target) {
-  if (state.tutorial.completed) return;
-  const step = ONBOARDING_STEPS[state.tutorial.step];
-  if (!step || step.target !== target) return;
-  state.guild.crowns += step.reward;
-  state.notifications.push({
-    id: `tutorial-${step.id}`,
-    tone: 'gold',
-    title: `Order completed: ${step.title}`,
-    text: `The guild receives ${step.reward} crowns.`,
-  });
-  state.tutorial.step += 1;
-  if (state.tutorial.step >= ONBOARDING_STEPS.length) {
-    state.tutorial.completed = true;
-    state.notifications = state.notifications.filter((item) => item.id !== 'welcome' && !item.id.startsWith('tutorial-'));
-    addChronicle(state, {
-      type: 'milestone',
-      importance: 3,
-      title: 'The Broken Lantern stands on its own',
-      text: 'The guildmaster no longer needs the council’s step-by-step orders. The first year is now theirs to shape.',
-      tags: ['tutorial'],
-    });
-  }
 }
 
 export function compactHero(hero) {

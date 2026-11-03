@@ -14,6 +14,8 @@ const AUTO_MS = 2600;
  */
 export default function DialogueBox({ state, actions, conversationId, visit = null, onClose, onOpenBuilding }) {
   const [view] = useState(() => getDialogueView(state, conversationId));
+  // A story scene can stand in for an NPC's usual talk; its id drives everything after.
+  const id = view?.id || conversationId;
   const [lines, setLines] = useState(() => view?.lines || []);
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState('lines'); // lines → choices → (reply lines) → done
@@ -26,8 +28,8 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   useEffect(() => {
     if (started.current || !view) return;
     started.current = true;
-    followUp.current = actions.talk(conversationId, visit) || {};
-  }, [actions, conversationId, view, visit]);
+    followUp.current = actions.talk(id, visit) || {};
+  }, [actions, id, view, visit]);
 
   const finish = () => {
     const next = followUp.current;
@@ -61,8 +63,8 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   });
 
   const choose = (choice) => {
-    const reply = getDialogueReply(state, conversationId, view.variantIndex, choice.index);
-    const ui = actions.chooseDialogue(conversationId, view.variantIndex, choice.index);
+    const reply = getDialogueReply(state, id, view.variantIndex, choice.index);
+    const ui = actions.chooseDialogue(id, view.variantIndex, choice.index);
     if (!ui) return;
     followUp.current = { ...followUp.current, ...ui, replied: true };
     if (reply.length) {

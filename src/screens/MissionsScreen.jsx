@@ -69,16 +69,11 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const [operationLocationId, setOperationLocationId] = useState(currentLocationId);
   const activeLocationId = operationalIds.includes(operationLocationId) ? operationLocationId : currentLocationId;
   const currentLocation = LOCATION_BY_ID[activeLocationId];
-  const localMissions = useMemo(() => {
-    const requiresIntroduction = state.flags?.opening?.phase === 'complete';
-    return state.missions.filter(
-      (mission) => {
-        if (mission.locationId !== activeLocationId) return false;
-        if (requiresIntroduction && !state.tutorial.completed) return mission.templateId === 'wolves-old-road' && Boolean(state.flags?.oldRoadIntroduced);
-        return mission.templateId !== 'wolves-old-road' || !requiresIntroduction || state.flags?.oldRoadIntroduced;
-      },
-    );
-  }, [state.missions, state.flags, state.tutorial.completed, activeLocationId]);
+  // Story contracts first.
+  const localMissions = useMemo(
+    () => state.missions.filter((mission) => mission.locationId === activeLocationId).sort((a, b) => Number(Boolean(b.story)) - Number(Boolean(a.story))),
+    [state.missions, activeLocationId],
+  );
   const [selectedId, setSelectedId] = useState(localMissions[0]?.id || null);
   const [formationType, setFormationType] = useState('Combat');
   const [assignments, setAssignments] = useState([]);
@@ -127,7 +122,6 @@ export default function MissionsScreen({ state, actions, navigate }) {
     setAssignments((current) => {
       const withoutSlotOrHero = current.filter((assignment) => assignment.slotId !== slot.id && assignment.heroId !== heroId);
       const next = heroId ? [...withoutSlotOrHero, { slotId: slot.id, role: slot.role, heroId }] : withoutSlotOrHero;
-      if (selected) actions.notePartySelection(selected.id, formationType, next);
       return next;
     });
   };
@@ -135,7 +129,6 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const autoBuild = () => {
     const next = buildBestFormation(state, formationType);
     setAssignments(next);
-    if (selected) actions.notePartySelection(selected.id, formationType, next);
   };
 
   const launch = () => selected && actions.launchMission(selected.id, formationType, assignments);

@@ -12,7 +12,6 @@ import {
   appointmentHolder,
   clamp,
   clone,
-  completeTutorialTargetInPlace,
   finalize,
   getHero,
   hashString,
@@ -39,20 +38,6 @@ export function inspectMission(state, missionId) {
   if (mission) {
     mission.inspected = true;
     next.flags.firstMissionInspected = true;
-    if (mission.templateId === 'wolves-old-road') completeTutorialTargetInPlace(next, 'inspectMission');
-  }
-  return finalize(next);
-}
-
-export function notePartySelection(state, missionId, formationTypeOrAssignments, maybeAssignments) {
-  const next = clone(state);
-  const mission = next.missions.find((item) => item.id === missionId);
-  const legacyCall = Array.isArray(formationTypeOrAssignments);
-  const formationType = normalizedFormationType(mission, legacyCall ? mission?.formationType || mission?.approach : formationTypeOrAssignments);
-  const assignments = legacyCall ? formationTypeOrAssignments : maybeAssignments || [];
-  const estimate = partyEstimate(next, missionId, formationType, assignments);
-  if (mission?.templateId === 'wolves-old-road' && assignments.length >= 2 && estimate.missingSlots.length === 0) {
-    completeTutorialTargetInPlace(next, 'selectParty');
   }
   return finalize(next);
 }
@@ -157,7 +142,6 @@ export function launchMission(state, missionId, formationTypeOrAssignments, mayb
     heroIds: normalizedAssignments.map((assignment) => assignment.heroId),
     tags: [mission.family, selectedFormation],
   });
-  if (mission.templateId === 'wolves-old-road') completeTutorialTargetInPlace(next, 'launchMission');
   evaluateStateInPlace(next);
   return { state: finalize(next), error: null };
 }
@@ -197,7 +181,8 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
     .filter((item) => item.hero && item.hero.status !== 'dead');
   if (playerHeroes.length < 2) return false;
-  const scripted = mission.templateId === 'wolves-old-road' && !state.tutorial.completed;
+  // The story's first fight (mission 3) is guaranteed winnable, with hints.
+  const scripted = mission.story === 'm3.contract';
   const encounterSeed = (state.rngState ^ hashString(`mission-combat:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
   const opponentPower = clamp(Math.round(mission.difficulty * 0.84 + mission.risk * 3), 32, 96);
   // Per-hero combat: enemy level tracks difficulty (Regional contracts ~1-5, Global ~15-20).
@@ -291,7 +276,7 @@ export function queueDueMissionGameInPlace(state) {
 export function declineContract(state, missionId) {
   const mission = state.missions.find((item) => item.id === missionId);
   if (!mission) return { state, error: 'This contract is no longer available.' };
-  if (mission.templateId === 'wolves-old-road' && !state.tutorial.completed) return { state, error: 'Take this first contract to learn the ropes.' };
+  if (mission.story) return { state, error: 'Story contracts wait for you; they can’t be declined.' };
   if (mission.story || mission.bossId) return { state, error: 'Story and boss contracts wait for you; they can’t be declined.' };
   const next = clone(state);
   next.missions = next.missions.filter((item) => item.id !== missionId);

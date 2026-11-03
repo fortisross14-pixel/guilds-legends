@@ -5,7 +5,7 @@ import { CHARTERS } from '../../data/charters.js';
 import { PATRON_LIST } from '../../data/patrons.js';
 import { emptyFormations } from '../../data/formations.js';
 import { PRIMALS, PRIMAL_IDS } from '../../data/world.js';
-import { SCHEMA_VERSION, addChronicle, addHeroHistory, commitRng, hashString, makeRng } from './core.js';
+import { SCHEMA_VERSION, commitRng, hashString, makeRng } from './core.js';
 import { choosePrimal, createHeroFromBase } from './heroes.js';
 import { refreshCandidatesForLocationInPlace } from './candidates.js';
 import { createUniverseInPlace, refreshMissionsInPlace } from './universe.js';
@@ -72,7 +72,8 @@ export function createNewGame(options = {}) {
     date: { year: 1187, month: 0, week: 0, day: 0 },
     guild: {
       id: 'player',
-      name: options.guildName || 'The Broken Lantern',
+      // Named at the end of the prologue (the Broken Lantern is the old, destroyed guild).
+      name: options.guildName || 'The New Banner',
       motto: options.motto || 'No light is lost forever.',
       crest: options.crest || 'lantern',
       founder: founderName,
@@ -162,7 +163,6 @@ export function createNewGame(options = {}) {
     universeStats: {},
     sagas: SAGA_DEFINITIONS.map((saga) => ({ ...saga, progress: 0, completed: false, discovered: saga.tier === 'Regional' })),
     tournaments: [],
-    tutorial: { step: 0, completed: false, acknowledged: false },
     goals: CHAPTER_GOALS.map((goal) => ({ ...goal, completed: false, claimed: false })),
     achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
     stats: initialStats(),
@@ -170,9 +170,6 @@ export function createNewGame(options = {}) {
     settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6, joystick: false, battleSpeed: 1 },
     legacy: { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] },
     flags: {
-      // The exploration layer owns visual movement; this tiny serializable record
-      // only preserves consequential opening progress across a refresh.
-      opening: { phase: 'house', choices: [] },
       oldRoadIntroduced: false,
       harvestMeleeIntroduced: false,
       // Flags set by dialogue choices (src/data/dialogue).
@@ -201,7 +198,7 @@ export function createNewGame(options = {}) {
       personality: 'Determined',
       flaw: 'Pride',
       dream: 'Build a guild that outlives me',
-      origin: 'Founder of the Broken Lantern',
+      origin: 'A nobody in Dunmere',
       homeLocationId: 'dunmere',
       loyalty: 100,
       hook: `You raised the banner yourself. ${founderName} is a level 1 ${founderPrimal} ${founderClass} whose career will define the institution.`,
@@ -215,11 +212,6 @@ export function createNewGame(options = {}) {
   founder.renown = 2;
   founder.legacy = 1;
   state.heroes = [founder];
-  addHeroHistory(founder, state, {
-    type: 'founding',
-    title: `Founded ${state.guild.name}`,
-    text: 'Signed the Dunmere charter alone, at level 1, with no company yet standing behind the banner.',
-  });
 
   const openingPool = [...STARTING_HEROES];
   const openingPrimals = ['Fire', rng.pick(PRIMAL_IDS.filter((id) => id !== 'Fire')), rng.pick(PRIMAL_IDS.filter((id) => id !== 'Fire'))];
@@ -250,26 +242,12 @@ export function createNewGame(options = {}) {
   }
 
   createUniverseInPlace(state, rng);
-  refreshMissionsInPlace(state, rng, true);
+  refreshMissionsInPlace(state, rng);
   refreshCandidatesForLocationInPlace(state, rng, 'dunmere');
   createTournamentsInPlace(state, rng);
   refreshSideJobsInPlace(state, rng);
   commitRng(state, rng);
 
-  addChronicle(state, {
-    type: 'founding',
-    importance: 5,
-    title: `${founderName} raises the banner of ${state.guild.name}`,
-    text: `A level 1 ${founderPrimal} ${founderClass} stands in Dunmere, searching for the first companion willing to rebuild the vanished company.`,
-    heroIds: [founder.id],
-    tags: ['founding', 'broken-lantern', founderPrimal],
-  });
-  state.notifications.push({
-    id: 'welcome',
-    tone: 'gold',
-    title: 'A banner, not yet a company',
-    text: 'Hire one local companion. Then choose what kind of company the pair can become.',
-  });
   evaluateStateInPlace(state);
   return state;
 }

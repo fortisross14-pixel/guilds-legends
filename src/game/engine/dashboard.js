@@ -1,7 +1,7 @@
 // @ts-check
 // Read models for the UI (next action, summary) and small UI-state actions.
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
-import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
+import { TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID, travelDays } from '../../data/world.js';
 import { ROOM_BY_ID } from '../../data/rooms.js';
 import { tournamentRequirements } from './tournaments.js';
@@ -9,7 +9,6 @@ import { WEEKS_PER_MONTH, campaignDaySerial, campaignWeekSerial, dateFromDaySeri
 import {
   activeHeroCount,
   clone,
-  completeTutorialTargetInPlace,
   dateLabel,
   finalize,
   getCurrentLocation,
@@ -28,21 +27,6 @@ import { FAMILY_PERKS, getReputationSummary, specializationTitle } from './reput
 import { nemesisIds } from './rivalry.js';
 import { festivalFor } from './townLife.js';
 import { getStoryView } from './story.js';
-
-export function acknowledgeWelcome(state) {
-  const next = clone(state);
-  next.tutorial.acknowledged = true;
-  completeTutorialTargetInPlace(next, 'acknowledgeWelcome');
-  return finalize(next);
-}
-
-/** Records the opening prologue without letting presentation frame timing affect the simulation. */
-export function completeFallenBannerOpening(state, choices = []) {
-  const next = clone(state);
-  next.flags ||= {};
-  next.flags.opening = { phase: 'complete', choices: Array.isArray(choices) ? choices.slice(0, 3) : [] };
-  return finalize(next);
-}
 
 /** Read model for fog-of-war presentation; it does not restrict strategic travel. */
 export function getWorldKnowledge(state) {
@@ -131,7 +115,6 @@ export function acknowledgeCouncilReport(state) {
 export function inspectGoals(state) {
   const next = clone(state);
   next.flags.goalsInspected = true;
-  completeTutorialTargetInPlace(next, 'inspectGoals');
   return finalize(next);
 }
 
@@ -187,18 +170,11 @@ export function getNextAction(state) {
       action: 'refound',
     };
   }
-  if (!state.tutorial.completed) {
-    const step = ONBOARDING_STEPS[state.tutorial.step];
-    let body = step?.body;
-    if (step?.target === 'finishTutorial') {
-      const melee = (state.tournaments || []).find((event) => event.definitionId === 'dunmere-harvest-melee' && event.status !== 'completed');
-      const months = melee ? melee.year * 12 + melee.month - (state.date.year * 12 + state.date.month) : null;
-      body =
-        months !== null && months >= 0
-          ? `Enter the Dunmere Harvest Melee in ${months} month${months === 1 ? '' : 's'}. The calendar strip keeps count. Finish the tutorial when you are ready.`
-          : step.body;
-    }
-    return { kind: 'tutorial', ...step, body, step: state.tutorial.step + 1, total: ONBOARDING_STEPS.length };
+  // Act I of the story is the tutorial: its current step leads, with a one-line hint.
+  const story = getStoryView(state);
+  if (story.tutorial === 'active' && story.active?.act === 1 && story.active.current) {
+    const step = story.active.current;
+    return { kind: 'tutorial', title: `${story.active.number}. ${story.active.title}`, body: `${step.text} ${step.hint || ''}`.trim(), screen: step.screen || 'town', step: story.active.number, total: 4, missionId: story.active.id, canTalk: step.canTalk };
   }
   if (state.pendingDecisions.length) {
     return { kind: 'critical', title: 'A critical decision is waiting', body: state.pendingDecisions[0].prompt, screen: 'hall', action: 'resolve' };
@@ -564,26 +540,5 @@ export function getUpcomingEvents(state, limit = 3) {
 export function acknowledgeMoment(state) {
   const next = clone(state);
   next.moments = (next.moments || []).slice(1);
-  return finalize(next);
-}
-
-const UI_TUTORIAL_TARGETS = ['visitHerald', 'finishTutorial'];
-
-/** Completes a tutorial step that is triggered from the UI (visiting the Herald, finishing). */
-export function noteTutorialStep(state, target) {
-  if (state.tutorial.completed || !UI_TUTORIAL_TARGETS.includes(target)) return state;
-  const next = clone(state);
-  completeTutorialTargetInPlace(next, target);
-  return finalize(next);
-}
-
-/** For returning players: skip the scripted opening entirely. */
-export function skipTutorial(state) {
-  const next = clone(state);
-  next.tutorial.completed = true;
-  next.tutorial.acknowledged = true;
-  next.tutorial.step = ONBOARDING_STEPS.length;
-  next.flags.openingPeddler = true;
-  next.notifications = next.notifications.filter((item) => item.id !== 'welcome' && !item.id.startsWith('tutorial-'));
   return finalize(next);
 }

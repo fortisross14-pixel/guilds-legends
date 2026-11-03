@@ -72,14 +72,14 @@ const LIST = [
   { id: 'bg.battle.psychic', group: 'battle', path: 'art/battle/psychic.png', borrow: scene(6), ...SCENE, use: 'Battles in Psychic lands' },
   { id: 'bg.battle.iron', group: 'battle', path: 'art/battle/iron.png', borrow: scene(12), ...SCENE, use: 'Battles in Iron lands' },
 
-  // The opening room ("The Fallen Banner"), walkable.
-  { id: 'room.opening.floor', group: 'room', path: 'art/walk/opening/floor.png', w: 960, h: 540, use: 'Opening room: floor and walls' },
-  { id: 'prop.opening.table', group: 'prop', path: 'art/walk/opening/table.png', w: 224, h: 40, use: 'Opening room: table (top left)' },
-  { id: 'prop.opening.shelf', group: 'prop', path: 'art/walk/opening/shelf.png', w: 218, h: 40, use: 'Opening room: shelf (top right)' },
-  { id: 'prop.opening.bench', group: 'prop', path: 'art/walk/opening/bench.png', w: 255, h: 36, use: 'Opening room: bench (bottom left)' },
-  { id: 'prop.opening.chest', group: 'prop', path: 'art/walk/opening/chest.png', w: 110, h: 44, use: 'Opening room: chest (bottom right)' },
-  { id: 'prop.opening.door', group: 'prop', path: 'art/walk/opening/door.png', w: 32, h: 92, use: 'Opening room: door to Dunmere' },
-  { id: 'npc.opening.stranger', group: 'npc', path: 'art/walk/opening/stranger.png', w: 44, h: 28, use: 'Opening room: wounded stranger, lying down' },
+  // The player's house in Dunmere (the prologue, "The knock at the door"), walkable.
+  { id: 'room.house.floor', group: 'room', path: 'art/walk/house/floor.png', w: 960, h: 540, use: 'Player’s house: floor and walls, a hearth glow, rain on the windows (prologue)' },
+  { id: 'prop.house.hearth', group: 'prop', path: 'art/walk/house/hearth.png', w: 190, h: 52, use: 'Player’s house: the hearth (top left)' },
+  { id: 'prop.house.table', group: 'prop', path: 'art/walk/house/table.png', w: 160, h: 64, use: 'Player’s house: table and two stools (middle)' },
+  { id: 'prop.house.bed', group: 'prop', path: 'art/walk/house/bed.png', w: 190, h: 70, use: 'Player’s house: the one bed (top right)' },
+  { id: 'prop.house.chest', group: 'prop', path: 'art/walk/house/chest.png', w: 120, h: 44, use: 'Player’s house: small chest (bottom left)' },
+  { id: 'prop.house.door', group: 'prop', path: 'art/walk/house/door.png', w: 32, h: 92, use: 'Player’s house: the front door (later scratched with the Argent Crown emblem)' },
+  { id: 'npc.house.rook', group: 'npc', path: 'art/walk/house/rook.png', w: 44, h: 28, use: 'Player’s house: Cassian Rook, wounded, on the floor' },
 
   // Walkable towns and wild areas: shared pieces. Buildings, NPCs, portraits,
   // props and enemy groups are generated from the town and area data below.
@@ -122,6 +122,33 @@ const LIST = [
   { id: 'portrait.arena.referee', group: 'portrait', path: 'art/portraits/npcs/arena-referee.png', w: 160, h: 160, use: 'Arena referee at the fighting ground (starts bouts)' },
   { id: 'portrait.arena.registrar', group: 'portrait', path: 'art/portraits/npcs/arena-registrar.png', w: 160, h: 160, use: 'Arena registrar at the sign-up desk' },
   { id: 'bg.town.windmere', group: 'bg', path: 'art/bg/town-windmere.png', borrow: scene(7), ...SCENE, use: 'Windmere town directory (no walkable layout yet)' },
+
+  // The Last Banner (Phase 6b): story portraits, the Argent Crown crest, the banner relic, story backdrops.
+  ...[
+    ['rook', 'Lord Cassian Rook: battered armor, silver insignia, dying (prologue)'],
+    ['thorne', 'Garrick Thorne: guildmaster of the Argent Crown, charming and cold'],
+    ['mara', 'Mara Fen: keeper of the Wayfarer, practical and funny'],
+    ['nessa', 'Nessa Thornfield: young Ranger, hunter and guide'],
+    ['bram', 'Bram Calder: proud Duelist from Dunmere'],
+    ['wren', 'Wren: the Broken Lantern’s last scout, living as “Linnet”'],
+    ['herbalist', 'Maren Bell: retired herbalist of Greenhollow'],
+    ['quartermaster', 'Oswin Tull: former Argent Crown quartermaster, now an archive keeper in Ironford'],
+    ['champion', 'Halden Marsh: aging Windmere champion'],
+    ['representative', 'The Argent Crown’s well-dressed representative'],
+    ['stablemaster', 'Gideon Rusk: owner of the old stable on Banner Plaza'],
+  ].map(([id, use]) => ({ id: `portrait.story.${id}`, group: 'portrait', path: `art/portraits/story/${id}.png`, w: 160, h: 160, use })),
+  { id: 'crest.argent-crown', group: 'crest', path: 'art/crests/argent-crown.png', w: 128, h: 128, use: 'The Argent Crown’s emblem (scratched into the door, Herald, rival pages)' },
+  { id: 'relic.banner', group: 'ui', path: 'art/relics/last-banner.png', w: 120, h: 160, use: 'The Last Banner: torn, bloodstained, a golden lantern (naming card, Trophy hall, Lore codex)' },
+  ...[
+    ['house', 'Prologue: the player’s house at night, rain and firelight'],
+    ['warning', 'Act I ending: outside the Dunmere arena after the Harvest Melee'],
+    ['greenhollow', 'Act II: Maren Bell’s herb room in Greenhollow'],
+    ['archive', 'Act II: the Ironford archive vault'],
+    ['windmere', 'Act II: the cliffside ring at Windmere'],
+    ['thornwood', 'Act II: the trapper’s hut at the Thornwood edge (Wren)'],
+    ['banner', 'Chapter 1 ending: the Guild Hall, Wren facing the banner'],
+    ['chapter', 'Chapter summary and the Chapter 2 teaser'],
+  ].map(([id, use]) => ({ id: `bg.story.${id}`, group: 'bg', path: `art/bg/story-${id}.png`, borrow: scene(9), ...SCENE, use })),
 
   // History (Phase 5): the season review backdrop, award badges and record-book trophies.
   { id: 'bg.season.review', group: 'bg', path: 'art/bg/season-review.png', borrow: scene(9), ...SCENE, use: 'Season review cards (end of each year, re-opened from the record book)' },

@@ -66,10 +66,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
   const building = place.building && !missing ? place.building : null;
   const props = { state, actions, navigate, slot };
   const showBuilding = (id) => setPlace({ view: 'town', building: id, tab: null });
-  const openBuilding = (id) => {
-    if (id === 'herald') actions.noteTutorial('visitHerald');
-    showBuilding(id);
-  };
+  const openBuilding = (id) => showBuilding(id);
   // The Guild Hall shows its stage's interior, or the open room's interior at its level.
   const hallArt =
     building === 'guildHall'
@@ -86,7 +83,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
     return <WildScene key={wildArea.id} area={wildArea} state={state} actions={actions} navigate={navigate} />;
   }
   // The tile menu stays only as a small fallback ("Town directory").
-  if (!building && !place.directory && !travel && walkable && state.flags?.opening?.phase === 'complete') {
+  if (!building && !place.directory && !travel && walkable) {
     return (
       <TownScene
         key={walkable.id}

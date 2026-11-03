@@ -341,21 +341,17 @@ export function instantiateMission(template, state, rng, forcedLocation = null) 
   };
 }
 
-export function refreshMissionsInPlace(state, rng, initial = false) {
+export function refreshMissionsInPlace(state, rng) {
   const currentYearMonth = state.date.year * 12 + state.date.month;
   const expired = [];
   state.missions = (state.missions || []).filter((mission) => {
-    if (mission.templateId === 'wolves-old-road' && !state.tutorial.completed && state.tutorial.step < 4) return true;
+    if (mission.story) return true;
     const expiry = mission.availableUntil.year * 12 + mission.availableUntil.month;
     if (expiry < currentYearMonth) expired.push(mission);
     return expiry >= currentYearMonth;
   });
   const extraFamilies = boardPerks(state).extra;
   const locations = unlockedLocations(state.guild.tierIndex);
-  if (initial && !state.missions.some((mission) => mission.templateId === 'wolves-old-road')) {
-    const tutorialTemplate = MISSION_TEMPLATES.find((mission) => mission.id === 'wolves-old-road');
-    state.missions.push(instantiateMission(tutorialTemplate, state, rng, LOCATION_BY_ID.dunmere));
-  }
   locations.forEach((location) => {
     const desired = location.id === state.world?.currentLocationId ? 5 : 3;
     let count = state.missions.filter((mission) => mission.locationId === location.id).length;

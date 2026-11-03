@@ -51,7 +51,7 @@ export {
 export { recruitObjection } from './engine/candidates.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { signUpForTournament, getArenaView, tournamentStartDay, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
-export { inspectMission, notePartySelection, saveFormation, launchMission } from './engine/missions.js';
+export { inspectMission, saveFormation, launchMission } from './engine/missions.js';
 export { resolveDecision, acknowledgeReport } from './engine/outcomes.js';
 export {
   performActiveMissionGameAction,
@@ -74,7 +74,6 @@ export {
   inspectHero,
 } from './engine/recruitment.js';
 export {
-  acknowledgeWelcome,
   acknowledgeCouncilReport,
   inspectGoals,
   dismissNotification,
@@ -84,7 +83,6 @@ export {
   getDashboardSummary,
 } from './engine/dashboard.js';
 export { createNewGame } from './engine/state.js';
-export { completeFallenBannerOpening } from './engine/dashboard.js';
 export { getWorldKnowledge } from './engine/dashboard.js';
 export { getLivingHistory } from './engine/dashboard.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
@@ -123,7 +121,6 @@ export {
   getStatusTitle,
   officialPointsFor,
 } from './engine/rankings.js';
-export { noteTutorialStep, skipTutorial } from './engine/dashboard.js';
 export { advanceDays, advanceWeeks, advanceToDate } from './engine/time.js';
 export {
   WEEKS_PER_MONTH,
@@ -161,6 +158,7 @@ export { bossForMission } from './engine/stories.js';
 export {
   getStoryView,
   getLoreCodex,
+  completePrologue,
   storyState,
   playStoryScene,
   finishStoryScene,
