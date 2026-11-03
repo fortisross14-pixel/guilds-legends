@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
-import { shopStock } from '../game/engine.js';
+import { chestCapacity, chestUsed, roomLevel, shopPrice, shopStock } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait } from '../components/UI.jsx';
 import PixelIcon from '../components/PixelIcon.jsx';
 
@@ -38,7 +38,7 @@ export default function ShopScreen({ state, actions }) {
   const ownedCount = selected ? state.inventory?.[selected.id] || 0 : 0;
   const heroes = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
   const wearers = selected && GEAR_SLOTS.includes(selected.kind) ? heroes.filter((hero) => canEquip(selected, normalizeClassId(hero.classId))) : [];
-  const price = selected ? (mode === 'buy' ? selected.price : Math.floor(selected.price / 2)) : 0;
+  const price = selected ? (mode === 'buy' ? shopPrice(state, selected.id) : Math.floor(selected.price / 2)) : 0;
 
   return (
     <div className="shop">
@@ -82,7 +82,7 @@ export default function ShopScreen({ state, actions }) {
                         {item.name}
                         {count ? <span className="shop-item__count"> ×{count}</span> : null}
                       </span>
-                      <span className="shop-item__price num">{mode === 'buy' ? item.price : Math.floor(item.price / 2)} G</span>
+                      <span className="shop-item__price num">{mode === 'buy' ? shopPrice(state, item.id) : Math.floor(item.price / 2)} G</span>
                     </button>
                   </li>
                 );
@@ -150,8 +150,8 @@ export default function ShopScreen({ state, actions }) {
               ) : null}
               <div className="shop-detail__actions">
                 {mode === 'buy' ? (
-                  <Button variant="primary" disabled={state.guild.crowns < selected.price} onClick={() => actions.buyItem(selected.id)}>
-                    Buy for {selected.price} G
+                  <Button variant="primary" disabled={state.guild.crowns < price || chestUsed(state) >= chestCapacity(state)} onClick={() => actions.buyItem(selected.id)}>
+                    {chestUsed(state) >= chestCapacity(state) ? 'The chest is full' : `Buy for ${price} G`}
                   </Button>
                 ) : (
                   <Button variant="primary" disabled={!ownedCount} onClick={() => actions.sellItem(selected.id)}>
@@ -167,7 +167,7 @@ export default function ShopScreen({ state, actions }) {
         </section>
 
         <footer className="shop-gold win">
-          <span>{mode === 'buy' ? 'Gold' : 'Shops pay half price'}</span>
+          <span>{mode === 'buy' ? `Gold · chest ${chestUsed(state)}/${chestCapacity(state)}${roomLevel(state, 'armory') ? ' · Armory −10%' : ''}` : 'Shops pay half price'}</span>
           <strong className="num">
             <PixelIcon name="coin" size={24} />
             {state.guild.crowns.toLocaleString()} G

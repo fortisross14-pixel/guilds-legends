@@ -1,25 +1,5 @@
 /* Guild Hall facilities, appointments, doctrine and political posture. */
 
-.hq-blueprint { display: grid; grid-template-columns: 300px 1fr; gap: var(--s4); margin-bottom: var(--s4); }
-.hq-blueprint__hall { position: sticky; top: calc(var(--strip-h) + 24px); align-self: start; display: flex; flex-direction: column; padding: 12px 14px; }
-.hq-blueprint__hall h2 { order: -1; margin: 0 0 4px; font-size: 26px; }
-.hq-ledger { display: grid; margin-top: 12px; border-top: 1px solid var(--line-soft); }
-.hq-ledger span { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); color: var(--text-dim); font-size: var(--t-ui); }
-.hq-ledger strong { font-weight: 600; font-variant-numeric: tabular-nums; }
-.room-limit { display: grid; gap: 6px; margin-top: 12px; padding: 8px 10px; }
-.room-limit.is-full { border-color: var(--dmg); }
-.room-limit strong { display: block; margin-top: 2px; }
-.room-limit p { margin: 2px 0 0; font-size: var(--t-small); }
-.hq-blueprint__rooms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); }
-.facility-room { display: grid; grid-template-columns: auto 1fr; grid-template-rows: 1fr auto; gap: 10px; padding: 10px 12px; }
-.facility-room.is-locked { color: var(--text-faint); }
-.facility-room__icon { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line-soft); background: var(--panel-deep); font-family: var(--font-ui); font-size: 20px; }
-.facility-room__title { display: flex; justify-content: space-between; gap: 8px; }
-.facility-room__title h3 { margin: 0; }
-.facility-room p { margin: 4px 0; font-size: var(--t-small); }
-.facility-room__space { display: block; margin: 2px 0 6px; }
-.facility-room__effect { display: block; margin-bottom: 6px; color: var(--good); font-weight: 500; }
-.facility-room > .button { grid-column: 1 / -1; }
 .dashboard-grid--hq { grid-template-columns: 1.25fr .75fr; }
 .dashboard-grid--hq > .panel:last-child { grid-column: 1 / -1; }
 .appointment-layout { display: grid; grid-template-columns: 260px 1fr; gap: var(--s4); }
@@ -45,12 +25,8 @@
 .obligation-list > span { margin-right: 6px; color: var(--text-dim); font-size: var(--t-label); }
 
 @media (max-width: 1099px) {
-  .hq-blueprint { grid-template-columns: 1fr; }
-  .hq-blueprint__hall { position: static; }
   .dashboard-grid--hq { grid-template-columns: 1fr; }
   .dashboard-grid--hq > .panel:last-child { grid-column: auto; }
 }
 @media (max-width: 759px) {
-  .hq-blueprint__rooms, .appointment-layout, .alignment-grid { grid-template-columns: 1fr; }
-  .facility-room { grid-template-columns: auto 1fr; }
 }

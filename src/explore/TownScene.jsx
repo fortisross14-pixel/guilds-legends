@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { getLivingHistory } from '../game/engine.js';
+import { getLivingHistory, hallStage } from '../game/engine.js';
 import { townMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
@@ -11,7 +11,10 @@ import SceneHud from './SceneHud.jsx';
  * The position is saved whenever the founder leaves, so returning puts them back.
  */
 export default function TownScene({ town, state, actions, navigate, openBuilding, showBuilding, openDirectory }) {
-  const map = useMemo(() => townMap(town), [town]);
+  // The guild's own hall stands in Dunmere and changes with its stage.
+  const stage = hallStage(state);
+  const hall = town.id === 'dunmere' ? { asset: stage.exterior, label: stage.townLabel } : null;
+  const map = useMemo(() => townMap(town, hall), [town, hall?.asset, hall?.label]);
   const api = useRef(null);
   const [talk, setTalk] = useState(null);
   const saved = state.world?.exploration?.positions?.[town.id];
@@ -36,7 +39,7 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
   const livingHistory = getLivingHistory(state);
   return (
     <WalkableScene
-      key={town.id}
+      key={`${town.id}-${stage.id}`}
       map={map}
       start={start}
       apiRef={api}

@@ -12,11 +12,12 @@ import TownScene from '../explore/TownScene.jsx';
 import WildScene from '../explore/WildScene.jsx';
 import { townFor } from '../data/towns/index.js';
 import { WILD_AREAS } from '../data/wilds/index.js';
-import { getLivingHistory } from '../game/engine.js';
+import { getLivingHistory, hallStage, roomLevel } from '../game/engine.js';
+import { ROOM_BY_ID, roomInterior } from '../data/rooms.js';
 import { firstAsset } from '../data/assets.js';
 
 // Interior art behind each building (asset ids, src/data/assets.js); the town backdrop otherwise.
-const BUILDING_INTERIORS = { guildHall: 'interior.guildhall', herald: 'interior.herald', shop: 'interior.shop', arena: 'interior.arena', tavern: 'interior.tavern', noticeBoard: 'interior.noticeboard' };
+const BUILDING_INTERIORS = { herald: 'interior.herald', shop: 'interior.shop', arena: 'interior.arena', tavern: 'interior.tavern', noticeBoard: 'interior.noticeboard' };
 
 function buildingBadge(state, buildingId, locationId) {
   if (buildingId === 'noticeBoard') return state.missions.filter((mission) => mission.locationId === locationId).length || null;
@@ -44,7 +45,15 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
     if (id === 'herald') actions.noteTutorial('visitHerald');
     showBuilding(id);
   };
-  const buildingLabel = (id) => walkable?.buildings.find((item) => item.building === id && !item.id)?.label || BUILDINGS[id]?.name;
+  // The Guild Hall shows its stage's interior, or the open room's interior at its level.
+  const hallArt =
+    building === 'guildHall'
+      ? ROOM_BY_ID[place.tab] && roomLevel(state, place.tab)
+        ? roomInterior(place.tab, roomLevel(state, place.tab))
+        : hallStage(state).interior
+      : null;
+  const buildingLabel = (id) =>
+    id === 'guildHall' ? (hallStage(state).key === 'rented' ? 'Your rented room' : 'Guild Hall') : walkable?.buildings.find((item) => item.building === id && !item.id)?.label || BUILDINGS[id]?.name;
 
   // Scenes own the entire viewport. Keeping them below this animated screen
   // would turn the fixed canvas into a descendant-sized strip.
@@ -69,7 +78,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
-      <SceneBackdrop asset={BUILDING_INTERIORS[building] || firstAsset(`bg.town.${locationId}`, 'bg.town.default')} dim={building ? 0.58 : 0.28} />
+      <SceneBackdrop asset={hallArt || BUILDING_INTERIORS[building] || firstAsset(`bg.town.${locationId}`, 'bg.town.default')} dim={building ? 0.58 : 0.28} />
       <header className={`town-header place-title ${building ? 'place-title--building' : ''}`}>
         {building ? (
           <Button size="sm" variant="primary" className="town-header__back town-header__leave" onClick={() => setPlace({ view: 'town', building: null })}>

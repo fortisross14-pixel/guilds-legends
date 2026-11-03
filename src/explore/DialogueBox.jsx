@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { getDialogueReply, getDialogueView } from '../game/engine.js';
+import { freeBeds, getDialogueReply, getDialogueView, getHallView } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import { Button } from '../components/UI.jsx';
 
@@ -88,6 +88,18 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
           {phase === 'recruit' ? (
             <div className="dialogue__recruits">
               <p>{recruits.length ? 'They point out who is looking for work:' : 'Nobody here is looking for work right now.'}</p>
+              {recruits.length && freeBeds(state) <= 0 ? (
+                <p className="dialogue__note">
+                  Every bed is taken.{' '}
+                  {getHallView(state).canRentBed ? (
+                    <Button size="sm" onClick={actions.rentBed}>
+                      Rent a bed ({getHallView(state).bedCost} G)
+                    </Button>
+                  ) : (
+                    'Build bunks in the Guild Hall first.'
+                  )}
+                </p>
+              ) : null}
               {recruits.map((candidate) => (
                 <div key={candidate.id} className="dialogue__recruit">
                   <span>
@@ -99,7 +111,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
                   <Button
                     variant="primary"
                     size="sm"
-                    disabled={state.guild.crowns < candidate.signingFee}
+                    disabled={state.guild.crowns < candidate.signingFee || freeBeds(state) <= 0}
                     onClick={() => {
                       actions.recruit(candidate.id);
                       onClose();

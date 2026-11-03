@@ -379,9 +379,11 @@ export default function MissionsScreen({ state, actions, navigate }) {
                 <Button size="sm" onClick={autoBuild}>
                   Build best available
                 </Button>
-                <Button size="sm" onClick={() => actions.saveFormation(formationType, assignments)} disabled={!assignments.length}>
-                  Save as default
-                </Button>
+                {state.guild.hall?.rooms?.war ? (
+                  <Button size="sm" onClick={() => actions.saveFormation(formationType, assignments)} disabled={!assignments.length}>
+                    Save as default
+                  </Button>
+                ) : null}
                 <span>{assignments.length}/5 filled</span>
               </div>
 

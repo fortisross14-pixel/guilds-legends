@@ -25,4 +25,5 @@
 @import './screens/settings.css';
 @import './screens/legacy.css';
 @import './screens/headquarters.css';
+@import './screens/hall.css';
 @import './layout/responsive.css';

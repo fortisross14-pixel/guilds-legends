@@ -88,7 +88,10 @@ import {
   takePatronLoan,
   updateSettings,
   upgradeBranch,
-  upgradeFacility,
+  rentBed,
+  acquireHall,
+  buildRoom,
+  upgradeGear,
   validateGame,
 } from './game/engine.js';
 import { deleteGame, exportGame, importGame, listSaveSlots, loadGame, saveGame } from './game/storage.js';
@@ -945,7 +948,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     memory.crowns = state.guild.crowns;
     const moment = state.moments?.[0];
     if (moment && moment.id !== memory.moment) {
-      playSound({ levelUp: 'levelUp', victory: 'victory', rankings: 'fanfare', statusTitle: 'fanfare', nemesis: 'fanfare' }[moment.type] || 'confirm');
+      playSound({ levelUp: 'levelUp', victory: 'victory', rankings: 'fanfare', statusTitle: 'fanfare', nemesis: 'fanfare', construction: 'fanfare' }[moment.type] || 'confirm');
     }
     memory.moment = moment?.id || null;
   }, [state]);
@@ -1038,7 +1041,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(assignArtifact(state, artifactId, heroId), heroId ? 'Artifact entrusted to a hero.' : 'Artifact returned to the guild vault.'),
       inheritAmbition: (legacyAmbitionId, heroId) =>
         applyResult(inheritAmbition(state, legacyAmbitionId, heroId), 'An unfinished ambition has found a new bearer.'),
-      upgradeFacility: (id) => applyResult(upgradeFacility(state, id), 'Headquarters upgraded.'),
+      rentBed: () => applyResult(rentBed(state), 'Another bed squeezed into the rented room.'),
+      acquireHall: (mode) => applyResult(acquireHall(state, mode)),
+      buildRoom: (roomId) => applyResult(buildRoom(state, roomId), 'The builders arrive.'),
+      upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
       chooseAlignment: (alignment) => applyResult(chooseAlignment(state, alignment)),
       enterHeroTournament: (tournamentId, heroId) => applyResult(enterHeroTournament(state, tournamentId, heroId)),
       startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),

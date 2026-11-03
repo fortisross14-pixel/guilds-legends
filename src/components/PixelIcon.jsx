@@ -83,14 +83,16 @@ export const BUILDING_ICONS = { guildHall: 'castle', tavern: 'mug', noticeBoard:
 export const ROOM_ICONS = {
   training: 'sword',
   infirmary: 'cross',
-  barracks: 'moon',
+  quarters: 'moon',
+  bunks: 'moon',
+  trophies: 'crown',
   scouts: 'eye',
   courtyard: 'star',
-  council: 'crown',
+  office: 'crown',
   war: 'flag',
   treasury: 'coin',
   armory: 'shield',
-  facilities: 'hammer',
+  construction: 'hammer',
 };
 export const PAGE_ICONS = { calendar: 'calendar', news: 'letter', quests: 'quill', settings: 'gear', chronicle: 'book', codex: 'star' };
 export const LADDER_ICONS = { strength: 'sword', legacy: 'scroll', official: 'crown' };
@@ -108,5 +110,6 @@ export const EVENT_ICONS = {
   story: 'book',
   wages: 'coin',
   season: 'star',
+  construction: 'hammer',
   reputation: 'shield',
 };

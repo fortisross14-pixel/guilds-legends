@@ -3,7 +3,9 @@ import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, normalizeClassId } from '
 import { LOCATION_BY_ID, PRIMALS, RARITIES } from '../data/world.js';
 import {
   activeHeroCount,
-  heroCapacity,
+  bedCount,
+  freeBeds,
+  getHallView,
   operationalLocationIds,
   xpForNextLevel,
   CONTRACT_LENGTHS,
@@ -67,7 +69,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
       {inTavern ? (
         <header className="tavern-heading">
           <span className="muted">
-            {localCandidates.length + townAgents.length} looking for work · {activeHeroCount(state)}/{heroCapacity(state)} roster slots
+            {localCandidates.length + townAgents.length} looking for work · {activeHeroCount(state)}/{bedCount(state)} roster slots
           </span>
         </header>
       ) : (
@@ -82,7 +84,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
         </div>
         <div className="heading-metrics">
           <Badge tone="green">
-            {activeHeroCount(state)}/{heroCapacity(state)} active
+            {activeHeroCount(state)}/{bedCount(state)} active
           </Badge>
           <Badge tone="gold">{localCandidates.length} local candidates</Badge>
           <PrimalBadge primal={currentLocation?.primal} />
@@ -388,11 +390,12 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       </span>
                     ) : null}
                   </div>
-                  <div className="candidate-card__actions">
+                  {freeBeds(state) <= 0 ? <NoFreeBed state={state} actions={actions} navigate={navigate} /> : null}
+                  <div className="candidate-card__actions" hidden={freeBeds(state) <= 0}>
                     <Button
                       variant="primary"
                       onClick={() => actions.recruit(candidate.id, 'accept', yearsFor(candidate.id))}
-                      disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee}
+                      disabled={freeBeds(state) <= 0 || state.guild.crowns < candidate.signingFee}
                     >
                       {candidate.signingFee === 0
                         ? 'Choose as founding companion'
@@ -405,7 +408,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                     {candidate.demand ? (
                       <Button
                         onClick={() => actions.recruit(candidate.id, 'buyout', yearsFor(candidate.id))}
-                        disabled={activeHeroCount(state) >= heroCapacity(state) || state.guild.crowns < candidate.signingFee + (candidate.buyoutFee || 0)}
+                        disabled={freeBeds(state) <= 0 || state.guild.crowns < candidate.signingFee + (candidate.buyoutFee || 0)}
                       >
                         Buy out demand · {(candidate.signingFee + (candidate.buyoutFee || 0)).toLocaleString()}
                       </Button>
@@ -441,7 +444,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                         <div className="candidate-card__actions">
                           <Button
                             variant="primary"
-                            disabled={!terms.available || state.guild.crowns < terms.fee || activeHeroCount(state) >= heroCapacity(state)}
+                            disabled={!terms.available || state.guild.crowns < terms.fee || freeBeds(state) <= 0}
                             onClick={() => actions.makeOffer(hero.id)}
                             title={terms.reason || ''}
                           >
@@ -495,6 +498,29 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
           )}
         </Panel>
       ) : null}
+    </div>
+  );
+}
+
+/** Shown instead of the hire button when every bed is taken, with a shortcut to make room. */
+function NoFreeBed({ state, actions, navigate }) {
+  const hall = getHallView(state);
+  return (
+    <div className="no-free-bed">
+      <strong>No free bed</strong>
+      {hall.canRentBed ? (
+        <Button size="sm" variant="primary" onClick={actions.rentBed}>
+          Rent a bed ({hall.bedCost} G)
+        </Button>
+      ) : hall.owned ? (
+        <Button size="sm" variant="primary" onClick={() => navigate({ view: 'town', building: 'guildHall', tab: hall.rooms.some((room) => room.id === 'bunks' && room.built) ? 'bunks' : 'build' })}>
+          Build bunks
+        </Button>
+      ) : (
+        <Button size="sm" variant="primary" onClick={() => navigate('hall')}>
+          See the old hall
+        </Button>
+      )}
     </div>
   );
 }

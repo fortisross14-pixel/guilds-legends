@@ -398,9 +398,11 @@ function GuildChampionships({ state, actions, navigate }) {
               <Button size="sm" onClick={() => setAssignments(bestCombatTeam(state))}>
                 Build best company
               </Button>
-              <Button size="sm" onClick={() => actions.saveFormation('Combat', assignments)}>
-                Save as Combat arrangement
-              </Button>
+              {state.guild.hall?.rooms?.war ? (
+                <Button size="sm" onClick={() => actions.saveFormation('Combat', assignments)}>
+                  Save as Combat arrangement
+                </Button>
+              ) : null}
             </div>
             <Button
               variant="primary"

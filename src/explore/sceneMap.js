@@ -93,12 +93,17 @@ function base(place) {
   };
 }
 
-/** Walkable map for a town. */
-export function townMap(town) {
+/**
+ * Walkable map for a town. `hall` ({ asset, label }) swaps the main Guild Hall
+ * building's art and name for the guild's current hall stage.
+ */
+export function townMap(town, hall = null) {
   const map = base(town);
   const props = propPieces(town.props);
   const buildingProps = [];
-  const doors = town.buildings.map((building) => {
+  const doors = town.buildings.map((source) => {
+    const isHall = hall && source.building === 'guildHall' && !source.id;
+    const building = isHall ? { ...source, asset: hall.asset, label: hall.label } : source;
     const [col, row] = building.door;
     const left = col - Math.floor(BUILDING.w / 2);
     const top = row - BUILDING.h;

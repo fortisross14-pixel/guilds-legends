@@ -315,13 +315,15 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
 
         {own ? (
           <section className="hero-status__actions">
-            <Button
-              variant={inMainParty ? 'secondary' : 'primary'}
-              disabled={!inMainParty && (state.guild.mainParty || []).length >= MAIN_PARTY_SIZE}
-              onClick={() => actions.toggleMainParty(hero.id)}
-            >
-              {inMainParty ? 'Remove from main party' : 'Add to main party'}
-            </Button>
+            {state.guild.hall?.rooms?.war ? (
+              <Button
+                variant={inMainParty ? 'secondary' : 'primary'}
+                disabled={!inMainParty && (state.guild.mainParty || []).length >= MAIN_PARTY_SIZE}
+                onClick={() => actions.toggleMainParty(hero.id)}
+              >
+                {inMainParty ? 'Remove from main party' : 'Add to main party'}
+              </Button>
+            ) : null}
             {apprenticeOptions.length && !sliceHides('mentorship') ? (
               <label>
                 Mentor

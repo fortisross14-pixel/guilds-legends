@@ -1,115 +1,21 @@
 import React, { useState } from 'react';
-import { APPOINTMENTS, FACILITIES, TIERS } from '../data/content.js';
-import { headquartersRoomCapacity, heroCapacity, usedFacilityRooms } from '../game/engine.js';
-import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
+import { APPOINTMENTS } from '../data/content.js';
+import { Badge, HeroPortrait, Panel } from '../components/UI.jsx';
 import { sliceHides } from '../data/slice.js';
-
-function tierIndex(name) {
-  return Math.max(
-    0,
-    TIERS.findIndex((tier) => tier.id === name),
-  );
-}
 
 export default function HeadquartersScreen({ state, actions }) {
   const [appointment, setAppointment] = useState('Guild Captain');
   const activeHeroes = state.heroes.filter((hero) => hero.status === 'available');
-  const monthlyWages = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).reduce((sum, hero) => sum + hero.salary, 0);
-  const facilityUpkeep = Object.values(state.guild.facilities).reduce((sum, level) => sum + level * 8, 0);
-  const roomCapacity = headquartersRoomCapacity(state);
-  const occupiedRooms = usedFacilityRooms(state);
-  const freeRooms = Math.max(0, roomCapacity - occupiedRooms);
 
   return (
     <div className="screen screen--headquarters">
       <header className="screen-heading">
         <div>
-          <span className="eyebrow">The institution between adventures</span>
-          <h1>Guild Headquarters</h1>
-          <p>Rooms, offices and appointments determine whether individual brilliance can survive for generations.</p>
-        </div>
-        <div className="heading-metrics">
-          <Badge tone="gold">{state.guild.crowns.toLocaleString()} crowns</Badge>
-          <Badge tone={freeRooms ? 'blue' : 'red'}>
-            {occupiedRooms}/{roomCapacity} rooms
-          </Badge>
-          <Badge tone="blue">{heroCapacity(state)} hero capacity</Badge>
+          <span className="eyebrow">The office</span>
+          <h1>Appointments and doctrine</h1>
+          <p>Who holds which office, and how the guild tells its story.</p>
         </div>
       </header>
-
-      <section className="hq-blueprint">
-        <div className="hq-blueprint__hall">
-          <span className="eyebrow">Rented hall · Dunmere</span>
-          <h2>{state.guild.name}</h2>
-          <p>{state.guild.founder} presides over a building that is slowly becoming an institution.</p>
-          <div className="hq-ledger">
-            <span>
-              Monthly hero wages <strong>{monthlyWages}</strong>
-            </span>
-            <span>
-              Facility upkeep <strong>{facilityUpkeep}</strong>
-            </span>
-            <span>
-              Rooms occupied{' '}
-              <strong>
-                {occupiedRooms}/{roomCapacity}
-              </strong>
-            </span>
-            <span>
-              Total monthly cost <strong>{monthlyWages + facilityUpkeep + Object.keys(state.guild.appointments).length * 7}</strong>
-            </span>
-          </div>
-          <div className={`room-limit ${freeRooms ? '' : 'is-full'}`}>
-            <div>
-              <span className="eyebrow">Physical headquarters limit</span>
-              <strong>{freeRooms ? `${freeRooms} room${freeRooms === 1 ? '' : 's'} available` : 'No rooms available'}</strong>
-              <p>
-                Constructing a new facility occupies one room. Upgrading an existing room does not. Promotion expands the building; Great Hall levels above 1
-                add another room.
-              </p>
-            </div>
-            <ProgressBar value={occupiedRooms} max={roomCapacity} tone={freeRooms ? 'blue' : 'red'} compact />
-          </div>
-        </div>
-        <div className="hq-blueprint__rooms">
-          {FACILITIES.map((facility) => {
-            const level = state.guild.facilities[facility.id] || 0;
-            const tierLocked = facility.unlock && state.guild.tierIndex < tierIndex(facility.unlock);
-            const roomLocked = level === 0 && freeRooms === 0;
-            const locked = tierLocked || roomLocked;
-            const cost = Math.round(facility.baseCost * (1 + level * 0.72));
-            return (
-              <article className={`facility-room ${locked ? 'is-locked' : ''}`} key={facility.id}>
-                <div className="facility-room__icon">{locked ? '⌁' : facility.icon}</div>
-                <div className="facility-room__content">
-                  <div className="facility-room__title">
-                    <h3>{facility.name}</h3>
-                    <Badge tone={level >= facility.max ? 'green' : level ? 'blue' : 'neutral'}>
-                      {tierLocked ? `Unlocks at ${facility.unlock}` : roomLocked ? 'No free room' : `Level ${level}/${facility.max}`}
-                    </Badge>
-                  </div>
-                  <p>{facility.description}</p>
-                  {level === 0 ? (
-                    <small className="facility-room__space">Requires 1 free room</small>
-                  ) : (
-                    <small className="facility-room__space">Uses an existing room</small>
-                  )}
-                  <strong className="facility-room__effect">{facility.effect}</strong>
-                  <ProgressBar value={level} max={facility.max} tone={level >= facility.max ? 'green' : 'gold'} compact />
-                </div>
-                <Button
-                  size="sm"
-                  variant={level === 0 ? 'primary' : 'secondary'}
-                  disabled={locked || level >= facility.max || state.guild.crowns < cost}
-                  onClick={() => actions.upgradeFacility(facility.id)}
-                >
-                  {level >= facility.max ? 'Complete' : `Upgrade · ${cost}`}
-                </Button>
-              </article>
-            );
-          })}
-        </div>
-      </section>
 
       <div className="dashboard-grid dashboard-grid--hq">
         <Panel title="Guild appointments" eyebrow="Power behind the banner">

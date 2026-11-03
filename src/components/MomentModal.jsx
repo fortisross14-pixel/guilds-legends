@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Badge, Button, CountUp, HeroPortrait, Modal, PrimalBadge, RankChange, RarityBadge, artUrl } from './UI.jsx';
 import PixelIcon from './PixelIcon.jsx';
+import Asset from './Asset.jsx';
 import { Dialogue } from './EventCardModal.jsx';
 
 // Reward effect sprites from public/art/effects.
@@ -82,6 +83,34 @@ export default function MomentModal({ moment, state, onClose }) {
               <ul className="moment__loot-list">
                 {moment.loot.map((item, index) => (
                   <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          <Button variant="primary" onClick={onClose}>
+            Continue
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (moment.type === 'construction') {
+    return (
+      <Modal open title={moment.title} eyebrow="Construction complete" onClose={onClose} width="medium" className="modal--ceremony">
+        <div className={`moment moment--construction ${skipClass}`} onClick={skip}>
+          <Ceremony fx="burst">
+            <p className="moment__headline">{moment.title}</p>
+          </Ceremony>
+          {moment.interior ? <Asset id={moment.interior} className="moment__room-art" alt="" /> : null}
+          {moment.stage ? <Badge tone="gold">The guild home is now a {moment.stage.toLowerCase()}</Badge> : null}
+          <p className="moment__effect">{moment.effect}</p>
+          {moment.unlocked?.length ? (
+            <>
+              <p className="moment__section-label">Unlocked</p>
+              <ul className="moment__loot-list">
+                {moment.unlocked.map((item) => (
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
             </>
