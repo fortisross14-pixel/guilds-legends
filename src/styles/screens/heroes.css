@@ -104,3 +104,8 @@
   .legend-row { grid-template-columns: 28px auto 1fr auto; }
   .legend-row > span:nth-of-type(n + 2) { display: none; }
 }
+
+/* The Tavern: just who is in town tonight. */
+.recruit-layout--solo { grid-template-columns: minmax(0, 1fr); }
+.tavern-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s4); margin-bottom: var(--s4); }
+.candidate-card--agent .hero-card__portrait-stack { padding: 0; border: 0; background: none; }

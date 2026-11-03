@@ -22,6 +22,8 @@ function candidateValue(candidate) {
 // the Guild Hall shows ['roster', 'legends'].
 export default function HeroesScreen({ state, actions, navigate, tabs = ['roster', 'recruit', 'legends'] }) {
   const [tab, setTab] = useState(tabs[0]);
+  // The Tavern shows only who is in town tonight: no tabs, intro text or side panels.
+  const inTavern = tabs.length === 1 && tabs[0] === 'recruit';
   const [contractYears, setContractYears] = useState({});
   const yearsFor = (id) => contractYears[id] || 2;
   const rangeText = ([low, high]) => (low === high ? String(low) : `${low}–${high}`);
@@ -55,14 +57,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
     () => state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === activeMarketId).sort((a, b) => candidateValue(b) - candidateValue(a)),
     [state.candidates, activeMarketId],
   );
-  const remoteCandidates = useMemo(
-    () =>
-      state.candidates.filter((candidate) => !operationalIds.includes(candidate.locationId || 'dunmere')).sort((a, b) => candidateValue(b) - candidateValue(a)),
-    // operationalIds is rebuilt each render; its joined value is the stable dependency.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.candidates, operationalIds.join('|')],
-  );
-
   const legends = useMemo(
     () => [...state.heroes.filter((hero) => ['retired', 'dead'].includes(hero.status)), ...state.historicHeroes].sort((a, b) => b.legacy - a.legacy),
     [state.heroes, state.historicHeroes],
@@ -70,7 +64,14 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
 
   return (
     <div className="screen screen--heroes">
-      <header className="screen-heading">
+      {inTavern ? (
+        <header className="tavern-heading">
+          <span className="muted">
+            {localCandidates.length + townAgents.length} looking for work · {activeHeroCount(state)}/{heroCapacity(state)} roster slots
+          </span>
+        </header>
+      ) : (
+        <header className="screen-heading">
         <div>
           <span className="eyebrow">Level · rarity · class · primal</span>
           <h1>Heroes of the Banner</h1>
@@ -87,7 +88,9 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
           <PrimalBadge primal={currentLocation?.primal} />
         </div>
       </header>
+      )}
 
+      {tabs.length > 1 ? (
       <Tabs
         active={tab}
         onChange={setTab}
@@ -97,6 +100,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
           { id: 'legends', label: 'Retired & fallen', icon: '▤' },
         ].filter((item) => tabs.includes(item.id))}
       />
+      ) : null}
 
       {tab === 'roster' ? (
         <>
@@ -272,11 +276,8 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
       ) : null}
 
       {tab === 'recruit' ? (
-        <div className="recruit-layout">
-          <Panel
-            title={`The market in ${currentLocation?.name}`}
-            eyebrow={`${currentLocation?.primal} territory · ${activeMarketId === currentLocationId ? 'headquarters' : 'branch'} negotiations`}
-          >
+        <div className="recruit-layout recruit-layout--solo">
+          <Panel title={inTavern ? `Tonight in ${currentLocation?.name}` : `The market in ${currentLocation?.name}`}>
             {operationalIds.length > 1 ? (
               <label className="market-switcher">
                 Operating market
@@ -290,19 +291,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                 </select>
               </label>
             ) : null}
-            <div className="recruit-market-intro">
-              <div>
-                <span>{currentLocation?.icon}</span>
-                <div>
-                  <strong>{currentLocation?.name} specialties</strong>
-                  <p>{currentLocation?.specialties.join(' · ')}</p>
-                </div>
-              </div>
-              <p>
-                Higher-level and rarer heroes can transform the guild immediately, but demand a larger signing fee and monthly salary. Markets refresh with time
-                and whenever the guild arrives in a new settlement.
-              </p>
-            </div>
             <div className="candidate-grid">
               {localCandidates.map((candidate) => (
                 <article
@@ -425,7 +413,46 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                   </div>
                 </article>
               ))}
-              {!localCandidates.length ? (
+              {activeMarketId === currentLocationId
+                ? townAgents.map((hero) => {
+                    const terms = offerTerms(state, hero.id);
+                    return (
+                      <article
+                        className="candidate-card candidate-card--agent"
+                        key={hero.id}
+                        style={{ '--rarity': RARITIES[hero.rarity]?.color, '--primal': PRIMALS[hero.primal]?.color }}
+                      >
+                        <div className="candidate-card__top">
+                          <button className="hero-card__portrait-stack" onClick={() => actions.openHero(hero.id)} aria-label={`Inspect ${hero.name}`}>
+                            <HeroPortrait hero={hero} size="md" showStatus={false} />
+                            <LevelBadge hero={hero} />
+                          </button>
+                          <div>
+                            <h3>{hero.name}</h3>
+                            <div className="candidate-card__taxonomy">
+                              <RarityBadge rarity={hero.rarity} />
+                              <PrimalBadge primal={hero.primal} />
+                            </div>
+                            <p>
+                              {normalizeClassId(hero.classId)} · Age {hero.age} · experienced, between guilds
+                            </p>
+                          </div>
+                        </div>
+                        <div className="candidate-card__actions">
+                          <Button
+                            variant="primary"
+                            disabled={!terms.available || state.guild.crowns < terms.fee || activeHeroCount(state) >= heroCapacity(state)}
+                            onClick={() => actions.makeOffer(hero.id)}
+                            title={terms.reason || ''}
+                          >
+                            Make an offer · {terms.fee.toLocaleString()} ({Math.round((terms.chance || 0) * 100)}% to accept)
+                          </Button>
+                        </div>
+                      </article>
+                    );
+                  })
+                : null}
+              {!localCandidates.length && !(activeMarketId === currentLocationId && townAgents.length) ? (
                 <EmptyState
                   icon="✦"
                   title="The local market is empty"
@@ -435,76 +462,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
               ) : null}
             </div>
           </Panel>
-          <aside className="recruit-sidebar">
-            {townAgents.length ? (
-              <Panel title="Free agents in town" eyebrow="Released or out-of-contract heroes">
-                {townAgents.map((hero) => {
-                  const terms = offerTerms(state, hero.id);
-                  return (
-                    <div key={hero.id} className="free-agent-row">
-                      <button className="room-hero__who" onClick={() => actions.openHero(hero.id)}>
-                        <HeroPortrait hero={hero} size="xs" showStatus={false} />
-                        <span>
-                          <strong>{hero.name}</strong>
-                          <small>
-                            Lv {hero.level} {hero.rarity} {hero.classId}
-                          </small>
-                        </span>
-                      </button>
-                      <Button
-                        size="sm"
-                        disabled={!terms.available || state.guild.crowns < terms.fee}
-                        onClick={() => actions.makeOffer(hero.id)}
-                        title={terms.reason || ''}
-                      >
-                        Offer {terms.fee} · {Math.round((terms.chance || 0) * 100)}%
-                      </Button>
-                    </div>
-                  );
-                })}
-              </Panel>
-            ) : null}
-            <Panel title="Hiring strategy" eyebrow="Build toward arrangements" tone="dark">
-              <ul className="insight-list">
-                <li>
-                  <b>Combat:</b> commander, fighters and cleric/artificer support.
-                </li>
-                <li>
-                  <b>Diplomacy:</b> presence-led negotiators supported by strategists and advocates.
-                </li>
-                <li>
-                  <b>Expedition:</b> ranger or artificer leads, searchers and a curator.
-                </li>
-                <li>
-                  <b>Intrigue:</b> rogues, scouts and a reliable extraction specialist.
-                </li>
-                <li>A local primal helps cultural negotiations but can be poor against local enemies.</li>
-              </ul>
-            </Panel>
-            <Panel title="Current capacity" eyebrow="Institutional limit">
-              <ProgressBar value={activeHeroCount(state)} max={heroCapacity(state)} tone={activeHeroCount(state) >= heroCapacity(state) ? 'red' : 'green'} />
-              <p className="muted">Upgrade the Great Hall or earn a higher social tier to increase active capacity.</p>
-            </Panel>
-            {remoteCandidates.length ? (
-              <Panel title="Scouted elsewhere" eyebrow={`${remoteCandidates.length} known candidates`}>
-                <div className="remote-candidate-list">
-                  {remoteCandidates.slice(0, 6).map((candidate) => (
-                    <article key={candidate.id}>
-                      <PrimalBadge primal={candidate.primal} compact />
-                      <div>
-                        <strong>{candidate.name}</strong>
-                        <small>
-                          Lv {candidate.level} {candidate.rarity} {normalizeClassId(candidate.classId)}
-                        </small>
-                        <span>{LOCATION_BY_ID[candidate.locationId]?.name}</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                <Button onClick={() => navigate('world')}>Plan recruitment journey</Button>
-              </Panel>
-            ) : null}
-          </aside>
         </div>
       ) : null}
 

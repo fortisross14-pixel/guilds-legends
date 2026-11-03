@@ -79,7 +79,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
       {building ? (
         <div className={`building building--${building}`}>
           {building === 'guildHall' ? <GuildHallRooms {...props} room={place.tab} setRoom={(tab) => setPlace({ ...place, tab })} /> : null}
-          {building === 'tavern' ? <HeroesScreen {...props} tabs={['recruit', 'roster']} /> : null}
+          {building === 'tavern' ? <HeroesScreen {...props} tabs={['recruit']} /> : null}
           {building === 'noticeBoard' ? <MissionsScreen {...props} /> : null}
           {building === 'arena' ? <TournamentsScreen {...props} /> : null}
           {building === 'shop' ? <ShopScreen {...props} /> : null}

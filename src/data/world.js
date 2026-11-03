@@ -313,7 +313,7 @@ export function travelDuration(fromId, toId) {
 // whichever town the guild is based; the rest depend on the town.
 export const BUILDINGS = {
   guildHall: { id: 'guildHall', name: 'Guild Hall', icon: '♜', description: 'Your headquarters: roster, assignments, training, facilities and rest.' },
-  tavern: { id: 'tavern', name: 'Tavern', icon: '🍺', description: 'Meet local recruits, hire them, or let heroes go.' },
+  tavern: { id: 'tavern', name: 'Tavern', icon: '🍺', description: 'See who is in town looking for work, and hire them.' },
   noticeBoard: { id: 'noticeBoard', name: 'Notice Board', icon: '📜', description: 'Local contracts and the party builder.' },
   arena: { id: 'arena', name: 'Arena', icon: '⚔', description: 'Tournaments hosted here and the guild championships.' },
   shop: { id: 'shop', name: 'Shop', icon: '⚖', description: 'Buy potions and equipment; sell what you do not need.' },
