@@ -8,8 +8,10 @@ import TournamentsScreen from '../screens/TournamentsScreen.jsx';
 import RankingsScreen from '../screens/RankingsScreen.jsx';
 import ShopScreen from '../screens/ShopScreen.jsx';
 import GuildHallRooms from './GuildHallRooms.jsx';
-import DunmereExploration from '../components/DunmereExploration.jsx';
-import { townLayoutFor } from '../data/townLayouts.js';
+import TownScene from '../explore/TownScene.jsx';
+import WildScene from '../explore/WildScene.jsx';
+import { townFor } from '../data/towns/index.js';
+import { WILD_AREAS } from '../data/wilds/index.js';
 import { getLivingHistory } from '../game/engine.js';
 import { firstAsset } from '../data/assets.js';
 
@@ -30,25 +32,36 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
   const town = LOCATION_BY_ID[locationId];
   const travel = state.world?.activeTravel;
   const available = travel ? ['guildHall'] : locationBuildings(locationId);
-  const townLayout = townLayoutFor(town, available);
+  const walkable = townFor(locationId);
+  const townLayout = walkable || { landmark: town.name, summary: town.description, districts: [] };
+  const wildArea = !travel ? WILD_AREAS[state.world?.wildAreaId] : null;
   const livingHistory = getLivingHistory(state);
   const missing = place.building && !available.includes(place.building) ? BUILDINGS[place.building] : null;
   const building = place.building && !missing ? place.building : null;
   const props = { state, actions, navigate, slot };
+  const showBuilding = (id) => setPlace({ view: 'town', building: id, tab: null });
   const openBuilding = (id) => {
     if (id === 'herald') actions.noteTutorial('visitHerald');
-    setPlace({ view: 'town', building: id, tab: null });
+    showBuilding(id);
   };
+  const buildingLabel = (id) => walkable?.buildings.find((item) => item.building === id && !item.id)?.label || BUILDINGS[id]?.name;
 
-  // Exploration owns the entire viewport. Keeping it below this animated screen
-  // would turn its fixed canvas into a descendant-sized strip.
-  // The tile menu stays as an accessibility fallback ("Town directory").
-  if (!building && !place.directory && locationId === 'dunmere' && state.flags?.opening?.phase === 'complete') {
+  // Scenes own the entire viewport. Keeping them below this animated screen
+  // would turn the fixed canvas into a descendant-sized strip.
+  if (!building && wildArea) {
+    return <WildScene key={wildArea.id} area={wildArea} state={state} actions={actions} navigate={navigate} />;
+  }
+  // The tile menu stays only as a small fallback ("Town directory").
+  if (!building && !place.directory && !travel && walkable && state.flags?.opening?.phase === 'complete') {
     return (
-      <DunmereExploration
+      <TownScene
+        key={walkable.id}
+        town={walkable}
         state={state}
         actions={actions}
+        navigate={navigate}
         openBuilding={openBuilding}
+        showBuilding={showBuilding}
         openDirectory={() => setPlace({ view: 'town', building: null, directory: true })}
       />
     );
@@ -59,17 +72,17 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
       <SceneBackdrop asset={BUILDING_INTERIORS[building] || firstAsset(`bg.town.${locationId}`, 'bg.town.default')} dim={building ? 0.58 : 0.28} />
       <header className={`town-header place-title ${building ? 'place-title--building' : ''}`}>
         {building ? (
-          <Button size="sm" className="town-header__back" onClick={() => setPlace({ view: 'town', building: null })}>
-            ◀ {town.name}
+          <Button size="sm" variant="primary" className="town-header__back town-header__leave" onClick={() => setPlace({ view: 'town', building: null })}>
+            ◀ Leave
           </Button>
         ) : null}
         <div className="place-title__name">
-          <h1>{building ? BUILDINGS[building].name : town.name}</h1>
-          <span className="eyebrow">{building ? `${town.name} · ${town.region}` : `${town.region} · ${town.tier}`}</span>
+          <h1>{building ? buildingLabel(building) : town.name}</h1>
+          <span className="eyebrow">{building ? `Inside · ${BUILDINGS[building].name} · ${wildArea ? `back to ${wildArea.name}` : town.name}` : `Town directory · ${town.region}`}</span>
         </div>
         <div className="heading-metrics">
           <PrimalBadge primal={town.primal} />
-          {!building && place.directory && locationId === 'dunmere' ? (
+          {!building && walkable && !travel ? (
             <Button size="sm" variant="primary" onClick={() => setPlace({ view: 'town', building: null })}>
               Walk the streets
             </Button>

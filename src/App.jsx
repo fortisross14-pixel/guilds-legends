@@ -14,7 +14,15 @@ import {
   clearNotifications,
   clone,
   completeFallenBannerOpening,
-  recordDunmereExploration,
+  talkTo,
+  chooseDialogueOption,
+  saveScenePosition,
+  recordSceneVisit,
+  enterWildArea,
+  leaveWildArea,
+  gatherAtSpot,
+  restAtCamp,
+  startWildBattle,
   createNewGame,
   designateSuccessor,
   dismissNotification,
@@ -825,7 +833,16 @@ function Toasts({ notifications, onDismiss, onClear }) {
 }
 
 function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlotsChanged }) {
-  const [place, setPlaceState] = useState({ view: 'map' });
+  const [place, setPlaceState] = useState({ view: 'town' });
+  // Arriving somewhere (the opening ends, a journey ends, entering or leaving a
+  // wild area) puts the player in that place's walkable scene.
+  const arrivalKey = `${state.world?.currentLocationId}|${state.world?.activeTravel ? 'road' : 'here'}|${state.world?.wildAreaId || ''}|${state.flags?.opening?.phase}`;
+  const lastArrival = useRef(arrivalKey);
+  useEffect(() => {
+    if (lastArrival.current === arrivalKey) return;
+    lastArrival.current = arrivalKey;
+    if (!state.world?.activeTravel) setPlaceState({ view: 'town' });
+  }, [arrivalKey, state.world?.activeTravel]);
   const [heroModalId, setHeroModalId] = useState(null);
   const [timeMenuOpen, setTimeMenuOpen] = useState(false);
   // The journal (next step + upcoming events) is a per-viewer convenience kept in localStorage.
@@ -952,7 +969,37 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     () => ({
       acknowledgeWelcome: () => commitState(acknowledgeWelcome(state)),
       completeFallenBannerOpening: (choices) => commitState(completeFallenBannerOpening(state, choices)),
-      recordDunmereExploration: (targetId, position) => commitState(recordDunmereExploration(state, targetId, position)),
+      // Walkable scenes (src/explore). talk/chooseDialogue return UI follow-ups ({ open, recruit }).
+      talk: (id, visit) => {
+        const result = talkTo(state, id, visit);
+        applyResult(result);
+        return result.error ? null : result.ui || {};
+      },
+      chooseDialogue: (id, variantIndex, choiceIndex) => {
+        const result = chooseDialogueOption(state, id, variantIndex, choiceIndex);
+        applyResult(result);
+        return result.error ? null : result.ui || {};
+      },
+      visitBuilding: (sceneId, targetId, position, building) => {
+        let next = recordSceneVisit(state, sceneId, targetId, position);
+        if (building === 'herald') next = noteTutorialStep(next, 'visitHerald');
+        commitState(next);
+      },
+      savePosition: (sceneId, position) => {
+        const next = saveScenePosition(state, sceneId, position);
+        if (next !== state) commitState(next);
+      },
+      enterWild: (areaId, fromPosition) => applyResult(enterWildArea(state, areaId, fromPosition)),
+      leaveWild: (position) => applyResult(leaveWildArea(state, position)),
+      gather: (areaId, spotId) => {
+        const result = gatherAtSpot(state, areaId, spotId);
+        applyResult(result, result.message);
+      },
+      restAtCamp: (areaId) => {
+        const result = restAtCamp(state, areaId);
+        applyResult(result, result.message);
+      },
+      fightWild: (areaId, groupId, position) => applyResult(startWildBattle(state, areaId, groupId, position)),
       inspectMission: (id) => commitState(inspectMission(state, id)),
       notePartySelection: (id, formationType, assignments) => {
         const next = notePartySelection(state, id, formationType, assignments);

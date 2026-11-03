@@ -36,7 +36,7 @@ export function useCoarsePointer() {
  * The game is created once per mount: `map` and `start` are read only then.
  * Changing props (`activeTargets`, `paused`, `onInteract`) never rebuilds it.
  */
-export default function WalkableScene({ map, start, activeTargets, paused = false, joystick = false, onInteract, className = '', label, children }) {
+export default function WalkableScene({ map, start, activeTargets, paused = false, joystick = false, onInteract, className = '', label, apiRef = null, children }) {
   const stageRef = useRef(null);
   const controllerRef = useRef(null);
   const bridge = useRef({});
@@ -102,6 +102,7 @@ export default function WalkableScene({ map, start, activeTargets, paused = fals
           return;
         }
         controllerRef.current = created;
+        if (apiRef) apiRef.current = created;
         created.setActiveTargets(activeRef.current);
         const measure = () => {
           viewport.current = { width: stageRef.current?.clientWidth || 0, height: stageRef.current?.clientHeight || 0 };
@@ -124,6 +125,7 @@ export default function WalkableScene({ map, start, activeTargets, paused = fals
       observer?.disconnect();
       controller?.destroy();
       controllerRef.current = null;
+      if (apiRef) apiRef.current = null;
       if (window.render_game_to_text) delete window.render_game_to_text;
     };
   }, []);

@@ -31,7 +31,7 @@ function targetHit(target) {
  * swap callbacks without recreating the game. Resolves to a controller.
  */
 export async function createWalkGame({ parent, map, bridge, start, coarse = false }) {
-  const ids = [...new Set([map.ground, map.player.asset, ...(map.props || []).map((prop) => prop.asset), ...map.targets.map((target) => target.asset)].filter(Boolean))];
+  const ids = [...new Set([map.ground, map.tiles?.asset, map.player.asset, ...(map.props || []).map((prop) => prop.asset), ...map.targets.map((target) => target.asset)].filter(Boolean))];
   const loaded = await Promise.all(ids.map(loadAsset));
   const grid = buildGrid(map.size, map.blocks, { pad: map.pad ?? 10, edge: map.edge ?? 0 });
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -45,6 +45,10 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     active: new Set(map.targets.filter((target) => target.active !== false).map((target) => target.id)),
     nearId: null,
     worldZoom: 1,
+    // Auto targets (enemy groups, exits) fire once when walked into; the lock
+    // stops them firing again until the walker has stepped away.
+    autoLock: new Set(),
+    autoPrimed: false,
   };
   let scene = null;
   let dead = false;
@@ -63,6 +67,12 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       });
       this.cameras.main.setBackgroundColor(map.background || '#0b0c12');
       if (map.ground) this.add.image(0, 0, map.ground).setOrigin(0).setDisplaySize(map.size.width, map.size.height).setDepth(-10000);
+      if (map.tiles) {
+        const size = map.tiles.size;
+        const tilemap = this.make.tilemap({ data: map.tiles.data, tileWidth: size, tileHeight: size });
+        const tileset = tilemap.addTilesetImage(map.tiles.asset, map.tiles.asset, size, size, 0, 0);
+        tilemap.createLayer(0, tileset, 0, 0).setDepth(-10000);
+      }
       (map.props || []).forEach((prop) => {
         this.add.image(prop.x, prop.y, prop.asset).setOrigin(0).setDisplaySize(prop.w, prop.h).setDepth(prop.depth ?? prop.y + prop.h);
       });
@@ -144,7 +154,26 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     return best;
   }
 
+  function updateAuto() {
+    if (state.paused) return;
+    const inReach = activeTargets().filter((target) => target.auto && distanceTo(target) <= (target.reach || 44));
+    const ids = new Set(inReach.map((target) => target.id));
+    [...state.autoLock].forEach((id) => !ids.has(id) && state.autoLock.delete(id));
+    if (!state.autoPrimed) {
+      // Arriving next to an exit or a group must not trigger it.
+      state.autoPrimed = true;
+      ids.forEach((id) => state.autoLock.add(id));
+      return;
+    }
+    const fresh = inReach.find((target) => !state.autoLock.has(target.id));
+    if (fresh) {
+      state.autoLock.add(fresh.id);
+      interactWith(fresh);
+    }
+  }
+
   function updateNear() {
+    updateAuto();
     const near = state.paused ? null : nearestTarget();
     const id = near?.id || null;
     if (id !== state.nearId) {
@@ -162,6 +191,9 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
   function interactWith(target) {
     state.path = [];
     state.stick = { x: 0, y: 0 };
+    state.pendingTarget = null;
+    scene?.marker?.setVisible(false);
+    if (target.auto) state.autoLock.add(target.id);
     if (!dead) bridge.current?.onInteract?.(target, { x: Math.round(scene.player.x), y: Math.round(scene.player.y) });
   }
 

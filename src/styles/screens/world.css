@@ -73,7 +73,12 @@
 .location-node.is-current .location-node__icon::after { content: ''; position: absolute; inset: -9px; border: 1px solid rgba(246, 220, 154, .6); border-radius: 50%; animation: here-ring 2.4s ease-out infinite; }
 @keyframes here-ring { from { opacity: .9; transform: scale(.75); } to { opacity: 0; transform: scale(1.6); } }
 
-.map-party-marker, .map-boss, .map-pin, .map-blackwood { position: absolute; z-index: 4; pointer-events: none; }
+.map-party-marker, .map-boss, .map-pin, .map-blackwood, .map-quest { position: absolute; z-index: 4; pointer-events: none; }
+/* Main quest: always visible, above the node it points at. */
+.map-quest { display: flex; align-items: center; gap: 5px; padding: 2px 9px 2px 5px; border: 1px solid rgba(246, 210, 140, .7); border-radius: 2px; background: rgba(28, 20, 10, .9); color: var(--gold-bright); font: 600 12px var(--font-ui); white-space: nowrap; transform: translate(-50%, -260%); box-shadow: 0 0 16px rgba(246, 210, 140, .4); }
+.map-quest .pixel-icon { width: 14px; height: 14px; image-rendering: auto; }
+.location-node--wild .location-node__icon { border-style: dashed; }
+.location-node--wild.is-locked { opacity: .7; }
 .map-party-marker { color: var(--gold-bright); transform: translate(-50%, -100%); filter: drop-shadow(0 0 8px rgba(246, 210, 140, .9)); animation: bob 1.6s ease-in-out infinite; }
 .map-boss { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid rgba(236, 138, 124, .8); border-radius: 50%; background: radial-gradient(circle, #6e1f1a, #1a0806); color: #ffd9d2; box-shadow: 0 0 16px rgba(220, 95, 79, .7); transform: translate(16px, -30px); }
 .map-boss .pixel-icon { width: 14px; height: 14px; image-rendering: auto; }

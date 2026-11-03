@@ -14,6 +14,7 @@ const AREA_BATTLES = [
 ];
 export function battleBackground(encounter, locationPrimal) {
   if (!encounter) return 'bg.battle.arena';
+  if (encounter.background) return encounter.background;
   if (encounter.mode === 'duel' || /tournament|championship|challenge/i.test(encounter.sourceType || '')) return 'bg.battle.arena';
   const area = AREA_BATTLES.find(([pattern]) => pattern.test(`${encounter.title || ''} ${encounter.objective || ''}`));
   if (area) return area[1];

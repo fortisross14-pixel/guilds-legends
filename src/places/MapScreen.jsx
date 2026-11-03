@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
-import { getStoryView, getTravelQuote, getWorldKnowledge } from '../game/engine.js';
-import { BLACKWOOD_MAP } from '../data/story.js';
+import { getStoryView, getTravelQuote, getWildAreaView, getWorldKnowledge } from '../game/engine.js';
+import { WILD_AREAS, WILD_AREA_LIST } from '../data/wilds/index.js';
 import { Badge, Button, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
 import { useAssetUrl } from '../components/Asset.jsx';
 import { BEYOND_TEASER, inSlice, sliceHides } from '../data/slice.js';
@@ -34,8 +34,14 @@ function routePath(chain) {
 export default function MapScreen({ state, actions, navigate, place }) {
   const currentLocationId = state.world?.currentLocationId || 'dunmere';
   const pinId = place?.pin || null;
-  const [selectedId, setSelectedId] = useState(pinId || currentLocationId);
+  const [selectedId, setSelectedId] = useState(pinId || (state.world?.wildAreaId ? `wild:${state.world.wildAreaId}` : currentLocationId));
+  const selectedWild = String(selectedId).startsWith('wild:') ? WILD_AREAS[String(selectedId).slice(5)] || null : null;
   const selected = LOCATION_BY_ID[selectedId] || LOCATION_BY_ID[currentLocationId];
+  const story = getStoryView(state);
+  const oldRoadDone = (state.missionHistory || []).some((mission) => mission.templateId === 'wolves-old-road');
+  // The main quest marker is always on the map: the story's next place, or Dunmere's first contract.
+  const questId = story.pin || (!oldRoadDone ? 'dunmere' : null);
+  const questTitle = story.beat?.title || (story.pin ? 'The Blackwood story' : 'Wolves on the Old Road');
   const knowledge = getWorldKnowledge(state);
   const knownLocationCount = Object.values(knowledge).filter((status) => status !== 'unknown').length;
   const selectedBeyond = !inSlice(selected.id);
@@ -199,13 +205,34 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     <PixelIcon name="skull" size={24} label={`Boss: ${mission.title}`} />
                   </span>
                 ))}
-              {getStoryView(state).blackwoodOpen ? (
-                <span
-                  className="map-blackwood"
-                  style={{ left: `${BLACKWOOD_MAP.x}%`, top: `${BLACKWOOD_MAP.y}%` }}
-                  title="The Blackwood (reach it through the Dunmere contract)"
-                >
-                  <PixelIcon name="tree" size={24} /> {BLACKWOOD_MAP.name}
+              {WILD_AREA_LIST.map((area) => {
+                const view = getWildAreaView(state, area.id);
+                return (
+                  <button
+                    key={area.id}
+                    className={`location-node location-node--wild ${view.unlocked ? 'is-unlocked' : 'is-locked'} ${selectedWild?.id === area.id ? 'is-selected' : ''} ${view.here ? 'is-current' : ''}`}
+                    style={{ left: `${area.map.x}%`, top: `${area.map.y}%`, '--primal': PRIMALS[area.primal]?.color }}
+                    onClick={() => setSelectedId(`wild:${area.id}`)}
+                    aria-label={`${area.name}, wild area${view.unlocked ? '' : ', closed'}`}
+                  >
+                    {view.here ? (
+                      <em className="location-node__here">
+                        <span>You are here</span>
+                        <PixelIcon name="pointer" size={12} />
+                      </em>
+                    ) : null}
+                    <span className="location-node__icon">
+                      <PixelIcon name={view.unlocked ? 'tree' : 'lock'} size={24} />
+                    </span>
+                    <strong>{area.name}</strong>
+                    <small>{view.unlocked ? 'Wild area' : 'Closed'}</small>
+                  </button>
+                );
+              })}
+              {questId && LOCATION_BY_ID[questId] ? (
+                <span className="map-quest" style={{ left: `${LOCATION_BY_ID[questId].x}%`, top: `${LOCATION_BY_ID[questId].y}%` }}>
+                  <PixelIcon name="star" size={18} label={`Main quest: ${questTitle}`} />
+                  <span>{questTitle}</span>
                 </span>
               ) : null}
               {pinId && LOCATION_BY_ID[pinId] ? (
@@ -233,6 +260,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
           document.body,
         )}
 
+        {selectedWild ? (
+          <WildCard area={selectedWild} state={state} actions={actions} />
+        ) : (
         <aside className="region-dossier region-dossier--location" style={{ '--primal': PRIMALS[selected.primal].color }}>
           <div className="region-dossier__banner">
             <span>
@@ -394,9 +424,21 @@ export default function MapScreen({ state, actions, navigate, place }) {
             </div>
           )}
         </aside>
+        )}
       </div>
 
       <div className="location-mobile-list" aria-label="Destinations list" data-menu>
+        {WILD_AREA_LIST.map((area) => (
+          <button key={area.id} className={selectedWild?.id === area.id ? 'is-selected' : ''} onClick={() => setSelectedId(`wild:${area.id}`)}>
+            <span style={{ '--primal': PRIMALS[area.primal]?.color }}>
+              <PixelIcon name="tree" size={12} />
+            </span>
+            <div>
+              <strong>{area.name}</strong>
+              <small>Wild area · from {LOCATION_BY_ID[area.hub]?.name}</small>
+            </div>
+          </button>
+        ))}
         {LOCATIONS.map((location) => {
           const beyond = !inSlice(location.id);
           const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
@@ -430,5 +472,83 @@ export default function MapScreen({ state, actions, navigate, place }) {
       </div>
 
     </div>
+  );
+}
+
+/** The world-map card for a wild area: what is there, and Enter or Travel. */
+function WildCard({ area, state, actions }) {
+  const view = getWildAreaView(state, area.id);
+  const hub = LOCATION_BY_ID[area.hub];
+  const quote = getTravelQuote(state, area.hub);
+  const travel = state.world?.activeTravel;
+  const groups = view.groups.filter((group) => group.present);
+  const ready = groups.filter((group) => group.available);
+  const boss = groups.find((group) => group.boss);
+  return (
+    <aside className="region-dossier region-dossier--location region-dossier--wild" style={{ '--primal': PRIMALS[area.primal]?.color }}>
+      <div className="region-dossier__banner">
+        <span>
+          <PixelIcon name={view.unlocked ? 'tree' : 'lock'} size={24} />
+        </span>
+        <div>
+          <small>Wild area · reached from {hub?.name}</small>
+          <h2>{area.name}</h2>
+        </div>
+      </div>
+      <p className="region-dossier__identity">{area.description}</p>
+      {view.unlocked ? (
+        <>
+          <div className="location-economy-grid">
+            <div>
+              <span>Enemy groups</span>
+              <strong>
+                {ready.length}/{groups.length}
+              </strong>
+            </div>
+            <div>
+              <span>Gathering spots</span>
+              <strong>{view.gathers.filter((spot) => spot.available).length}</strong>
+            </div>
+            <div>
+              <span>Camp</span>
+              <strong>{area.camp.name}</strong>
+            </div>
+            <div>
+              <span>Boss</span>
+              <strong>{boss ? (boss.available ? boss.name : `Back in ${boss.weeksLeft}w`) : 'None yet'}</strong>
+            </div>
+          </div>
+          {view.here ? (
+            <Badge tone="green">You are here</Badge>
+          ) : view.atHub ? (
+            <Button variant="primary" size="lg" onClick={() => actions.enterWild(area.id)}>
+              Enter {area.name}
+            </Button>
+          ) : (
+            <div className="travel-quote">
+              <div>
+                <span>Journey to {hub?.name}</span>
+                <strong>
+                  {quote.weeks} week{quote.weeks === 1 ? '' : 's'}
+                </strong>
+              </div>
+              <div>
+                <span>Travel budget</span>
+                <strong>{quote.cost} crowns</strong>
+              </div>
+              <Button variant="primary" size="lg" disabled={Boolean(travel) || state.guild.crowns < quote.cost} onClick={() => actions.travel(area.hub)}>
+                {travel ? 'Already traveling' : `Travel to ${hub?.name}`}
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="locked-dossier">
+          <PixelIcon name="lock" size={28} />
+          <h3>Closed for now</h3>
+          <p>{area.lockedText}</p>
+        </div>
+      )}
+    </aside>
   );
 }
