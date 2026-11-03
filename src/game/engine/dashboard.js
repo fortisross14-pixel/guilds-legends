@@ -2,7 +2,8 @@
 // Read models for the UI (next action, summary) and small UI-state actions.
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
 import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
-import { LOCATION_BY_ID } from '../../data/world.js';
+import { LOCATIONS, LOCATION_BY_ID } from '../../data/world.js';
+import { DUNMERE_DOORS, DUNMERE_NPCS } from '../../data/dunmere.js';
 import { tournamentRequirements } from './tournaments.js';
 import { WEEKS_PER_MONTH, campaignWeekSerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
@@ -57,12 +58,49 @@ export function recordDunmereExploration(state, targetId, position) {
   if (targetId === 'npc:fighter' && next.missionHistory?.some((mission) => mission.templateId === 'wolves-old-road')) {
     next.flags.harvestMeleeIntroduced = true;
   }
+  next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
+  next.world.knowledge.locations ||= {};
+  next.world.knowledge.events ||= {};
+  next.world.knowledge.sources ||= {};
+  if (targetId === 'npc:traveler') {
+    next.world.knowledge.locations.ironford = 'rumored';
+    next.world.knowledge.sources.ironford = { source: 'Iven Quill', note: 'Follow the river east. You can hear the foundries before you see the walls.' };
+  }
+  if (targetId === 'npc:fighter' && next.flags.harvestMeleeIntroduced) {
+    next.world.knowledge.events['dunmere-harvest-melee'] = { source: 'Nia Voss', note: 'The Dunmere Harvest Melee is held at the local arena.' };
+  }
   if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
     town.x = Math.round(position.x);
     town.y = Math.round(position.y);
   }
+  const dunmereTargets = [...DUNMERE_DOORS, ...DUNMERE_NPCS].map((target) => `${DUNMERE_DOORS.includes(target) ? 'door' : 'npc'}:${target.id}`);
+  if (dunmereTargets.every((target) => town.discovered.includes(target))) {
+    town.fullyExplored = true;
+    next.world.knowledge.locations.dunmere = 'fullyExplored';
+  }
   next.world.exploration.dunmere = town;
   return finalize(next);
+}
+
+/** Read model for fog-of-war presentation; it does not restrict strategic travel. */
+export function getWorldKnowledge(state) {
+  const explicit = state.world?.knowledge?.locations || {};
+  const visited = new Set(state.world?.visitedLocationIds || []);
+  return Object.fromEntries(
+    LOCATIONS.map((location) => {
+      const exploration = state.world?.exploration?.[location.id];
+      if (exploration?.fullyExplored) return [location.id, 'fullyExplored'];
+      return [location.id, visited.has(location.id) ? 'visited' : explicit[location.id] || 'unknown'];
+    }),
+  );
+}
+
+function knowsTournament(state, tournament) {
+  const known = state.world?.knowledge?.events || {};
+  if (known[tournament.definitionId] || known[tournament.id]) return true;
+  const fame = state.guild?.fame || 0;
+  const circuit = tournament.circuit || tournament.division;
+  return (circuit === 'Regional' && fame >= 75) || (circuit === 'National' && fame >= 180) || (circuit === 'Global' && fame >= 420);
 }
 
 export function acknowledgeCouncilReport(state) {
@@ -282,6 +320,7 @@ function tournamentEntry(state, tournament, now) {
     Boolean,
   );
   const locked = (req.tierIndex || 0) > state.guild.tierIndex;
+  const source = state.world?.knowledge?.events?.[tournament.definitionId] || state.world?.knowledge?.events?.[tournament.id] || null;
   // "Almost": the tier is open but no hero meets the other requirements yet.
   const best = [...state.heroes].filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => b.level - a.level)[0];
   const missing = locked ? [] : getTournamentAccess(state, tournament, best?.id).checks.filter((check) => !check.met);
@@ -295,6 +334,7 @@ function tournamentEntry(state, tournament, now) {
     enterable: !locked && !missing.length && tournament.status !== 'completed',
     almost: !locked && missing.length > 0,
     locked,
+    source,
     detail: locked
       ? `Unlocks at ${TIERS[req.tierIndex]?.id}`
       : missing.length
@@ -332,7 +372,7 @@ export function getCalendarEntries(state, months = 12) {
   const years = [state.date.year, state.date.year + 1];
   years.forEach((year) => {
     const pool = year === state.date.year ? [...(state.tournaments || []), ...(state.guildTournaments || [])] : projectedTournaments(year);
-    pool.filter((tournament) => tournament.status !== 'completed').forEach((tournament) => add(tournamentEntry(state, tournament, now)));
+    pool.filter((tournament) => tournament.status !== 'completed' && knowsTournament(state, tournament)).forEach((tournament) => add(tournamentEntry(state, tournament, now)));
   });
   (state.activeMissions || []).forEach((mission) => {
     add({

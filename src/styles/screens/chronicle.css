@@ -52,6 +52,8 @@ button.chronicle-event__content:hover, button.chronicle-event__content:focus-vis
 .calendar { display: grid; margin-bottom: var(--s4); padding: 6px 12px 12px; }
 .calendar__header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0 10px; border-bottom: 1px solid var(--line-soft); }
 .calendar__header h2 { flex: 1; margin: 0; font-size: var(--t-h2); text-align: center; }
+.calendar__knowledge { margin: 8px 0 2px; color: var(--text-dim); font-size: var(--t-small); font-style: italic; }
+.calendar__source { color: var(--text-dim); font-size: var(--t-small); font-style: italic; }
 .calendar__grid { display: grid; }
 .calendar__week { display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; align-items: start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
 .calendar__week:last-child { border-bottom: 0; }

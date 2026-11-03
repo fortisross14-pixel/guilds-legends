@@ -9,6 +9,7 @@ import RankingsScreen from '../screens/RankingsScreen.jsx';
 import ShopScreen from '../screens/ShopScreen.jsx';
 import GuildHallRooms from './GuildHallRooms.jsx';
 import DunmereExploration from '../components/DunmereExploration.jsx';
+import { townLayoutFor } from '../data/townLayouts.js';
 
 // Pixel scene behind each building's header (town street by default).
 const BUILDING_SCENES = { guildHall: 'scene_09', herald: 'scene_03', shop: 'scene_01', arena: 'scene_02', tavern: 'scene_08', noticeBoard: 'scene_10' };
@@ -27,6 +28,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
   const town = LOCATION_BY_ID[locationId];
   const travel = state.world?.activeTravel;
   const available = travel ? ['guildHall'] : locationBuildings(locationId);
+  const townLayout = townLayoutFor(town, available);
   const missing = place.building && !available.includes(place.building) ? BUILDINGS[place.building] : null;
   const building = place.building && !missing ? place.building : null;
   const props = { state, actions, navigate, slot };
@@ -111,7 +113,9 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
             })}
           </nav>
           <aside className="town-info win">
-            <p>{town.description}</p>
+            <span className="eyebrow">{townLayout.landmark}</span>
+            <p>{townLayout.summary}</p>
+            <small>{townLayout.districts.join(' · ')}</small>
             <div className="heading-metrics">
               <PrimalBadge primal={town.primal} />
               <Button size="sm" onClick={() => navigate('map')}>

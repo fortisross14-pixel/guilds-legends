@@ -58,6 +58,12 @@
 .location-node.is-locked .location-node__icon .pixel-icon { width: 12px; height: 12px; }
 .location-node.is-locked strong { display: none; }
 .location-node.is-locked.is-selected strong, .location-node.is-locked:focus-visible strong { display: block; }
+.location-node--unknown:not(.is-locked) { color: var(--text-faint); transform: translate(-50%, -12px); }
+.location-node--unknown:not(.is-locked)::before { width: 120px; height: 76px; background: radial-gradient(ellipse, rgba(200, 205, 220, .32), transparent 70%); transform: translate(-50%, -42%); opacity: 1; filter: blur(3px); }
+.location-node--unknown:not(.is-locked) .location-node__icon { width: 28px; height: 28px; border-color: rgba(236, 228, 210, .36); background: rgba(16, 15, 20, .78); color: var(--text-faint); box-shadow: 0 0 0 2px rgba(10, 8, 6, .4); }
+.location-node--unknown:not(.is-locked) .location-node__icon .pixel-icon { width: 13px; height: 13px; }
+.location-node--unknown:not(.is-locked) strong { color: var(--text-dim); font-style: italic; }
+.location-node--rumored:not(.is-locked) .location-node__icon, .location-node--discovered:not(.is-locked) .location-node__icon { border-style: dashed; color: var(--text-dim); }
 .location-node.is-destination .location-node__icon { animation: ring-glow 1.6s ease-in-out infinite; }
 @keyframes ring-glow { 50% { box-shadow: 0 0 0 3px rgba(10, 8, 6, .55), 0 0 30px rgba(246, 210, 140, .9); } }
 .location-node.is-branch .location-node__icon { border-color: var(--gold); }
@@ -112,7 +118,7 @@
 .region-missions button > div { display: grid; min-width: 0; }
 .region-missions strong { font-size: 14px; font-weight: 600; }
 .locked-dossier { display: grid; justify-items: center; gap: 8px; margin-top: 12px; padding: 22px 14px; text-align: center; }
-.locked-dossier > span { color: var(--text-faint); font-size: 28px; }
+.locked-dossier > .pixel-icon { color: var(--text-faint); }
 .locked-dossier h3 { margin: 0; }
 
 /* Travel banner. */

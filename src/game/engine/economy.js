@@ -54,6 +54,11 @@ export function startTravel(state, destinationId) {
   if (quote.same) return { state, error: `The guild is already in ${quote.destination.name}.` };
   if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} crowns.` };
   next.guild.crowns -= quote.cost;
+  next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
+  next.world.knowledge.locations ||= {};
+  if (next.world.knowledge.locations[destinationId] !== 'visited' && next.world.knowledge.locations[destinationId] !== 'fullyExplored') {
+    next.world.knowledge.locations[destinationId] = 'discovered';
+  }
   next.world.activeTravel = {
     fromId: next.world.currentLocationId,
     toId: destinationId,
@@ -99,6 +104,9 @@ export function progressTravelInPlace(state, rng) {
   state.world.currentLocationId = destination.id;
   state.world.visitedLocationIds ||= [];
   if (!state.world.visitedLocationIds.includes(destination.id)) state.world.visitedLocationIds.push(destination.id);
+  state.world.knowledge ||= { locations: {}, events: {}, sources: {} };
+  state.world.knowledge.locations ||= {};
+  state.world.knowledge.locations[destination.id] = 'visited';
   state.world.activeTravel = null;
   state.flags.firstTravelCompleted = true;
   refreshCandidatesForLocationInPlace(state, rng, destination.id);

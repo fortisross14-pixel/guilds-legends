@@ -1,5 +1,6 @@
 import React from 'react';
-import { getHero, getPromotionRequirement, getStoryView } from '../game/engine.js';
+import { LOCATION_BY_ID } from '../data/world.js';
+import { getCalendarEntries, getHero, getPromotionRequirement, getStoryView } from '../game/engine.js';
 import { EmptyState, Panel, ProgressBar } from '../components/UI.jsx';
 
 // Active contracts, open promises and current objectives in one place.
@@ -9,6 +10,8 @@ export default function QuestLogScreen({ state, navigate }) {
     .flatMap((hero) => (hero.promises || []).filter((promise) => promise.status === 'active').map((promise) => ({ hero, promise })));
   const goals = (state.goals || []).filter((goal) => !goal.completed).slice(0, 4);
   const promotion = getPromotionRequirement(state);
+  const locationLeads = Object.entries(state.world?.knowledge?.sources || {}).map(([locationId, source]) => ({ locationId, source }));
+  const eventLeads = getCalendarEntries(state, 12).filter((entry) => entry.source);
 
   const story = getStoryView(state);
   return (
@@ -33,6 +36,24 @@ export default function QuestLogScreen({ state, navigate }) {
           <p className="muted">Rumors about the old guild will reach you soon.</p>
         )}
       </Panel>
+      {locationLeads.length || eventLeads.length ? (
+        <Panel title="Rumors and leads" eyebrow="What the guild has heard">
+          {locationLeads.map(({ locationId, source }) => (
+            <button key={locationId} className="quest-row" onClick={() => navigate({ view: 'map', pin: locationId })}>
+              <strong>{LOCATION_BY_ID[locationId]?.name || 'Unmarked destination'}</strong>
+              <small>{source.note}</small>
+              <span className="quest-row__map">Heard from {source.source} · Show on map</span>
+            </button>
+          ))}
+          {eventLeads.map((entry) => (
+            <p key={`${entry.kind}-${entry.id}`} className="quest-row">
+              <strong>{entry.title}</strong>
+              <small>{entry.source.note}</small>
+              <span className="quest-row__map">Heard from {entry.source.source}</span>
+            </p>
+          ))}
+        </Panel>
+      ) : null}
       {(state.activeSideJobs || []).length || state.wager ? (
         <Panel title="Side jobs and wagers" eyebrow="Short tasks">
           {(state.activeSideJobs || []).map((job) => (

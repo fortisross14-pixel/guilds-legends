@@ -47,6 +47,7 @@ export default function CalendarScreen({ state, actions }) {
           Next ›
         </Button>
       </header>
+      <p className="calendar__knowledge">This calendar records what the guild has learned. Ask around to uncover more.</p>
       <div className="calendar__grid">
         {[0, 1, 2, 3].map((week) => {
           const date = { year: view.year, month: view.month, week };
@@ -92,6 +93,7 @@ export default function CalendarScreen({ state, actions }) {
           eyebrow={`${MONTHS[selected.date.month]} ${selected.date.year}, week ${selected.date.week + 1} · in ${selected.weeksAway} week${selected.weeksAway === 1 ? '' : 's'}`}
         >
           <p>{selected.detail}</p>
+          {selected.source ? <p className="calendar__source">Heard from {selected.source.source}: {selected.source.note}</p> : null}
           <Button variant="primary" disabled={selected.weeksAway <= 0 || Boolean(paused)} onClick={() => actions.advanceToDate(selected.date)}>
             Advance to this date
           </Button>

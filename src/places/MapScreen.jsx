@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings, unlockedLocations } from '../data/world.js';
-import { getStoryView, getTravelQuote } from '../game/engine.js';
+import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
+import { getStoryView, getTravelQuote, getWorldKnowledge } from '../game/engine.js';
 import { BLACKWOOD_MAP } from '../data/story.js';
 import { Badge, Button, PrimalBadge, ProgressBar, RiskPips, artUrl } from '../components/UI.jsx';
 import PixelIcon from '../components/PixelIcon.jsx';
@@ -34,16 +34,20 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const pinId = place?.pin || null;
   const [selectedId, setSelectedId] = useState(pinId || currentLocationId);
   const selected = LOCATION_BY_ID[selectedId] || LOCATION_BY_ID[currentLocationId];
-  const knownLocations = unlockedLocations(state.guild.tierIndex);
+  const knowledge = getWorldKnowledge(state);
+  const knownLocationCount = Object.values(knowledge).filter((status) => status !== 'unknown').length;
   const unlocked = TIER_ORDER[selected.tier] <= state.guild.tierIndex;
   const quote = getTravelQuote(state, selected.id);
   const current = LOCATION_BY_ID[currentLocationId];
   const travel = state.world?.activeTravel;
-  const visited = new Set(state.world?.visitedLocationIds || [currentLocationId]);
   const locationMissions = state.missions.filter((mission) => mission.locationId === selected.id);
   const locationCandidates = state.candidates.filter((candidate) => candidate.locationId === selected.id);
   const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id);
   const selectedBranch = (state.guild.branches || []).find((branch) => branch.active !== false && branch.locationId === selected.id);
+  const selectedKnowledge = knowledge[selected.id] || 'unknown';
+  const selectedKnown = selectedKnowledge !== 'unknown';
+  const selectedVisited = selectedKnowledge === 'visited' || selectedKnowledge === 'fullyExplored';
+  const selectedSource = state.world?.knowledge?.sources?.[selected.id];
 
   const startJourney = () => actions.travel(selected.id);
 
@@ -59,7 +63,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
           ?
         </span>
         <Badge tone="blue">
-          {knownLocations.length}/{LOCATIONS.length} reachable
+          {knownLocationCount}/{LOCATIONS.length} known
         </Badge>
         <Badge tone="gold">{current.name}</Badge>
         <PrimalBadge primal={current.primal} />
@@ -140,13 +144,14 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
                 const isCurrent = location.id === currentLocationId;
                 const isDestination = travel?.toId === location.id;
+                const knowledgeStatus = knowledge[location.id] || 'unknown';
                 return (
                   <button
                     key={location.id}
-                    className={`location-node ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
+                    className={`location-node location-node--${knowledgeStatus} ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
                     style={{ left: `${location.x}%`, top: `${location.y}%`, '--primal': PRIMALS[location.primal].color }}
                     onClick={() => setSelectedId(location.id)}
-                    aria-label={`${location.name}, ${location.tier}, ${location.primal}`}
+                    aria-label={knowledgeStatus === 'unknown' ? `Uncharted ${location.tier} frontier` : `${location.name}, ${knowledgeStatus}`}
                   >
                     {isCurrent && !travel ? (
                       <em className="location-node__here">
@@ -155,23 +160,27 @@ export default function MapScreen({ state, actions, navigate, place }) {
                       </em>
                     ) : null}
                     <span className="location-node__icon">
-                      <PixelIcon name={canReach ? (isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
+                      <PixelIcon name={canReach ? (knowledgeStatus === 'unknown' ? 'pin' : isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
                     </span>
-                    <strong>{canReach ? location.name : location.tier}</strong>
+                    <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : location.tier}</strong>
                     <small>
                       {isCurrent
                         ? 'HQ here'
                         : (state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id)
                           ? 'Branch'
                           : canReach
-                            ? location.primal
+                            ? knowledgeStatus === 'visited'
+                              ? location.primal
+                              : knowledgeStatus === 'rumored'
+                                ? 'Rumored'
+                                : 'Unknown'
                             : 'Locked'}
                     </small>
                   </button>
                 );
               })}
               {state.missions
-                .filter((mission) => mission.bossId && LOCATION_BY_ID[mission.locationId])
+                .filter((mission) => mission.bossId && LOCATION_BY_ID[mission.locationId] && knowledge[mission.locationId] !== 'unknown')
                 .map((mission) => (
                   <span
                     key={mission.id}
@@ -201,11 +210,11 @@ export default function MapScreen({ state, actions, navigate, place }) {
             <div className="map-legend">
               <span>
                 <i className="legend-dot is-known" />
-                Reachable
+                Known destination
               </span>
               <span>
                 <i className="legend-dot is-rumor" />
-                Future frontier
+                Rumored lead
               </span>
               <span>
                 <i className="legend-dot is-current" />
@@ -225,10 +234,10 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <small>
                 {selected.tier} destination · {selected.region}
               </small>
-              <h2>{unlocked ? selected.name : 'Unreachable frontier'}</h2>
+              <h2>{unlocked ? (selectedKnown ? selected.name : 'Uncharted frontier') : 'Unreachable frontier'}</h2>
             </div>
           </div>
-          {unlocked ? (
+          {unlocked && selectedVisited ? (
             <>
               <div className="location-affinity">
                 <PrimalBadge primal={selected.primal} />
@@ -261,10 +270,10 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <strong>{selected.specialties.join(' · ')}</strong>
               </div>
               <div className="dossier-row">
-                <span>Visited</span>
-                <strong>{visited.has(selected.id) ? 'Yes' : 'Not yet'}</strong>
+                <span>Knowledge</span>
+                <strong>{selectedKnowledge === 'fullyExplored' ? 'Fully explored' : 'Visited'}</strong>
               </div>
-              <div className="dossier-row location-buildings">
+              {selectedVisited ? <div className="dossier-row location-buildings">
                 <span>Buildings</span>
                 <strong>
                   {locationBuildings(selected.id)
@@ -272,7 +281,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     .map((id) => BUILDINGS[id].name)
                     .join(' · ')}
                 </strong>
-              </div>
+              </div> : selectedSource ? <p className="region-dossier__identity">“{selectedSource.note}” — {selectedSource.source}</p> : null}
 
               {selectedBranch ? (
                 <div className="current-location-actions">
@@ -338,9 +347,32 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <p className="muted">No current petitions are known here. New work appears as weeks pass.</p>
               )}
             </>
+          ) : unlocked && ['rumored', 'discovered'].includes(selectedKnowledge) ? (
+            <div className="locked-dossier">
+              <PixelIcon name="pin" size={28} />
+              <h3>{selectedKnowledge === 'discovered' ? 'A marked destination' : 'A name on the road'}</h3>
+              <p>{selectedSource?.note || `Travelers have spoken of ${selected.name}, but little else is certain.`}</p>
+              <small>Source: {selectedSource?.source || 'Travelers'}</small>
+              {selected.id !== currentLocationId ? (
+                <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}>
+                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name}`}
+                </Button>
+              ) : null}
+            </div>
+          ) : unlocked ? (
+            <div className="locked-dossier">
+              <PixelIcon name="pin" size={28} />
+              <h3>An uncharted route</h3>
+              <p>The guild knows only that a settlement lies beyond this road. Travel there to put a name, people and opportunities to the mark.</p>
+              {selected.id !== currentLocationId ? (
+                <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}>
+                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : 'Chart this route'}
+                </Button>
+              ) : null}
+            </div>
           ) : (
             <div className="locked-dossier">
-              <span>⌁</span>
+              <PixelIcon name="lock" size={28} />
               <h3>{selected.tier} reach required</h3>
               <p>The guild can hear stories about {selected.name}, but has neither the route, patronage nor reputation needed to move its operation there.</p>
               <Badge tone="purple">Earn {selected.tier} status</Badge>
@@ -352,6 +384,14 @@ export default function MapScreen({ state, actions, navigate, place }) {
       <div className="location-mobile-list" aria-label="Destinations list" data-menu>
         {LOCATIONS.map((location) => {
           const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
+          const knowledgeStatus = knowledge[location.id] || 'unknown';
+          const mobileDescription = !canReach
+            ? `Unlock at ${location.tier}`
+            : knowledgeStatus === 'unknown'
+              ? 'Travel to discover it'
+              : knowledgeStatus === 'rumored'
+                ? 'Rumored destination'
+                : `${location.primal} · ${state.missions.filter((mission) => mission.locationId === location.id).length} missions`;
           return (
             <button
               key={location.id}
@@ -362,12 +402,8 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <PixelIcon name={canReach ? (location.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={12} />
               </span>
               <div>
-                <strong>{canReach ? location.name : `${location.tier} frontier`}</strong>
-                <small>
-                  {canReach
-                    ? `${location.primal} · ${state.missions.filter((mission) => mission.locationId === location.id).length} missions`
-                    : `Unlock at ${location.tier}`}
-                </small>
+                <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted frontier' : location.name) : `${location.tier} frontier`}</strong>
+                <small>{mobileDescription}</small>
               </div>
               {location.id === currentLocationId ? <Badge tone="green">Here</Badge> : null}
             </button>
