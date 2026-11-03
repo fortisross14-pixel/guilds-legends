@@ -32,11 +32,11 @@ The previous cascade (31 files, about 2,300 lines with heavy overrides) was repl
 
 ## Verification
 
- passes and ESLint is clean. Screenshots at 390×844 and 1440×900 are in [](screenshots/) for 21 screens: title, new game, world map, town, Guild Hall, tavern, notice board, hero status, shop, active battle, victory, level up, expedition report, council report, town event card, calendar, herald, chronicle, codex, legacy office and facilities. No horizontal page scroll and no console errors at either size. The e2e smoke test was updated for the "New Game" label but not run, per the prototype testing policy.
+`npm run build` passes and ESLint is clean. Screenshots at 390×844 and 1440×900 are in [`docs/screenshots/`](screenshots/) for 21 screens: title, new game, world map, town, Guild Hall, tavern, notice board, hero status, shop, active battle, victory, level up, expedition report, council report, town event card, calendar, herald, chronicle, codex, legacy office and facilities. No horizontal page scroll and no console errors at either size. The e2e smoke test was updated for the "New Game" label but not run, per the prototype testing policy.
 
 ## Follow-up pass
 
-- The HD-2D art pack (, ) is committed.
+- The HD-2D art pack (`public/art/`, `public/ART_LIBRARY_PLAN.md`) is committed.
 - The status strip fits on one row from 1241px up (compact time commands, no decorative calendar icon below 1600px); rank names show as icons with tooltips and screen-reader labels below 1700px.
 - More pixel icons: battle commands (Attack, Skill, Item, Defend), event kinds in the upcoming strip and calendar, and formation types on the notice board. The map's building list no longer uses emoji.
 
