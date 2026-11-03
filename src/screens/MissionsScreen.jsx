@@ -7,6 +7,14 @@ import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge
 import SideJobsPanel from './SideJobsPanel.jsx';
 import PixelIcon, { FORMATION_ICONS } from '../components/PixelIcon.jsx';
 import { sliceHides } from '../data/slice.js';
+import { PATRONS } from '../data/patrons.js';
+import { getReputationSummary } from '../game/engine.js';
+
+/** The identity loop in one line: what you take shapes what you are offered. */
+function identityLine(state) {
+  const top = [...getReputationSummary(state).families].sort((a, b) => b.points - a.points)[0];
+  return top?.points ? `Known for ${top.family.toLowerCase()} work (${top.name}): boards lean that way, and patron contracts raise standing (turning them down lowers it).` : 'Patron contracts raise standing with their patron; turning them down lowers it.';
+}
 
 function buildBestFormation(state, formationType) {
   const formation = FORMATION_TYPES[formationType];
@@ -141,7 +149,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
           <h1>{currentLocation?.name} Contract Board</h1>
           <p>
             {sliceHides('branches')
-              ? 'Pick a contract, then build the party that best fits its petition.'
+              ? `Pick a contract, then build the party that best fits its petition. ${identityLine(state)}`
               : 'Headquarters and permanent branches can each launch companies. Choose an operational settlement, then build the arrangement that best fits its petition.'}
           </p>
         </div>
@@ -230,6 +238,12 @@ export default function MissionsScreen({ state, actions, navigate }) {
                   <div className="mission-card__top">
                     <Badge tone={mission.family === 'Saga' || mission.family === 'Legend Quest' ? 'purple' : 'neutral'}>{mission.family}</Badge>
                     <Badge tone={FORMATION_TYPES[approach].color}>{approach}</Badge>
+                    {mission.patron ? (
+                      <Badge tone={mission.exclusive ? 'gold' : 'blue'}>
+                        {PATRONS[mission.patron]?.short}
+                        {mission.exclusive ? ' · exclusive' : ''}
+                      </Badge>
+                    ) : null}
                     <RiskPips risk={mission.risk} />
                   </div>
                   <h3>{mission.title}</h3>

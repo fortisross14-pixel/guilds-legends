@@ -9,7 +9,6 @@ import {
   assignArtifact,
   assignBranchCommander,
   assignMentor,
-  chooseAlignment,
   clearNotifications,
   clone,
   completeFallenBannerOpening,
@@ -89,6 +88,7 @@ import {
   updateSettings,
   upgradeBranch,
   rentBed,
+  giftPatron,
   acquireHall,
   buildRoom,
   upgradeGear,
@@ -114,6 +114,9 @@ import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
 import PartyRail from './components/PartyRail.jsx';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
 import FallenBannerOpening from './components/FallenBannerOpening.jsx';
+import Asset from './components/Asset.jsx';
+import { CHARTERS, CHARTER_LIST, PATHS } from './data/charters.js';
+import { specializationTitle } from './game/engine.js';
 
 // Three places replace the old 11-item navigation.
 const PLACE_NAV = [
@@ -229,9 +232,11 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
   const [founderPrimal, setFounderPrimal] = useState('Fire');
   const [motto, setMotto] = useState('No light is lost forever.');
   const [seedText, setSeedText] = useState('Dunmere');
+  const [charter, setCharter] = useState('free');
 
   useEffect(() => {
     if (open) {
+      setCharter('free');
       setGuildName('The Broken Lantern');
       setFounderName('Rowan Vale');
       setFounderClass('Guardian');
@@ -275,7 +280,7 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
                 </option>
               ))}
             </select>
-            <small>Primal is permanent. It affects combat matchups and cultural alignment.</small>
+            <small>Primal is permanent. It affects combat matchups.</small>
           </label>
           <label>
             Motto
@@ -296,6 +301,26 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
             </p>
           </div>
         </div>
+        <fieldset className="charter-picker">
+          <legend>Founding charter: what kind of guild will this be?</legend>
+          <div className="charter-picker__options">
+            {CHARTER_LIST.map((item) => (
+              <button key={item.id} type="button" className={`charter-card ${charter === item.id ? 'is-selected' : ''}`} aria-pressed={charter === item.id} onClick={() => setCharter(item.id)}>
+                <Asset id={item.crest} className="charter-card__crest" />
+                <strong>{item.name}</strong>
+                <small>{item.pitch}</small>
+                <ul>
+                  {item.modifiers.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+                <em>
+                  {PATHS[item.path].name} path · {item.signature}
+                </em>
+              </button>
+            ))}
+          </div>
+        </fieldset>
         <div className="new-campaign__premise">
           <strong>The Broken Lantern scenario</strong>
           <p>
@@ -307,7 +332,7 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
           variant="primary"
           size="lg"
           disabled={!guildName.trim() || !founderName.trim()}
-          onClick={() => onCreate({ guildName: guildName.trim(), founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText })}
+          onClick={() => onCreate({ guildName: guildName.trim(), founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText, charter })}
         >
           Raise the banner
         </Button>
@@ -1045,7 +1070,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       acquireHall: (mode) => applyResult(acquireHall(state, mode)),
       buildRoom: (roomId) => applyResult(buildRoom(state, roomId), 'The builders arrive.'),
       upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
-      chooseAlignment: (alignment) => applyResult(chooseAlignment(state, alignment)),
+      giftPatron: (patronId) => applyResult(giftPatron(state, patronId), 'A gift is sent with your compliments.'),
       enterHeroTournament: (tournamentId, heroId) => applyResult(enterHeroTournament(state, tournamentId, heroId)),
       startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),
       enterGuildTournament: (tournamentId, formationType, assignments) => applyResult(enterGuildTournament(state, tournamentId, formationType, assignments)),
@@ -1263,6 +1288,13 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           <button className="topbar__location" onClick={() => navigate('world')} title="Current guild location">
             <i>{summary.travel ? '➜' : PRIMALS[summary.locationPrimal]?.icon || '⌖'}</i>
             <span>{summary.travel ? `Traveling · ${summary.travel.weeksRemaining}w` : summary.location}</span>
+          </button>
+          <button className="topbar__identity" onClick={() => navigate('rankings')} title="Your charter, and what the guild is known for (the Herald)">
+            <Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="topbar__crest" />
+            <span>
+              <b>{CHARTERS[state.guild.charter]?.name || 'Free Company'}</b>
+              <small>{specializationTitle(state) || 'Known for nothing yet'}</small>
+            </span>
           </button>
           <div className="topbar__resources">
             <span className="topbar__gold" title="Treasury">

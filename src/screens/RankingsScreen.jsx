@@ -15,6 +15,7 @@ import {
 } from '../game/engine.js';
 import { NemesisView, ReputationView } from './RivalryScreens.jsx';
 import { Badge, Button, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline, Tabs } from '../components/UI.jsx';
+import { ConnectionsPage, IdentityStrip, PathPanel } from './IdentityScreens.jsx';
 
 const LADDER_COPY = {
   strength: 'Current power: the average of each guild’s top five heroes. Moves fast.',
@@ -398,7 +399,7 @@ function GuildDirectory({ state, actions, onOpenRival }) {
 }
 
 export default function RankingsScreen({ state, actions }) {
-  const [tab, setTab] = useState(state.challenge?.status === 'pending' ? 'rivals' : 'guilds');
+  const [tab, setTab] = useState(state.challenge?.status === 'pending' ? 'rivals' : 'path');
   const [rivalFocus, setRivalFocus] = useState(null);
   const openRival = (id) => {
     setRivalFocus(id);
@@ -423,10 +424,13 @@ export default function RankingsScreen({ state, actions }) {
           <Badge tone="blue">{state.universeStats?.boutsResolved || 0} recorded bouts</Badge>
         </div>
       </header>
+      <IdentityStrip state={state} />
       <Tabs
         active={tab}
         onChange={setTab}
         items={[
+          { id: 'path', label: 'Path', icon: '✦' },
+          { id: 'connections', label: 'Connections', icon: '✉' },
           { id: 'guilds', label: 'Guild ladders', icon: '⚑' },
           { id: 'heroLadders', label: 'Hero ladders', icon: '♟' },
           { id: 'heroes', label: 'All-time greats', icon: '✦' },
@@ -437,6 +441,8 @@ export default function RankingsScreen({ state, actions }) {
           { id: 'artifacts', label: 'Artifacts', icon: '◈' },
         ]}
       />
+      {tab === 'path' ? <PathPanel state={state} /> : null}
+      {tab === 'connections' ? <ConnectionsPage state={state} actions={actions} /> : null}
       {tab === 'guilds' ? <GuildLadders state={state} actions={actions} /> : null}
       {tab === 'heroLadders' ? <HeroLadders state={state} actions={actions} /> : null}
       {tab === 'reputation' ? <ReputationView state={state} /> : null}

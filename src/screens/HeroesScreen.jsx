@@ -6,6 +6,7 @@ import {
   bedCount,
   freeBeds,
   getHallView,
+  recruitObjection,
   operationalLocationIds,
   xpForNextLevel,
   CONTRACT_LENGTHS,
@@ -390,8 +391,14 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       </span>
                     ) : null}
                   </div>
-                  {freeBeds(state) <= 0 ? <NoFreeBed state={state} actions={actions} navigate={navigate} /> : null}
-                  <div className="candidate-card__actions" hidden={freeBeds(state) <= 0}>
+                  {recruitObjection(state, candidate) ? (
+                    <p className="candidate-refusal">
+                      <b>Won’t join:</b> “{recruitObjection(state, candidate)}”
+                    </p>
+                  ) : freeBeds(state) <= 0 ? (
+                    <NoFreeBed state={state} actions={actions} navigate={navigate} />
+                  ) : null}
+                  <div className="candidate-card__actions" hidden={freeBeds(state) <= 0 || Boolean(recruitObjection(state, candidate))}>
                     <Button
                       variant="primary"
                       onClick={() => actions.recruit(candidate.id, 'accept', yearsFor(candidate.id))}

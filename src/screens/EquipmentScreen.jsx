@@ -3,7 +3,7 @@ import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip, gearStats } from '../data
 import { SKILLS, skillLabel, skillsForLevel } from '../data/skills.js';
 import { normalizeClassId } from '../data/content.js';
 import { Button, HeroPortrait, Panel } from '../components/UI.jsx';
-import { gearUpgradeCost, roomLevel } from '../game/engine.js';
+import { gearUpgradeCost, patronAtLeast, roomLevel } from '../game/engine.js';
 
 function gearName(state, id) {
   if (!id) return 'Empty';
@@ -89,7 +89,7 @@ export default function EquipmentScreen({ state, actions }) {
                         Remove
                       </Button>
                     ) : null}
-                    {current && roomLevel(state, 'armory') && gearUpgradeCost(state, current) !== null ? (
+                    {current && (roomLevel(state, 'armory') || patronAtLeast(state, 'smiths', 'contact')) && gearUpgradeCost(state, current) !== null ? (
                       <Button size="sm" variant="primary" disabled={state.guild.crowns < gearUpgradeCost(state, current)} onClick={() => actions.upgradeGear(hero.id, slot)}>
                         Upgrade · {gearUpgradeCost(state, current)} G
                       </Button>

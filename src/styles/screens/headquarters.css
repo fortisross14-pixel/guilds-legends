@@ -12,15 +12,6 @@
 .appointment-dossier p { font-size: var(--t-small); }
 .current-appointee { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 8px; }
 .current-appointee > div { display: grid; }
-.alignment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.alignment-grid button { padding: 10px 10px 10px 30px; }
-.alignment-grid button > span { color: var(--text-dim); font-family: var(--font-ui); font-size: 22px; }
-.alignment-grid button strong { display: block; margin: 6px 0 2px; }
-.alignment-grid button p { margin: 0; font-size: var(--t-small); }
-.alignment-chosen { display: flex; align-items: center; gap: 14px; padding: 10px 12px; }
-.alignment-chosen > span { color: var(--gold); font-size: 30px; }
-.alignment-chosen h3 { margin: 0; }
-.alignment-chosen p { margin: 2px 0 0; }
 .obligation-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
 .obligation-list > span { margin-right: 6px; color: var(--text-dim); font-size: var(--t-label); }
 

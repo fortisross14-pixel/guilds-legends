@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { freeBeds, getDialogueReply, getDialogueView, getHallView } from '../game/engine.js';
+import { freeBeds, getDialogueReply, getDialogueView, getHallView, recruitObjection } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import { Button } from '../components/UI.jsx';
 
@@ -107,11 +107,12 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
                     <small>
                       {candidate.classId} · {candidate.primal} · fee {candidate.signingFee} crowns
                     </small>
+                    {recruitObjection(state, candidate) ? <small className="dialogue__refusal">“{recruitObjection(state, candidate)}”</small> : null}
                   </span>
                   <Button
                     variant="primary"
                     size="sm"
-                    disabled={state.guild.crowns < candidate.signingFee || freeBeds(state) <= 0}
+                    disabled={state.guild.crowns < candidate.signingFee || freeBeds(state) <= 0 || Boolean(recruitObjection(state, candidate))}
                     onClick={() => {
                       actions.recruit(candidate.id);
                       onClose();

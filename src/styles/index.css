@@ -26,4 +26,5 @@
 @import './screens/legacy.css';
 @import './screens/headquarters.css';
 @import './screens/hall.css';
+@import './screens/identity.css';
 @import './layout/responsive.css';

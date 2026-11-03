@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { APPOINTMENTS } from '../data/content.js';
 import { Badge, HeroPortrait, Panel } from '../components/UI.jsx';
-import { sliceHides } from '../data/slice.js';
 
 export default function HeadquartersScreen({ state, actions }) {
   const [appointment, setAppointment] = useState('Guild Captain');
@@ -114,47 +113,17 @@ export default function HeadquartersScreen({ state, actions }) {
           </div>
         </Panel>
 
-        {sliceHides('alignment') ? null : (
-        <Panel title="Political posture" eyebrow="The first long relationship">
-          {state.guild.alignment === 'Undeclared' ? (
-            <div className="alignment-grid">
-              <button onClick={() => actions.chooseAlignment('Council')}>
-                <span>⚖</span>
-                <strong>Serve the council</strong>
-                <p>Local trust, steady civic contracts and slower money.</p>
-              </button>
-              <button onClick={() => actions.chooseAlignment('Baron')}>
-                <span>♛</span>
-                <strong>Serve the border baron</strong>
-                <p>Wealth, noble access and political obligations.</p>
-              </button>
-              <button onClick={() => actions.chooseAlignment('Independent')}>
-                <span>⚑</span>
-                <strong>Remain independent</strong>
-                <p>Freedom, popular fame and fewer protected routes.</p>
-              </button>
-            </div>
-          ) : (
-            <div className="alignment-chosen">
-              <span>{state.guild.alignment === 'Council' ? '⚖' : state.guild.alignment === 'Baron' ? '♛' : '⚑'}</span>
-              <div>
-                <h3>{state.guild.alignment}</h3>
-                <p>This choice now modifies contracts, political events and how rival guilds interpret your rise.</p>
-              </div>
-            </div>
-          )}
-          {state.guild.obligations.length ? (
+        {state.guild.obligations.length ? (
+          <Panel title="Obligations" eyebrow="Promises the guild still owes">
             <div className="obligation-list">
-              <span>Outstanding obligations</span>
               {state.guild.obligations.map((item) => (
                 <Badge tone="red" key={item}>
                   {item}
                 </Badge>
               ))}
             </div>
-          ) : null}
-        </Panel>
-        )}
+          </Panel>
+        ) : null}
       </div>
     </div>
   );
