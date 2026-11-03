@@ -14,6 +14,7 @@ import {
   clearNotifications,
   clone,
   completeFallenBannerOpening,
+  recordDunmereExploration,
   createNewGame,
   designateSuccessor,
   dismissNotification,
@@ -951,6 +952,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     () => ({
       acknowledgeWelcome: () => commitState(acknowledgeWelcome(state)),
       completeFallenBannerOpening: (choices) => commitState(completeFallenBannerOpening(state, choices)),
+      recordDunmereExploration: (targetId, position) => commitState(recordDunmereExploration(state, targetId, position)),
       inspectMission: (id) => commitState(inspectMission(state, id)),
       notePartySelection: (id, formationType, assignments) => {
         const next = notePartySelection(state, id, formationType, assignments);

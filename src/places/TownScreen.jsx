@@ -8,6 +8,7 @@ import TournamentsScreen from '../screens/TournamentsScreen.jsx';
 import RankingsScreen from '../screens/RankingsScreen.jsx';
 import ShopScreen from '../screens/ShopScreen.jsx';
 import GuildHallRooms from './GuildHallRooms.jsx';
+import DunmereExploration from '../components/DunmereExploration.jsx';
 
 // Pixel scene behind each building's header (town street by default).
 const BUILDING_SCENES = { guildHall: 'scene_09', herald: 'scene_03', shop: 'scene_01', arena: 'scene_02', tavern: 'scene_08', noticeBoard: 'scene_10' };
@@ -85,6 +86,8 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
           {building === 'shop' ? <ShopScreen {...props} /> : null}
           {building === 'herald' ? <RankingsScreen {...props} /> : null}
         </div>
+      ) : locationId === 'dunmere' && state.flags?.opening?.phase === 'complete' ? (
+        <DunmereExploration state={state} actions={actions} openBuilding={openBuilding} />
       ) : (
         <div className="town-body">
           <nav className="building-grid" aria-label={`Buildings in ${town.name}`} data-menu>

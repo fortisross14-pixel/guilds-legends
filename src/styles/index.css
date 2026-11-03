@@ -9,6 +9,7 @@
 @import './components/moments.css';
 @import './components/mission-games.css';
 @import './screens/opening.css';
+@import './screens/exploration.css';
 @import './screens/home.css';
 @import './screens/world.css';
 @import './screens/town.css';

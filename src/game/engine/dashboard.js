@@ -45,6 +45,22 @@ export function completeFallenBannerOpening(state, choices = []) {
   return finalize(next);
 }
 
+/** Persists exploration facts only; walking itself remains presentation state. */
+export function recordDunmereExploration(state, targetId, position) {
+  const next = clone(state);
+  next.world.exploration ||= {};
+  const town = next.world.exploration.dunmere || { x: 224, y: 404, discovered: [], conversations: {} };
+  town.discovered = [...new Set([...(town.discovered || []), targetId])];
+  town.conversations ||= {};
+  if (targetId.startsWith('npc:')) town.conversations[targetId.slice(4)] = true;
+  if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
+    town.x = Math.round(position.x);
+    town.y = Math.round(position.y);
+  }
+  next.world.exploration.dunmere = town;
+  return finalize(next);
+}
+
 export function acknowledgeCouncilReport(state) {
   const next = clone(state);
   next.council ||= { lastReport: null, unread: false };

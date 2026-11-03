@@ -64,6 +64,7 @@ export {
 } from './engine/dashboard.js';
 export { createNewGame } from './engine/state.js';
 export { completeFallenBannerOpening } from './engine/dashboard.js';
+export { recordDunmereExploration } from './engine/dashboard.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
