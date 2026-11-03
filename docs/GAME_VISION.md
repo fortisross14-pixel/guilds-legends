@@ -1,5 +1,8 @@
 # Guilds of Legend — Game Vision (Waves 2–7)
 
+> **Current plan:** see [`docs/PROJECT_PLAN.md`](PROJECT_PLAN.md) (Chapter 1 vertical slice, Phases 0–8). It replaces Wave 8 onwards in this file.
+
+
 This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code split) are done; see the audit and `CHANGELOG.md`.
 
 | Wave | Status |
