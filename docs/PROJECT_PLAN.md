@@ -200,7 +200,20 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - **Specialization** from contracts completed (the existing reputation) shows as a guild title and perks.
 - **Run goals:** a clear end-of-chapter score per path (richest, best connected, strongest, most legendary), so a second run with a different charter feels different.
 
-### Phase 5 — History, records and rankings
+### Phase 5 — History, records and rankings ✅ Done (2026-11-03)
+
+**Notes:**
+- **Season stats** (`src/game/engine/seasons.js`, tallies in `core.js`): `state.seasons[year]` holds totals only. Guild: contracts taken/won/failed (overall and per family), battles won/lost, tournament entries, best finish and titles, gold earned and spent by category (wages, hall, recruits, shop, travel, patrons, loan, other), fame and legacy gained, recruits, heroes released/poached/dead, rank at start/end/best on the three ladders and a monthly rank series. Hero (`h[heroId]`): missions, wins, battles, KOs dealt/suffered, damage, healing, bouts, titles, injuries, levels gained and gold earned (reward split evenly). Biggest win and worst defeat are scored from difficulty and the launch estimate.
+- **Season review:** the year closes at the start of the next one (`closeSeasonInPlace` in the annual cycle). Awards: MVP (best season score: wins ×10, missions ×3, battles ×2, KOs ×4, titles ×25, bouts ×2, levels ×5, damage/150, healing/100, gold/100), Rookie of the year (best score among heroes who joined that year, not the founder) and Best signing (rookie score per signing fee). Awards stay on `hero.awards`. The review is a skippable sequence of cards (record, ledger, awards, moments, ladders with a chart, records broken, one line from the strongest patron, else the nemesis, else the town crier) and is kept in `season.review` so it can be reopened.
+- **Record book** (`state.records`): guild records (most wins in a season, longest win streak, richest season, most titles in a season, best rank on each ladder, fastest promotion in months, biggest upset by lowest launch estimate) and hero records (career wins, titles, highest level, most KOs in one battle, longest service, gold earned for the guild). The first holder is set quietly; later breaks get a "Record broken!" moment and join the season review. The page compares with the rival holding the most titles and the Strength leader.
+- **Hero Career tab** (hero status): stats by year with a career total row, awards and records, contracts (open the report) and the timeline. Rival heroes show their career line and timeline (no per-season stats are kept for them).
+- **Mission log** (Chronicle menu): every contract, wild boss fight (`state.bossLog`, 60 kept) and the player's tournament runs; filters for year, type, place, outcome and hero; entries open the existing report.
+- **Hall of fame** (Herald): retired, fallen and archived heroes with an award, a record, or a career score of 60+ (wins ×5, titles ×30, missions ×2, awards ×20, records ×15); shows the best season, awards, records and how the career ended.
+- **Rankings:** the Guild ladders tab adds a season-by-season chart, best-ever rank and the gap to the next guild on each ladder. Head-to-head with any rival (from Rivals or the guild directory) adds the end-of-season ranks of both guilds (`season.ladder` stores every guild's Strength and Official rank) next to the existing nemesis numbers.
+- **Navigation:** Herald tabs Record book and Hall of fame; Chronicle menu pages Mission log and Season reviews. Past reviews also open from the record book.
+- **Removed/merged:** the Chronicle's Mission archive, Hall of fame and Records tabs (replaced by the mission log, the Herald hall of fame and the record book) and their CSS.
+- **Choices to review:** award and hall-of-fame weights are first guesses; tournament bouts count wins only for individual tournaments; the old `rankHistory` sparkline stays beside the new season chart.
+
 - **Season review every year,** sports style:
   - record (W/L in contracts and bouts), titles, MVP hero, best signing
   - biggest win and worst loss

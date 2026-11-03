@@ -54,9 +54,9 @@ npm run build       # production build to dist/ (not committed)
 
 ```text
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
-src/places/               MapScreen (world map, wild-area cards), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
+src/places/               MapScreen (world map, wild-area cards), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, mission log, season reviews, codex, CalendarScreen, QuestLogScreen), routes.js
 src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
-src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, …)
+src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
   dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js
@@ -85,6 +85,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   economy.js              upkeep (wages, rent, lease, rooms), patron loans and debt, travel
   hall.js                 the guild's home: rented beds, buying/leasing the hall, building rooms, weekly construction, next-upgrade suggestion
   connections.js          patron rewards and exclusive contracts, the Connections read model, run path scores
+  seasons.js              season review, awards, record book, and read models for the mission log, hall of fame, ladder history, head-to-head and hero careers (tallies live in core.js)
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
   tournamentEntry.js      player tournament entry and starting tournament combat
@@ -140,6 +141,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `pendingEvent` (a town event, festival or story card waiting for a choice), `news[]` + `newsUnread`
 - `sideJobs[]` (board), `activeSideJobs[]` (running; heroes have status `sidejob`), `wager`
 - `story: { step, next, choice, rivalId, done, postedMissionId }`, `defeatedBosses[]`; story and boss contracts carry `story` / `bossId`
+- `seasons[year]`: per-year totals (`g` guild, `fam` per family, `spent` by category, `h[heroId]` per hero), ranks (`ranksStart`, `ranksEnd`, `best`, monthly `series`, every guild's end rank in `ladder`), `big`/`worst`, `broken[]` and the `review`; `records: { guild, hero }`, `streak`, `bossLog[]`; heroes carry `awards[]`, `signedFee` and `career.goldForGuild`
 - `settings.sound`, `settings.volume`
 - `tutorial`, `council` (last monthly report), `notifications[]`, `settings` (incl. `joystick`), `flags` (`flags.dialogue` holds flags set by conversations)
 

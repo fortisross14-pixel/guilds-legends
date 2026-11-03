@@ -2,6 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 5: history and records
+
+- A season review at the end of every year: your record, titles, gold earned against gold spent, MVP, Rookie of the year and Best signing, the biggest win and worst defeat, how you moved on the three ladders (with a chart), records broken, and a word from a patron or your nemesis. Skip it any time; reopen it later.
+- A record book at the Herald: guild and hero records with the year and holder, compared with the best rival guilds. Breaking a record gets its own "Record broken!" moment.
+- A Career tab on every hero: stats by year with career totals, awards, records, the contracts they were on and their key moments.
+- A mission log in the Chronicle menu: every contract, boss fight and tournament run, filterable by year, type, place, outcome and hero. Each entry opens its full report.
+- A hall of fame for retired and fallen heroes who earned it.
+- The Herald's ladders show your rank season by season, your best ever, and how far the next guild is; head-to-head pages compare any rival season by season.
+- Removed the Chronicle's old mission archive, hall of fame and records tabs.
+
 ## Unreleased — Phase 4: identity
 
 - Founding charters at new game: Merchant House, Free Company, Scholars’ Lodge and Shield of the People, each with clear modifiers, a starting bonus and a signature goal. The charter shows in the top bar and the Herald and colours a few first conversations.
