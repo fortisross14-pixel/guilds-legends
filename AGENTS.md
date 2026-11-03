@@ -63,6 +63,7 @@ src/data/                 Static content: classes, missions, formations, world m
   tiles.js, openingRoom.js  Ground tiles for walkable layouts; the opening room map
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
+  rooms.js                Rented room, hall purchase, buildable rooms (levels, cost, weeks, upkeep, requirements), hall stages
 src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map), TownScene, WildScene, DialogueBox, SceneHud
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
@@ -79,7 +80,8 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
   contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
   goals.js                goals, achievements, promotion, evaluateStateInPlace
-  economy.js              upkeep, patron loans and debt, travel, facility upgrades
+  economy.js              upkeep (wages, rent, lease, rooms), patron loans and debt, travel
+  hall.js                 the guild's home: rented beds, buying/leasing the hall, building rooms, weekly construction, next-upgrade suggestion
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
   tournamentEntry.js      player tournament entry and starting tournament combat
@@ -115,7 +117,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 
 - `schemaVersion`, `seed`, `rngState`: save version and RNG state (advance the RNG only via `commitRng`)
 - `date: { year, month, week }`: month 0–11, week 0–3 (4 weeks per month); the campaign starts in 1187. Durations (travel, missions, injuries) are in weeks
-- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `facilities`, `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
+- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `hall` ({ owned, lease, rentedBeds, rooms: { roomId: level }, construction }; beds are the only roster limit), `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
 - `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty`, `salary`, `contract` ({ years, salary, startSerial, endSerial } in month serials; none for the founder) and an optional `poachApproach`
 - `historicHeroes[]`: archived player heroes (compacted)
 - `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee`, a `scoutLevel` (0–3, how precisely its stats are known) and an optional `demand`

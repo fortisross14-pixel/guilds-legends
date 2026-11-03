@@ -19,11 +19,50 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `bg.town.ironford` | `art/bg/town-ironford.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Ironford town directory |
 | `bg.town.default` | `art/bg/town-default.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Any other town directory |
 
+## Building exterior (`building`, placeholder #5a4636)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 1 (Rented room) |
+| `town.dunmere.guildhall.stage2` | `art/walk/buildings/dunmere-guildhall-stage2.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 2 (Empty hall) |
+| `town.dunmere.guildhall.stage3` | `art/walk/buildings/dunmere-guildhall-stage3.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 3 (Working hall) |
+| `town.dunmere.guildhall.stage4` | `art/walk/buildings/dunmere-guildhall-stage4.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 4 (Renowned hall) |
+| `town.dunmere.herald` | `art/walk/buildings/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Herald’s Office (front with door) |
+| `town.dunmere.tavern` | `art/walk/buildings/dunmere-tavern.png` | 160×160 | — | placeholder | Dunmere: The Wayfarer (front with door) |
+| `town.dunmere.shop` | `art/walk/buildings/dunmere-shop.png` | 160×160 | — | placeholder | Dunmere: Mira’s Supply (front with door) |
+| `town.dunmere.arena` | `art/walk/buildings/dunmere-arena.png` | 160×160 | — | placeholder | Dunmere: Dunmere Arena (front with door) |
+| `town.greenhollow.lodge` | `art/walk/buildings/greenhollow-lodge.png` | 160×160 | — | placeholder | Greenhollow: Guild lodge (front with door) |
+| `town.greenhollow.tavern` | `art/walk/buildings/greenhollow-tavern.png` | 160×160 | — | placeholder | Greenhollow: The Mossy Kettle (front with door) |
+| `town.greenhollow.shop` | `art/walk/buildings/greenhollow-shop.png` | 160×160 | — | placeholder | Greenhollow: Bramblewick Herbs (front with door) |
+| `town.greenhollow.arena` | `art/walk/buildings/greenhollow-arena.png` | 160×160 | — | placeholder | Greenhollow: The Thorn Ring (front with door) |
+| `town.ironford.offices` | `art/walk/buildings/ironford-offices.png` | 160×160 | — | placeholder | Ironford: Guild offices (front with door) |
+| `town.ironford.herald` | `art/walk/buildings/ironford-herald.png` | 160×160 | — | placeholder | Ironford: Assay & Herald (front with door) |
+| `town.ironford.shop` | `art/walk/buildings/ironford-shop.png` | 160×160 | — | placeholder | Ironford: Forge-Mart (front with door) |
+| `town.ironford.tavern` | `art/walk/buildings/ironford-tavern.png` | 160×160 | — | placeholder | Ironford: The Quenched Anvil (front with door) |
+| `town.ironford.arena` | `art/walk/buildings/ironford-arena.png` | 160×160 | — | placeholder | Ironford: The Hammer Yard (front with door) |
+
 ## Interior (`interior`, placeholder #6b4a24)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `interior.guildhall` | `art/interiors/guildhall.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall rooms |
+| `interior.guildhall.stage1` | `art/interiors/guildhall-stage1.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Guild Hall interior, stage 1 (Rented room) |
+| `interior.guildhall.stage2` | `art/interiors/guildhall-stage2.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 2 (Empty hall) |
+| `interior.guildhall.stage3` | `art/interiors/guildhall-stage3.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 3 (Working hall) |
+| `interior.guildhall.stage4` | `art/interiors/guildhall-stage4.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 4 (Renowned hall) |
+| `interior.room.bunks.1` | `art/interiors/rooms/bunks-1.png` | 1280×576 | — | placeholder | Bunk room, level 1 |
+| `interior.room.bunks.2` | `art/interiors/rooms/bunks-2.png` | 1280×576 | — | placeholder | Bunk room, level 2 |
+| `interior.room.bunks.3` | `art/interiors/rooms/bunks-3.png` | 1280×576 | — | placeholder | Bunk room, level 3 |
+| `interior.room.training.1` | `art/interiors/rooms/training-1.png` | 1280×576 | — | placeholder | Training ground, level 1 |
+| `interior.room.training.2` | `art/interiors/rooms/training-2.png` | 1280×576 | — | placeholder | Training ground, level 2 |
+| `interior.room.training.3` | `art/interiors/rooms/training-3.png` | 1280×576 | — | placeholder | Training ground, level 3 |
+| `interior.room.infirmary.1` | `art/interiors/rooms/infirmary-1.png` | 1280×576 | — | placeholder | Infirmary, level 1 |
+| `interior.room.infirmary.2` | `art/interiors/rooms/infirmary-2.png` | 1280×576 | — | placeholder | Infirmary, level 2 |
+| `interior.room.armory.1` | `art/interiors/rooms/armory-1.png` | 1280×576 | — | placeholder | Armory, level 1 |
+| `interior.room.war.1` | `art/interiors/rooms/war-1.png` | 1280×576 | — | placeholder | War room, level 1 |
+| `interior.room.scouts.1` | `art/interiors/rooms/scouts-1.png` | 1280×576 | — | placeholder | Scout table, level 1 |
+| `interior.room.trophies.1` | `art/interiors/rooms/trophies-1.png` | 1280×576 | — | placeholder | Trophy hall, level 1 |
+| `interior.room.treasury.1` | `art/interiors/rooms/treasury-1.png` | 1280×576 | — | placeholder | Treasury, level 1 |
+| `interior.room.treasury.2` | `art/interiors/rooms/treasury-2.png` | 1280×576 | — | placeholder | Treasury, level 2 |
 | `interior.tavern` | `art/interiors/tavern.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Tavern (recruits) |
 | `interior.shop` | `art/interiors/shop.png` | 1280×576 | `art/scenes/scene_01.png` | borrowed | Shop |
 | `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena (tournaments) |
@@ -186,26 +225,6 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `ui.overworld` | `ui/overworld.png` | 200×125 | — | ready | World map terrain |
-
-## Building exterior (`building`, placeholder #5a4636)
-
-| Id | Path | Size | Borrows | Status | Used for |
-|---|---|---|---|---|---|
-| `town.dunmere.herald` | `art/walk/buildings/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Herald’s Office (front with door) |
-| `town.dunmere.tavern` | `art/walk/buildings/dunmere-tavern.png` | 160×160 | — | placeholder | Dunmere: The Wayfarer (front with door) |
-| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | placeholder | Dunmere: Guild Hall (front with door) |
-| `town.dunmere.shop` | `art/walk/buildings/dunmere-shop.png` | 160×160 | — | placeholder | Dunmere: Mira’s Supply (front with door) |
-| `town.dunmere.rooms` | `art/walk/buildings/dunmere-rooms.png` | 160×160 | — | placeholder | Dunmere: Your rooms (front with door) |
-| `town.dunmere.arena` | `art/walk/buildings/dunmere-arena.png` | 160×160 | — | placeholder | Dunmere: Dunmere Arena (front with door) |
-| `town.greenhollow.lodge` | `art/walk/buildings/greenhollow-lodge.png` | 160×160 | — | placeholder | Greenhollow: Guild lodge (front with door) |
-| `town.greenhollow.tavern` | `art/walk/buildings/greenhollow-tavern.png` | 160×160 | — | placeholder | Greenhollow: The Mossy Kettle (front with door) |
-| `town.greenhollow.shop` | `art/walk/buildings/greenhollow-shop.png` | 160×160 | — | placeholder | Greenhollow: Bramblewick Herbs (front with door) |
-| `town.greenhollow.arena` | `art/walk/buildings/greenhollow-arena.png` | 160×160 | — | placeholder | Greenhollow: The Thorn Ring (front with door) |
-| `town.ironford.offices` | `art/walk/buildings/ironford-offices.png` | 160×160 | — | placeholder | Ironford: Guild offices (front with door) |
-| `town.ironford.herald` | `art/walk/buildings/ironford-herald.png` | 160×160 | — | placeholder | Ironford: Assay & Herald (front with door) |
-| `town.ironford.shop` | `art/walk/buildings/ironford-shop.png` | 160×160 | — | placeholder | Ironford: Forge-Mart (front with door) |
-| `town.ironford.tavern` | `art/walk/buildings/ironford-tavern.png` | 160×160 | — | placeholder | Ironford: The Quenched Anvil (front with door) |
-| `town.ironford.arena` | `art/walk/buildings/ironford-arena.png` | 160×160 | — | placeholder | Ironford: The Hammer Yard (front with door) |
 
 ## Enemy on the map (`enemy`, placeholder #7a3a22)
 

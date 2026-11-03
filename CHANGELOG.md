@@ -2,6 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 3: from banner to hall
+
+- New campaigns start in a rented room above the Wayfarer: one bed, the banner, a small chest. Hiring needs a free bed; rent more beds or build bunks.
+- Buy or lease the old hall on Banner Plaza after a few contracts, then build rooms in its empty wings: Bunk room, Training ground, Infirmary, Armory, War room, Scout table, Trophy hall and Treasury, each with levels, build time, upkeep and a "Construction complete" moment.
+- The hall grows through four stages (rented room, empty, working, renowned), and its look changes in walkable Dunmere.
+- A one-line "Next upgrade" suggestion, construction in the Calendar, and a Treasury that compares income and costs.
+- Room activities (training, infirmary, scouting) need their room; drills unlock with the Training ground; the War room unlocks the main party and saved formations; the Armory adds a shop discount, a bigger chest and gear upgrades.
+- Removed the old facility upgrades and the Great Hall capacity rule.
+
 ## Unreleased — Phase 2: combat
 
 - Turn order bar, and a tap-command-then-tap-target flow with damage/heal previews, hit chance and WEAK/RESIST on every target.
