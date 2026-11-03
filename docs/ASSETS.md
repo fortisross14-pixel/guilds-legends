@@ -18,6 +18,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `bg.town.greenhollow` | `art/bg/town-greenhollow.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Greenhollow town directory |
 | `bg.town.ironford` | `art/bg/town-ironford.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Ironford town directory |
 | `bg.town.default` | `art/bg/town-default.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Any other town directory |
+| `bg.town.windmere` | `art/bg/town-windmere.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Windmere town directory (no walkable layout yet) |
 | `bg.season.review` | `art/bg/season-review.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Season review cards (end of each year, re-opened from the record book) |
 
 ## Building exterior (`building`, placeholder #5a4636)
@@ -69,6 +70,13 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena (tournaments) |
 | `interior.herald` | `art/interiors/herald.png` | 1280×576 | `art/scenes/scene_03.png` | borrowed | Herald (rankings) |
 | `interior.noticeboard` | `art/interiors/noticeboard.png` | 1280×576 | `art/scenes/scene_10.png` | borrowed | Notice Board (contracts) |
+| `interior.arena.dunmere` | `art/interiors/arena-dunmere.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Dunmere: fighting ground, sign-up desk, history board |
+| `interior.arena.greenhollow` | `art/interiors/arena-greenhollow.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Greenhollow: fighting ground, sign-up desk, history board |
+| `interior.arena.ironford` | `art/interiors/arena-ironford.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Ironford: fighting ground, sign-up desk, history board |
+| `interior.arena.windmere` | `art/interiors/arena-windmere.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Windmere: fighting ground, sign-up desk, history board |
+| `interior.inn.greenhollow` | `art/interiors/inn-greenhollow.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Inn in Greenhollow (rest 1–3 nights, recruits) |
+| `interior.inn.ironford` | `art/interiors/inn-ironford.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Inn in Ironford (rest 1–3 nights, recruits) |
+| `interior.inn.windmere` | `art/interiors/inn-windmere.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Inn in Windmere (rest 1–3 nights, recruits) |
 
 ## Battle background (`battle`, placeholder #6a2f34)
 
@@ -166,6 +174,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `portrait.poi` | `art/portraits/npcs/poi.png` | 160×160 | — | placeholder | Dialogue portrait for places and objects (fountain, statue, wells…) |
+| `portrait.arena.referee` | `art/portraits/npcs/arena-referee.png` | 160×160 | — | placeholder | Arena referee at the fighting ground (starts bouts) |
+| `portrait.arena.registrar` | `art/portraits/npcs/arena-registrar.png` | 160×160 | — | placeholder | Arena registrar at the sign-up desk |
 | `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | — | placeholder | Dunmere: Sella Rowan, Innkeeper (dialogue portrait) |
 | `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | — | placeholder | Dunmere: Bram Hallow, Road merchant (dialogue portrait) |
 | `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | — | placeholder | Dunmere: Nia Voss, Local fighter (dialogue portrait) |

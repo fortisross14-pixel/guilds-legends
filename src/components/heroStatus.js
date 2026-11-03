@@ -1,3 +1,4 @@
+import { travellingPartyIds } from '../game/engine.js';
 
 const ACTIVITY_STATUS = {
   Training: { key: 'training', label: 'Training', icon: '⚔' },
@@ -14,7 +15,7 @@ export function heroStatus(state, hero) {
   if (hero.status === 'tournament') return { key: 'tournament', label: 'In tournament', icon: '♛', away: true };
   if (hero.status === 'sidejob') return { key: 'sidejob', label: 'Side job', icon: '✎', away: true };
   if (hero.branchId) return { key: 'branch', label: 'Branch duty', icon: '⚑', away: true };
-  if (state.world?.activeTravel) return { key: 'traveling', label: 'Traveling', icon: '➜', away: true };
+  if (travellingPartyIds(state).includes(hero.id)) return { key: 'traveling', label: state.world?.activeTravel ? 'On the road' : 'With you', icon: '➜', away: true };
   if (hero.status === 'injured')
     return { key: 'injured', label: hero.monthlyActivity === 'Infirmary' ? 'Injured · Infirmary' : 'Injured', icon: '✚', away: false };
   // An activity whose room is not built yet means the hero simply rests.

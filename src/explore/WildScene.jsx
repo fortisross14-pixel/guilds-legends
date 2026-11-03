@@ -10,7 +10,7 @@ import { Button } from '../components/UI.jsx';
 /**
  * A walkable wild area (src/data/wilds). Enemy groups stand on the map:
  * walking into one or tapping it starts a battle. Gathering spots give items
- * or gold, the camp heals the party for a week, the exit leads back to town.
+ * or gold, a night at the camp heals the party (one day passes), the exit leads back to town.
  */
 export default function WildScene({ area, state, actions, navigate }) {
   const map = useMemo(() => wildMap(area), [area]);
@@ -79,7 +79,7 @@ export default function WildScene({ area, state, actions, navigate }) {
                   actions.restAtCamp(area.id);
                 }}
               >
-                Rest a week
+                Camp for the night
               </Button>
               <Button onClick={() => setCamp(false)}>Not now</Button>
             </div>

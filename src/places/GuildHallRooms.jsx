@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { APPOINTMENTS } from '../data/content.js';
 import { HALL_ROOMS, MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { FORMATION_TYPES } from '../data/formations.js';
 import { RENTED_ROOM, ROOM_BY_ID } from '../data/rooms.js';
-import { MAIN_PARTY_SIZE, activityAvailable, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
+import { HALL_REST_WEEKS, HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
 import PixelIcon, { ROOM_ICONS } from '../components/PixelIcon.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
 import HeadquartersScreen from '../screens/HeadquartersScreen.jsx';
+import CalendarScreen from './CalendarScreen.jsx';
+import { LOCATION_BY_ID } from '../data/world.js';
 
 // The Guild Hall, from a rented room to a renowned hall (src/data/rooms.js).
-// place.tab = the open room id, 'build' for the build list, or null for the hall.
+// place.tab = the open room id, 'build' for the build list, 'rest' for resting, or null for the hall.
 
 function roomHeroes(state, activity) {
   return activeRoster(state).filter((hero) => !isHeroAway(state, hero) && (hero.monthlyActivity || 'Rest') === activity);
@@ -323,7 +325,7 @@ function Treasury({ state, actions }) {
             </p>
           </div>
         ) : (
-          <p className="muted">Advance time to receive the first report.</p>
+          <p className="muted">Rest at the hall into a new month to receive the first report.</p>
         )}
       </Panel>
       <Panel title="Monthly costs" eyebrow="Paid on week 1 of every month">
@@ -418,6 +420,73 @@ function TrophyHall({ state }) {
   );
 }
 
+const REST_LABELS = { 1: 'Rest 1 week', 4: 'Rest 1 month', 12: 'Rest 3 months' };
+const activityName = (id) =>
+  HALL_ROOMS.find((item) => item.activity === id)?.name || ROOM_BY_ID[{ Training: 'training', Infirmary: 'infirmary', Scouting: 'scouts' }[id]]?.name || MONTHLY_ACTIVITIES.find((item) => item.id === id)?.label || id;
+
+/**
+ * Resting: the only place to let time pass freely. Each hero at home shows
+ * their task, which can be changed here before confirming 1 week, 1 month or
+ * 3 months. The calendar below can also wait for a chosen date.
+ */
+function RestRoom({ state, actions }) {
+  const [draft, setDraft] = useState({});
+  if (!atHome(state)) {
+    return (
+      <p className="town-notice">
+        <strong>Your Guild Hall is in {LOCATION_BY_ID[HOME_LOCATION_ID].name}.</strong>
+        <span>Away from home, rest at an inn (the tavern), or camp in the wild. The heroes at home keep to their tasks.</span>
+      </p>
+    );
+  }
+  const home = activeRoster(state).filter((hero) => !isHeroAway(state, hero));
+  const away = activeRoster(state).filter((hero) => isHeroAway(state, hero));
+  const activities = MONTHLY_ACTIVITIES.filter((activity) => activityAvailable(state, activity.id));
+  const taskOf = (hero) => draft[hero.id] || (activityAvailable(state, hero.monthlyActivity || 'Rest') ? hero.monthlyActivity || 'Rest' : 'Rest');
+  const paused = state.pendingDecisions.length || state.activeEncounter || state.activeMissionGame || state.pendingRoadEvent;
+  const monthDays = (4 - (state.date.week || 0)) * 7 - (state.date.day || 0);
+  return (
+    <div className="rest-room">
+      <p className="muted">
+        Tasks pay off at the start of each month (the next one in {monthDays} day{monthDays === 1 ? '' : 's'}). Injuries, construction and side jobs move every week.
+      </p>
+      <div className="rest-room__tasks">
+        {home.map((hero) => (
+          <label key={hero.id} className="rest-task">
+            <span className="rest-task__who">
+              <HeroPortrait hero={hero} size="xs" showStatus={false} />
+              <span>
+                <strong>{hero.name}</strong>
+                <small>
+                  Lv {hero.level} {hero.classId} · HP {hero.health ?? 100} · fatigue {hero.fatigue || 0}
+                  {hero.status === 'injured' ? ' · injured' : ''}
+                </small>
+              </span>
+            </span>
+            <select value={taskOf(hero)} onChange={(event) => setDraft({ ...draft, [hero.id]: event.target.value })}>
+              {activities.map((activity) => (
+                <option key={activity.id} value={activity.id}>
+                  {activityName(activity.id)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+        {away.length ? <p className="muted">Away: {away.map((hero) => `${hero.name} (${heroStatus(state, hero).label})`).join(', ')}.</p> : null}
+      </div>
+      <div className="rest-room__actions">
+        {HALL_REST_WEEKS.map((weeks) => (
+          <Button key={weeks} variant={weeks === 4 ? 'primary' : 'secondary'} disabled={Boolean(paused)} onClick={() => actions.restAtHall(weeks, draft)}>
+            {REST_LABELS[weeks]}
+          </Button>
+        ))}
+      </div>
+      <p className="muted">Rest stops early if a battle, decision or tournament needs you.</p>
+      <CalendarScreen state={state} actions={actions} canAdvance />
+    </div>
+  );
+}
+
 /** A tile on the hall floor plan. */
 function Tile({ id, icon, name, text, badge, onClick, className = '' }) {
   return (
@@ -438,7 +507,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
   const plan = hall.rooms.find((item) => item.id === roomId && item.built) || null;
   const basic = HALL_ROOMS.find((item) => item.id === roomId && (!item.needsHall || hall.owned)) || null;
 
-  if (!plan && !basic && roomId !== 'build') {
+  if (!plan && !basic && roomId !== 'build' && roomId !== 'rest') {
     const building = hall.construction && !hall.rooms.find((item) => item.id === hall.construction.roomId)?.built ? hall.construction : null;
     const emptyWings = Math.max(0, hall.wings.free);
     return (
@@ -452,6 +521,11 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
           </div>
         ) : null}
         <div className="room-actions">
+          {atHome(state) ? (
+            <Button variant="primary" onClick={() => setRoom('rest')}>
+              Rest and pass time…
+            </Button>
+          ) : null}
           <Button onClick={actions.autoAssignRooms}>Auto-assign heroes to rooms</Button>
         </div>
         <nav className="building-grid" aria-label="Guild Hall rooms" data-menu>
@@ -489,7 +563,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
     );
   }
 
-  const title = roomId === 'build' ? 'Build a room' : plan ? plan.name : basic.name;
+  const title = roomId === 'build' ? 'Build a room' : roomId === 'rest' ? 'Rest at the hall' : plan ? plan.name : basic.name;
   return (
     <div className={`hall-room hall-room--${roomId}`}>
       <HallSummary state={state} hall={hall} />
@@ -497,10 +571,11 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
         <Button size="sm" className="town-header__back" onClick={() => setRoom(null)}>
           ◀ Hall
         </Button>
-        <PixelIcon name={roomId === 'build' ? 'hammer' : ROOM_ICONS[roomId] || 'castle'} size={24} />
+        <PixelIcon name={roomId === 'build' ? 'hammer' : roomId === 'rest' ? 'calendar' : ROOM_ICONS[roomId] || 'castle'} size={24} />
         {title}
       </h2>
       {roomId === 'build' ? <BuildList hall={hall} actions={actions} /> : null}
+      {roomId === 'rest' ? <RestRoom state={state} actions={actions} /> : null}
       {plan ? (
         <>
           <p className="muted">{plan.description}</p>

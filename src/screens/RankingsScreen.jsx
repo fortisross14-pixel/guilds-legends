@@ -400,8 +400,8 @@ function GuildDirectory({ state, actions, onOpenRival }) {
   );
 }
 
-export default function RankingsScreen({ state, actions }) {
-  const [tab, setTab] = useState(state.challenge?.status === 'pending' ? 'rivals' : 'path');
+export default function RankingsScreen({ state, actions, initialTab = null }) {
+  const [tab, setTab] = useState(initialTab || (state.challenge?.status === 'pending' ? 'rivals' : 'path'));
   const [rivalFocus, setRivalFocus] = useState(null);
   const openRival = (id) => {
     setRivalFocus(id);

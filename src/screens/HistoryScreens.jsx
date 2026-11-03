@@ -12,7 +12,7 @@ const LADDERS = [
   ['o', 'Official'],
 ];
 const AWARD_ASSET = { mvp: 'award.mvp', rookie: 'award.rookie', signing: 'award.signing' };
-const SPEND_LABELS = { wages: 'Wages', hall: 'Hall', recruits: 'Recruits', shop: 'Shop', travel: 'Travel', patrons: 'Patrons', loan: 'Loan', other: 'Other' };
+const SPEND_LABELS = { wages: 'Wages', hall: 'Hall', recruits: 'Recruits', shop: 'Shop', travel: 'Travel', tournaments: 'Tournament fees', patrons: 'Patrons', loan: 'Loan', other: 'Other (inns and upkeep)' };
 
 const gold = (value) => `${Math.round(value || 0).toLocaleString()} G`;
 const signed = (value) => `${value >= 0 ? '+' : ''}${Math.round(value || 0)}`;

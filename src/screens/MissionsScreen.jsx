@@ -271,7 +271,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
             <EmptyState
               icon="⌖"
               title={traveling ? 'No board while traveling' : 'No local contracts match'}
-              text={traveling ? 'Finish the journey before accepting new work.' : 'Change the family filter, advance time or travel to another settlement.'}
+              text={traveling ? 'Finish the journey before accepting new work.' : 'Change the family filter, rest at the hall, or travel to another settlement.'}
               action={<Button onClick={() => navigate('world')}>Open world map</Button>}
             />
           ) : null}

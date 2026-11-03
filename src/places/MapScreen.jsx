@@ -69,7 +69,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         <span
           className="help-tip"
           tabIndex={0}
-          title="Missions, tournaments and recruitment are local. Travel costs gold and weeks, but lets the guild seek the classes and primals it needs."
+          title="Missions, tournaments and recruitment are local. Travel costs gold and days (time only passes when you act), but lets the guild seek the classes and primals it needs."
         >
           ?
         </span>
@@ -95,9 +95,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
             <p>The journey was interrupted. Deal with what happened, then continue. Recruitment and new deployments resume on arrival.</p>
           </div>
           <div className="travel-banner__time">
-            <strong>{travel.weeksRemaining}</strong>
-            <span>week{travel.weeksRemaining === 1 ? '' : 's'} remaining</span>
-            <ProgressBar value={travel.totalWeeks - travel.weeksRemaining} max={travel.totalWeeks} tone="blue" compact />
+            <strong>{travel.daysRemaining}</strong>
+            <span>day{travel.daysRemaining === 1 ? '' : 's'} remaining</span>
+            <ProgressBar value={travel.totalDays - travel.daysRemaining} max={travel.totalDays} tone="blue" compact />
             {!state.pendingRoadEvent ? (
               <Button variant="primary" size="sm" onClick={actions.continueJourney}>
                 Continue journey
@@ -144,8 +144,8 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   className="map-party-marker"
                   title="Your guild on the road"
                   style={{
-                    left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
-                    top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalWeeks - travel.weeksRemaining) / travel.totalWeeks)}%`,
+                    left: `${LOCATION_BY_ID[travel.fromId].x + (LOCATION_BY_ID[travel.toId].x - LOCATION_BY_ID[travel.fromId].x) * ((travel.totalDays - travel.daysRemaining) / travel.totalDays)}%`,
+                    top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalDays - travel.daysRemaining) / travel.totalDays)}%`,
                   }}
                 >
                   <PixelIcon name="flag" size={24} />
@@ -334,9 +334,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <div className="travel-quote">
                   <div>
                     <span>Journey</span>
-                    <strong>
-                      {quote.weeks} week{quote.weeks === 1 ? '' : 's'}
-                    </strong>
+                    <strong>{quote.label}</strong>
                   </div>
                   <div>
                     <span>Travel budget</span>
@@ -346,15 +344,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     variant="primary"
                     size="lg"
                     onClick={startJourney}
-                    disabled={Boolean(travel) || state.guild.crowns < quote.cost || (state.activeMissions.length > 0 && state.guild.tierIndex === 0)}
+                    disabled={Boolean(travel) || state.guild.crowns < quote.cost}
                   >
-                    {travel
-                      ? 'Already traveling'
-                      : state.activeMissions.length > 0 && state.guild.tierIndex === 0
-                        ? 'Recall deployed companies first'
-                        : state.guild.crowns < quote.cost
-                          ? `Need ${quote.cost - state.guild.crowns} more crowns`
-                          : `Travel to ${selected.name}`}
+                    {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name} (${quote.label})`}
                   </Button>
                 </div>
               ) : (
@@ -382,7 +374,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   ))}
                 </div>
               ) : (
-                <p className="muted">No current petitions are known here. New work appears as weeks pass.</p>
+                <p className="muted">No current petitions are known here. New work appears as time passes.</p>
               )}
             </>
           ) : unlocked && ['rumored', 'discovered'].includes(selectedKnowledge) ? (
@@ -393,7 +385,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <small>Source: {selectedSource?.source || 'Travelers'}</small>
               {selected.id !== currentLocationId ? (
                 <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}>
-                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name}`}
+                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name} (${quote.label})`}
                 </Button>
               ) : null}
             </div>
@@ -404,7 +396,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <p>The guild knows only that a settlement lies beyond this road. Travel there to put a name, people and opportunities to the mark.</p>
               {selected.id !== currentLocationId ? (
                 <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}>
-                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : 'Chart this route'}
+                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Chart this route (${quote.label})`}
                 </Button>
               ) : null}
             </div>
@@ -528,16 +520,14 @@ function WildCard({ area, state, actions }) {
             <div className="travel-quote">
               <div>
                 <span>Journey to {hub?.name}</span>
-                <strong>
-                  {quote.weeks} week{quote.weeks === 1 ? '' : 's'}
-                </strong>
+                <strong>{quote.label}</strong>
               </div>
               <div>
                 <span>Travel budget</span>
                 <strong>{quote.cost} crowns</strong>
               </div>
               <Button variant="primary" size="lg" disabled={Boolean(travel) || state.guild.crowns < quote.cost} onClick={() => actions.travel(area.hub)}>
-                {travel ? 'Already traveling' : `Travel to ${hub?.name}`}
+                {travel ? 'Already traveling' : `Travel to ${hub?.name} (${quote.label})`}
               </Button>
             </div>
           )}

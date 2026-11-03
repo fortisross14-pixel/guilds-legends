@@ -40,10 +40,6 @@
   .topbar__date { padding: 0 8px 0 4px; gap: 6px; }
   .topbar__month { display: none; }
   .topbar__date strong { font-size: 21px; }
-  .time-controls { padding: 0 6px; }
-  .time-controls__more { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--text); font-size: 16px; }
-  .time-controls__extra { display: none; }
-  .time-controls__extra.is-open { position: absolute; z-index: 60; top: calc(100% + 8px); left: 0; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-bg); box-shadow: var(--shadow); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
   .topbar__resources { gap: 0; }
   .topbar__resources > span.topbar__gold { padding: 0 6px; }
   .topbar__rank-chip { padding: 0 8px; font-size: 11px; }
@@ -93,8 +89,6 @@
   .topbar { gap: 0; }
   .topbar > * + *:not(.topbar__resources):not(.topbar__journal) { border-left: 0; }
   .topbar__date strong { font-size: 19px; }
-  .time-controls { gap: 4px; padding: 0 4px; }
-  .time-controls .button { min-height: 36px; padding: 4px 10px; font-size: 12px; }
   .topbar__resources > span.topbar__gold { padding: 0 4px; }
   .topbar__resources b { font-size: 13px; }
   .topbar__rank-chip { padding: 0 7px; font-size: 10.5px; letter-spacing: -.01em; }

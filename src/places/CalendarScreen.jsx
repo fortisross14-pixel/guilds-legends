@@ -8,8 +8,11 @@ function sameDate(a, b) {
   return a.year === b.year && a.month === b.month && a.week === b.week;
 }
 
-// Month grid with weeks as rows. Click an entry for details and "Advance to this date".
-export default function CalendarScreen({ state, actions }) {
+const away = (entry) => (entry.awayDays ? `you are ${entry.awayDays} day${entry.awayDays === 1 ? '' : 's'} away` : null);
+
+// Month grid with weeks as rows. Read-only, except in the Guild Hall
+// (`canAdvance`), where the player can wait for a date.
+export default function CalendarScreen({ state, actions, canAdvance = false }) {
   const today = { year: state.date.year, month: state.date.month, week: state.date.week || 0 };
   const [view, setView] = useState({ year: today.year, month: today.month });
   const [selected, setSelected] = useState(null);
@@ -47,7 +50,10 @@ export default function CalendarScreen({ state, actions }) {
           Next ›
         </Button>
       </header>
-      <p className="calendar__knowledge">This calendar records what the guild has learned. Ask around to uncover more.</p>
+      <p className="calendar__knowledge">
+        Today is week {today.week + 1}, day {(state.date.day || 0) + 1}. This calendar records what the guild has learned; ask around to uncover more.
+        {canAdvance ? '' : ' Time passes when you travel, rest or send the founder out; you can wait for a date from the Guild Hall.'}
+      </p>
       <div className="calendar__grid">
         {[0, 1, 2, 3].map((week) => {
           const date = { year: view.year, month: view.month, week };
@@ -72,15 +78,16 @@ export default function CalendarScreen({ state, actions }) {
                           <PixelIcon name={EVENT_ICONS[entry.kind] || 'star'} size={24} />
                         </i>{' '}
                         {entry.title}
-                        {entry.enterable ? <Badge tone="green">Can enter</Badge> : null}
+                        {entry.signedUp ? <Badge tone="gold">Signed up</Badge> : entry.enterable ? <Badge tone="green">Can enter</Badge> : null}
                         {entry.locked || entry.almost ? <small> · {entry.detail}</small> : null}
+                        {away(entry) ? <small> · {away(entry)}</small> : null}
                       </button>
                     </li>
                   ))}
               </ul>
-              {!isPast && !isToday ? (
+              {canAdvance && !isPast && !isToday ? (
                 <Button size="sm" variant="secondary" disabled={Boolean(paused)} onClick={() => actions.advanceToDate(date)}>
-                  Advance to week {week + 1}
+                  Rest until week {week + 1}
                 </Button>
               ) : null}
             </section>
@@ -90,16 +97,18 @@ export default function CalendarScreen({ state, actions }) {
       {selected ? (
         <Panel
           title={selected.title}
-          eyebrow={`${MONTHS[selected.date.month]} ${selected.date.year}, week ${selected.date.week + 1} · in ${selected.weeksAway} week${selected.weeksAway === 1 ? '' : 's'}`}
+          eyebrow={`${MONTHS[selected.date.month]} ${selected.date.year}, week ${selected.date.week + 1} · in ${selected.weeksAway} week${selected.weeksAway === 1 ? '' : 's'}${away(selected) ? ` · ${away(selected)}` : ''}`}
         >
           <p>{selected.detail}</p>
           {selected.source ? <p className="calendar__source">Heard from {selected.source.source}: {selected.source.note}</p> : null}
-          <Button variant="primary" disabled={selected.weeksAway <= 0 || Boolean(paused)} onClick={() => actions.advanceToDate(selected.date)}>
-            Advance to this date
-          </Button>
+          {canAdvance ? (
+            <Button variant="primary" disabled={selected.weeksAway <= 0 || Boolean(paused)} onClick={() => actions.advanceToDate(selected.date)}>
+              Advance to this date
+            </Button>
+          ) : null}
         </Panel>
       ) : (
-        <p className="muted">Click an entry for details. Time stops early if a battle, decision or tournament needs you.</p>
+        <p className="muted">Tap an entry for details.{canAdvance ? ' Time stops early if a battle, decision or tournament needs you.' : ''}</p>
       )}
     </div>
   );

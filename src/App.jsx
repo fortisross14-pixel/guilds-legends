@@ -4,7 +4,6 @@ import {
   acknowledgeReport,
   acknowledgeWelcome,
   autoResolveActiveMissionGame,
-  advanceToNextEvent,
   appointHero,
   assignArtifact,
   assignBranchCommander,
@@ -28,7 +27,9 @@ import {
   dismissNotification,
   enterGuildTournament,
   foundBranch,
-  enterHeroTournament,
+  signUpForTournament,
+  restAtHall,
+  restAtInn,
   performActiveCombatAction,
   performActiveMissionGameAction,
   getDashboardSummary,
@@ -69,7 +70,6 @@ import {
   LADDER_LABELS,
   continueJourney,
   resolveRoadEvent,
-  advanceWeeks,
   advanceToDate,
   sendIdleHeroesTo,
   autoAssignRooms,
@@ -873,7 +873,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     if (!state.world?.activeTravel) setPlaceState({ view: 'town' });
   }, [arrivalKey, state.world?.activeTravel]);
   const [heroModalId, setHeroModalId] = useState(null);
-  const [timeMenuOpen, setTimeMenuOpen] = useState(false);
   // The journal (next step + upcoming events) is a per-viewer convenience kept in localStorage.
   const [journalOpen, setJournalOpen] = useState(() => {
     try {
@@ -1025,14 +1024,14 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       },
       launchMission: (id, formationType, assignments) => applyResult(launchExpedition(state, id, formationType, assignments), 'The company has set out.'),
       saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
-      // The calendar is week-based; the Hall still speaks in months for the
-      // player-facing rest affordance.
-      advanceWeeks: (weeks) => applyResult(advanceWeeks(state, weeks)),
+      // Time only moves through actions: travel, contracts the founder joins,
+      // camping, inns, and resting at the Guild Hall (which can also wait for a date).
+      restAtHall: (weeks, tasks) => applyResult(restAtHall(state, weeks, tasks), weeks >= 4 ? 'The guild rests and works.' : 'A quiet week at the hall.'),
+      restAtInn: (nights) => applyResult(restAtInn(state, nights), 'Rested at the inn.'),
       advanceToDate: (date) => applyResult(advanceToDate(state, date)),
       sendIdleHeroesTo: (activity) => applyResult(sendIdleHeroesTo(state, activity)),
       autoAssignRooms: () => applyResult(autoAssignRooms(state), 'Heroes assigned to rooms.'),
       toggleMainParty: (heroId) => applyResult(toggleMainPartyMember(state, heroId)),
-      waitForCompany: () => applyResult(advanceToNextEvent(state)),
       resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept', years = 2) => applyResult(recruitCandidate(state, id, negotiation, years), 'A new hero has joined the banner.'),
       resolveTownEvent: (optionId) => applyResult(resolveTownEvent(state, optionId)),
@@ -1071,7 +1070,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       buildRoom: (roomId) => applyResult(buildRoom(state, roomId), 'The builders arrive.'),
       upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
       giftPatron: (patronId) => applyResult(giftPatron(state, patronId), 'A gift is sent with your compliments.'),
-      enterHeroTournament: (tournamentId, heroId) => applyResult(enterHeroTournament(state, tournamentId, heroId)),
+      signUpForTournament: (tournamentId, heroId) => applyResult(signUpForTournament(state, tournamentId, heroId), 'Signed up. Be here on the start day.'),
       startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),
       enterGuildTournament: (tournamentId, formationType, assignments) => applyResult(enterGuildTournament(state, tournamentId, formationType, assignments)),
       startGuildCombat: (tournamentId) => applyResult(startGuildTournamentCombat(state, tournamentId)),
@@ -1187,13 +1186,6 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   const placeProps = { state, actions, navigate, slot, place, setPlace };
   const renderedScreen =
     place.view === 'town' ? <TownScreen {...placeProps} /> : place.view === 'menu' ? <MenuScreen {...placeProps} /> : <MapScreen {...placeProps} />;
-  const timePaused = Boolean(
-    state.pendingDecisions.length ||
-      state.activeEncounter ||
-      state.activeMissionGame ||
-      state.pendingRoadEvent ||
-      [...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active'),
-  );
   const townName = LOCATION_BY_ID[state.world?.currentLocationId]?.name || 'Town';
 
   const activeReportReference = reportModalRef || state.pendingReports?.[0] || null;
@@ -1251,43 +1243,13 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         <header className="topbar">
           <button className="topbar__date" onClick={() => navigate('calendar')} title="Open the calendar">
             <span className="topbar__month">
-              {MONTHS[state.date.month]} · Week {(state.date.week || 0) + 1}
+              {MONTHS[state.date.month]} · Week {(state.date.week || 0) + 1} · Day {(state.date.day || 0) + 1}
             </span>
             <strong>{state.date.year}</strong>
           </button>
-          <div className="time-controls">
-            <Button size="sm" onClick={() => actions.advanceWeeks(1)} disabled={timePaused}>
-              +1 week
-            </Button>
-            <span className={`time-controls__extra ${timeMenuOpen ? 'is-open' : ''}`}>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setTimeMenuOpen(false);
-                  actions.advanceWeeks(4);
-                }}
-                disabled={timePaused}
-              >
-                +1 month
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  setTimeMenuOpen(false);
-                  navigate('calendar');
-                }}
-              >
-                Wait until…
-              </Button>
-            </span>
-            <button className="time-controls__more" onClick={() => setTimeMenuOpen(!timeMenuOpen)} aria-expanded={timeMenuOpen} aria-label="More time options">
-              ⋯
-            </button>
-          </div>
           <button className="topbar__location" onClick={() => navigate('world')} title="Current guild location">
             <i>{summary.travel ? '➜' : PRIMALS[summary.locationPrimal]?.icon || '⌖'}</i>
-            <span>{summary.travel ? `Traveling · ${summary.travel.weeksRemaining}w` : summary.location}</span>
+            <span>{summary.travel ? `Traveling · ${summary.travel.daysRemaining}d` : summary.location}</span>
           </button>
           <button className="topbar__identity" onClick={() => navigate('rankings')} title="Your charter, and what the guild is known for (the Herald)">
             <Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="topbar__crest" />

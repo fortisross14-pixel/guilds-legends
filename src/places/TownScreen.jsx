@@ -4,7 +4,7 @@ import { Badge, Button, PrimalBadge, SceneBackdrop } from '../components/UI.jsx'
 import PixelIcon, { BUILDING_ICONS } from '../components/PixelIcon.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import MissionsScreen from '../screens/MissionsScreen.jsx';
-import TournamentsScreen from '../screens/TournamentsScreen.jsx';
+import ArenaScreen from '../screens/ArenaScreen.jsx';
 import RankingsScreen from '../screens/RankingsScreen.jsx';
 import ShopScreen from '../screens/ShopScreen.jsx';
 import GuildHallRooms from './GuildHallRooms.jsx';
@@ -12,12 +12,37 @@ import TownScene from '../explore/TownScene.jsx';
 import WildScene from '../explore/WildScene.jsx';
 import { townFor } from '../data/towns/index.js';
 import { WILD_AREAS } from '../data/wilds/index.js';
-import { getLivingHistory, hallStage, roomLevel } from '../game/engine.js';
+import { HOME_LOCATION_ID, INN_NIGHT_COST, getLivingHistory, hallStage, roomLevel, travellingPartyIds } from '../game/engine.js';
 import { ROOM_BY_ID, roomInterior } from '../data/rooms.js';
 import { firstAsset } from '../data/assets.js';
 
 // Interior art behind each building (asset ids, src/data/assets.js); the town backdrop otherwise.
+// Arenas and inns have one interior per town (falling back to the shared one).
 const BUILDING_INTERIORS = { herald: 'interior.herald', shop: 'interior.shop', arena: 'interior.arena', tavern: 'interior.tavern', noticeBoard: 'interior.noticeboard' };
+const interiorFor = (building, locationId) =>
+  building === 'arena' ? firstAsset(`interior.arena.${locationId}`, 'interior.arena') : building === 'tavern' && locationId !== HOME_LOCATION_ID ? firstAsset(`interior.inn.${locationId}`, 'interior.tavern') : BUILDING_INTERIORS[building];
+
+/** Away from home, the tavern is an inn: rest 1–3 nights (heals the party, passes time). */
+function InnRest({ state, actions }) {
+  const party = Math.max(1, travellingPartyIds(state).length);
+  return (
+    <section className="inn-rest win">
+      <div>
+        <strong>Rooms for the night</strong>
+        <small>
+          {INN_NIGHT_COST} G a night per traveller ({party} with you). Rest heals the party; the heroes at home keep to their tasks.
+        </small>
+      </div>
+      <div className="inn-rest__buttons">
+        {[1, 2, 3].map((nights) => (
+          <Button key={nights} size="sm" disabled={state.guild.crowns < INN_NIGHT_COST * nights * party} onClick={() => actions.restAtInn(nights)}>
+            Rest {nights} night{nights === 1 ? '' : 's'} ({INN_NIGHT_COST * nights * party} G)
+          </Button>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function buildingBadge(state, buildingId, locationId) {
   if (buildingId === 'noticeBoard') return state.missions.filter((mission) => mission.locationId === locationId).length || null;
@@ -78,7 +103,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
-      <SceneBackdrop asset={hallArt || BUILDING_INTERIORS[building] || firstAsset(`bg.town.${locationId}`, 'bg.town.default')} dim={building ? 0.58 : 0.28} />
+      <SceneBackdrop asset={hallArt || interiorFor(building, locationId) || firstAsset(`bg.town.${locationId}`, 'bg.town.default')} dim={building ? 0.58 : 0.28} />
       <header className={`town-header place-title ${building ? 'place-title--building' : ''}`}>
         {building ? (
           <Button size="sm" variant="primary" className="town-header__back town-header__leave" onClick={() => setPlace({ view: 'town', building: null })}>
@@ -108,7 +133,7 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
           <span>Only the Guild Hall is open until you arrive.</span>
           {!state.pendingRoadEvent ? (
             <Button variant="primary" size="sm" onClick={actions.continueJourney}>
-              Continue journey ({travel.monthsRemaining} month{travel.monthsRemaining === 1 ? '' : 's'})
+              Continue journey ({travel.daysRemaining} day{travel.daysRemaining === 1 ? '' : 's'})
             </Button>
           ) : null}
         </section>
@@ -126,11 +151,12 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
       {building ? (
         <div className={`building building--${building}`}>
           {building === 'guildHall' ? <GuildHallRooms {...props} room={place.tab} setRoom={(tab) => setPlace({ ...place, tab })} /> : null}
+          {building === 'tavern' && locationId !== HOME_LOCATION_ID ? <InnRest state={state} actions={actions} /> : null}
           {building === 'tavern' ? <HeroesScreen {...props} tabs={['recruit']} /> : null}
           {building === 'noticeBoard' ? <MissionsScreen {...props} /> : null}
-          {building === 'arena' ? <TournamentsScreen {...props} /> : null}
+          {building === 'arena' ? <ArenaScreen {...props} locationId={locationId} /> : null}
           {building === 'shop' ? <ShopScreen {...props} /> : null}
-          {building === 'herald' ? <RankingsScreen {...props} /> : null}
+          {building === 'herald' ? <RankingsScreen {...props} initialTab={place.tab} /> : null}
         </div>
       ) : (
         <div className="town-body">

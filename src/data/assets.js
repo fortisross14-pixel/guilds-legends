@@ -115,6 +115,14 @@ const LIST = [
   ...CHARTER_LIST.map((charter) => ({ id: charter.crest, group: 'crest', path: `art/crests/charter-${charter.id}.png`, w: 128, h: 128, use: `Charter crest: ${charter.name} (new game, top bar, Herald)` })),
   ...PATRON_LIST.map((patron) => ({ id: patron.crest, group: 'crest', path: `art/crests/patron-${patron.id}.png`, w: 128, h: 128, use: `Patron crest: ${patron.name} (Connections)` })),
 
+  // Arenas and inns (Phase 6a): one arena interior per slice town, the shared referee and
+  // registrar NPCs, and inn interiors for the towns away from home (Dunmere's is the Wayfarer tavern).
+  ...['dunmere', 'greenhollow', 'ironford', 'windmere'].map((town) => ({ id: `interior.arena.${town}`, group: 'interior', path: `art/interiors/arena-${town}.png`, borrow: scene(2), ...SCENE, use: `Arena interior in ${town[0].toUpperCase()}${town.slice(1)}: fighting ground, sign-up desk, history board` })),
+  ...['greenhollow', 'ironford', 'windmere'].map((town) => ({ id: `interior.inn.${town}`, group: 'interior', path: `art/interiors/inn-${town}.png`, borrow: scene(8), ...SCENE, use: `Inn in ${town[0].toUpperCase()}${town.slice(1)} (rest 1–3 nights, recruits)` })),
+  { id: 'portrait.arena.referee', group: 'portrait', path: 'art/portraits/npcs/arena-referee.png', w: 160, h: 160, use: 'Arena referee at the fighting ground (starts bouts)' },
+  { id: 'portrait.arena.registrar', group: 'portrait', path: 'art/portraits/npcs/arena-registrar.png', w: 160, h: 160, use: 'Arena registrar at the sign-up desk' },
+  { id: 'bg.town.windmere', group: 'bg', path: 'art/bg/town-windmere.png', borrow: scene(7), ...SCENE, use: 'Windmere town directory (no walkable layout yet)' },
+
   // History (Phase 5): the season review backdrop, award badges and record-book trophies.
   { id: 'bg.season.review', group: 'bg', path: 'art/bg/season-review.png', borrow: scene(9), ...SCENE, use: 'Season review cards (end of each year, re-opened from the record book)' },
   ...[
