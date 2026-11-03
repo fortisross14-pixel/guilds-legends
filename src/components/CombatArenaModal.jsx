@@ -4,8 +4,9 @@ import { SKILLS, STATUSES, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
 import { Button, HeroSprite, Modal, Motes, useSceneStyle } from './UI.jsx';
 import Asset from './Asset.jsx';
-import PixelIcon, { COMMAND_ICONS } from './PixelIcon.jsx';
+import PixelIcon from './PixelIcon.jsx';
 import { playSound } from '../audio/sfx.js';
+import { DRAG_SLOP, LONG_PRESS_MS, dragEnabled, haptic } from './gestures.js';
 
 // Battle background asset id (src/data/assets.js): the encounter's own, the
 // arena for tournaments, the slice's wild areas by name, else the primal.
@@ -26,17 +27,9 @@ export function battleBackground(encounter, locationPrimal) {
 
 // Beat lengths at 1× speed (ms). An attack is about 400 ms.
 const BEAT = { attack: 420, skill: 480, item: 420, defend: 220, stunned: 360, tick: 560, phase: 1300, charge: 1100, interrupt: 1000, enrage: 900, flee: 900, retreat: 500, fleeFailed: 800, victory: 300, defeat: 300 };
-const AREA_TARGETS = ['allEnemies', 'allAllies', 'self'];
 const INTENT_ICONS = { attack: '⚔', spell: '✦', heal: '✚', buff: '▲', guard: '◆', taunt: '!', flee: '↯', charge: '☄', debuff: '▼' };
 const PROFILE_NAMES = { brute: 'Brute', caster: 'Caster', healer: 'Healer', skirmisher: 'Skirmisher', tank: 'Tank' };
 const STATUS_FX = { poison: 'poison', burn: 'fire', regen: 'heal' };
-
-function targetTypeFor(command) {
-  if (command.action === 'attack') return 'enemy';
-  if (command.action === 'skill') return SKILLS[command.skillId]?.target;
-  if (command.action === 'item') return ITEMS[command.itemId]?.battle?.target;
-  return null;
-}
 
 function commandLabel(command, unit) {
   if (!command) return '…';
@@ -51,12 +44,16 @@ const encounterKey = (encounter) => (encounter ? `${encounter.id}:${encounter.tu
  * Replays the last round's events (encounter.events) beat by beat. While it
  * runs, `display` holds each unit's HP/MP/KO as of the current beat.
  */
-function useReplay(encounter, speed) {
+function useReplay(encounter, speed, boost, settings) {
   const shown = useRef(null);
   const live = useRef(encounter);
   const speedRef = useRef(speed);
+  const settingsRef = useRef(settings);
+  const boostRef = useRef(boost);
+  boostRef.current = boost;
   live.current = encounter;
   speedRef.current = speed;
+  settingsRef.current = settings;
   const [replay, setReplay] = useState(null);
   const key = encounterKey(encounter);
 
@@ -101,10 +98,14 @@ function useReplay(encounter, speed) {
       });
       if (beat.kind === 'flee' && display[beat.actorId]) display[beat.actorId] = { ...display[beat.actorId], ko: true, fled: true };
       const crit = beat.hits.some((hit) => hit.crit);
-      if (beat.hits.some((hit) => hit.type === 'damage')) playSound(crit ? 'crit' : 'hit');
+      if (beat.hits.some((hit) => hit.type === 'damage')) {
+        playSound(crit ? 'crit' : 'hit');
+        haptic(beat.hits.some((hit) => hit.ko) ? 'ko' : crit ? 'crit' : 'hit', settingsRef.current);
+      }
       else if (beat.hits.some((hit) => hit.type === 'heal' || hit.type === 'revive')) playSound('heal');
       setReplay({ display: { ...display }, beat, order, shake: crit || beat.kind === 'phase' || (beat.big && beat.hits.length > 0) });
-      timer = window.setTimeout(step, (BEAT[beat.kind] || 420) / (speedRef.current || 1));
+      // Holding anywhere fast-forwards (boost).
+      timer = window.setTimeout(step, (BEAT[beat.kind] || 420) / ((speedRef.current || 1) * (boostRef.current?.current || 1)));
     };
     step();
     return () => {
@@ -201,51 +202,47 @@ function BeatMarks({ beat, unitId }) {
   );
 }
 
-function PreviewChip({ preview, selected }) {
+/** What dropping on this target would do (the first action of its radial menu). */
+function PreviewChip({ preview }) {
   if (!preview) return null;
   const value =
-    preview.kind === 'damage'
-      ? `${preview.min}–${preview.max}`
-      : preview.kind === 'heal'
-        ? `+${preview.min}`
-        : preview.kind === 'revive'
-          ? `Revive ${preview.min}`
-          : preview.note || 'Effect';
+    preview.kind === 'damage' ? `${preview.min}–${preview.max}` : preview.kind === 'heal' ? `+${preview.min}` : preview.kind === 'revive' ? `Revive ${preview.min}` : preview.note || 'Effect';
   return (
-    <span className={`target-preview ${selected ? 'is-selected' : ''} ${preview.kind === 'heal' || preview.kind === 'revive' ? 'is-heal' : ''}`}>
-      <strong>{value}</strong>
+    <span className={`target-preview is-selected ${preview.kind === 'heal' || preview.kind === 'revive' ? 'is-heal' : ''}`}>
+      <strong>
+        {preview.lethal ? '☠ ' : ''}
+        {value}
+      </strong>
       {preview.tag ? <em className={`target-preview__tag target-preview__tag--${preview.tag.toLowerCase()}`}>{preview.tag}</em> : null}
-      {selected ? (
-        <small>
-          {Math.round((preview.hit ?? 1) * 100)}% hit{preview.crit ? ` · ${Math.round(preview.crit * 100)}% crit` : ''}
-          {preview.note && preview.kind !== 'status' ? ` · ${preview.note}` : ''}
-          <br />
-          Tap again to confirm
-        </small>
-      ) : null}
+      {preview.kind === 'damage' ? <small>{Math.round((preview.hit ?? 1) * 100)}% hit</small> : null}
     </span>
   );
 }
 
-export default function CombatArenaModal({ encounter, actions, locationPrimal, speed = 1 }) {
+export default function CombatArenaModal({ encounter, actions, locationPrimal, speed = 1, settings = {} }) {
   const [commands, setCommands] = useState({});
-  const [pending, setPending] = useState(null);
-  const [selected, setSelected] = useState(null);
-  const [menu, setMenu] = useState('root');
+  const [actorId, setActorId] = useState(null);
+  const [radial, setRadial] = useState(null);
+  const [hoverOption, setHoverOption] = useState(null);
+  const [dragging, setDragging] = useState(null);
   const [info, setInfo] = useState(null);
   const [auto, setAuto] = useState(false);
-  const [hintsHidden, setHintsHidden] = useState(false);
   const [intro, setIntro] = useState(() => encounter?.intro || null);
-  const replay = useReplay(encounter, speed);
+  const boost = useRef(1);
+  const [boosting, setBoosting] = useState(false);
+  const replay = useReplay(encounter, speed, boost, settings);
   const stageStyle = useSceneStyle(battleBackground(encounter, locationPrimal));
   const turnKey = encounter ? `${encounter.id}:${encounter.turn}:${encounter.status}` : null;
   const replaying = Boolean(replay);
+  const lineRef = useRef(null);
+  const press = useRef(null);
+  const canDrag = dragEnabled(settings);
 
   useEffect(() => {
     setCommands({});
-    setPending(null);
-    setSelected(null);
-    setMenu('root');
+    setActorId(null);
+    setRadial(null);
+    setDragging(null);
   }, [turnKey]);
 
   // The boss's intro line, shown when the battle opens.
@@ -263,13 +260,16 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   }, [auto, replaying, intro, turnKey, encounter, actions, speed]);
 
   const livingParty = useMemo(() => (encounter ? encounter.party.filter((unit) => !unit.ko) : []), [encounter]);
-  const active = !replaying && !auto ? livingParty.find((unit) => !commands[unit.id]) || null : null;
-  const preview = useMemo(() => (pending && active ? previewCommand(encounter, active.id, pending.command) : {}), [pending, active, encounter]);
+  const ready = !replaying && !auto && encounter?.status === 'active';
+  const active = ready ? livingParty.find((unit) => !commands[unit.id]) || null : null;
+  const actor = ready ? livingParty.find((unit) => unit.id === (dragging?.actorId || radial?.actorId || actorId)) || active : null;
 
   if (!encounter) return null;
   const finished = encounter.status !== 'active';
   const display = replay?.display || null;
   const beat = replay?.beat || null;
+  const units = [...encounter.party, ...encounter.enemies];
+  const unitById = (id) => units.find((unit) => unit.id === id) || null;
   const view = (unit) => {
     const shown = display?.[unit.id];
     return shown ? { ...unit, hp: shown.hp, mp: shown.mp, ko: shown.ko, hidden: shown.hidden, status: shown.status || unit.status } : unit;
@@ -282,55 +282,162 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const itemsLeft = Object.entries(encounter.items || {})
     .map(([id, count]) => [id, count - (reservedItems[id] || 0)])
     .filter(([, count]) => count > 0);
+  const optionsOn = (who, target) => (who && target && !target.hidden ? actionsFor(encounter, who, target, itemsLeft) : []);
 
   const commit = (unit, command) => {
     const next = { ...commands, [unit.id]: command };
-    setPending(null);
-    setSelected(null);
-    setMenu('root');
+    setRadial(null);
+    setHoverOption(null);
+    setActorId(null);
+    haptic('drop', settings);
+    if (!settings.seenHints?.battleDrag) actions.updateSettings({ seenHints: { ...(settings.seenHints || {}), battleDrag: true } });
     if (livingParty.every((hero) => next[hero.id])) {
       setCommands({});
       actions.combatRound(next);
     } else setCommands(next);
   };
-
-  const choose = (command) => {
-    if (!active) return;
-    const targetType = targetTypeFor(command);
-    if (!targetType) return commit(active, command);
-    setPending({ command, targetType });
-    // Area and self skills have nothing to pick: everything valid is selected at once.
-    setSelected(AREA_TARGETS.includes(targetType) ? 'area' : null);
-  };
-
-  const valid = (unit) =>
-    Boolean(pending) &&
-    !unit.hidden &&
-    (((pending.targetType === 'enemy' || pending.targetType === 'allEnemies') && unit.side === 'enemy' && !unit.ko) ||
-      ((pending.targetType === 'ally' || pending.targetType === 'allAllies') && unit.side === 'party' && !unit.ko) ||
-      (pending.targetType === 'self' && unit.id === active?.id) ||
-      (pending.targetType === 'koAlly' && unit.side === 'party' && unit.ko));
-
-  const confirm = () => {
-    if (!pending || !active || !selected) return;
-    commit(active, selected === 'area' ? pending.command : { ...pending.command, targetId: selected });
-  };
   const cancel = () => {
-    setPending(null);
-    setSelected(null);
+    setRadial(null);
+    setHoverOption(null);
+    setDragging(null);
   };
-
-  const tapUnit = (unit, event) => {
-    event.stopPropagation();
-    if (replaying) return;
-    if (pending) {
-      if (!valid(unit)) return;
-      const id = AREA_TARGETS.includes(pending.targetType) ? 'area' : unit.id;
-      if (selected === id) confirm();
-      else setSelected(id);
+  const openRadial = (who, target, x, y, drag = false) => {
+    const options = optionsOn(who, target);
+    if (!options.length) return false;
+    setRadial({ actorId: who.id, targetId: target.id, x, y, drag });
+    setHoverOption(null);
+    return true;
+  };
+  const choose = (option) => {
+    if (!radial) return;
+    const who = unitById(radial.actorId);
+    if (option.disabled) {
+      haptic('error', settings);
       return;
     }
-    setInfo(info === unit.id ? null : unit.id);
+    commit(who, option.command);
+  };
+
+  // ---------------------------------------------------------------- pointer: tap, long-press, drag
+  const unitAt = (x, y) => unitById(document.elementFromPoint(x, y)?.closest?.('[data-unit-id]')?.dataset.unitId);
+  const optionAt = (x, y) => {
+    const index = document.elementFromPoint(x, y)?.closest?.('[data-radial-index]')?.dataset.radialIndex;
+    return index === undefined ? null : Number(index);
+  };
+  const onUnitPointerDown = (unit, event) => {
+    event.stopPropagation();
+    if (event.button > 0) return;
+    const state = { unit, x: event.clientX, y: event.clientY, fired: false, drag: false, over: null, dwell: 0 };
+    press.current = state;
+    const long = window.setTimeout(() => {
+      state.fired = true;
+      setInfo(unit.id);
+      haptic('tap', settings);
+    }, LONG_PRESS_MS);
+    const startRect = event.currentTarget.getBoundingClientRect();
+    const origin = { x: startRect.left + startRect.width / 2, y: startRect.top + startRect.height / 2 };
+    const draggable = canDrag && ready && unit.side === 'party' && !unit.ko;
+    const move = (moveEvent) => {
+      const { clientX: x, clientY: y } = moveEvent;
+      if (!state.drag) {
+        if (Math.hypot(x - state.x, y - state.y) < DRAG_SLOP) return;
+        window.clearTimeout(long);
+        if (!draggable || state.fired) return;
+        state.drag = true;
+        setRadial(null);
+        setDragging({ actorId: unit.id, overId: null });
+      }
+      moveEvent.preventDefault();
+      lineRef.current?.setAttribute('x1', origin.x);
+      lineRef.current?.setAttribute('y1', origin.y);
+      lineRef.current?.setAttribute('x2', x);
+      lineRef.current?.setAttribute('y2', y);
+      if (state.radial) {
+        const index = optionAt(x, y);
+        setHoverOption((current) => (current === index ? current : index));
+        return;
+      }
+      const over = unitAt(x, y);
+      if (over?.id !== state.over?.id) {
+        state.over = over;
+        window.clearTimeout(state.dwell);
+        setDragging({ actorId: unit.id, overId: over?.id || null });
+        // Resting on a target opens the radial menu under the thumb: keep dragging onto an action and release.
+        if (over && optionsOn(unit, over).length) {
+          state.dwell = window.setTimeout(() => {
+            state.radial = openRadial(unit, over, x, y, true);
+          }, 260);
+        }
+      }
+    };
+    const up = (upEvent) => {
+      window.clearTimeout(long);
+      window.clearTimeout(state.dwell);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', abort);
+      press.current = null;
+      if (state.fired) return;
+      if (!state.drag) {
+        tapUnit(unit);
+        return;
+      }
+      setDragging(null);
+      const { clientX: x, clientY: y } = upEvent;
+      if (state.radial) {
+        const index = optionAt(x, y);
+        const options = optionsOn(unit, state.over);
+        if (index !== null && options[index]) choose({ ...options[index] });
+        else if (state.over && unitAt(x, y)?.id === state.over.id) setRadial((current) => (current ? { ...current, drag: false } : current));
+        else cancel();
+        return;
+      }
+      const target = unitAt(x, y);
+      if (!target || !openRadial(unit, target, x, y)) cancel();
+    };
+    const abort = () => {
+      window.clearTimeout(long);
+      window.clearTimeout(state.dwell);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', abort);
+      press.current = null;
+      cancel();
+    };
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', abort);
+  };
+
+  // Tap fallback: tap a hero, then tap a target, then the same radial menu.
+  const tapUnit = (unit) => {
+    if (!ready) {
+      setInfo(info === unit.id ? null : unit.id);
+      return;
+    }
+    const who = livingParty.find((hero) => hero.id === actorId);
+    if (!who && unit.side === 'party' && !unit.ko) {
+      setActorId(unit.id);
+      setRadial(null);
+      haptic('tap', settings);
+      return;
+    }
+    const rect = document.querySelector(`[data-unit-id="${unit.id}"]`)?.getBoundingClientRect();
+    const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+    const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+    if (!openRadial(who || active, unit, x, y)) haptic('error', settings);
+  };
+
+  // Hold anywhere during the round's animation to fast-forward it.
+  const onStagePointerDown = () => {
+    if (!replaying) return;
+    boost.current = 4;
+    setBoosting(true);
+  };
+  const stopBoost = () => {
+    if (boost.current === 1) return;
+    boost.current = 1;
+    setBoosting(false);
   };
 
   const undo = () => {
@@ -341,10 +448,18 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     delete next[last.id];
     setCommands(next);
     cancel();
-    setMenu('root');
   };
 
-  const isSelected = (unit) => selected && (selected === 'area' ? valid(unit) : selected === unit.id);
+  // ---------------------------------------------------------------- what to highlight
+  const dragActor = dragging ? unitById(dragging.actorId) : null;
+  const radialActor = radial ? unitById(radial.actorId) : null;
+  const radialTarget = radial ? unitById(radial.targetId) : null;
+  const radialOptions = radial ? optionsOn(radialActor, radialTarget) : [];
+  const hovered = hoverOption !== null ? radialOptions[hoverOption] : null;
+  const affected = new Set(hovered?.area ? units.filter((unit) => !unit.ko && !unit.hidden && unit.side === (hovered.area === 'enemies' ? 'enemy' : 'party')).map((unit) => unit.id) : []);
+  const targetable = (unit) => Boolean(dragActor) && optionsOn(dragActor, unit).length > 0;
+  const overPreview = dragging?.overId && dragActor ? previewOf(encounter, dragActor, unitById(dragging.overId), optionsOn(dragActor, unitById(dragging.overId))[0]) : null;
+
   const unitClass = (unit) => {
     const hit = beat?.hits.find((item) => item.targetId === unit.id);
     return [
@@ -356,65 +471,66 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
       hit && hit.type === 'damage' ? `is-hit ${hit.crit ? 'is-crit' : ''}` : '',
       hit && (hit.type === 'heal' || hit.type === 'revive') ? 'is-healed' : '',
       hit && hit.type === 'summon' ? 'is-summoned' : '',
-      valid(unit) ? 'is-targetable' : '',
-      isSelected(unit) ? 'is-selected' : '',
+      targetable(unit) ? 'is-targetable' : '',
+      dragging?.overId === unit.id || radial?.targetId === unit.id || affected.has(unit.id) ? 'is-selected' : '',
       finished && !replaying && encounter.result?.playerWon && unit.side === 'party' && !unit.ko ? 'is-victory' : '',
       unit.charging ? 'is-charging' : '',
     ]
       .filter(Boolean)
       .join(' ');
   };
+  const unitHandlers = (unit) => ({
+    'data-unit-id': unit.id,
+    onPointerDown: (event) => onUnitPointerDown(unit, event),
+    // Taps are handled on pointer up; the click must not reach the stage (which cancels).
+    onClick: (event) => event.stopPropagation(),
+    onContextMenu: (event) => event.preventDefault(),
+  });
 
   const order = replay?.order || turnOrder(encounter);
   const intent = encounter.enemyIntent;
-  const infoUnit = info ? [...encounter.party, ...encounter.enemies].find((unit) => unit.id === info) : null;
+  const infoUnit = info ? unitById(info) : null;
   const wildWipe = finished && encounter.sourceType === 'wild' && !encounter.result?.playerWon && encounter.result?.method !== 'withdrew';
-  const pendingTargetText = pending
-    ? AREA_TARGETS.includes(pending.targetType)
-      ? pending.targetType === 'self'
-        ? 'on yourself'
-        : 'on every highlighted target'
-      : pending.targetType === 'enemy'
-        ? 'tap an enemy'
-        : pending.targetType === 'koAlly'
-          ? 'tap a fallen ally'
-          : 'tap an ally'
-    : '';
+  const showHand = canDrag && ready && !settings.seenHints?.battleDrag && !dragging && !radial;
 
   return (
-    <Modal
-      open
-      title={encounter.title || 'Battle'}
-      eyebrow={`${encounter.roundName || 'Battle'} · Round ${encounter.turn}`}
-      preventClose
-      width="wide"
-      className="battle-modal"
-    >
-      <div className={`battle-screen battle-screen--${encounter.mode} ${replay?.shake ? 'is-shaking' : ''}`} style={{ '--speed': speed }}>
+    <Modal open title={encounter.title || 'Battle'} eyebrow={`${encounter.roundName || 'Battle'} · Round ${encounter.turn}`} preventClose width="wide" className="battle-modal">
+      <div
+        className={`battle-screen battle-screen--${encounter.mode} ${replay?.shake ? 'is-shaking' : ''} ${boosting ? 'is-boosting' : ''}`}
+        style={{ '--speed': speed * (boosting ? 4 : 1) }}
+        onPointerDown={onStagePointerDown}
+        onPointerUp={stopBoost}
+        onPointerCancel={stopBoost}
+        onPointerLeave={stopBoost}
+      >
         <section
           className="battle-stage scene"
           style={stageStyle}
           data-asset={battleBackground(encounter, locationPrimal)}
           aria-label="Battlefield"
           onClick={() => {
-            if (pending) cancel();
-            setInfo(null);
+            if (!press.current) {
+              cancel();
+              setActorId(null);
+              setInfo(null);
+            }
           }}
         >
           <Motes />
           {encounter.hints?.length && !finished ? <p className="battle-hint">{encounter.hints[Math.min(encounter.turn - 1, encounter.hints.length - 1)]}</p> : null}
+          {boosting ? <span className="battle-boost" aria-hidden="true">»</span> : null}
 
           {!finished ? (
             <ol className="turn-order" aria-label="Turn order">
               {order.map((turn, index) => {
-                const unit = [...encounter.party, ...encounter.enemies].find((item) => item.id === turn.unitId);
+                const unit = unitById(turn.unitId);
                 if (!unit) return null;
                 const now = replaying && beat?.actorId === unit.id && turn.round === encounter.turn - 1;
                 return (
                   <li
                     key={`${turn.unitId}-${index}`}
                     className={`turn-order__slot turn-order__slot--${turn.side} ${turn.skip ? 'is-skipped' : ''} ${now ? 'is-now' : ''} ${index > 0 && order[index - 1].round !== turn.round ? 'is-next-round' : ''}`}
-                    title={`${unit.name}${turn.skip ? ' (stunned)' : ''}`}
+                    {...longPressOnly(() => setInfo(unit.id))}
                   >
                     {unit.side === 'enemy' && unit.sprite?.kind === 'enemy' ? <Asset id={`battle.${unit.sprite.key}`} /> : <HeroSprite hero={unit} size="xs" enemy={unit.side === 'enemy'} />}
                     <span>{unit.name.split(' ')[0]}</span>
@@ -422,21 +538,6 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                 );
               })}
             </ol>
-          ) : null}
-
-          {encounter.guaranteed && !finished && !hintsHidden ? (
-            <aside className="battle-hints panel" onClick={(event) => event.stopPropagation()}>
-              <strong>First battle</strong>
-              <ol>
-                <li>Pick a command for the glowing hero, then tap the target on the field.</li>
-                <li>The numbers on each target show the damage range. Tap the same target again to confirm.</li>
-                <li>Someone hurt? Item → Potion, then tap the ally.</li>
-                <li>The Tell shows the leader’s next move. Defend against big ones, or stun them first.</li>
-              </ol>
-              <Button size="sm" variant="secondary" onClick={() => setHintsHidden(true)}>
-                Hide hints
-              </Button>
-            </aside>
           ) : null}
 
           {!finished && intent && !replaying ? (
@@ -451,20 +552,20 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
             </div>
           ) : null}
 
-          <div className="battle-enemies" aria-label="Enemies" data-menu>
+          <div className="battle-enemies" aria-label="Enemies">
             {encounter.enemies.map((raw, index) => {
               const unit = view(raw);
               if (unit.hidden || (unit.fled && !display)) return null;
               const plan = !finished && !replaying ? encounter.intents?.[unit.id] : null;
-              const target = plan?.targetId ? [...encounter.party, ...encounter.enemies].find((item) => item.id === plan.targetId) : null;
+              const target = plan?.targetId ? unitById(plan.targetId) : null;
               return (
                 <button
                   key={unit.id}
                   type="button"
                   style={{ '--i': index }}
                   className={`battle-enemy ${unitClass(unit)} ${intent?.actorId === unit.id ? 'is-telling' : ''} ${unit.boss ? 'is-boss' : ''}`}
-                  onClick={(event) => tapUnit(unit, event)}
-                  aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP${valid(unit) ? ', tap to target' : ''}`}
+                  {...unitHandlers(unit)}
+                  aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP`}
                 >
                   {plan && !unit.ko ? (
                     <span className={`intent intent--${plan.icon} ${plan.big ? 'is-big' : ''}`}>
@@ -473,7 +574,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                       {target ? ` → ${target.name.split(' ')[0]}` : ''}
                     </span>
                   ) : null}
-                  {valid(unit) ? <PreviewChip preview={preview[unit.id]} selected={isSelected(unit)} /> : null}
+                  {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
                   <EnemyArt unit={unit} />
                   <strong>{unit.name}</strong>
                   <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
@@ -503,7 +604,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
               </ul>
               {wildWipe ? (
                 <>
-                  <p className="battle-result__note">The party falls. Try again from the start, or carry the wounded back to camp (they will need time to heal).</p>
+                  <p className="battle-result__note">The party falls. Retry, or carry the wounded back to camp.</p>
                   <div className="battle-result__actions">
                     <Button variant="primary" size="lg" onClick={actions.retryWildBattle}>
                       Retry battle
@@ -523,85 +624,28 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
               )}
             </section>
           ) : null}
+
+          {showHand ? (
+            <div className="gesture-hint gesture-hint--battle" aria-hidden="true">
+              <span className="gesture-hint__hand">☝</span>
+              <small>Drag a hero onto an enemy</small>
+            </div>
+          ) : null}
         </section>
 
-        <div
-          className="battle-hud"
-          style={{ '--active': Math.max(0, encounter.party.findIndex((unit) => unit.id === active?.id)), '--count': encounter.party.length }}
-        >
+        <div className="battle-hud">
           {!finished ? (
             <section className="battle-commands panel" aria-label="Commands">
               {replaying ? (
-                <span className="battle-commands__who">{beat?.actorId ? `${[...encounter.party, ...encounter.enemies].find((unit) => unit.id === beat.actorId)?.name || ''}${beat.label ? `: ${beat.label}` : ''}` : 'Resolving the round…'}</span>
+                <span className="battle-commands__who">
+                  {beat?.actorId ? `${unitById(beat.actorId)?.name || ''}${beat.label ? `: ${beat.label}` : ''}` : 'Resolving…'} <small>Hold to speed up</small>
+                </span>
               ) : auto ? (
                 <span className="battle-commands__who">Auto-battle is on</span>
-              ) : pending ? (
-                <div className="battle-commands__prompt">
-                  <span>
-                    {active?.name}: {commandLabel(pending.command, active)} · {pendingTargetText}
-                  </span>
-                  <div className="battle-commands__row">
-                    <Button variant="primary" disabled={!selected} onClick={confirm}>
-                      Confirm
-                    </Button>
-                    <Button onClick={cancel}>Cancel</Button>
-                  </div>
-                </div>
-              ) : active ? (
-                <>
-                  <span className="battle-commands__who">{active.name}</span>
-                  {menu === 'root' ? (
-                    <div className="battle-commands__menu" data-menu>
-                      {COMMANDS.map((command) => (
-                        <Button
-                          key={command.id}
-                          icon={<PixelIcon name={COMMAND_ICONS[command.id] || 'star'} size={24} />}
-                          disabled={(command.id === 'skill' && !active.skills.length) || (command.id === 'item' && !itemsLeft.length)}
-                          onClick={() => (command.id === 'skill' || command.id === 'item' ? setMenu(command.id) : choose({ action: command.id }))}
-                        >
-                          {command.label}
-                        </Button>
-                      ))}
-                    </div>
-                  ) : null}
-                  {menu === 'skill' ? (
-                    <div className="battle-commands__list" data-menu>
-                      {active.skills.map((id) => {
-                        const skill = SKILLS[id];
-                        return (
-                          <Button key={id} size="sm" disabled={active.mp < skill.mp} onClick={() => choose({ action: 'skill', skillId: id })}>
-                            <span className="battle-option">
-                              <b>
-                                {skillLabel(skill, active.primal)} · {skill.mp} MP
-                              </b>
-                              <small>{skill.description}</small>
-                            </span>
-                          </Button>
-                        );
-                      })}
-                      <Button size="sm" variant="secondary" onClick={() => setMenu('root')}>
-                        ◀ Back
-                      </Button>
-                    </div>
-                  ) : null}
-                  {menu === 'item' ? (
-                    <div className="battle-commands__list" data-menu>
-                      {itemsLeft.map(([id, count]) => (
-                        <Button key={id} size="sm" onClick={() => choose({ action: 'item', itemId: id })}>
-                          <span className="battle-option">
-                            <b>
-                              {ITEMS[id]?.name} ×{count}
-                            </b>
-                            <small>{ITEMS[id]?.description}</small>
-                          </span>
-                        </Button>
-                      ))}
-                      <Button size="sm" variant="secondary" onClick={() => setMenu('root')}>
-                        ◀ Back
-                      </Button>
-                    </div>
-                  ) : null}
-                </>
+              ) : actor ? (
+                <span className="battle-commands__who">
+                  <b>{actor.name}</b> <small>{canDrag ? 'Drag onto a target · tap = pick' : 'Tap a target'} · long-press = inspect</small>
+                </span>
               ) : null}
               <div className="battle-commands__meta">
                 <Button size="sm" variant="secondary" onClick={undo} disabled={!Object.keys(commands).length || replaying}>
@@ -623,7 +667,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
           ) : null}
 
           <ol className="battle-log" aria-live="polite" aria-label="Battle messages">
-            {encounter.log.slice(-6).map((entry, index) => (
+            {encounter.log.slice(-4).map((entry, index) => (
               <li key={`${entry.turn}-${index}`} className={`battle-log__entry battle-log__entry--${entry.tone}`}>
                 {entry.text}
               </li>
@@ -637,18 +681,14 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                 <button
                   key={unit.id}
                   type="button"
-                  className={`battle-hero ${unitClass(unit)} ${active?.id === unit.id && !finished ? 'is-active' : ''}`}
-                  onClick={(event) => tapUnit(unit, event)}
-                  aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP${valid(unit) ? ', tap to target' : ''}`}
+                  className={`battle-hero ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''} ${canDrag && ready && !unit.ko ? 'is-draggable' : ''}`}
+                  {...unitHandlers(unit)}
+                  aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP`}
                 >
-                  {valid(unit) ? <PreviewChip preview={preview[unit.id]} selected={isSelected(unit)} /> : null}
+                  {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
                   <HeroSprite hero={unit} size="sm" />
                   <span className="battle-hero__info">
                     <strong>{unit.name}</strong>
-                    <small>
-                      Lv {unit.level} {unit.classId}
-                      {unit.ko ? ' · KO' : ''}
-                    </small>
                     <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
                     <Meter value={unit.mp} max={unit.maxMp} kind="mp" />
                     <StatusIcons status={unit.status} />
@@ -660,8 +700,132 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
             })}
           </section>
         </div>
+
+        {dragging ? (
+          <svg className="drag-line" aria-hidden="true">
+            <line ref={lineRef} />
+          </svg>
+        ) : null}
+
+        {radial && radialTarget ? (
+          <Radial
+            radial={radial}
+            options={radialOptions}
+            hover={hoverOption}
+            previews={radialOptions.map((option) => previewOf(encounter, radialActor, radialTarget, option))}
+            onPick={choose}
+            onCancel={cancel}
+            onHover={setHoverOption}
+          />
+        ) : null}
       </div>
     </Modal>
+  );
+}
+
+/** Long-press only (turn order icons): inspect the unit. */
+function longPressOnly(onLongPress) {
+  let timer = 0;
+  const clear = () => window.clearTimeout(timer);
+  return {
+    onPointerDown: (event) => {
+      event.stopPropagation();
+      clear();
+      timer = window.setTimeout(onLongPress, LONG_PRESS_MS);
+    },
+    onPointerUp: clear,
+    onPointerLeave: clear,
+    onContextMenu: (event) => event.preventDefault(),
+  };
+}
+
+/**
+ * The actions one hero can take on one target, for the radial menu.
+ * Enemy: Attack and offensive skills/items. Ally: heals, buffs, items.
+ * Fallen ally: revives. Self: Defend, self skills, items.
+ */
+function actionsFor(encounter, actor, target, itemsLeft) {
+  const options = [];
+  const self = target.id === actor.id;
+  const enemy = target.side === 'enemy';
+  const fallen = target.side === 'party' && target.ko;
+  if (enemy && target.ko) return options;
+  const fits = (kind) => {
+    if (enemy) return ['enemy', 'allEnemies'].includes(kind);
+    if (fallen) return kind === 'koAlly';
+    if (self) return ['self', 'ally', 'allAllies'].includes(kind);
+    return ['ally', 'allAllies'].includes(kind);
+  };
+  const withTarget = (kind) => (['enemy', 'ally', 'koAlly'].includes(kind) ? { targetId: target.id } : {});
+  const area = (kind) => (kind === 'allEnemies' ? 'enemies' : kind === 'allAllies' ? 'allies' : null);
+  if (enemy) options.push({ key: 'attack', label: 'Attack', icon: 'sword', command: { action: 'attack', targetId: target.id } });
+  if (self && !fallen) options.push({ key: 'defend', label: 'Defend', icon: 'shield', command: { action: 'defend' } });
+  (actor.skills || []).forEach((id) => {
+    const skill = SKILLS[id];
+    if (!skill || !fits(skill.target)) return;
+    options.push({ key: id, label: skillLabel(skill, actor.primal), icon: 'star', cost: `${skill.mp} MP`, disabled: actor.mp < skill.mp, area: area(skill.target), command: { action: 'skill', skillId: id, ...withTarget(skill.target) } });
+  });
+  itemsLeft.forEach(([id, count]) => {
+    const kind = ITEMS[id]?.battle?.target;
+    if (!kind || !fits(kind)) return;
+    options.push({ key: `item-${id}`, label: ITEMS[id].name, icon: 'cross', cost: `×${count}`, area: area(kind), command: { action: 'item', itemId: id, ...withTarget(kind) } });
+  });
+  return options;
+}
+
+function previewOf(encounter, actor, target, option) {
+  if (!actor || !target || !option || option.command.action === 'defend') return null;
+  const preview = previewCommand(encounter, actor.id, option.command)?.[target.id];
+  if (!preview) return null;
+  return { ...preview, lethal: preview.kind === 'damage' && preview.max >= target.hp };
+}
+
+/** The radial menu that opens under the thumb, with only the valid actions. */
+function Radial({ radial, options, hover, previews, onPick, onCancel, onHover }) {
+  const size = 64;
+  const radius = Math.max(78, Math.min(118, 30 + options.length * 14));
+  const margin = radius + size / 2 + 8;
+  const cx = Math.min(Math.max(radial.x, margin), window.innerWidth - margin);
+  const cy = Math.min(Math.max(radial.y, margin), window.innerHeight - margin);
+  return (
+    <div className={`radial ${radial.drag ? 'is-dragging' : ''}`} style={{ left: cx, top: cy }} onClick={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
+      <button type="button" className="radial__center" onClick={onCancel} aria-label="Cancel">
+        ×
+      </button>
+      {options.map((option, index) => {
+        const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
+        const preview = previews[index];
+        return (
+          <button
+            key={option.key}
+            type="button"
+            data-radial-index={index}
+            className={`radial__option ${hover === index ? 'is-hover' : ''} ${option.disabled ? 'is-disabled' : ''}`}
+            style={{ transform: `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)` }}
+            onPointerEnter={() => onHover(index)}
+            onClick={() => onPick(option)}
+            aria-label={`${option.label}${option.cost ? `, ${option.cost}` : ''}`}
+          >
+            <PixelIcon name={option.icon} size={22} />
+            <b>{option.label}</b>
+            {option.cost ? <small>{option.cost}</small> : null}
+            {preview ? <PreviewLine preview={preview} /> : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function PreviewLine({ preview }) {
+  const value = preview.kind === 'damage' ? `${preview.min}–${preview.max}` : preview.kind === 'heal' ? `+${preview.min}` : preview.kind === 'revive' ? `↺${preview.min}` : preview.note || '';
+  return (
+    <em className="radial__preview">
+      {preview.lethal ? '☠ ' : ''}
+      {value}
+      {preview.kind === 'damage' ? ` · ${Math.round((preview.hit ?? 1) * 100)}%` : ''}
+      {preview.tag ? ` · ${preview.tag}` : ''}
+    </em>
   );
 }
 

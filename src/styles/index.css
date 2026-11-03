@@ -29,4 +29,5 @@
 @import './screens/identity.css';
 @import './screens/history.css';
 @import './screens/arena.css';
+@import './components/touch.css';
 @import './layout/responsive.css';

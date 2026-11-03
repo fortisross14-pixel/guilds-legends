@@ -213,10 +213,10 @@ export function createMissionCombatEncounterInPlace(state, mission) {
   });
   if (scripted) {
     state.activeEncounter.hints = [
-      'Tap a hero, pick a command, then tap a target.',
-      'The marker over an enemy shows what it plans next. Hit the one about to strike.',
-      'Hurt? A potion or a heal keeps everyone standing. Guard soaks a big hit.',
-      'Finish the weakest wolf first: fewer wolves, fewer bites.',
+      'Drag a hero onto a wolf, then pick an action. (Or tap the hero, then the wolf.)',
+      'The marker over an enemy shows its next move. Long-press anyone to inspect.',
+      'Hurt? Drag a hero onto an ally (or itself) for potions, heals and Defend.',
+      'Finish the weakest wolf first. Hold the screen to speed up a round.',
     ];
   }
   mission.combatStarted = true;

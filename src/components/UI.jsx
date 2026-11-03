@@ -336,6 +336,25 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
       previousFocusRef.current?.focus?.();
     };
   }, [open, onClose, preventClose]);
+  // Bottom panels: swipe the header down to close (when the panel can close).
+  const swipe = useRef(null);
+  const onHeaderDown = (event) => {
+    if (preventClose || event.target.closest('button')) return;
+    swipe.current = { y: event.clientY };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+  const onHeaderMove = (event) => {
+    if (!swipe.current || !dialogRef.current) return;
+    const dy = Math.max(0, event.clientY - swipe.current.y);
+    dialogRef.current.style.transform = dy ? `translateY(${dy}px)` : '';
+  };
+  const onHeaderUp = (event) => {
+    if (!swipe.current) return;
+    const dy = event.clientY - swipe.current.y;
+    swipe.current = null;
+    if (dialogRef.current) dialogRef.current.style.transform = '';
+    if (dy > 90) onClose?.();
+  };
   if (!open) return null;
   return (
     <div
@@ -346,7 +365,8 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
       }}
     >
       <div ref={dialogRef} className={`modal modal--${width} ${className}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
-        <header className="modal__header">
+        <header className="modal__header" onPointerDown={onHeaderDown} onPointerMove={onHeaderMove} onPointerUp={onHeaderUp} onPointerCancel={onHeaderUp}>
+          {!preventClose ? <i className="modal__grab" aria-hidden="true" /> : null}
           <div>
             <h2>{title}</h2>
             {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}

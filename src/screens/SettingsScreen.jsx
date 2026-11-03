@@ -67,15 +67,39 @@ export default function SettingsScreen({ state, actions, slot }) {
           </label>
         </Panel>
 
-        <Panel title="Controls" eyebrow="Walking in towns">
+        <Panel title="Controls" eyebrow="Touch and gestures">
+          <div className="segmented" role="radiogroup" aria-label="Gestures">
+            {[
+              ['drag', 'Drag gestures'],
+              ['tap', 'Tap only'],
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={(state.settings.gestures || 'drag') === id}
+                className={(state.settings.gestures || 'drag') === id ? 'is-selected' : ''}
+                onClick={() => actions.updateSettings({ gestures: id })}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <small className="muted">Tap only: tap the source, then the target. Nothing needs dragging.</small>
+          <label className="sound-setting">
+            <input type="checkbox" checked={state.settings.haptics !== false} onChange={(event) => actions.updateSettings({ haptics: event.target.checked })} /> Vibration (hits, crits, KOs)
+          </label>
           <label className="sound-setting">
             <input type="checkbox" checked={Boolean(state.settings.joystick)} onChange={(event) => actions.updateSettings({ joystick: event.target.checked })} />{' '}
-            Drag-anywhere joystick
+            Drag-anywhere joystick (optional)
           </label>
           <label className="sound-setting">
             <input type="checkbox" checked={state.settings.battleSpeed === 2} onChange={(event) => actions.updateSettings({ battleSpeed: event.target.checked ? 2 : 1 })} /> Fast battles (2× speed)
           </label>
-          <small className="muted">Off: tap where you want to go, or hold and drag to steer. On: drag anywhere to walk with a thumb stick; a quick tap still walks there.</small>
+          <small className="muted">Walking: tap the ground to go, tap a person or door to walk there and use it.</small>
+          <Button size="sm" onClick={() => actions.updateSettings({ seenHints: {} })}>
+            Show gesture hints again
+          </Button>
         </Panel>
 
         <Panel title="Simulation" eyebrow="Campaign preferences">

@@ -270,7 +270,14 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - **Main quest guidance:** a quest marker on the world map and in town, and a quest log entry with the next step.
 - **Chapter end:** the Wren banner scene, a chapter summary (season-review style) and a teaser for Chapter 2. Free play continues afterwards.
 
-### Phase 7 — Asset list (for the art AI)
+### Phase 7A — Touch-first UI/UX
+- One gesture language for the whole game (tap, drag and drop, long-press to inspect, swipe, hold to fast-forward; no double-tap; every gesture has a tap fallback and a "Tap only" setting), written at the top of `docs/UX.md`.
+- Combat by dragging a hero onto a target, with a radial menu of valid actions, previews, long-press unit cards, undo, hold to fast-forward and vibration.
+- Exploring by tapping (no context button by default), icons over people and doors, long-press peeks, a goal chip that walks you to the quest, a pan-and-zoom world map, dialogue with hold and a log.
+- Guild management by drag and drop (rooms, party, items and gear), a rest dial on a timeline of events, swipeable recruits and hero pages.
+- Bottom panels instead of pop-ups, primary actions in the thumb zone, minimal text, one name per thing, one interruption queue, consistent back. `docs/UX.md` holds the gestures, screens, navigation, flows with tap counts, glossary and open issues.
+
+### Phase 7B — Asset list (for the art AI)
 - Finalize `docs/ASSETS.md`: every placeholder in the game, grouped. For each asset list:
   - id
   - file path
@@ -299,12 +306,12 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 
 ```
 Phase 0 → Phase 1 → Phase 2 ┐
-                   Phase 3 ─┼→ Phase 6 → Phase 7 → Phase 8
+                   Phase 3 ─┼→ Phase 6 → Phase 7A → Phase 7B → Phase 8
                    Phase 4 ─┤
                    Phase 5 ─┘
 ```
 
-Phases 2–5 can run in any order after Phase 1. Phase 6 needs the towns, combat and growth in place. Phase 7 can be updated continuously but is finalized last.
+Phases 2–5 can run in any order after Phase 1. Phase 6 needs the towns, combat and growth in place. Phase 7B (assets) can be updated continuously but is finalized last.
 
 ## 6. Rules for every phase
 - Testing: only `npm run build` and a successful GitHub Pages deploy until Phase 8. No playthroughs or screenshots.

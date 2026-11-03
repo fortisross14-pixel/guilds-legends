@@ -1333,7 +1333,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         ))}
       </nav>
       <PartyRail state={state} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
-      <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} />
+      <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} />
       <MissionGameModal game={state.activeMissionGame} actions={actions} />
       <DecisionModal state={state} actions={actions} />
       {storyScene ? (

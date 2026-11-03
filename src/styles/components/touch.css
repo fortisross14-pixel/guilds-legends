@@ -1,0 +1,57 @@
+/* Touch-first UI (Phase 7A, docs/UX.md): drag and drop, the radial menu,
+   long-press cards, gesture hints, bottom panels, press feedback. */
+
+/* No double-tap zoom delay anywhere; long-press never opens the browser menu. */
+html { touch-action: manipulation; }
+button, [role='button'], .is-draggable { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.is-draggable { touch-action: none; cursor: grab; }
+body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+
+/* Every press answers at once. */
+button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.97); filter: brightness(1.12); }
+
+/* Drag and drop */
+.drag-ghost { position: fixed; z-index: 200; left: 0; top: 0; margin: -22px 0 0 -40px; padding: 6px 12px; border: 1px solid var(--gold-bright); border-radius: 3px; background: rgba(10, 9, 14, .92); color: var(--gold-bright); font: 600 13px var(--font-ui); white-space: nowrap; pointer-events: none; box-shadow: 0 8px 22px rgba(0, 0, 0, .5); }
+[data-drop].is-drop-over { outline: 2px solid var(--gold-bright); outline-offset: 2px; box-shadow: 0 0 18px rgba(246, 210, 140, .35); }
+.drag-line { position: fixed; inset: 0; z-index: 70; width: 100vw; height: 100vh; pointer-events: none; }
+.drag-line line { stroke: var(--gold-bright); stroke-width: 3; stroke-dasharray: 8 6; stroke-linecap: round; }
+
+/* The radial menu opens under the thumb */
+.radial { position: fixed; z-index: 80; width: 0; height: 0; }
+.radial__center { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .9); color: var(--text); font-size: 20px; cursor: pointer; }
+.radial__option { position: absolute; left: -40px; top: -40px; display: grid; justify-items: center; align-content: center; gap: 1px; width: 80px; min-height: 80px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 50%; background: rgba(16, 13, 20, .94); color: var(--text); font: 600 11px/1.15 var(--font-ui); text-align: center; cursor: pointer; animation: radial-in .16s ease-out both; }
+.radial__option b { max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.radial__option small { color: var(--text-dim); font-size: 10px; }
+.radial__option.is-hover, .radial__option:focus-visible { border-color: var(--gold-bright); background: rgba(60, 46, 20, .96); box-shadow: 0 0 16px rgba(246, 210, 140, .4); }
+.radial__option.is-disabled { opacity: .45; }
+.radial__preview { color: var(--gold-bright); font-size: 10px; font-style: normal; white-space: nowrap; }
+@keyframes radial-in { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
+@media (prefers-reduced-motion: reduce) { .radial__option { animation: none; } }
+
+/* Battle: fast-forward marker */
+.battle-boost { position: absolute; z-index: 6; right: 14px; top: 54px; color: var(--gold-bright); font: 700 28px var(--font-display); pointer-events: none; }
+.battle-commands__who small { display: block; color: var(--text-dim); font-size: 11.5px; font-weight: 400; }
+
+/* Ghost hand: shown once until the gesture is used */
+.gesture-hint { position: absolute; z-index: 7; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.gesture-hint small { position: absolute; bottom: 38%; padding: 4px 10px; border-radius: 3px; background: rgba(10, 9, 14, .8); color: var(--gold-bright); font-size: 13px; }
+.gesture-hint__hand { position: absolute; font-size: 40px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); animation: ghost-drag 2.2s ease-in-out infinite; }
+@keyframes ghost-drag { 0% { transform: translate(-10vw, 30vh); opacity: 0; } 15% { opacity: 1; } 70% { transform: translate(0, -8vh); opacity: 1; } 100% { transform: translate(0, -8vh); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .gesture-hint__hand { animation: none; } }
+
+/* Two-way choice (settings) */
+.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+.segmented button { min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: var(--text-dim); font: 600 13px var(--font-ui); cursor: pointer; }
+.segmented button.is-selected { background: rgba(246, 210, 140, .16); color: var(--gold-bright); }
+
+/* Bottom panels: a grab handle; swipe the header down to close. */
+.modal__header { touch-action: none; }
+.modal__grab { display: none; }
+@media (max-width: 759px) {
+  .modal__grab { display: block; position: absolute; top: 6px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px; background: var(--line); }
+  .modal__header { position: relative; padding-top: 18px; }
+  .modal { transition: transform .12s ease-out; }
+  /* Full-screen layers: battles (battle.css), story scenes and ceremonies. */
+  .modal-layer:has(.modal--ceremony), .modal-layer:has(.modal--season) { align-items: center; padding: 12px; }
+  .modal-layer:has(.modal--ceremony) .modal, .modal-layer:has(.modal--season) .modal { border-radius: 6px; max-height: 96dvh; }
+}
