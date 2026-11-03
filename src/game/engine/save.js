@@ -263,6 +263,10 @@ export function migrateGame(raw) {
   next.inventory ||= {};
   next.moments ||= [];
   next.officialLedger ||= [];
+  next.reputation ||= { families: {}, regions: {} };
+  next.rivalries ||= {};
+  next.nemesisIds ||= [];
+  next.challenge ??= null;
   next.rankHistory ||= [];
   next.council = { lastReport: null, unread: false, ...(next.council || {}) };
   next.guild.tierIndex = clamp(next.guild.tierIndex || 0, 0, TIERS.length - 1);

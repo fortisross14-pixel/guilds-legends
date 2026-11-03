@@ -22,6 +22,9 @@ import { getGuildRankSummary } from './rankings.js';
 import { getGoalMetric, promotionRequirement } from './goals.js';
 import { getPatronLoanOffer, monthlyUpkeep } from './economy.js';
 import { getPlayerRanks, getRankMovement, getStatusTitle } from './rankings.js';
+import { getTournamentAccess } from './tournaments.js';
+import { FAMILY_PERKS, getReputationSummary, specializationTitle } from './reputation.js';
+import { nemesisIds } from './rivalry.js';
 
 export function acknowledgeWelcome(state) {
   const next = clone(state);
@@ -218,6 +221,7 @@ export function getDashboardSummary(state) {
     ranks: getPlayerRanks(state),
     movement: getRankMovement(state),
     statusTitle: getStatusTitle(state),
+    specialization: specializationTitle(state),
     crowns: state.guild.crowns,
     fame: state.guild.fame,
     legacy: state.guild.legacy,
@@ -246,6 +250,9 @@ function tournamentEntry(state, tournament, now) {
     Boolean,
   );
   const locked = (req.tierIndex || 0) > state.guild.tierIndex;
+  // "Almost": the tier is open but no hero meets the other requirements yet.
+  const best = [...state.heroes].filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => b.level - a.level)[0];
+  const missing = locked ? [] : getTournamentAccess(state, tournament, best?.id).checks.filter((check) => !check.met);
   return {
     kind: 'tournament',
     id: tournament.id,
@@ -253,11 +260,14 @@ function tournamentEntry(state, tournament, now) {
     date,
     weeksAway: dateWeekSerial(date) - now,
     locationId: tournament.locationId,
-    enterable: !locked && tournament.status !== 'completed',
+    enterable: !locked && !missing.length && tournament.status !== 'completed',
+    almost: !locked && missing.length > 0,
     locked,
     detail: locked
       ? `Unlocks at ${TIERS[req.tierIndex]?.id}`
-      : `${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location || ''} · ${needs.length ? needs.join(', ') : 'open entry'}`,
+      : missing.length
+        ? `Missing: ${missing.map((check) => `${check.label} ${check.target} (have ${check.current})`).join(', ')}`
+        : `${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location || ''} · ${needs.length ? needs.join(', ') : 'open entry'}`,
   };
 }
 
@@ -338,6 +348,44 @@ export function getCalendarEntries(state, months = 12) {
         detail: 'Renew from the hero status screen',
       }),
     );
+  if (state.challenge?.status === 'pending') {
+    add({
+      kind: 'challenge',
+      id: 'challenge',
+      title: `Answer ${state.challenge.rivalName}'s challenge`,
+      date: dateFromWeekSerial(state.challenge.expiresWeek),
+      detail: 'Accept or decline from the Herald nemesis page',
+    });
+  }
+  const nemesisNames = nemesisIds(state)
+    .map((id) => state.rivals.find((rival) => rival.id === id)?.name)
+    .filter(Boolean);
+  const reputation = getReputationSummary(state)
+    .families.filter((item) => item.next)
+    .sort((a, b) => b.points - a.points)[0];
+  let milestoneAdded = false;
+  for (let serial = now; serial <= end; serial += 1) {
+    const date = dateFromWeekSerial(serial);
+    if (date.week !== 0 || serial === now) continue;
+    if (date.month % 3 === 0 && nemesisNames.length)
+      add({
+        kind: 'challenge',
+        id: `challenge-window-${serial}`,
+        title: 'Nemesis challenge window',
+        date,
+        detail: `${nemesisNames.join(' or ')} may challenge you; you can challenge them once this season`,
+      });
+    if (!milestoneAdded && reputation) {
+      milestoneAdded = true;
+      add({
+        kind: 'reputation',
+        id: 'reputation-goal',
+        title: `${reputation.family} reputation: ${reputation.points}/${reputation.next}`,
+        date,
+        detail: `Next: ${reputation.nextName}. ${FAMILY_PERKS[reputation.index + 1]}`,
+      });
+    }
+  }
   for (let serial = now; serial <= end; serial += 1) {
     const date = dateFromWeekSerial(serial);
     if (date.week !== 0 || serial === now) continue;
@@ -356,7 +404,11 @@ export function getCalendarEntries(state, months = 12) {
 /** The next few events the player can act on (no locked tournaments, no routine wage days). */
 export function getUpcomingEvents(state, limit = 3) {
   return getCalendarEntries(state, 6)
-    .filter((entry) => (entry.kind === 'tournament' ? entry.enterable : ['mission', 'travel', 'promise', 'contract'].includes(entry.kind)))
+    .filter((entry) =>
+      entry.kind === 'tournament'
+        ? entry.enterable
+        : ['mission', 'travel', 'promise', 'contract', 'challenge'].includes(entry.kind) && entry.id !== 'reputation-goal',
+    )
     .slice(0, limit);
 }
 

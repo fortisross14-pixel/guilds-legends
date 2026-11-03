@@ -26,6 +26,7 @@ import { candidateDemandFor, refreshCandidatesForLocationInPlace } from './candi
 import { releaseHeroInPlace } from './institution.js';
 import { CONTRACT_LENGTHS, baseSalaryFor, makeContract, offerTerms } from './contracts.js';
 import { evaluateStateInPlace } from './goals.js';
+import { recordRivalryInPlace } from './rivalry.js';
 
 // Raises a new founder (level 1, the new guildmaster) plus one free local
 // recruit, keeping the guild's name, treasury, history and rankings.
@@ -437,6 +438,7 @@ export function makeOffer(state, heroId) {
       rival.members = members.slice(1);
     } else rival.members = rival.members.filter((item) => item.id !== heroId);
     rival.recent = [...(rival.recent || []).slice(-8), `${target.name} left for ${next.guild.name}.`];
+    recordRivalryInPlace(next, rival.id, 'poachedFromThem');
   } else next.freeAgents = next.freeAgents.filter((item) => item.id !== heroId);
   target.status = 'available';
   target.guildId = 'player';

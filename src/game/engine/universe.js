@@ -12,6 +12,7 @@ import {
 } from '../../data/universe.js';
 import { clamp, clone, ensureTournamentCareer, tierIndexByName, uid } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
+import { boardPerks, missionFamily } from './reputation.js';
 
 function createRival(blueprint, state, rng, index) {
   const tierIndex = clamp(blueprint.tierIndex ?? 0, 0, TIERS.length - 1);
@@ -249,7 +250,12 @@ export function createUniverseInPlace(state, rng) {
 
 function availableTemplatePool(state, location = null) {
   const currentTier = state.guild.tierIndex;
-  const eligible = MISSION_TEMPLATES.filter((template) => tierIndexByName(template.tier) <= currentTier);
+  // Renowned families see next-tier contracts a tier early.
+  const early = boardPerks(state).early;
+  const eligible = MISSION_TEMPLATES.filter(
+    (template) =>
+      tierIndexByName(template.tier) <= currentTier || (tierIndexByName(template.tier) === currentTier + 1 && early.includes(missionFamily(template))),
+  );
   if (!location) return eligible;
   const regional = eligible.filter((template) => template.region === location.region);
   return regional.length ? regional : eligible;
@@ -304,11 +310,14 @@ function instantiateMission(template, state, rng, forcedLocation = null) {
 
 export function refreshMissionsInPlace(state, rng, initial = false) {
   const currentYearMonth = state.date.year * 12 + state.date.month;
+  const expired = [];
   state.missions = (state.missions || []).filter((mission) => {
     if (mission.templateId === 'wolves-old-road' && !state.tutorial.completed && state.tutorial.step < 4) return true;
     const expiry = mission.availableUntil.year * 12 + mission.availableUntil.month;
+    if (expiry < currentYearMonth) expired.push(mission);
     return expiry >= currentYearMonth;
   });
+  const extraFamilies = boardPerks(state).extra;
   const locations = unlockedLocations(state.guild.tierIndex);
   if (initial && !state.missions.some((mission) => mission.templateId === 'wolves-old-road')) {
     const tutorialTemplate = MISSION_TEMPLATES.find((mission) => mission.id === 'wolves-old-road');
@@ -327,7 +336,15 @@ export function refreshMissionsInPlace(state, rng, initial = false) {
       state.missions.push(instantiateMission(template, state, rng, location));
       count += 1;
     }
+    // Respected families get one extra contract of their kind on each board.
+    extraFamilies.forEach((family) => {
+      const local = state.missions.filter((mission) => mission.locationId === location.id);
+      if (local.filter((mission) => missionFamily(mission) === family).length >= 2) return;
+      const options = pool.filter((template) => missionFamily(template) === family);
+      if (options.length) state.missions.push(instantiateMission(rng.pick(options), state, rng, location));
+    });
   });
   const unlockedIds = new Set(locations.map((location) => location.id));
-  state.missions = state.missions.filter((mission) => unlockedIds.has(mission.locationId || 'dunmere')).slice(0, 70);
+  state.missions = state.missions.filter((mission) => unlockedIds.has(mission.locationId || 'dunmere')).slice(0, 80);
+  return expired;
 }

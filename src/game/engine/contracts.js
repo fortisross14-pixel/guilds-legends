@@ -4,6 +4,7 @@
 import { RARITIES } from '../../data/world.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, clone, finalize, getHero, hashString, operationalLocationIds } from './core.js';
 import { releaseHeroInPlace } from './institution.js';
+import { nemesisIds, recordRivalryInPlace } from './rivalry.js';
 
 export const CONTRACT_LENGTHS = [1, 2, 3];
 /** Longer contracts trade commitment for a lower monthly salary. */
@@ -142,6 +143,7 @@ function moveToRivalInPlace(state, hero, rival) {
   delete moved.poachApproach;
   rival.members ||= [];
   rival.members.push(moved);
+  recordRivalryInPlace(state, rival.id, 'poachedFromUs');
   rival.recent = [...(rival.recent || []).slice(-8), `${moved.name} joined from ${state.guild.name}.`];
 }
 
@@ -204,9 +206,13 @@ export function processPoachingInPlace(state, rng) {
       return;
     }
     if (hero.loyalty >= POACH_LOYALTY || !state.rivals.length) return;
-    if (!rng.chance(clamp((POACH_LOYALTY - hero.loyalty) / 100 + (hero.level || 1) / 100, 0, 0.6))) return;
+    const nemeses = nemesisIds(state)
+      .map((id) => state.rivals.find((rival) => rival.id === id))
+      .filter(Boolean);
+    const pressure = nemeses.length ? 1.5 : 1;
+    if (!rng.chance(clamp(((POACH_LOYALTY - hero.loyalty) / 100 + (hero.level || 1) / 100) * pressure, 0, 0.75))) return;
     const suitors = state.rivals.filter((rival) => (rival.leagueTierIndex ?? rival.tierIndex) >= state.guild.tierIndex);
-    const rival = rng.pick(suitors.length ? suitors : state.rivals);
+    const rival = nemeses.length ? rng.pick(nemeses) : rng.pick(suitors.length ? suitors : state.rivals);
     hero.poachApproach = { rivalId: rival.id, rivalName: rival.name, serial: campaignMonthSerial(state) };
     state.notifications.push({
       id: `approach-${hero.id}-${campaignMonthSerial(state)}`,

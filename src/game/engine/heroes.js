@@ -5,6 +5,7 @@ import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAME
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
 import { addHeroHistory, appointmentHolder, clamp, getHero, uid, pushMoment } from './core.js';
+import { estimateBonus } from './reputation.js';
 
 export function xpForNextLevel(level) {
   return level >= 20 ? 0 : 70 + level * 30;
@@ -358,7 +359,7 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
   if (formationType === 'Combat' && !breakdown.some((item) => item.role === 'Combat Support') && mission.risk >= 3) partyPower -= 5;
 
   const difficultyModifier = state.settings.difficulty === 'Story' ? -6 : state.settings.difficulty === 'Harsh' ? 6 : 0;
-  const delta = partyPower - (mission.difficulty + difficultyModifier);
+  const delta = partyPower + estimateBonus(state, mission) - (mission.difficulty + difficultyModifier);
   const chance = clamp(Math.round(100 / (1 + Math.exp(-delta / 10))), 3, 97);
   const warnings = [];
   if (validCount < 2) warnings.push('Every field arrangement needs at least two people.');

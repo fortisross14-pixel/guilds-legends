@@ -28,6 +28,7 @@ import { evaluateStateInPlace } from './goals.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
 import { addMissionLegacyInPlace } from './rankings.js';
+import { addContractReputationInPlace, contractFameBonus, contractPayBonus } from './reputation.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -228,9 +229,11 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
           : 1;
   if (decision.missionGameSummary?.rewardModifier) rewardMultiplier *= decision.missionGameSummary.rewardModifier;
   if (next.guild.alignment === 'Baron' && ['Political Mission', 'War Operation'].includes(mission.family)) rewardMultiplier += 0.1;
+  rewardMultiplier *= contractPayBonus(next, mission);
   const reward = Math.max(0, Math.round((mission.reward + (option.reward || 0)) * multiplier * rewardMultiplier));
   const rawFame = Math.round((mission.fame + (option.fame || 0)) * multiplier);
   let fameMultiplier = 1 + (next.guild.facilities.archive || 0) * 0.04 + (appointmentHolder(next, 'Chronicler') ? 0.08 : 0);
+  fameMultiplier += contractFameBonus(next, mission) - 1;
   if (next.guild.policies.treasure === 'Public Trust') fameMultiplier += 0.18;
   if (next.guild.policies.publicity === 'Heroic') fameMultiplier += 0.12;
   if (next.guild.policies.publicity === 'Private') fameMultiplier -= 0.35;
@@ -345,6 +348,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   );
 
   next.guild.crowns += reward;
+  const reputationChange = addContractReputationInPlace(next, mission, grade);
   addMissionLegacyInPlace(
     next,
     mission,
@@ -474,6 +478,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     deaths,
     artifact: artifactName && cleanSuccess ? artifactName : null,
     loot: lootNames(loot),
+    reputationChange,
     narrative,
     consequences: [
       option.obligation ? `Obligation: ${option.obligation}` : null,

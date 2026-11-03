@@ -1,9 +1,10 @@
 // @ts-check
 // Recruitment market (candidates per location) and recruitment promises.
 import { normalizeClassId, MONTHS } from '../../data/content.js';
-import { RARITIES, unlockedLocations } from '../../data/world.js';
+import { RARITIES, unlockedLocations, LOCATION_BY_ID } from '../../data/world.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, dateLabel } from './core.js';
 import { generateHero } from './heroes.js';
+import { recruitFeeFactor } from './reputation.js';
 
 function promiseDeadlineLabel(serial) {
   const year = Math.floor(serial / 12);
@@ -112,7 +113,9 @@ export function makeCandidate(state, rng, forcedQuality, locationId = state.worl
   const quality = forcedQuality || (qualityRoll > 1.12 ? 'elite' : qualityRoll > 0.92 ? 'veteran' : 'normal');
   const hero = generateHero(state, rng, quality, { homeLocationId: locationId });
   const rarityFactor = RARITIES[hero.rarity]?.signing || 1;
-  const signingFee = Math.round((hero.level * 85 + hero.power * 3.5 + Math.max(0, hero.potential - 70) * 10) * rarityFactor);
+  const signingFee = Math.round(
+    (hero.level * 85 + hero.power * 3.5 + Math.max(0, hero.potential - 70) * 10) * rarityFactor * recruitFeeFactor(state, LOCATION_BY_ID[locationId]?.region),
+  );
   return {
     ...hero,
     status: 'candidate',

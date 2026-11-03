@@ -34,6 +34,8 @@ import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './miss
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
 import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings.js';
 import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace } from './contracts.js';
+import { EXPIRE_PENALTY, adjustRegionReputationInPlace } from './reputation.js';
+import { expireChallengeInPlace, maybeIssueChallengeInPlace, nemesisBidsInPlace, rivalTakesContractInPlace, updateNemesesInPlace } from './rivalry.js';
 
 function resolveMonthlyHeroActivities(state, rng) {
   const trainingLevel = state.guild.facilities['training-yard'] || 0;
@@ -360,7 +362,23 @@ function runMonthInPlace(next, rng) {
   simulateRivals(next, rng);
   updatePromiseDeadlinesInPlace(next);
   if (next.date.month === 0) annualCycle(next, rng);
-  refreshMissionsInPlace(next, rng);
+  const expired = refreshMissionsInPlace(next, rng) || [];
+  // Unclaimed contracts go to rivals; letting a local one lapse costs reputation.
+  expired.forEach((mission) => {
+    const rival = rivalTakesContractInPlace(next, mission, 'expired', rng);
+    if (rival && mission.locationId === next.world?.currentLocationId) {
+      adjustRegionReputationInPlace(next, mission.region, -EXPIRE_PENALTY);
+      next.notifications.push({
+        id: `expired-${mission.id}`,
+        tone: 'blue',
+        title: `${rival.name} took “${mission.title}”`,
+        text: `It expired unclaimed. ${mission.region} reputation −${EXPIRE_PENALTY}.`,
+      });
+    }
+  });
+  updateNemesesInPlace(next);
+  nemesisBidsInPlace(next, rng);
+  if (next.date.month % 3 === 0) maybeIssueChallengeInPlace(next, rng);
   if (!next.tournaments?.length || next.tournaments[0].year < next.date.year) createTournamentsInPlace(next, rng);
   return { upkeep, debt, council, branches };
 }
@@ -381,6 +399,7 @@ export function advanceWeeks(state, count = 1, mutate = false) {
     const rng = rngFor(next, `week-${step}`);
     progressTravelInPlace(next, rng);
     weeklyInjuriesInPlace(next);
+    expireChallengeInPlace(next);
     next.activeMissions.forEach((mission) => {
       mission.remaining -= 1;
     });

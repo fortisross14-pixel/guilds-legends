@@ -21,6 +21,8 @@ import { formationSlotFor, normalizedFormationType, partyEstimate } from './hero
 import { fulfillPromisesInPlace } from './candidates.js';
 import { evaluateStateInPlace } from './goals.js';
 import { battleItems } from './inventory.js';
+import { DECLINE_PENALTY, adjustRegionReputationInPlace, familyLevel } from './reputation.js';
+import { rivalTakesContractInPlace } from './rivalry.js';
 
 export function inspectMission(state, missionId) {
   const next = clone(state);
@@ -204,7 +206,7 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     risk: mission.risk,
     prestige: mission.fame || 0,
     // Low-risk contracts field weaker enemies than high-risk ones.
-    strength: scripted ? 0.6 : 0.65 + mission.risk * 0.09,
+    strength: scripted ? 0.6 : (0.65 + mission.risk * 0.09) * (familyLevel(state, 'Combat') >= 4 ? 0.9 : 1),
     guaranteed: scripted,
     items: battleItems(state),
   });
@@ -267,4 +269,23 @@ export function queueDueMissionGameInPlace(state) {
   if (createPlayableMissionGameInPlace(state, mission)) return true;
   state.pendingDecisions.push(missionDecision(mission));
   return true;
+}
+
+/** Decline a contract on the board: a rival takes it and the region thinks a little less of you. */
+export function declineContract(state, missionId) {
+  const mission = state.missions.find((item) => item.id === missionId);
+  if (!mission) return { state, error: 'This contract is no longer available.' };
+  if (mission.templateId === 'wolves-old-road' && !state.tutorial.completed) return { state, error: 'Take this first contract to learn the ropes.' };
+  const next = clone(state);
+  next.missions = next.missions.filter((item) => item.id !== missionId);
+  const rival = rivalTakesContractInPlace(next, mission, 'declined');
+  adjustRegionReputationInPlace(next, mission.region, -DECLINE_PENALTY);
+  if (rival)
+    next.notifications.push({
+      id: `declined-${missionId}`,
+      tone: 'blue',
+      title: `${rival.name} took “${mission.title}”`,
+      text: `Declined. ${mission.region} reputation −${DECLINE_PENALTY}.`,
+    });
+  return { state: finalize(next), error: null };
 }
