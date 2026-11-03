@@ -6,6 +6,7 @@ import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performComba
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
 import { addChronicle, campaignWeekSerial, clone, commitRng, completeTutorialTargetInPlace, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
 import { charterEffect } from './charter.js';
+import { afterBattleInPlace } from './seasons.js';
 import { applyXpInPlace, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
@@ -206,6 +207,7 @@ export function concludeActiveCombat(state, mutate = false) {
   let report = null;
   let round = null;
   settleBattleItemsInPlace(next, combatResult.itemsUsed);
+  afterBattleInPlace(next, encounter, combatResult);
 
   if (encounter.sourceType === 'challenge') {
     settleChallengeInPlace(next, encounter.sourceId, combatResult.playerWon);

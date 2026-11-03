@@ -11,6 +11,8 @@ import {
   clone,
   finalize,
   roomLevel,
+  tallyGuild,
+  tallySpend,
 } from './core.js';
 import { refreshCandidatesForLocationInPlace } from './candidates.js';
 import { refreshMissionsInPlace } from './universe.js';
@@ -52,6 +54,7 @@ export function startTravel(state, destinationId) {
   if (quote.same) return { state, error: `The guild is already in ${quote.destination.name}.` };
   if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} crowns.` };
   next.guild.crowns -= quote.cost;
+  tallySpend(next, 'travel', quote.cost);
   next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
   next.world.knowledge.locations ||= {};
   if (next.world.knowledge.locations[destinationId] !== 'visited' && next.world.knowledge.locations[destinationId] !== 'fullyExplored') {
@@ -205,6 +208,7 @@ export function applyDebtInPlace(state) {
   if (loan) {
     loanPayment = Math.min(loan.installment, loan.remaining);
     state.guild.crowns -= loanPayment;
+    tallySpend(state, 'loan', loanPayment);
     loan.remaining -= loanPayment;
     if (loan.remaining <= 0) {
       state.guild.loan = null;
@@ -235,6 +239,7 @@ export function applyDebtInPlace(state) {
       .sort((a, b) => a.loyalty - b.loyalty || a.id.localeCompare(b.id))[0];
     if (leaver) {
       walkouts.push(leaver.name);
+      tallyGuild(state, 'released');
       releaseHeroInPlace(state, leaver, {
         title: `Walked out of ${state.guild.name}`,
         text: `Unpaid for ${state.guild.unpaidMonths} months, ${leaver.name} leaves to find a paying banner.`,

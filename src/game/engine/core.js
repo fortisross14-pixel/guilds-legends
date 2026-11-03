@@ -197,11 +197,58 @@ export function freeBeds(state) {
   return bedCount(state) - activeHeroCount(state);
 }
 
-/** Gold the guild earns (contracts, battles, finds): counted for the Richest path. */
+// ---- Season stats: per-year totals for the guild and each hero (seasons.js closes them) ----
+// Kept small: totals only, never copies of events.
+
+/** This year's season record (created on first use). */
+export function seasonOf(state, year = state.date.year) {
+  state.seasons ||= {};
+  state.seasons[year] ||= { year, g: { fameStart: state.guild.fame, legacyStart: state.guild.legacy }, fam: {}, spent: {}, h: {}, series: [], broken: [], big: null, worst: null, review: null };
+  return state.seasons[year];
+}
+
+/** Adds to a guild total for the season (contracts, battles, titles, recruits, losses…). */
+export function tallyGuild(state, key, amount = 1) {
+  const season = seasonOf(state);
+  season.g[key] = (season.g[key] || 0) + amount;
+}
+
+/** Contracts by family: taken / won / failed. */
+export function tallyFamily(state, family, key) {
+  const season = seasonOf(state);
+  season.fam[family] ||= {};
+  season.fam[family][key] = (season.fam[family][key] || 0) + 1;
+}
+
+/** Gold spent by category (wages, hall, shop, recruits, travel, patrons, other). */
+export function tallySpend(state, category, amount) {
+  if (!(amount > 0)) return;
+  const season = seasonOf(state);
+  season.spent[category] = (season.spent[category] || 0) + Math.round(amount);
+}
+
+/** Adds to a hero's season total (missions, wins, battles, KOs, damage, healing, bouts, titles, injuries, levels, gold). */
+export function tallyHero(state, heroId, key, amount = 1) {
+  if (!heroId || !amount) return;
+  const season = seasonOf(state);
+  season.h[heroId] ||= {};
+  season.h[heroId][key] = (season.h[heroId][key] || 0) + amount;
+}
+
+/** Keeps the season's biggest win or worst defeat ({ title, score, detail }). */
+export function noteSeasonHighlight(state, kind, entry) {
+  const season = seasonOf(state);
+  if (!season[kind] || entry.score > season[kind].score) season[kind] = { ...entry, year: state.date.year, month: state.date.month };
+}
+
+/** Gold the guild earns (contracts, battles, finds): counted for the Richest path and the season. */
 export function earnGoldInPlace(state, amount) {
   if (!amount) return;
   state.guild.crowns += amount;
-  if (amount > 0) state.stats.goldEarned = (state.stats.goldEarned || 0) + amount;
+  if (amount > 0) {
+    state.stats.goldEarned = (state.stats.goldEarned || 0) + amount;
+    tallyGuild(state, 'earned', amount);
+  }
 }
 
 /** Items the guild chest holds (the armory adds racks and a store). */

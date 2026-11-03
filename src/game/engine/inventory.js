@@ -3,7 +3,7 @@
 import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, canEquip } from '../../data/items.js';
 import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
-import { chestCapacity, clamp, clone, finalize, hashString, roomLevel } from './core.js';
+import { chestCapacity, clamp, clone, finalize, hashString, roomLevel, tallySpend } from './core.js';
 import { patronAtLeast } from './charter.js';
 
 /** Shop price after discounts: the Armory, the Trade House, the Temple (healing) and the Smiths (gear). */
@@ -64,6 +64,7 @@ export function buyItem(state, itemId, quantity = 1) {
     return { state, error: `The chest is full (${chestUsed(state)}/${chestCapacity(state)}). Sell something${roomLevel(state, 'armory') ? '' : ' or build an Armory'}.` };
   const next = clone(state);
   next.guild.crowns -= cost;
+  tallySpend(next, 'shop', cost);
   addItemsInPlace(next, { [itemId]: count });
   return { state: finalize(next), error: null };
 }
@@ -98,6 +99,7 @@ export function upgradeGear(state, heroId, slot) {
   if (state.guild.crowns < cost) return { state, error: `The upgrade costs ${cost} crowns.` };
   const next = clone(state);
   next.guild.crowns -= cost;
+  tallySpend(next, 'shop', cost);
   next.heroes.find((item) => item.id === heroId).gear[slot] = GEAR_UPGRADES[itemId];
   return { state: finalize(next), error: null };
 }

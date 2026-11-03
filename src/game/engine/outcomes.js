@@ -16,6 +16,8 @@ import {
   completeTutorialTargetInPlace,
   dateLabel,
   earnGoldInPlace,
+  tallyGuild,
+  tallyHero,
   finalize,
   getHero,
   rngFor,
@@ -36,6 +38,7 @@ import { checkWagerOnContractInPlace } from './townLife.js';
 import { missionFamily } from './reputation.js';
 import { adjustPatronInPlace, charterEffect, patronAtLeast, patronContractResultInPlace } from './charter.js';
 import { grantPatronRewardsInPlace } from './connections.js';
+import { afterContractInPlace } from './seasons.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -325,8 +328,14 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     if (next.guild.policies.retreat === 'Preserve the stars') policyInjuryRisk += hero.id === protectedStar?.id ? -0.045 : 0.015;
     const knockedOutRisk = (decision.combatSummary?.knockedOut || []).includes(hero.id) ? 0.08 : 0;
     const injury = injureHero(next, hero, mission, grade, rng, (option.injury || 0) + policyInjuryRisk + knockedOutRisk);
-    if (injury.injured) injuries.push(hero.name);
-    if (injury.died) deaths.push(hero.name);
+    if (injury.injured) {
+      injuries.push(hero.name);
+      tallyHero(next, hero.id, 'injuries');
+    }
+    if (injury.died) {
+      deaths.push(hero.name);
+      tallyGuild(next, 'deaths');
+    }
     if (!injury.died && hero.status !== 'injured') hero.status = 'available';
     addHeroHistory(hero, next, {
       type: 'mission-result',
@@ -360,6 +369,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   );
 
   earnGoldInPlace(next, reward);
+  afterContractInPlace(next, { mission, grade, success, heroIds: mission.assignments.map((assignment) => assignment.heroId), reward, estimate: mission.estimateAtLaunch });
   const reputationChange = addContractReputationInPlace(next, mission, grade);
   if (mission.patron) {
     patronContractResultInPlace(next, mission.patron, grade);

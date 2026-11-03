@@ -35,6 +35,19 @@ export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeep
 export { getHallView, requirementStatus, nextUpgrade, rentBed, acquireHall, buildRoom } from './engine/hall.js';
 export { charterOf, charterEffect, patronLevel, patronAtLeast, patronPoints } from './engine/charter.js';
 export { getConnectionsView, getPathScores, giftPatron } from './engine/connections.js';
+export {
+  GUILD_RECORDS,
+  HERO_RECORDS,
+  getHallOfFame,
+  getHeadToHead,
+  getHeroCareer,
+  getLadderHistory,
+  getMissionLog,
+  getRecordBook,
+  getSeasonList,
+  getSeasonReview,
+  heroSeasonScore,
+} from './engine/seasons.js';
 export { recruitObjection } from './engine/candidates.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { enterHeroTournament, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';

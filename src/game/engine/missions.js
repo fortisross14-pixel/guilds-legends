@@ -19,6 +19,8 @@ import {
   operationalLocationIds,
   partyCapacity,
   roomLevel,
+  tallyFamily,
+  tallyGuild,
 } from './core.js';
 import { formationSlotFor, normalizedFormationType, partyEstimate } from './heroes.js';
 import { fulfillPromisesInPlace } from './candidates.js';
@@ -142,6 +144,8 @@ export function launchMission(state, missionId, formationTypeOrAssignments, mayb
   });
   next.activeMissions.push(active);
   next.missions.splice(missionIndex, 1);
+  tallyGuild(next, 'taken');
+  tallyFamily(next, mission.family, 'taken');
   addChronicle(next, {
     type: 'departure',
     importance: mission.risk >= 3 ? 2 : 1,

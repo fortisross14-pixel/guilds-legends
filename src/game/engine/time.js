@@ -7,6 +7,7 @@ import {
   activeHeroCount,
   activityAvailable,
   roomLevel,
+  tallySpend,
   addChronicle,
   addHeroHistory,
   appointmentHolder,
@@ -30,7 +31,8 @@ import { makeCandidate, refreshCandidatesForLocationInPlace, updatePromiseDeadli
 import { refreshMissionsInPlace } from './universe.js';
 import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace, retireHeroInPlace, simulateBranchesInPlace } from './institution.js';
 import { evaluateStateInPlace } from './goals.js';
-import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace } from './economy.js';
+import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace, upkeepBreakdown } from './economy.js';
+import { closeSeasonInPlace, seasonsMonthlyInPlace } from './seasons.js';
 import { monthlyHallInPlace, progressConstructionInPlace } from './hall.js';
 import { monthlyConnectionsInPlace } from './connections.js';
 import { adjustPatronInPlace, patronAtLeast } from './charter.js';
@@ -287,6 +289,8 @@ function ageHeroes(state, rng) {
 }
 
 function annualCycle(state, rng) {
+  // The season that just ended: awards, records and the review.
+  closeSeasonInPlace(state, state.date.year - 1);
   state.stats.yearsPlayed += 1;
   state.universeStats.seasonsSimulated = (state.universeStats.seasonsSimulated || 0) + 1;
   ageHeroes(state, rng);
@@ -369,7 +373,11 @@ function weeklyInjuriesInPlace(state) {
 /** Everything that happens once a month (on week 1). */
 function runMonthInPlace(next, rng) {
   const upkeep = monthlyUpkeep(next);
+  const costs = upkeepBreakdown(next);
   next.guild.crowns -= upkeep;
+  tallySpend(next, 'wages', costs.wages);
+  tallySpend(next, 'hall', costs.hall.total);
+  tallySpend(next, 'other', upkeep - costs.wages - costs.hall.total);
   if (next.guild.crowns < 0) {
     next.stats.bankruptMonths += 1;
     next.guild.fallen = next.guild.crowns < -900 || next.stats.bankruptMonths >= 6;
@@ -382,6 +390,7 @@ function runMonthInPlace(next, rng) {
   scoutCandidatesInPlace(next, council.scouts);
   monthlyHallInPlace(next, rng);
   monthlyConnectionsInPlace(next, rng);
+  seasonsMonthlyInPlace(next);
   processContractsInPlace(next);
   processPoachingInPlace(next, rng);
   const branches = simulateBranchesInPlace(next, rng);

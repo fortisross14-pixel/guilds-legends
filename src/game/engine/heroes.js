@@ -4,7 +4,7 @@ import { skillLabel, skillsUnlockedBetween } from '../../data/skills.js';
 import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
-import { addHeroHistory, appointmentHolder, clamp, getHero, roomLevel, uid, pushMoment } from './core.js';
+import { addHeroHistory, appointmentHolder, clamp, getHero, roomLevel, tallyHero, uid, pushMoment } from './core.js';
 import { charterEstimate, charterOf, patronAtLeast } from './charter.js';
 import { estimateBonus } from './reputation.js';
 
@@ -55,6 +55,7 @@ export function applyXpInPlace(hero, amount, state, source = 'experience') {
     if (hero.xp < needed) break;
     hero.xp -= needed;
     hero.level += 1;
+    if (state?.heroes?.includes(hero)) tallyHero(state, hero.id, 'levels');
     const classInfo = CLASSES[normalizeClassId(hero.classId)];
     const keys = Object.keys(hero.attributes);
     const primary = classInfo?.primary || keys[0];

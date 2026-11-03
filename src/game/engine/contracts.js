@@ -2,7 +2,7 @@
 // Hero contracts (length, salary, expiry, renewal talks), candidate scouting
 // ranges, and rivals approaching disloyal heroes.
 import { RARITIES } from '../../data/world.js';
-import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, clone, finalize, getHero, hashString, operationalLocationIds, roomLevel } from './core.js';
+import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, clone, finalize, getHero, hashString, operationalLocationIds, roomLevel, tallyGuild } from './core.js';
 import { releaseHeroInPlace } from './institution.js';
 import { charterEffect } from './charter.js';
 import { nemesisIds, recordRivalryInPlace } from './rivalry.js';
@@ -134,6 +134,7 @@ export function scoutCandidatesInPlace(state, scouts) {
 // ---------------------------------------------------------------- monthly processing
 
 function moveToRivalInPlace(state, hero, rival) {
+  tallyGuild(state, 'poached');
   releaseHeroInPlace(state, hero, {
     title: `Joined ${rival.name}`,
     text: `Poached by ${rival.name} after loyalty ran out.`,
@@ -180,6 +181,7 @@ export function processContractsInPlace(state) {
         title: `${hero.name} leaves`,
         text: 'The contract expired without renewal. They join the free agents.',
       });
+      tallyGuild(state, 'released');
       releaseHeroInPlace(state, hero, {
         title: 'Contract expired',
         text: `The contract with ${state.guild.name} ran out; the hero enters the open circuit.`,

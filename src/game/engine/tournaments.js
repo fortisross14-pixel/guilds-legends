@@ -22,6 +22,7 @@ import {
 import { applyXpInPlace } from './heroes.js';
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
 import { pushRankingsMomentInPlace, recordOfficialResultsInPlace } from './rankings.js';
+import { afterTournamentInPlace } from './seasons.js';
 
 function tournamentDefinition(tournament) {
   const source = tournament.kind === 'guild' ? GUILD_TOURNAMENT_DEFINITIONS : INDIVIDUAL_TOURNAMENT_DEFINITIONS;
@@ -555,6 +556,7 @@ export function completeIndividualTournamentInPlace(state, tournament, rng, play
   const playerResult = tournament.playerHeroId
     ? finishPlayerIndividualTournamentInPlace(state, tournament, playerFinish || (championId === tournament.playerHeroId ? 1 : tournament.size))
     : null;
+  if (playerResult) afterTournamentInPlace(state, { heroId: playerResult.heroId, finish: playerResult.finish, bouts: playerResult.boutWins || 0 });
   return recordIndividualTournamentInPlace(state, tournament, championId, playerResult);
 }
 

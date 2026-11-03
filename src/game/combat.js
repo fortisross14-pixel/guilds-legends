@@ -414,6 +414,7 @@ function strike(encounter, actor, target, { power = 1, physical = true, flat = 0
   if (target.hp <= 0) {
     knockOut(encounter, target);
     hit.ko = true;
+    if (actor) actor.kos = (actor.kos || 0) + 1;
   } else if (target.charging && amount >= target.maxHp * INTERRUPT_SHARE) {
     hit.interrupted = true;
     interrupt(encounter, target, 'by a heavy blow');
@@ -496,6 +497,7 @@ function applySkill(encounter, actor, skill, targetId) {
       parts.push(note);
     } else if (skill.effect === 'heal') {
       const amount = healUnit(target, actor.mag * skill.power + 10);
+      actor.healingDone = (actor.healingDone || 0) + amount;
       event.hits.push({ targetId: target.id, type: 'heal', amount, hp: target.hp });
       parts.push(`${target.name} +${amount}`);
     } else if (skill.effect === 'cure') {
@@ -558,6 +560,7 @@ function applyItem(encounter, actor, itemId, targetId) {
     const hit = { targetId: target.id, type: 'heal', amount: 0, hp: target.hp };
     if (effect.heal) {
       hit.amount = healUnit(target, effect.heal);
+      actor.healingDone = (actor.healingDone || 0) + hit.amount;
       hit.hp = target.hp;
       notes.push(`+${hit.amount} HP`);
     }

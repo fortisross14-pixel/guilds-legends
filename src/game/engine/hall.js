@@ -16,6 +16,7 @@ import {
   hallStage,
   pushMoment,
   roomLevel,
+  tallySpend,
   trophyCount,
 } from './core.js';
 import { getStoryView } from './stories.js';
@@ -132,6 +133,7 @@ export function rentBed(state) {
   if (state.guild.crowns < RENTED_ROOM.bedCost) return { state, error: `A bed costs ${RENTED_ROOM.bedCost} crowns.` };
   const next = clone(state);
   next.guild.crowns -= RENTED_ROOM.bedCost;
+  tallySpend(next, 'hall', RENTED_ROOM.bedCost);
   next.guild.hall.rentedBeds += 1;
   addChronicle(next, { type: 'facility', importance: 1, title: 'Another bed upstairs', text: `Sella squeezes a ${next.guild.hall.rentedBeds}th bed into the rented room. The rent goes up.`, tags: ['hall'] });
   return { state: finalize(next), error: null };
@@ -147,6 +149,7 @@ export function acquireHall(state, mode = 'buy') {
   if (state.guild.crowns < cost) return { state, error: `That takes ${cost} crowns.` };
   const next = clone(state);
   next.guild.crowns -= cost;
+  tallySpend(next, 'hall', cost);
   next.guild.hall.owned = true;
   next.guild.hall.lease = mode === 'lease';
   next.guild.legacy += 5;
@@ -179,6 +182,7 @@ export function buildRoom(state, roomId) {
   const plan = room.levels[level - 1];
   const next = clone(state);
   next.guild.crowns -= roomCost(state, roomId, plan);
+  tallySpend(next, 'hall', roomCost(state, roomId, plan));
   const now = campaignWeekSerial(next);
   next.guild.hall.construction = { roomId, level, weeksLeft: plan.weeks, totalWeeks: plan.weeks, startSerial: now, endSerial: now + plan.weeks };
   addChronicle(next, {

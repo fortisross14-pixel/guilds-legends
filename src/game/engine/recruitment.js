@@ -23,6 +23,8 @@ import {
   uid,
   pushMoment,
   clamp,
+  tallyGuild,
+  tallySpend,
 } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { candidateDemandFor, recruitObjection, refreshCandidatesForLocationInPlace } from './candidates.js';
@@ -158,6 +160,9 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
   if (candidate.interest < 35 && next.guild.tierIndex === 0)
     return { state, error: `${candidate.name} does not believe the guild can fulfill their ambitions yet.` };
   next.guild.crowns -= totalFee;
+  tallySpend(next, 'recruits', totalFee);
+  tallyGuild(next, 'recruits');
+  hero.signedFee = totalFee;
   const hero = clone(candidate);
   const acceptedDemand = acceptingPromise && candidate.demand ? { ...candidate.demand, status: 'active', acceptedSerial: campaignMonthSerial(next) } : null;
   const recruitedLocationId = hero.locationId || currentLocationId;
@@ -235,6 +240,7 @@ export function releaseHero(state, heroId) {
   const hero = next.heroes.find((item) => item.id === heroId);
   if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status)) return { state, error: 'This hero cannot be released now.' };
   if (hero.id === next.guild.currentGuildmasterHeroId) return { state, error: 'The current guildmaster cannot be released while leading the institution.' };
+  tallyGuild(next, 'released');
   releaseHeroInPlace(next, hero, {
     title: `Released by ${next.guild.name}`,
     text: 'The hero enters the open circuit as a free agent; the career may continue elsewhere.',
@@ -417,6 +423,8 @@ export function makeOffer(state, heroId) {
     return { state: finalize(next), error: null, accepted: false };
   }
   next.guild.crowns -= terms.fee;
+  tallySpend(next, 'recruits', terms.fee);
+  tallyGuild(next, 'recruits');
   if (rival) {
     if (rival.star?.id === heroId) {
       const members = [...(rival.members || [])].sort((a, b) => b.power - a.power);

@@ -7,7 +7,7 @@ import { PATHS } from '../../data/charters.js';
 import { MISSION_TEMPLATES } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { ITEMS } from '../../data/items.js';
-import { addChronicle, campaignMonthSerial, clone, commitRng, finalize, pushMoment, rngFor, trophyCount } from './core.js';
+import { addChronicle, campaignMonthSerial, clone, commitRng, finalize, pushMoment, rngFor, tallySpend, trophyCount } from './core.js';
 import { adjustPatronInPlace, charterOf, patronAtLeast, patronLevel, patronPoints } from './charter.js';
 import { addItemsInPlace } from './inventory.js';
 import { makeCandidate } from './candidates.js';
@@ -66,6 +66,7 @@ export function giftPatron(state, patronId) {
   if (state.guild.crowns < PATRON_DELTAS.giftCost) return { state, error: `A fitting gift costs ${PATRON_DELTAS.giftCost} crowns.` };
   const next = clone(state);
   next.guild.crowns -= PATRON_DELTAS.giftCost;
+  tallySpend(next, 'patrons', PATRON_DELTAS.giftCost);
   patronStateInPlace(next, patronId).lastGift = campaignMonthSerial(next);
   adjustPatronInPlace(next, patronId, PATRON_DELTAS.gift);
   grantPatronRewardsInPlace(next);

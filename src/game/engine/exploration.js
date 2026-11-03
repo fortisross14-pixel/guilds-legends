@@ -9,7 +9,7 @@ import { TILE_SIZE } from '../../data/tiles.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
 import { createPartyEncounter } from '../combat.js';
-import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor } from './core.js';
+import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
 import { adjustPatronInPlace, patronAtLeast, patronLevel } from './charter.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { grantPatronRewardsInPlace } from './connections.js';
@@ -174,6 +174,7 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     if (effect.patron) adjustPatronInPlace(state, effect.patron.id, effect.patron.amount);
     if (effect.patronGift && state.patrons?.[effect.patronGift]?.lastGift !== campaignMonthSerial(state)) {
       state.guild.crowns -= PATRON_DELTAS.giftCost;
+      tallySpend(state, 'patrons', PATRON_DELTAS.giftCost);
       state.patrons[effect.patronGift].lastGift = campaignMonthSerial(state);
       adjustPatronInPlace(state, effect.patronGift, PATRON_DELTAS.gift);
     }
