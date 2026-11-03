@@ -32,7 +32,10 @@ export function Crest({ size = 'md' }) {
 
 /** URL of a public art file, safe under the GitHub Pages subpath. */
 export function artUrl(path) {
-  return `${import.meta.env.BASE_URL}${path}`;
+  // Absolute, because a relative url() inside a CSS variable resolves against the
+  // stylesheet (assets/), not the page, and the art would 404.
+  const relative = `${import.meta.env.BASE_URL}${path}`;
+  return typeof document === 'undefined' ? relative : new URL(relative, document.baseURI).href;
 }
 
 /** Inline style that sets a scene backdrop (see `.scene` in art.css). */
