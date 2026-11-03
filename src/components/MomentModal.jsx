@@ -4,6 +4,7 @@ import PixelIcon from './PixelIcon.jsx';
 import Asset from './Asset.jsx';
 import { Dialogue } from './EventCardModal.jsx';
 import { SeasonReview } from '../screens/HistoryScreens.jsx';
+import ChapterEnd from './ChapterEnd.jsx';
 import { getSeasonReview } from '../game/engine.js';
 
 // Reward effect sprites from public/art/effects.
@@ -249,6 +250,10 @@ export default function MomentModal({ moment, state, onClose }) {
         </div>
       </Modal>
     );
+  }
+
+  if (moment.type === 'chapterEnd') {
+    return <ChapterEnd key={moment.id} state={state} onClose={onClose} />;
   }
 
   if (moment.type === 'tutorialComplete') {

@@ -38,7 +38,8 @@
 //   { open: buildingId }                    UI: opens that building
 //   Story (src/data/story.js): { codex: id | [ids] }, { evidence: id }, { choice: { name: value } },
 //   { route: name } (the mission's contract route), { storyRecruit: heroId }, { leaseHall: deposit },
-//   { passDays: n }, { fame: n }, { legacy: n }, { wait: true } (keep a story scene open)
+//   { passDays: n }, { fame: n }, { legacy: n }, { heroLoyalty: { id, amount } } (a story hero),
+//   { wait: true } (keep a story scene open)
 //   { recruit: true }                       UI: shows a recruit offer from this town
 //   { patron: { id, amount } }              standing with a patron (src/data/patrons.js)
 //   { patronGift: patronId }                50 gold for standing, once a month
@@ -47,8 +48,9 @@ import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';
 import wilds from './wilds.js';
 import story from './story.js';
+import storyAct2 from './storyAct2.js';
 
-export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...wilds, ...story };
+export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...wilds, ...story, ...storyAct2 };
 
 /** Flags that live at state.flags[name] (other systems read them), not in state.flags.dialogue. */
 export const TOP_LEVEL_FLAGS = ['oldRoadIntroduced', 'harvestMeleeIntroduced'];

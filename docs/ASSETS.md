@@ -138,6 +138,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `prop.anvil` | `art/walk/props/anvil.png` | 32×64 | — | placeholder | Ironford: anvil |
 | `prop.crates` | `art/walk/props/crates.png` | 64×64 | — | placeholder | Ironford: crates-1 |
 | `prop.milestone` | `art/walk/props/milestone.png` | 32×64 | — | placeholder | The Old Road: Old milestone |
+| `prop.hollowwarden` | `art/walk/props/hollowwarden.png` | 32×64 | — | placeholder | The Blackwood: The Hollow Warden |
 | `prop.brokenlantern` | `art/walk/props/brokenlantern.png` | 32×64 | — | placeholder | The Blackwood: Broken lantern |
 
 ## NPC sprite (`npc`, placeholder #4f3d78)
@@ -166,6 +167,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.ironford.guard` | `art/walk/npcs/ironford-guard.png` | 26×36 | — | placeholder | Ironford: Ysolde Marr, Caravan guard (walk sprite) |
 | `npc.ironford.scholar` | `art/walk/npcs/ironford-scholar.png` | 26×36 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (walk sprite) |
 | `npc.ironford.barkeep` | `art/walk/npcs/ironford-barkeep.png` | 26×36 | — | placeholder | Ironford: Mags, Barkeep (walk sprite) |
+| `npc.ironford.archivist` | `art/walk/npcs/ironford-archivist.png` | 26×36 | — | placeholder | Ironford: Oswin Tull, Archive keeper (walk sprite) |
 
 ## Tileset (`tileset`, placeholder #3a3a3a)
 
@@ -219,6 +221,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.ironford.guard` | `art/portraits/npcs/ironford-guard.png` | 160×160 | — | placeholder | Ironford: Ysolde Marr, Caravan guard (dialogue portrait) |
 | `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
 | `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | — | placeholder | Ironford: Mags, Barkeep (dialogue portrait) |
+| `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | — | placeholder | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
 
 ## Battle effect (`fx`, placeholder #5a2a6a)
 
@@ -293,8 +296,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `enemy.group.spores` | `art/walk/enemies/group-spores.png` | 56×44 | — | placeholder | Thornwood edge: Spore callers and a mender (standing on the map) |
 | `enemy.group.barkhides` | `art/walk/enemies/group-barkhides.png` | 56×44 | — | placeholder | Thornwood edge: Barkhide brutes (standing on the map) |
 | `enemy.boss.captain` | `art/walk/enemies/boss-captain.png` | 80×64 | — | placeholder | Thornwood edge: Captain Vask (boss on the map) |
-| `enemy.group.hollow` | `art/walk/enemies/group-hollow.png` | 56×44 | — | placeholder | The Blackwood: Hollow knights (standing on the map) |
 | `enemy.group.shades` | `art/walk/enemies/group-shades.png` | 56×44 | — | placeholder | The Blackwood: Veil shades (standing on the map) |
+| `enemy.group.hollow` | `art/walk/enemies/group-hollow.png` | 56×44 | — | placeholder | The Blackwood: Void hulks (standing on the map) |
 | `enemy.boss.brood` | `art/walk/enemies/boss-brood.png` | 80×64 | — | placeholder | The Blackwood: Brood of the Lantern-eater (boss on the map) |
 
 ## Not yet routed through the registry

@@ -116,3 +116,5 @@
 /* Record broken moment */
 .moment--record .moment__fanfare img { width: 64px; height: 64px; object-fit: contain; }
 .moment__record-value { margin: 0; color: var(--gold-bright); font: 700 30px var(--font-display); }
+.season-card__headline--small { font-size: 34px; }
+.season-card__crest { width: 72px; height: 72px; object-fit: contain; }

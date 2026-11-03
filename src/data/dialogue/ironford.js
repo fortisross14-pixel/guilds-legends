@@ -12,6 +12,14 @@ const SMITHS = patronChoices('smiths', 'Smiths’ Guild', {
 });
 
 export default {
+  'ironford.archivist': {
+    speaker: 'Oswin Tull',
+    portrait: 'portrait.story.quartermaster',
+    variants: [
+      { if: { storyDone: 'm6' }, lines: ['Keep that ledger somewhere dry. Insurance is only worth anything if it survives.'] },
+      { lines: ['The archive is closed to the public. The public never asks the right questions anyway.'] },
+    ],
+  },
   'ironford.foreman': {
     speaker: 'Dagna Hale',
     portrait: P('foreman'),

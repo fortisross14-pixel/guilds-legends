@@ -4,7 +4,8 @@
 // the shared condition checker (dialogue, gates, wild areas). Progress runs
 // after every engine action through the finalize hook, so gates open the
 // moment their condition holds; nothing here runs on the calendar.
-import { EVIDENCE, PROLOGUE, REGIONAL_TOURNAMENTS, STORY_HEROES, STORY_MISSIONS, STORY_MISSION_BY_ID } from '../../data/story.js';
+import { CHAPTERS, EVIDENCE, PROLOGUE, REGIONAL_TOURNAMENTS, STORY_HEROES, STORY_MISSIONS, STORY_MISSION_BY_ID } from '../../data/story.js';
+import { PATHS } from '../../data/charters.js';
 import { DIALOGUES, SEASON_MONTHS, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
 import { LORE_BY_ID, PLACE_LORE } from '../../data/lore.js';
 import { MISSION_TEMPLATES } from '../../data/content.js';
@@ -682,6 +683,39 @@ export function getStoryView(state) {
     choices: story.choices,
   };
 }
+
+const OUTCOME_TEXT = {
+  prologue: { hide: 'You hid the body and kept your head.', banner: 'You read the seven names in the hem.', search: 'You found Rook’s confession.', flee: 'You ran, and saw the face at the door.' },
+  wrenOutcome: { companion: 'Wren joined the guild.', ally: 'Wren fights beside you, not in your colors.', helper: 'Wren will help, then disappear.' },
+  bram: { joined: 'Bram Calder joined the guild.', rival: 'Bram Calder stays a rival.', respect: 'Bram Calder respects you.' },
+  nessa: { together: 'Nessa trusts you with her brother’s story.', hurt: 'Nessa told you late; you told her so.' },
+};
+
+/** The end of Chapter 1, season-review style: what the guild did and chose, and what comes next. */
+export function getChapterSummary(state) {
+  const story = storyState(state);
+  const years = state.date.year - 1187;
+  return {
+    title: CHAPTERS[1].title,
+    span: `${MONTHS_SHORT[5]} 1187 → ${MONTHS_SHORT[state.date.month]} ${state.date.year}${years ? ` (${years} year${years === 1 ? '' : 's'})` : ''}`,
+    missions: STORY_MISSIONS.filter((mission) => mission.chapter === 1).map((mission) => ({ number: mission.number, title: mission.title, done: storyDone(state, mission.id) })),
+    evidence: EVIDENCE.filter((item) => story.evidence[item.id]).map((item) => item.name),
+    recruits: Object.keys(STORY_HEROES).filter((id) => storyHero(state, id)).map((id) => STORY_HEROES[id].name),
+    choices: Object.entries(OUTCOME_TEXT).map(([key, texts]) => texts[story.choices[key]]).filter(Boolean),
+    stats: {
+      contracts: state.stats?.missionsWon || 0,
+      titles: (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0),
+      fame: state.guild.fame,
+      legacy: state.guild.legacy,
+      heroes: state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).length,
+    },
+    path: PATHS[state.paths?.best]?.name || null,
+    codex: Object.keys(story.codex).length,
+    teaser: { title: CHAPTERS[2].title, text: CHAPTERS[2].teaser },
+  };
+}
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /** The Lore codex: unlocked entries by category. */
 export function getLoreCodex(state) {

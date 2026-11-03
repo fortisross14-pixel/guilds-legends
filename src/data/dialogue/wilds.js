@@ -13,6 +13,21 @@ export default {
     portrait: 'portrait.poi',
     variants: [{ lines: ['A ward stone knocked flat. The thorn carving on it has been chipped away, deliberately.'] }],
   },
+  // Chapter 1 stops here: the Warden bars the deep wood (Chapter 2, mission 10).
+  'wild.blackwood.warden': {
+    speaker: 'The Hollow Warden',
+    portrait: 'portrait.poi',
+    variants: [
+      {
+        if: { storyDone: 'm8' },
+        effects: [{ codex: 'hollow-warden' }],
+        lines: ['The deep wood breathes. Somewhere past it, Aldric Vane led the survivors. The Warden does not move aside.', 'Not yet. Chapter 2: The Crown Must Fall.'],
+      },
+      {
+        lines: ['The path ends at a wall of dead wood. Something vast stands between the trees and watches you.', 'Lantern light moves where nobody carries a lantern. You cannot go deeper. Not yet.'],
+      },
+    ],
+  },
   'wild.blackwood.lantern': {
     speaker: 'Broken lantern',
     portrait: 'portrait.poi',

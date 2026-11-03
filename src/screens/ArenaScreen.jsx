@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { locationBuildings } from '../data/world.js';
 import { sliceHides } from '../data/slice.js';
-import { getArenaView, getHero } from '../game/engine.js';
+import { getArenaView, getHero, getStoryView } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, Panel, PrimalBadge } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import GuildChampionships from './GuildChampionships.jsx';
@@ -28,6 +28,19 @@ function Spot({ id, active, asset, title, text, badge, onClick }) {
 }
 
 function FightingGround({ state, view, actions }) {
+  // A story duel waiting in this ring (mission 7: Halden Marsh at Windmere).
+  const duel = getStoryView(state).active?.current;
+  if (duel?.kind === 'duel' && duel.canDuel) {
+    const mission = getStoryView(state).active;
+    return (
+      <Panel title={mission.title} eyebrow="Story duel">
+        <p className="arena-line">{duel.text} Your strongest fit hero steps into the ring.</p>
+        <Button variant="primary" size="lg" disabled={Boolean(state.activeEncounter)} onClick={() => actions.startStoryDuel(mission.id)}>
+          Start the duel
+        </Button>
+      </Panel>
+    );
+  }
   if (view.active && view.player) {
     const round = view.active.currentRoundSize === 16 ? 'Round of 16' : view.active.currentRoundSize === 8 ? 'Quarterfinal' : view.active.currentRoundSize === 4 ? 'Semifinal' : 'Final';
     return (

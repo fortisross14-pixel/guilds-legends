@@ -1,9 +1,9 @@
 import { rows } from '../tiles.js';
 import { AREA_BOSSES } from '../enemies.js';
 
-// The Blackwood: dead trees and black mud past the Old Road. Locked until the
-// Blackwood story opens it. A path leads from the east edge to the hollow
-// where the old Broken Lantern camp fell.
+// The Blackwood: dead trees and black mud past the Old Road. In Chapter 1 only
+// its east edge is reachable (after Act I of the story): a wall of dead wood
+// and the Hollow Warden bar the way deeper, where the Broken Lantern fell.
 export default {
   id: 'blackwood',
   kind: 'wild',
@@ -14,7 +14,7 @@ export default {
   primal: 'Psychic',
   battle: 'bg.battle.blackwood',
   map: { x: 8, y: 30 },
-  description: 'Dead trees, black mud and lantern light where no one carries a lantern. The old Broken Lantern guild vanished here.',
+  description: 'Dead trees, black mud and lantern light where no one carries a lantern. Only the edge is passable: something vast blocks the way deeper.',
   unlock: { storyDone: 'm4' },
   lockedText: 'The wardens keep the Blackwood road closed to unknown banners. Finish Act I of the story first.',
   width: 36,
@@ -23,41 +23,42 @@ export default {
   tiles: rows(
     36,
     ['xxxxxxxxxx', 'xxxxxxxxxx', 'xxxxxxxxxx', 'xxxxxx'],
-    ['xxT..mm...', '..xxxx....', 'mm..TTxxxx', 'xxxxxx'],
-    ['xT...mm...', '...xx.....', 'mm....Txxx', 'xxxxxx'],
-    ['x....""...', '..........', '.......Txx', 'xxxxxx'],
-    ['x...."""..', '...TT.....', '........xx', 'xxxxxx'],
-    ['xx........', '...TT..:::', '::::::...x', 'xxxxxx'],
-    ['xxx.......', '.......:..', '.....:...x', 'xxxxxx'],
-    ['xx....xx..', '.......:..', '.....:....', '.xxxxx'],
-    ['x.....xx..', 'mm.....:..', '.....:....', '...xxx'],
-    ['x.........', 'mm.....:..', '.....:::::', '::::::'],
-    ['x...TT....', '.......:..', '..........', '....xx'],
-    ['x...TT....', '.......:..', '..xx......', '....xx'],
-    ['xx........', '.......:..', '..xx......', '...xxx'],
-    ['xxx..mmmm.', '.:::::::..', '..........', '..xxxx'],
-    ['xxx..mmmm.', '..........', '..."".....', '..xxxx'],
-    ['xx...mmmm.', '..........', '...""....x', 'xxxxxx'],
-    ['xx........', '...xx.....', '.........x', 'xxxxxx'],
-    ['xxx.......', '...xx...""', '........xx', 'xxxxxx'],
-    ['xxxx......', '........""', '.......xxx', 'xxxxxx'],
+    ['xxT..mm...', '..xxxx....', 'mm..Txxxxx', 'xxxxxx'],
+    ['xT...mm...', '...xx.....', 'mm...xTxxx', 'xxxxxx'],
+    ['x....""...', '..........', '.....x.Txx', 'xxxxxx'],
+    ['x...."""..', '...TT.....', '.....x..xx', 'xxxxxx'],
+    ['xx........', '...TT..:::', ':::::x...x', 'xxxxxx'],
+    ['xxx.......', '.......:..', '.....x...x', 'xxxxxx'],
+    ['xx....xx..', '.......:..', '.....x....', '.xxxxx'],
+    ['x.....xx..', 'mm.....:..', '.....x....', '...xxx'],
+    ['x.........', 'mm.....:..', '.....x::::', '::::::'],
+    ['x...TT....', '.......:..', '.....x....', '....xx'],
+    ['x...TT....', '.......:..', '..xx.x....', '....xx'],
+    ['xx........', '.......:..', '..xx.x....', '...xxx'],
+    ['xxx..mmmm.', '.:::::::..', '.....x....', '..xxxx'],
+    ['xxx..mmmm.', '..........', '...""x....', '..xxxx'],
+    ['xx...mmmm.', '..........', '...""x...x', 'xxxxxx'],
+    ['xx........', '...xx.....', '.....x...x', 'xxxxxx'],
+    ['xxx.......', '...xx...""', '.....x..xx', 'xxxxxx'],
+    ['xxxx......', '........""', '.....x.xxx', 'xxxxxx'],
     ['xxxxx.....', '..........', '.....xxxxx', 'xxxxxx'],
     ['xxxxxxx...', '.....xxxxx', 'xxxxxxxxxx', 'xxxxxx'],
     ['xxxxxxxxxx', 'xxxxxxxxxx', 'xxxxxxxxxx', 'xxxxxx'],
   ),
   exit: { at: [35, 9], size: [1, 1], name: 'Back to Dunmere' },
-  camp: { at: [10, 2], size: [2, 2], name: 'Lantern-bearers’ old camp' },
-  props: [{ id: 'lantern', asset: 'prop.brokenlantern', at: [16, 16], size: [1, 1], poi: { name: 'Broken lantern', verb: 'Inspect', dialogue: 'wild.blackwood.lantern' } }],
+  camp: { at: [29, 10], size: [2, 2], name: 'A cold firepit at the edge' },
+  props: [
+    { id: 'warden', asset: 'prop.hollowwarden', at: [26, 9], size: [1, 1], poi: { name: 'The Hollow Warden', verb: 'Approach', dialogue: 'wild.blackwood.warden' } },
+    { id: 'lantern', asset: 'prop.brokenlantern', at: [26, 3], size: [1, 1], poi: { name: 'Broken lantern', verb: 'Inspect', dialogue: 'wild.blackwood.lantern' } },
+  ],
   enemies: [
-    { id: 'hollow-knights', name: 'Hollow knights', at: [24, 4], asset: 'enemy.group.hollow', types: ['hollow-knight', 'veil-shade'], count: 3, level: 5, power: 56, reward: { gold: [50, 80], xp: 45 } },
-    { id: 'shades', name: 'Veil shades', at: [20, 11], asset: 'enemy.group.shades', types: ['veil-shade', 'mind-leech'], count: 3, level: 5, power: 58, reward: { gold: [55, 85], xp: 48 } },
-    { id: 'leeches', name: 'Mind leeches and a weaver', at: [8, 9], asset: 'enemy.group.shades', types: ['mind-leech', 'dream-weaver'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
+    { id: 'shades', name: 'Veil shades', at: [27, 7], asset: 'enemy.group.shades', types: ['veil-shade', 'mind-leech'], count: 3, level: 5, power: 58, reward: { gold: [55, 85], xp: 48 } },
     { id: 'hulks', name: 'Void hulks', at: [28, 13], asset: 'enemy.group.hollow', types: ['void-hulk', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
   ],
   boss: {
     id: 'lantern-brood',
     name: 'The Lantern-eater’s brood',
-    at: [6, 14],
+    at: [27, 16],
     asset: 'enemy.boss.brood',
     types: ['veil-shade', 'mind-leech'],
     count: 3,
@@ -68,8 +69,7 @@ export default {
     reward: { gold: [160, 220], xp: 110, items: { 'phoenix-feather': 1 } },
   },
   gathers: [
-    { id: 'coin-cache', kind: 'coin', name: 'Lantern-bearer’s purse', at: [3, 4], reward: { gold: [30, 60] } },
-    { id: 'black-herbs', kind: 'herb', name: 'Nightcap', at: [23, 14], reward: { items: { ether: 1 } } },
-    { id: 'ore', kind: 'ore', name: 'Veil-glass shard', at: [26, 17], reward: { gold: [40, 70] } },
+    { id: 'black-herbs', kind: 'herb', name: 'Nightcap', at: [29, 12], reward: { items: { ether: 1 } } },
+    { id: 'ore', kind: 'ore', name: 'Veil-glass shard', at: [26, 5], reward: { gold: [40, 70] } },
   ],
 };

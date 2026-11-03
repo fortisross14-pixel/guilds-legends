@@ -159,6 +159,7 @@ export {
   getStoryView,
   getLoreCodex,
   completePrologue,
+  getChapterSummary,
   storyState,
   playStoryScene,
   finishStoryScene,

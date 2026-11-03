@@ -122,6 +122,10 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     if (typeof effect.leaseHall === 'number') leaseHallInPlace(state, effect.leaseHall);
     if (typeof effect.fame === 'number') state.guild.fame = Math.max(0, state.guild.fame + effect.fame);
     if (typeof effect.legacy === 'number') state.guild.legacy += effect.legacy;
+    if (effect.heroLoyalty) {
+      const hero = state.heroes.find((item) => item.storyId === effect.heroLoyalty.id);
+      if (hero) hero.loyalty = clamp(hero.loyalty + effect.heroLoyalty.amount, 0, 100);
+    }
   });
   const knowledge = knowledgeInPlace(state);
   const exploration = explorationInPlace(state);
