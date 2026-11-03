@@ -54,10 +54,16 @@ npm run build       # production build to dist/ (not committed)
 
 ```text
 src/App.jsx               Shell: save slots, the three-place nav, top bar, modals, the `actions` object (UI → engine)
-src/places/               MapScreen (home), TownScreen (buildings), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
+src/places/               MapScreen (world map, wild-area cards), TownScreen (the walkable town or wild scene, building interiors, Town directory fallback), GuildHallRooms, MenuScreen (Chronicle: settings, chronicle, codex, CalendarScreen, QuestLogScreen), routes.js
 src/components/           UI primitives and scene backdrop (UI.jsx), pixel icons (PixelIcon.jsx), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js
 src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
+  towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
+  dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js
+  tiles.js, openingRoom.js  Ground tiles for walkable layouts; the opening room map
+  assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
+  slice.js                Chapter 1 slice flag: reachable places and hidden systems
+src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map), TownScene, WildScene, DialogueBox, SceneHud
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   core.js                 clone, seeded RNG (rngFor/commitRng), uid, chronicle helpers, roster/guild queries
@@ -87,6 +93,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   state.js                createNewGame and default state pieces
   save.js                 compactForSave, migrateGame, validateGame
   timeActions.js          travelTo + road events, continueJourney, launchExpedition
+  exploration.js          walkable scenes: dialogue conditions/effects, scene positions, wild areas (enter, gather, camp, battles)
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
 src/game/combat.js        Per-hero turn-based battles (commands, skills, items, tell, auto-battle)
@@ -116,7 +123,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `missions[]` (contract board), `activeMissions[]` (deployed, with `assignments` and `remaining`)
 - `activeEncounter` (combat in progress), `activeMissionGame` (non-combat challenge in progress), `pendingDecisions[]`, `pendingReports[]`: while any of these is set, time is paused
 - `tournaments[]`, `guildTournaments[]`, `tournamentHistory[]`, `titleRecords`
-- `world: { currentLocationId, visitedLocationIds, activeTravel }`
+- `world: { currentLocationId, visitedLocationIds, activeTravel, wildAreaId, exploration }`: `wildAreaId` is the wild area the guild is walking (null in town); `exploration` holds `positions[sceneId]`, `discovered[sceneId]`, `talked[conversationId]`, `npcs` (relationship), `wild[areaId] = { cleared, gathered, visited, bosses }` (cleared/gathered hold the week serial they return)
 - `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `goals[]`, `achievements[]`, `stats`, `legacy`
 - `inventory` (itemId → count), each hero's `gear` (weapon/armor/accessory item ids; `artifact:<id>` for a worn artifact)
 - `moments[]`: reward screens queued for the UI (victory, levelUp, recruit); presentation only
@@ -128,6 +135,6 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `sideJobs[]` (board), `activeSideJobs[]` (running; heroes have status `sidejob`), `wager`
 - `story: { step, next, choice, rivalId, done, postedMissionId }`, `defeatedBosses[]`; story and boss contracts carry `story` / `bossId`
 - `settings.sound`, `settings.volume`
-- `tutorial`, `council` (last monthly report), `notifications[]`, `settings`, `flags`
+- `tutorial`, `council` (last monthly report), `notifications[]`, `settings` (incl. `joystick`), `flags` (`flags.dialogue` holds flags set by conversations)
 
 `validateGame(state)` returns a list of invariant violations; the UI runs it after every action. Keep it in sync with state shape changes.
