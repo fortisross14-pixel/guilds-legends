@@ -10,11 +10,13 @@ import QuestLogScreen from './QuestLogScreen.jsx';
 import { BestiaryScreen, NewsScreen } from './NewsScreen.jsx';
 import { sliceHides } from '../data/slice.js';
 import { MissionLog, SeasonReviewsPage } from '../screens/HistoryScreens.jsx';
+import LoreCodex from '../screens/LoreCodex.jsx';
 
 const PAGES = [
   { id: 'calendar', name: 'Calendar', icon: '▦', description: 'Weeks ahead: tournaments, company returns, wage days. Advance to a date.' },
   { id: 'news', name: 'News', icon: '✉', description: 'Town talk, side-job results and world events.' },
-  { id: 'quests', name: 'Quest log', icon: '✎', description: 'Active contracts, open promises and current objectives.' },
+  { id: 'quests', name: 'Quest log', icon: '✎', description: 'The main story, side quests and guild goals. Show any of them on the map.' },
+  { id: 'lore', name: 'Lore codex', icon: '✦', description: 'The world’s history: unlocked by the story, people, arena boards and discoveries.' },
   { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
   { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline and era summaries.' },
   { id: 'log', name: 'Mission log', icon: '⌖', description: 'Every contract, boss fight and tournament run. Filter and open any report.' },
@@ -74,6 +76,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
       {page.id === 'chronicle' ? <ChronicleScreen {...props} /> : null}
       {page.id === 'calendar' ? <CalendarScreen {...props} /> : null}
       {page.id === 'log' ? <MissionLog {...props} /> : null}
+      {page.id === 'lore' ? <LoreCodex {...props} /> : null}
       {page.id === 'seasons' ? <SeasonReviewsPage {...props} /> : null}
       {page.id === 'quests' ? <QuestLogScreen {...props} /> : null}
       {page.id === 'news' ? <NewsScreen {...props} /> : null}

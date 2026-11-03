@@ -13,6 +13,7 @@ import {
   finishStoryScene,
   playStoryScene,
   startStoryDuel,
+  readHistoryBoard,
   talkTo,
   chooseDialogueOption,
   saveScenePosition,
@@ -1064,6 +1065,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       signUpForTournament: (tournamentId, heroId) => applyResult(signUpForTournament(state, tournamentId, heroId), 'Signed up. Be here on the start day.'),
       startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),
       startStoryDuel: (missionId) => applyResult(startStoryDuel(state, missionId)),
+      readHistoryBoard: (loreIds) => {
+        const next = readHistoryBoard(state, loreIds);
+        if (next !== state) commitState(next);
+      },
       enterGuildTournament: (tournamentId, formationType, assignments) => applyResult(enterGuildTournament(state, tournamentId, formationType, assignments)),
       startGuildCombat: (tournamentId) => applyResult(startGuildTournamentCombat(state, tournamentId)),
       combatRound: (commands) => applyResult(performActiveCombatAction(state, commands)),

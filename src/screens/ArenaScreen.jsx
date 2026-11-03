@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { locationBuildings } from '../data/world.js';
 import { sliceHides } from '../data/slice.js';
+import { TOURNAMENT_LORE } from '../data/lore.js';
 import { getArenaView, getHero, getStoryView } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, Panel, PrimalBadge } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
@@ -253,7 +254,17 @@ export default function ArenaScreen({ state, actions, navigate, locationId }) {
           badge={view.open && !view.open.signup ? 'Open' : null}
           onClick={() => setSpot('registrar')}
         />
-        <Spot id="board" active={spot === 'board'} asset="trophy.title" title="History board" text="Champions, records and your best results" onClick={() => setSpot('board')} />
+        <Spot
+          id="board"
+          active={spot === 'board'}
+          asset="trophy.title"
+          title="History board"
+          text="Champions, records and your best results"
+          onClick={() => {
+            setSpot('board');
+            actions.readHistoryBoard(view.history.map((item) => TOURNAMENT_LORE[item.definition.id]).filter(Boolean));
+          }}
+        />
       </nav>
       {spot === 'ground' ? <FightingGround state={state} view={view} actions={actions} /> : null}
       {spot === 'registrar' ? <Registrar state={state} view={view} actions={actions} navigate={navigate} /> : null}

@@ -1,4 +1,5 @@
 // Dunmere conversations. Format: src/data/dialogue/index.js.
+import { OFFICIAL_STORY } from '../lore.js';
 import { patronChoices } from './patronTalk.js';
 const P = (id) => `portrait.dunmere.${id}`;
 
@@ -149,6 +150,12 @@ export default {
       {
         if: { tierAtLeast: 1 },
         lines: ['{guild}, promoted. I have written it on three boards and shouted it from the fountain. Twice.'],
+      },
+      {
+        // Early on, the herald reads out the Argent Crown's official account.
+        if: { notFlag: 'heraldOfficial' },
+        effects: [{ flag: 'heraldOfficial' }, { codex: 'official-story' }],
+        lines: ['Names are my trade. Want the most famous one? The Broken Lantern.', OFFICIAL_STORY, 'That’s the official account. I read it out every year, from the Argent Crown’s own letter.'],
       },
       {
         if: { charter: 'scholars' },

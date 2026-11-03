@@ -1,4 +1,5 @@
 // Greenhollow conversations. Format: src/data/dialogue/index.js.
+import { OFFICIAL_STORY } from '../lore.js';
 import { patronChoices } from './patronTalk.js';
 const P = (id) => `portrait.greenhollow.${id}`;
 
@@ -54,11 +55,15 @@ export default {
     variants: [
       {
         if: { talked: true },
-        lines: ['Back for another? The Broken Lantern had twelve members. Only eleven names are on the stone in Dunmere. Ask yourself why.'],
+        lines: ['Back for another? Seven of them, the Broken Lantern. Nobody in Dunmere says their names out loud. Ask yourself why.'],
       },
       {
-        lines: ['Sit, sit. You carry a banner like the Broken Lantern did. They came through here, the year before the Blackwood took them.', 'Their captain paid for maps in gold that smelled of ash. Strange coin for an honest guild.'],
-        choices: [{ text: 'What happened to them?', effects: [{ flag: 'heardFenTale' }], reply: ['Nobody knows. That is what makes it a story and not a funeral.'] }],
+        lines: [
+          'Sit, sit. You carry a banner like the Broken Lantern did. They came through here after the Crownfall.',
+          `Everyone knows the tale. ${OFFICIAL_STORY}`,
+          'A good tale. Too good, if you ask me. Tales that tidy are usually paid for.',
+        ],
+        choices: [{ text: 'Who paid for it?', effects: [{ flag: 'heardFenTale' }, { codex: 'official-story' }], reply: ['Nobody knows. That is what makes it a story and not a funeral.'] }],
       },
     ],
   },

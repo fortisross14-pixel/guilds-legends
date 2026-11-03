@@ -725,11 +725,12 @@ export function getLoreCodex(state) {
     .filter((entry) => entry.id);
 }
 
-/** Reading an arena's history board unlocks its tournament lore. */
-export function readHistoryBoard(state, loreId) {
-  if (!LORE_BY_ID[loreId] || state.story?.codex?.[loreId]) return state;
+/** Reading an arena's history board unlocks its tournaments' lore. */
+export function readHistoryBoard(state, loreIds = []) {
+  const fresh = loreIds.filter((id) => LORE_BY_ID[id] && !state.story?.codex?.[id]);
+  if (!fresh.length) return state;
   const next = clone(state);
-  unlockCodexInPlace(next, loreId);
+  fresh.forEach((id) => unlockCodexInPlace(next, id));
   return finalize(next);
 }
 
