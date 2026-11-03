@@ -51,7 +51,6 @@ export default {
     { building: 'tavern', label: 'The Wayfarer', door: [14, 7], asset: 'town.dunmere.tavern' },
     { building: 'guildHall', label: 'Guild Hall', door: [22, 7], asset: 'town.dunmere.guildhall.stage1' },
     { building: 'shop', label: 'Mira’s Supply', door: [34, 7], asset: 'town.dunmere.shop' },
-    { building: 'guildHall', id: 'rooms', label: 'Your rooms', door: [6, 15], asset: 'town.dunmere.rooms' },
     { building: 'arena', label: 'Dunmere Arena', door: [20, 23], asset: 'town.dunmere.arena' },
   ],
   // `at` is the top-left tile, `size` in tiles. Props block movement unless `walkable`.

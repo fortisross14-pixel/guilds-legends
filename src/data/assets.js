@@ -6,6 +6,7 @@
 import { TILES, TILE_SIZE } from './tiles.js';
 import { TOWNS } from './towns/index.js';
 import { WILD_AREA_LIST } from './wilds/index.js';
+import { HALL_STAGES, ROOMS, roomInterior } from './rooms.js';
 
 /** Placeholder colors per group (background, ink). */
 export const ASSET_GROUPS = {
@@ -40,7 +41,15 @@ const LIST = [
   { id: 'bg.town.default', group: 'bg', path: 'art/bg/town-default.png', borrow: scene(7), ...SCENE, use: 'Any other town directory' },
 
   // Building interiors (art-backed menu scenes).
-  { id: 'interior.guildhall', group: 'interior', path: 'art/interiors/guildhall.png', borrow: scene(9), ...SCENE, use: 'Guild Hall rooms' },
+  // The Guild Hall grows in four stages (src/data/rooms.js): exterior in walkable Dunmere, interior behind the hall screen.
+  ...HALL_STAGES.flatMap((stage) => [
+    { id: stage.exterior, group: 'building', path: `art/walk/buildings/dunmere-guildhall-stage${stage.id}.png`, w: 160, h: 160, use: `Dunmere: the Guild Hall building, stage ${stage.id} (${stage.name})` },
+    { id: stage.interior, group: 'interior', path: `art/interiors/guildhall-stage${stage.id}.png`, borrow: stage.id === 1 ? scene(8) : scene(9), ...SCENE, use: `Guild Hall interior, stage ${stage.id} (${stage.name})` },
+  ]),
+  // Every built room has its own interior per level.
+  ...ROOMS.flatMap((room) =>
+    room.levels.map((_, index) => ({ id: roomInterior(room.id, index + 1), group: 'interior', path: `art/interiors/rooms/${room.id}-${index + 1}.png`, ...SCENE, use: `${room.name}, level ${index + 1}` })),
+  ),
   { id: 'interior.tavern', group: 'interior', path: 'art/interiors/tavern.png', borrow: scene(8), ...SCENE, use: 'Tavern (recruits)' },
   { id: 'interior.shop', group: 'interior', path: 'art/interiors/shop.png', borrow: scene(1), ...SCENE, use: 'Shop' },
   { id: 'interior.arena', group: 'interior', path: 'art/interiors/arena.png', borrow: scene(2), ...SCENE, use: 'Arena (tournaments)' },

@@ -114,6 +114,26 @@ const list = [
 ];
 
 export const ITEMS = Object.fromEntries(list.map((item) => [item.id, item]));
+
+/** One-step gear upgrades at the Armory (same line, next tier). */
+export const GEAR_UPGRADES = {
+  'iron-sword': 'steel-sword',
+  'steel-sword': 'mithril-blade',
+  knife: 'kris',
+  kris: 'shadow-fang',
+  'short-bow': 'longbow',
+  longbow: 'storm-bow',
+  'oak-staff': 'runed-staff',
+  'runed-staff': 'archmage-rod',
+  mallet: 'war-hammer',
+  'war-hammer': 'thunder-maul',
+  'leather-vest': 'brigandine',
+  brigandine: 'dragonhide',
+  'mage-robe': 'sage-robe',
+  'sage-robe': 'archon-robe',
+  'chain-mail': 'plate-armor',
+  'plate-armor': 'aegis-plate',
+};
 export const ITEM_LIST = list;
 export const GEAR_SLOTS = ['weapon', 'armor', 'accessory'];
 
