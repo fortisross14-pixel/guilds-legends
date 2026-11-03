@@ -87,6 +87,8 @@ export {
   gatherAtSpot,
   restAtCamp,
   startWildBattle,
+  retryWildBattle,
+  retreatToCamp,
 } from './engine/exploration.js';
 export {
   LADDERS,

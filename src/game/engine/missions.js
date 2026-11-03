@@ -210,7 +210,8 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     // Low-risk contracts field weaker enemies than high-risk ones.
     strength: scripted ? 0.6 : (0.65 + mission.risk * 0.09) * (familyLevel(state, 'Combat') >= 4 ? 0.9 : 1),
     guaranteed: scripted,
-    enemyTypes: regionRoster(mission.region),
+    // Contracts use the same rosters as the wild areas around them; the Blackwood has its own.
+    enemyTypes: regionRoster(/blackwood/i.test(`${mission.title} ${mission.stakes || ''}`) ? 'The Far Veil' : mission.region),
     boss: bossForMission(mission),
     items: battleItems(state),
   });

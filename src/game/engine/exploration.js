@@ -7,15 +7,15 @@ import { DIALOGUES, SEASON_MONTHS, TOP_LEVEL_FLAGS } from '../../data/dialogue/i
 import { TOWNS } from '../../data/towns/index.js';
 import { TILE_SIZE } from '../../data/tiles.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
-import { REGION_ENEMIES } from '../../data/enemies.js';
+import { ENEMY_TYPES } from '../../data/enemies.js';
 import { createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignWeekSerial, clamp, clone, commitRng, finalize, hashString, rngFor } from './core.js';
-import { addItemsInPlace, battleItems } from './inventory.js';
+import { addItemsInPlace, battleItems, settleBattleItemsInPlace } from './inventory.js';
+import { concludeActiveCombat } from './encounters.js';
 import { adjustRegionReputationInPlace } from './reputation.js';
 import { getStoryView } from './stories.js';
 import { advanceWeeks } from './time.js';
 
-const ENEMY_BY_ID = Object.fromEntries(Object.values(REGION_ENEMIES).flat().map((enemy) => [enemy.id, enemy]));
 
 /** Pixel centre of a tile, for saved positions. */
 export function tilePoint([col, row]) {
@@ -378,14 +378,23 @@ export function startWildBattle(state, areaId, groupId, position = null) {
   if (!view?.here || !group) return { state, error: 'Nobody to fight here.' };
   if (!status.available) return { state, error: 'They are gone for now.' };
   if (state.activeEncounter) return { state, error: 'A battle is already under way.' };
-  const fighters = wildFighters(state);
-  if (!fighters.length) return { state, error: 'Nobody in the guild is fit to fight. Rest at the camp first.' };
+  if (!wildFighters(state).length) return { state, error: 'Nobody in the guild is fit to fight. Rest at the camp first.' };
   const next = clone(state);
+  wildEncounterInPlace(next, area, group, 1);
+  if (position && Number.isFinite(position.x)) explorationInPlace(next).positions[areaId] = { x: Math.round(position.x), y: Math.round(position.y) };
+  return { state: finalize(next), error: null };
+}
+
+/** Builds the battle against a wild group. `attempt` changes the seed on a retry. */
+function wildEncounterInPlace(next, area, group, attempt) {
+  const areaId = area.id;
+  const groupId = group.id;
+  const fighters = wildFighters(next);
   const serial = campaignWeekSerial(next);
-  const types = group.types.map((id) => ENEMY_BY_ID[id]).filter(Boolean);
+  const types = group.types.map((id) => ENEMY_TYPES[id]).filter(Boolean);
   next.activeEncounter = createPartyEncounter({
-    id: `wild-${areaId}-${groupId}-${serial}`,
-    seed: (next.rngState ^ hashString(`wild:${areaId}:${groupId}:${serial}`)) >>> 0,
+    id: `wild-${areaId}-${groupId}-${serial}-${attempt}`,
+    seed: (next.rngState ^ hashString(`wild:${areaId}:${groupId}:${serial}:${attempt}`)) >>> 0,
     sourceType: 'wild',
     sourceId: groupId,
     title: group.isBoss ? group.boss.name : group.name,
@@ -405,6 +414,38 @@ export function startWildBattle(state, areaId, groupId, position = null) {
   });
   next.activeEncounter.sourceMeta = { areaId, groupId, boss: Boolean(group.isBoss) };
   next.activeEncounter.background = area.battle;
-  if (position && Number.isFinite(position.x)) explorationInPlace(next).positions[areaId] = { x: Math.round(position.x), y: Math.round(position.y) };
+  next.activeEncounter.attempt = attempt;
+}
+
+function wipedInTheWild(state) {
+  const encounter = state.activeEncounter;
+  return encounter?.sourceType === 'wild' && encounter.status === 'lost' && encounter.result?.method !== 'withdrew';
+}
+
+/** After a party wipe in the wild: fight the same group again from the start (items used stay used). */
+export function retryWildBattle(state) {
+  if (!wipedInTheWild(state)) return { state, error: 'There is no lost battle to retry.' };
+  const { areaId, groupId } = state.activeEncounter.sourceMeta || {};
+  const area = WILD_AREAS[areaId];
+  const group = areaGroups(area).find((item) => item.id === groupId);
+  if (!area || !group) return { state, error: 'That fight can no longer be found.' };
+  const next = clone(state);
+  settleBattleItemsInPlace(next, next.activeEncounter.result.itemsUsed);
+  const attempt = (next.activeEncounter.attempt || 1) + 1;
+  next.activeEncounter = null;
+  wildEncounterInPlace(next, area, group, attempt);
+  return { state: finalize(next), error: null };
+}
+
+/** After a party wipe in the wild: the fallen are carried back to the camp (they are injured as usual). */
+export function retreatToCamp(state) {
+  if (!wipedInTheWild(state)) return { state, error: 'There is no lost battle to retreat from.' };
+  const area = WILD_AREAS[state.activeEncounter.sourceMeta?.areaId];
+  const result = concludeActiveCombat(state);
+  if (result.error || !area) return result;
+  const next = clone(result.state);
+  const [col, row] = area.camp.at;
+  const [w, h] = area.camp.size;
+  explorationInPlace(next).positions[area.id] = { x: Math.round((col + w / 2) * TILE_SIZE), y: Math.round((row + h) * TILE_SIZE + 18) };
   return { state: finalize(next), error: null };
 }
