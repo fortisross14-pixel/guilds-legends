@@ -1,10 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { TIERS } from '../data/content.js';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings, unlockedLocations } from '../data/world.js';
 import { getStoryView, getTravelQuote } from '../game/engine.js';
 import { BLACKWOOD_MAP } from '../data/story.js';
-import { Badge, Button, EmptyState, Panel, PrimalBadge, ProgressBar, RiskPips, artUrl } from '../components/UI.jsx';
+import { Badge, Button, PrimalBadge, ProgressBar, RiskPips, artUrl } from '../components/UI.jsx';
 import PixelIcon from '../components/PixelIcon.jsx';
 
 const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
@@ -45,10 +44,6 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const locationCandidates = state.candidates.filter((candidate) => candidate.locationId === selected.id);
   const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id);
   const selectedBranch = (state.guild.branches || []).find((branch) => branch.active !== false && branch.locationId === selected.id);
-  const tierCounts = useMemo(
-    () => Object.fromEntries(['Regional', 'National', 'Global'].map((tier) => [tier, LOCATIONS.filter((location) => location.tier === tier).length])),
-    [],
-  );
 
   const startJourney = () => actions.travel(selected.id);
 
@@ -380,83 +375,6 @@ export default function MapScreen({ state, actions, navigate, place }) {
         })}
       </div>
 
-      <div className="world-spacer" aria-hidden="true" />
-      <div className="dashboard-grid dashboard-grid--world">
-        <Panel title="Primal strategy" eyebrow="Combat and culture">
-          <div className="primal-wheel-list">
-            {Object.values(PRIMALS).map((primal) => (
-              <article key={primal.id} style={{ '--primal': primal.color }}>
-                <PrimalBadge primal={primal.id} />
-                <span>
-                  defeats <b>{primal.beats}</b>
-                </span>
-                <span>
-                  falls to <b>{primal.weakTo}</b>
-                </span>
-              </article>
-            ))}
-          </div>
-          <p className="muted">
-            A Fire settlement supplies Fire recruits and Fire patrons—but many local enemies are also Fire. Travel to Water territory for combat counters, or
-            recruit locally for diplomatic affinity.
-          </p>
-        </Panel>
-
-        <Panel title="Reach of the banner" eyebrow="Regional → National → Global">
-          <div className="reach-ladder">
-            {TIERS.map((tier, index) => (
-              <article key={tier.id} className={state.guild.tierIndex >= index ? 'is-reached' : ''}>
-                <span>{state.guild.tierIndex > index ? '✓' : state.guild.tierIndex === index ? '◆' : '○'}</span>
-                <div>
-                  <strong>{tier.id}</strong>
-                  <small>
-                    {tierCounts[tier.id]} destinations · {tier.scope}
-                  </small>
-                </div>
-              </article>
-            ))}
-          </div>
-          <p className="muted">
-            Promotion increases the number of settlements, markets, missions and tournament circuits that can be reached. It does not teleport the guild: every
-            journey still costs time.
-          </p>
-        </Panel>
-      </div>
-
-      <Panel
-        title="The guilds beyond the road"
-        eyebrow="A living competitive world"
-        action={
-          <Button size="sm" onClick={() => navigate('rankings')}>
-            Full rankings
-          </Button>
-        }
-      >
-        {state.rivals.length ? (
-          <div className="rival-briefs">
-            {[...state.rivals]
-              .sort((a, b) => b.fame - a.fame)
-              .slice(0, 6)
-              .map((rival) => (
-                <article key={rival.id}>
-                  <i style={{ background: rival.color }} />
-                  <div>
-                    <strong>{rival.name}</strong>
-                    <small>
-                      {rival.archetype} · {TIERS[rival.tierIndex]?.id}
-                    </small>
-                    <p>{rival.motto}</p>
-                  </div>
-                  <span>
-                    <b>{rival.fame}</b> fame
-                  </span>
-                </article>
-              ))}
-          </div>
-        ) : (
-          <EmptyState icon="◇" title="No rivals recorded" text="The competitive chronicle has not initialized." />
-        )}
-      </Panel>
     </div>
   );
 }
