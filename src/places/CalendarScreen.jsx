@@ -2,21 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { getCalendarEntries } from '../game/engine.js';
 import { Badge, Button, Panel } from '../components/UI.jsx';
-
-const KIND_ICONS = {
-  tournament: '♛',
-  mission: '⌖',
-  travel: '➜',
-  promise: '✎',
-  wages: '◈',
-  season: '★',
-  contract: '✍',
-  challenge: '⚔',
-  reputation: '❖',
-  festival: '♫',
-  boss: '☠',
-  story: '✦',
-};
+import PixelIcon, { EVENT_ICONS } from '../components/PixelIcon.jsx';
 
 function sameDate(a, b) {
   return a.year === b.year && a.month === b.month && a.week === b.week;
@@ -81,7 +67,10 @@ export default function CalendarScreen({ state, actions }) {
                         className={`calendar-entry calendar-entry--${entry.kind} ${entry.locked ? 'is-locked' : ''} ${entry.enterable ? 'is-enterable' : ''} ${entry.almost ? 'is-almost' : ''}`}
                         onClick={() => setSelected(entry)}
                       >
-                        <i aria-hidden="true">{KIND_ICONS[entry.kind]}</i> {entry.title}
+                        <i aria-hidden="true">
+                          <PixelIcon name={EVENT_ICONS[entry.kind] || 'star'} size={24} />
+                        </i>{' '}
+                        {entry.title}
                         {entry.enterable ? <Badge tone="green">Can enter</Badge> : null}
                         {entry.locked || entry.almost ? <small> · {entry.detail}</small> : null}
                       </button>

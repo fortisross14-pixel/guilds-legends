@@ -5,6 +5,7 @@ import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
 import { operationalLocationIds, partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, RiskPips } from '../components/UI.jsx';
 import SideJobsPanel from './SideJobsPanel.jsx';
+import PixelIcon, { FORMATION_ICONS } from '../components/PixelIcon.jsx';
 
 function buildBestFormation(state, formationType) {
   const formation = FORMATION_TYPES[formationType];
@@ -196,7 +197,9 @@ export default function MissionsScreen({ state, actions, navigate }) {
             return (
               <button key={mission.id} className={`mission-card ${selected?.id === mission.id ? 'is-selected' : ''}`} onClick={() => selectMission(mission)}>
                 <div className="mission-card__art" style={{ '--region-color': enemyInfo?.color || '#777' }}>
-                  <span>{FORMATION_TYPES[approach].icon}</span>
+                  <span>
+                    <PixelIcon name={FORMATION_ICONS[approach] || 'swords'} size={24} />
+                  </span>
                   <small>{mission.locationName}</small>
                   <PrimalBadge primal={mission.enemyPrimal} compact />
                 </div>

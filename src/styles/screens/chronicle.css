@@ -63,7 +63,7 @@ button.chronicle-event__content:hover, button.chronicle-event__content:focus-vis
 .calendar__week li { font-family: var(--font-pixel); }
 .calendar__week ul:empty::after { content: '—'; display: block; padding-top: 10px; color: var(--ink-faint); }
 .calendar-entry { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; padding-top: 6px; padding-bottom: 6px; font-size: var(--t-ui); }
-.calendar-entry i { width: 20px; color: var(--ink-dim); font-family: var(--font-prose); font-style: normal; text-align: center; }
+.calendar-entry i { display: inline-grid; place-items: center; width: 24px; color: var(--ink-dim); font-family: var(--font-prose); font-style: normal; text-align: center; }
 .calendar-entry small { font-size: var(--t-small); }
 .calendar-entry.is-locked { color: var(--ink-faint); }
 .calendar-entry--mission i { color: var(--hp); }

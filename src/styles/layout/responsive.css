@@ -96,3 +96,14 @@
 @media (max-width: 759px) {
   .topbar__location { flex: 1 1 110px; }
 }
+
+/* Keep the status strip on one row on common desktop widths. */
+@media (min-width: 1241px) and (max-width: 1600px) {
+  .topbar { gap: 6px; padding-left: 6px; padding-right: 6px; }
+  .topbar__date .pixel-icon { display: none; }
+  .topbar__date span { font-size: 13px; }
+  .time-controls .button { min-height: 40px; padding: 2px 10px 2px 20px; font-size: 15px; }
+  .time-controls .button::before { left: 6px; }
+  .topbar__location { max-width: 140px; padding: 0 4px; }
+  .topbar__resources > span { padding: 0 6px; }
+}

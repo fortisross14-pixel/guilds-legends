@@ -32,12 +32,16 @@ The previous cascade (31 files, about 2,300 lines with heavy overrides) was repl
 
 ## Verification
 
-`npm run build` passes and ESLint is clean. Screenshots at 390×844 and 1440×900 are in [`docs/screenshots/`](screenshots/) (title, new game, world map, town, Guild Hall, tavern, notice board, hero status, shop, active battle, victory, calendar, herald, chronicle). No horizontal page scroll at either size. The e2e smoke test was updated for the "New Game" label but not run, per the prototype testing policy.
+ passes and ESLint is clean. Screenshots at 390×844 and 1440×900 are in [](screenshots/) for 21 screens: title, new game, world map, town, Guild Hall, tavern, notice board, hero status, shop, active battle, victory, level up, expedition report, council report, town event card, calendar, herald, chronicle, codex, legacy office and facilities. No horizontal page scroll and no console errors at either size. The e2e smoke test was updated for the "New Game" label but not run, per the prototype testing policy.
+
+## Follow-up pass
+
+- The HD-2D art pack (, ) is committed.
+- The status strip fits on one row from 1241px up (compact time commands, no decorative calendar icon below 1600px); rank names show as icons with tooltips and screen-reader labels below 1700px.
+- More pixel icons: battle commands (Attack, Skill, Item, Defend), event kinds in the upcoming strip and calendar, and formation types on the notice board. The map's building list no longer uses emoji.
 
 ## Known gaps
 
-- At 1440px the status strip wraps to two rows; rank names show as icons only below 1700px (they keep tooltips and screen-reader labels).
-- Many in-content glyphs (mission families, formation, status icons) are still Unicode symbols; the pixel icon set covers navigation, buildings, rooms, Chronicle pages, map markers and the status strip.
-- Story beats have no speaker portraits: story cards carry no speaker, so the dialogue box names the source (the Blackwood story, a festival, the town crier) instead.
-- Reports, the codex, legacy office and headquarters screens were restyled through the shared window/list system but not individually screenshot-reviewed.
-- The new HD-2D art pack (`public/art/`, added during this pass) is not part of these commits; the UI is already sized for it.
+- Some small in-content symbols are still text glyphs (status marks in the party bar, facility and appointment marks, toast marks). They read as part of the font and carry no meaning on their own.
+- Story beats have no speaker portraits: story cards carry no speaker, so the dialogue box names the source (the Blackwood story, a festival, the town crier) instead. Adding portraits needs a speaker field in the story data, which is an engine change outside this pass.
+- Full-page screenshots show the fixed party bar in the middle of the page; that is how the capture handles fixed elements, not a layout bug.

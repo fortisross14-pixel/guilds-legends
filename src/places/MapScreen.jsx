@@ -267,7 +267,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <strong>
                   {locationBuildings(selected.id)
                     .filter((id) => id !== 'guildHall')
-                    .map((id) => `${BUILDINGS[id].icon} ${BUILDINGS[id].name}`)
+                    .map((id) => BUILDINGS[id].name)
                     .join(' · ')}
                 </strong>
               </div>

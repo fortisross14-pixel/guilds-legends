@@ -2,8 +2,8 @@ import React from 'react';
 import { MONTHS } from '../data/content.js';
 import { getUpcomingEvents } from '../game/engine.js';
 import { Button } from './UI.jsx';
+import PixelIcon, { EVENT_ICONS } from './PixelIcon.jsx';
 
-const KIND_ICONS = { tournament: '♛', mission: '⌖', travel: '➜', promise: '✎', contract: '✍', challenge: '⚔', festival: '♫', boss: '☠', story: '✦' };
 
 // The next three things the player can act on, with a link to the calendar.
 export default function UpcomingStrip({ state, actions, navigate }) {
@@ -17,7 +17,9 @@ export default function UpcomingStrip({ state, actions, navigate }) {
       <ol>
         {events.map((event) => (
           <li key={`${event.kind}-${event.id}`} className={`upcoming-item upcoming-item--${event.kind}`} title={event.detail}>
-            <i>{KIND_ICONS[event.kind]}</i>
+            <i aria-hidden="true">
+              <PixelIcon name={EVENT_ICONS[event.kind] || 'star'} size={24} />
+            </i>
             <span>
               <strong>{event.title}</strong>
               <small>

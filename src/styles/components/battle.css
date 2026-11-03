@@ -78,7 +78,7 @@
 .battle-commands__menu .button:is(:hover, :focus-visible):not(:disabled), .battle-commands__list .button:is(:hover, :focus-visible):not(:disabled) { background: var(--win-sel); }
 .battle-commands__menu .button:is(:hover, :focus-visible):not(:disabled)::before, .battle-commands__list .button:is(:hover, :focus-visible):not(:disabled)::before { animation: cursor-nudge 600ms steps(2) infinite; }
 .battle-commands__menu .button:disabled, .battle-commands__list .button:disabled { background: transparent; color: var(--ink-faint); }
-.battle-commands__menu .button__icon { width: 20px; color: var(--ink-dim); font-family: var(--font-prose); }
+.battle-commands__menu .button__icon { display: grid; place-items: center; width: 24px; color: var(--ink-dim); font-family: var(--font-prose); }
 .battle-commands__menu .button + .button, .battle-commands__list .button + .button { border-top: 1px dashed var(--win-line); }
 .battle-commands__prompt { display: grid; gap: 8px; padding: 4px; font-size: var(--t-ui); }
 .battle-commands__prompt span { color: var(--ink); }

@@ -3,6 +3,7 @@ import { COMMANDS } from '../game/combat.js';
 import { SKILLS, STATUS_LABELS, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
 import { Badge, Button, HeroSprite, Modal, ProgressBar, artUrl, sceneStyle } from './UI.jsx';
+import PixelIcon, { COMMAND_ICONS } from './PixelIcon.jsx';
 
 // Battle backdrop: the arena for tournaments, otherwise the scene of the
 // location's primal (see DESIGN.md, Components).
@@ -286,7 +287,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
                     {COMMANDS.map((command) => (
                       <Button
                         key={command.id}
-                        icon={command.icon}
+                        icon={<PixelIcon name={COMMAND_ICONS[command.id] || 'star'} size={24} />}
                         disabled={(command.id === 'skill' && !active.skills.length) || (command.id === 'item' && !itemsLeft.length)}
                         onClick={() => (command.id === 'skill' || command.id === 'item' ? setMenu(command.id) : choose({ action: command.id }))}
                       >
