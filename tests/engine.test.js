@@ -107,7 +107,7 @@ function hireFirstCompanion(state) {
   return result.state;
 }
 
-test('new campaign starts Regional with a level-one player and four reachable settlements', () => {
+test('new campaign starts Regional with a level-one player and the three Chapter 1 towns', () => {
   const one = createNewGame({ seed: 1187, guildName: 'Lantern Test', founderName: 'Oscar', founderClass: 'Duelist', founderPrimal: 'Water' });
   const two = createNewGame({ seed: 1187, guildName: 'Lantern Test', founderName: 'Oscar', founderClass: 'Duelist', founderPrimal: 'Water' });
   assert.deepEqual(validateGame(one), []);
@@ -119,7 +119,7 @@ test('new campaign starts Regional with a level-one player and four reachable se
   assert.equal(one.heroes[0].primal, 'Water');
   assert.equal(one.heroes[0].level, 1);
   assert.equal(one.heroes[0].xp, 0);
-  assert.equal(unlockedLocations(one.guild.tierIndex).length, 4);
+  assert.equal(unlockedLocations(one.guild.tierIndex).length, 3);
   assert.equal(one.candidates.length, 3);
   assert.deepEqual(
     one.candidates.map((candidate) => [candidate.name, candidate.level, candidate.rarity]),
@@ -1020,7 +1020,7 @@ test('travel moves the guild and advances time by the journey length', () => {
 });
 
 test('road events are seeded: the same journey yields the same events', () => {
-  const run = () => travelAll(hireFirstCompanion(createNewGame({ seed: 30002 })), 'windmere');
+  const run = () => travelAll(hireFirstCompanion(createNewGame({ seed: 30002 })), 'greenhollow');
   assert.deepEqual(run().events, run().events);
   const planned = (seed) => planRoadEvents(makeRng(seed), 3);
   assert.deepEqual(planned(7), planned(7));

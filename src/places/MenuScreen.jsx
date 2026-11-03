@@ -8,6 +8,7 @@ import LegacyScreen from '../screens/LegacyScreen.jsx';
 import CalendarScreen from './CalendarScreen.jsx';
 import QuestLogScreen from './QuestLogScreen.jsx';
 import { BestiaryScreen, NewsScreen } from './NewsScreen.jsx';
+import { sliceHides } from '../data/slice.js';
 
 const PAGES = [
   { id: 'calendar', name: 'Calendar', icon: '▦', description: 'Weeks ahead: tournaments, company returns, wage days. Advance to a date.' },
@@ -15,14 +16,17 @@ const PAGES = [
   { id: 'quests', name: 'Quest log', icon: '✎', description: 'Active contracts, open promises and current objectives.' },
   { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
   { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline, field reports, eras and the hall of fame.' },
-  { id: 'codex', name: 'Codex', icon: '✓', description: 'Goals, promotion path, achievements, and the legacy office.' },
+  { id: 'codex', name: 'Codex', icon: '✓', description: 'Goals, promotion path, achievements and the bestiary.' },
 ];
+
+// The Legacy office holds succession, branches, mentors and artifact custody: all outside Chapter 1.
+const LEGACY_HIDDEN = sliceHides('succession');
 
 const CODEX_TABS = [
   { id: 'goals', label: 'Goals & promotion', icon: '✓' },
   { id: 'legacy', label: 'Legacy office', icon: '♛' },
   { id: 'bestiary', label: 'Bestiary & story', icon: '☠' },
-];
+].filter((item) => item.id !== 'legacy' || !LEGACY_HIDDEN);
 
 export default function MenuScreen({ state, actions, navigate, slot, place, setPlace }) {
   const props = { state, actions, navigate, slot };
@@ -31,7 +35,7 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
   if (!page) {
     return (
       <div className="screen screen--menu">
-        <SceneBackdrop scene="scene_09" dim={0.45} focus="50% 45%" />
+        <SceneBackdrop asset="bg.chronicle" dim={0.45} focus="50% 45%" />
         <header className="town-header">
           <div>
             <h1>The Chronicle</h1>
@@ -56,10 +60,10 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
     );
   }
 
-  const codexTab = ['legacy', 'bestiary'].includes(place.tab) ? place.tab : 'goals';
+  const codexTab = (LEGACY_HIDDEN ? ['bestiary'] : ['legacy', 'bestiary']).includes(place.tab) ? place.tab : 'goals';
   return (
     <div className={`menu-page menu-page--${page.id}`}>
-      <SceneBackdrop scene="scene_09" dim={0.62} focus="50% 45%" />
+      <SceneBackdrop asset="bg.chronicle" dim={0.62} focus="50% 45%" />
       <Button size="sm" className="town-header__back menu-page__back" onClick={() => setPlace({ view: 'menu', page: null })}>
         ◀ Chronicle
       </Button>

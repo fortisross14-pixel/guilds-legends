@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
 import { getStoryView, getTravelQuote, getWorldKnowledge } from '../game/engine.js';
 import { BLACKWOOD_MAP } from '../data/story.js';
-import { Badge, Button, PrimalBadge, ProgressBar, RiskPips, artUrl } from '../components/UI.jsx';
+import { Badge, Button, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
+import { useAssetUrl } from '../components/Asset.jsx';
+import { BEYOND_TEASER, inSlice, sliceHides } from '../data/slice.js';
 import PixelIcon from '../components/PixelIcon.jsx';
 
 const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
@@ -36,7 +38,10 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const selected = LOCATION_BY_ID[selectedId] || LOCATION_BY_ID[currentLocationId];
   const knowledge = getWorldKnowledge(state);
   const knownLocationCount = Object.values(knowledge).filter((status) => status !== 'unknown').length;
-  const unlocked = TIER_ORDER[selected.tier] <= state.guild.tierIndex;
+  const selectedBeyond = !inSlice(selected.id);
+  const unlocked = TIER_ORDER[selected.tier] <= state.guild.tierIndex && !selectedBeyond;
+  const overworld = useAssetUrl('ui.overworld');
+  const showBranches = !sliceHides('branches');
   const quote = getTravelQuote(state, selected.id);
   const current = LOCATION_BY_ID[currentLocationId];
   const travel = state.world?.activeTravel;
@@ -100,7 +105,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         {createPortal(
           <section className="world-map world-map--locations" aria-label="Fictional world travel map">
             <div className="world-map__plane">
-              <div className="world-map__terrain" style={{ '--overworld': `url(${artUrl('ui/overworld.png')})` }} />
+              <div className="world-map__terrain" style={{ '--overworld': overworld ? `url("${overworld}")` : 'none' }} data-asset="ui.overworld" />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
                 {MAP_ROUTES.map((route) => (
                   <path
@@ -141,7 +146,8 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 </span>
               ) : null}
               {LOCATIONS.map((location) => {
-                const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
+                const beyond = !inSlice(location.id);
+                const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
                 const isCurrent = location.id === currentLocationId;
                 const isDestination = travel?.toId === location.id;
                 const knowledgeStatus = knowledge[location.id] || 'unknown';
@@ -151,7 +157,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     className={`location-node location-node--${knowledgeStatus} ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
                     style={{ left: `${location.x}%`, top: `${location.y}%`, '--primal': PRIMALS[location.primal].color }}
                     onClick={() => setSelectedId(location.id)}
-                    aria-label={knowledgeStatus === 'unknown' ? `Uncharted ${location.tier} frontier` : `${location.name}, ${knowledgeStatus}`}
+                    aria-label={beyond ? BEYOND_TEASER.title : knowledgeStatus === 'unknown' ? `Uncharted ${location.tier} frontier` : `${location.name}, ${knowledgeStatus}`}
                   >
                     {isCurrent && !travel ? (
                       <em className="location-node__here">
@@ -162,7 +168,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     <span className="location-node__icon">
                       <PixelIcon name={canReach ? (knowledgeStatus === 'unknown' ? 'pin' : isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
                     </span>
-                    <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : location.tier}</strong>
+                    <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : beyond ? 'Beyond' : location.tier}</strong>
                     <small>
                       {isCurrent
                         ? 'HQ here'
@@ -174,7 +180,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
                               : knowledgeStatus === 'rumored'
                                 ? 'Rumored'
                                 : 'Unknown'
-                            : 'Locked'}
+                            : beyond
+                              ? 'Known roads end'
+                              : 'Locked'}
                     </small>
                   </button>
                 );
@@ -234,7 +242,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <small>
                 {selected.tier} destination · {selected.region}
               </small>
-              <h2>{unlocked ? (selectedKnown ? selected.name : 'Uncharted frontier') : 'Unreachable frontier'}</h2>
+              <h2>{unlocked ? (selectedKnown ? selected.name : 'Uncharted frontier') : selectedBeyond ? BEYOND_TEASER.title : 'Unreachable frontier'}</h2>
             </div>
           </div>
           {unlocked && selectedVisited ? (
@@ -290,7 +298,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     Open branch contracts
                   </Button>
                   <Button onClick={() => navigate('heroes')}>Open branch market</Button>
-                  <Button onClick={() => navigate('legacy')}>Manage branch</Button>
+                  {showBranches ? <Button onClick={() => navigate('legacy')}>Manage branch</Button> : null}
                 </div>
               ) : selected.id !== currentLocationId ? (
                 <div className="travel-quote">
@@ -325,7 +333,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   <Button variant="primary" size="lg" onClick={() => navigate('town')}>
                     Enter {selected.name}
                   </Button>
-                  {state.guild.tierIndex >= 1 ? <Button onClick={() => navigate('legacy')}>Manage branches</Button> : null}
+                  {state.guild.tierIndex >= 1 && showBranches ? <Button onClick={() => navigate('legacy')}>Manage branches</Button> : null}
                 </div>
               )}
 
@@ -370,6 +378,13 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 </Button>
               ) : null}
             </div>
+          ) : selectedBeyond ? (
+            <div className="locked-dossier locked-dossier--beyond">
+              <PixelIcon name="lock" size={28} />
+              <h3>{selectedKnown ? `${selected.name}, ${selected.region}` : 'A road into the haze'}</h3>
+              <p>{BEYOND_TEASER.text}</p>
+              <Badge tone="purple">A later chapter</Badge>
+            </div>
           ) : (
             <div className="locked-dossier">
               <PixelIcon name="lock" size={28} />
@@ -383,9 +398,12 @@ export default function MapScreen({ state, actions, navigate, place }) {
 
       <div className="location-mobile-list" aria-label="Destinations list" data-menu>
         {LOCATIONS.map((location) => {
-          const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex;
+          const beyond = !inSlice(location.id);
+          const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
           const knowledgeStatus = knowledge[location.id] || 'unknown';
-          const mobileDescription = !canReach
+          const mobileDescription = beyond
+            ? 'A later chapter'
+            : !canReach
             ? `Unlock at ${location.tier}`
             : knowledgeStatus === 'unknown'
               ? 'Travel to discover it'
@@ -402,7 +420,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <PixelIcon name={canReach ? (location.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={12} />
               </span>
               <div>
-                <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted frontier' : location.name) : `${location.tier} frontier`}</strong>
+                <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted frontier' : location.name) : beyond ? BEYOND_TEASER.title : `${location.tier} frontier`}</strong>
                 <small>{mobileDescription}</small>
               </div>
               {location.id === currentLocationId ? <Badge tone="green">Here</Badge> : null}

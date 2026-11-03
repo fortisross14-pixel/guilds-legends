@@ -158,7 +158,7 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
   useMenuKeys();
   return (
     <div className="home-screen">
-      <SceneBackdrop scene="scene_01" dim={0.18} focus="50% 50%" />
+      <SceneBackdrop asset="bg.title" dim={0.18} focus="50% 50%" />
       <div className="home-screen__inner">
         <header className="title-logo">
           <Crest size="xl" />

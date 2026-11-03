@@ -7,6 +7,7 @@ import { MAIN_PARTY_SIZE, contractMonthsLeft, getHero, offerTerms, renewalTerms,
 import { heroBattleStats } from '../game/combat.js';
 import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge } from './UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
+import { sliceHides } from '../data/slice.js';
 
 function gearName(state, id) {
   if (!id) return 'Empty';
@@ -321,7 +322,7 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
             >
               {inMainParty ? 'Remove from main party' : 'Add to main party'}
             </Button>
-            {apprenticeOptions.length ? (
+            {apprenticeOptions.length && !sliceHides('mentorship') ? (
               <label>
                 Mentor
                 <select value="" onChange={(event) => event.target.value && actions.assignMentor(hero.id, event.target.value)}>

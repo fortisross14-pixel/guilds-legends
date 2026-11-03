@@ -160,7 +160,7 @@ export function createNewGame(options = {}) {
     achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
     stats: initialStats(),
     notifications: [],
-    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6 },
+    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6, joystick: false },
     legacy: { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] },
     flags: {
       // The exploration layer owns visual movement; this tiny serializable record

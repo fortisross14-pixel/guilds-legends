@@ -3,7 +3,7 @@
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
 import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID } from '../../data/world.js';
-import { DUNMERE_DOORS, DUNMERE_NPCS } from '../../data/dunmere.js';
+import { DUNMERE_DOORS, DUNMERE_NPCS, DUNMERE_SPAWN } from '../../data/dunmere.js';
 import { tournamentRequirements } from './tournaments.js';
 import { WEEKS_PER_MONTH, campaignWeekSerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
@@ -42,7 +42,7 @@ export function completeFallenBannerOpening(state, choices = []) {
   next.flags ||= {};
   next.flags.opening = { phase: 'complete', choices: Array.isArray(choices) ? choices.slice(0, 3) : [] };
   next.world.exploration ||= {};
-  next.world.exploration.dunmere = { x: 224, y: 404, discovered: ['house'] };
+  next.world.exploration.dunmere = { ...DUNMERE_SPAWN, discovered: ['house'] };
   return finalize(next);
 }
 
@@ -50,7 +50,7 @@ export function completeFallenBannerOpening(state, choices = []) {
 export function recordDunmereExploration(state, targetId, position) {
   const next = clone(state);
   next.world.exploration ||= {};
-  const town = next.world.exploration.dunmere || { x: 224, y: 404, discovered: [], conversations: {} };
+  const town = next.world.exploration.dunmere || { ...DUNMERE_SPAWN, discovered: [], conversations: {} };
   town.discovered = [...new Set([...(town.discovered || []), targetId])];
   town.conversations ||= {};
   if (targetId.startsWith('npc:')) town.conversations[targetId.slice(4)] = true;

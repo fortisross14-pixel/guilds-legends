@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { APPOINTMENTS, FACILITIES, TIERS } from '../data/content.js';
 import { headquartersRoomCapacity, heroCapacity, usedFacilityRooms } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
+import { sliceHides } from '../data/slice.js';
 
 function tierIndex(name) {
   return Math.max(
@@ -207,6 +208,7 @@ export default function HeadquartersScreen({ state, actions }) {
           </div>
         </Panel>
 
+        {sliceHides('alignment') ? null : (
         <Panel title="Political posture" eyebrow="The first long relationship">
           {state.guild.alignment === 'Undeclared' ? (
             <div className="alignment-grid">
@@ -246,6 +248,7 @@ export default function HeadquartersScreen({ state, actions }) {
             </div>
           ) : null}
         </Panel>
+        )}
       </div>
     </div>
   );

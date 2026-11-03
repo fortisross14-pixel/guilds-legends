@@ -1,0 +1,288 @@
+import React, { useEffect, useRef, useState } from 'react';
+
+const JOYSTICK_RADIUS = 48;
+const DRAG_THRESHOLD = 12;
+const KEY_DIRECTIONS = {
+  ArrowUp: [0, -1],
+  KeyW: [0, -1],
+  ArrowDown: [0, 1],
+  KeyS: [0, 1],
+  ArrowLeft: [-1, 0],
+  KeyA: [-1, 0],
+  ArrowRight: [1, 0],
+  KeyD: [1, 0],
+};
+
+/** True on touch-first devices; keyboard hints are hidden there. */
+export function useCoarsePointer() {
+  const query = '(pointer: coarse)';
+  const [coarse, setCoarse] = useState(() => typeof window !== 'undefined' && Boolean(window.matchMedia?.(query).matches));
+  useEffect(() => {
+    const media = window.matchMedia?.(query);
+    if (!media) return undefined;
+    const update = () => setCoarse(media.matches);
+    media.addEventListener?.('change', update);
+    return () => media.removeEventListener?.('change', update);
+  }, []);
+  return coarse;
+}
+
+/**
+ * A walkable Phaser scene with the shared touch-first controls:
+ * tap to walk (with pathfinding), tap a target to walk there and interact,
+ * one context button when something is in reach, an optional drag-anywhere
+ * joystick, and keyboard on desktop. Names are rendered here, over the canvas.
+ *
+ * The game is created once per mount: `map` and `start` are read only then.
+ * Changing props (`activeTargets`, `paused`, `onInteract`) never rebuilds it.
+ */
+export default function WalkableScene({ map, start, activeTargets, paused = false, joystick = false, onInteract, className = '', label, children }) {
+  const stageRef = useRef(null);
+  const controllerRef = useRef(null);
+  const bridge = useRef({});
+  const labelRefs = useRef({});
+  const pointer = useRef(null);
+  const keys = useRef(new Set());
+  const stickBase = useRef(null);
+  const stickKnob = useRef(null);
+  const viewport = useRef({ width: 0, height: 0 });
+  const initial = useRef({ map, start: start || map.spawn });
+  const coarse = useCoarsePointer();
+  const coarseRef = useRef(coarse);
+  const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [near, setNear] = useState(null);
+  const [stick, setStick] = useState(null);
+  const active = activeTargets || map.targets.filter((target) => target.active !== false).map((target) => target.id);
+  const activeKey = active.join('|');
+  const activeRef = useRef(active);
+  activeRef.current = active;
+
+  // Fresh callbacks every render, read by the game through the ref.
+  bridge.current = {
+    onNear: (target) => setNear(target || null),
+    onInteract: (target, position) => onInteract?.(target, position),
+    onFrame: (project) => {
+      const { width, height } = viewport.current;
+      initial.current.map.targets.forEach((target) => {
+        const element = labelRefs.current[target.id];
+        if (!element) return;
+        const point = project(target.labelAt?.x ?? target.x, target.labelAt?.y ?? target.y + 6);
+        let { x, y } = point;
+        let edge = '';
+        // Beacons stay on screen, pinned to the nearest edge with an arrow.
+        if (target.beacon && width) {
+          const half = (element.offsetWidth || 80) / 2 + 10;
+          const top = 132;
+          const bottom = height - 104;
+          if (x < half) [x, edge] = [half, 'left'];
+          else if (x > width - half) [x, edge] = [width - half, 'right'];
+          if (y < top) [y, edge] = [top, edge || 'up'];
+          else if (y > bottom) [y, edge] = [bottom, edge || 'down'];
+        }
+        if (element.dataset.edge !== edge) element.dataset.edge = edge;
+        element.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translateX(-50%)`;
+      });
+    },
+  };
+
+  // Create the game once per mount; Phaser is downloaded on first use.
+  useEffect(() => {
+    let cancelled = false;
+    let controller = null;
+    let observer = null;
+    import('./walkGame.js')
+      .then(({ createWalkGame }) =>
+        createWalkGame({ parent: stageRef.current, map: initial.current.map, start: initial.current.start, bridge, coarse: coarseRef.current }),
+      )
+      .then((created) => {
+        controller = created;
+        if (cancelled) {
+          created.destroy();
+          return;
+        }
+        controllerRef.current = created;
+        created.setActiveTargets(activeRef.current);
+        const measure = () => {
+          viewport.current = { width: stageRef.current?.clientWidth || 0, height: stageRef.current?.clientHeight || 0 };
+        };
+        measure();
+        observer = new ResizeObserver(() => {
+          measure();
+          created.resize();
+        });
+        observer.observe(stageRef.current);
+        window.render_game_to_text = () => JSON.stringify(created.snapshot());
+        setReady(true);
+      })
+      .catch((error) => {
+        console.error('Walkable scene failed to load', error);
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+      controller?.destroy();
+      controllerRef.current = null;
+      if (window.render_game_to_text) delete window.render_game_to_text;
+    };
+  }, []);
+
+  useEffect(() => {
+    controllerRef.current?.setActiveTargets(activeRef.current);
+  }, [activeKey, ready]);
+
+  useEffect(() => {
+    controllerRef.current?.setPaused(paused);
+    if (paused) setNear(null);
+  }, [paused, ready]);
+
+  // Keyboard (desktop extra): arrows/WASD to walk, Space/Enter/E to interact.
+  useEffect(() => {
+    const typing = (event) => /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(event.target?.tagName || '');
+    const push = () => {
+      let x = 0;
+      let y = 0;
+      keys.current.forEach((code) => {
+        x += KEY_DIRECTIONS[code][0];
+        y += KEY_DIRECTIONS[code][1];
+      });
+      controllerRef.current?.setStick(Math.sign(x), Math.sign(y));
+    };
+    const down = (event) => {
+      if (paused || typing(event)) return;
+      if (KEY_DIRECTIONS[event.code]) {
+        event.preventDefault();
+        keys.current.add(event.code);
+        push();
+      } else if (['Space', 'Enter', 'KeyE'].includes(event.code) && !event.repeat) {
+        event.preventDefault();
+        controllerRef.current?.interact();
+      }
+    };
+    const up = (event) => {
+      if (!KEY_DIRECTIONS[event.code]) return;
+      keys.current.delete(event.code);
+      push();
+    };
+    const blur = () => {
+      keys.current.clear();
+      push();
+    };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', blur);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', blur);
+    };
+  }, [paused]);
+
+  const local = (event) => {
+    const rect = stageRef.current.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  };
+
+  const onPointerDown = (event) => {
+    if (event.button > 0 || !controllerRef.current) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const point = local(event);
+    pointer.current = { id: event.pointerId, start: point, last: point, lastAt: performance.now(), mode: joystick ? 'pending' : 'steer' };
+    // Without the joystick a press walks at once; holding and dragging steers.
+    if (!joystick) controllerRef.current.tap(point.x, point.y);
+  };
+
+  const onPointerMove = (event) => {
+    const current = pointer.current;
+    if (!current || current.id !== event.pointerId) return;
+    const point = local(event);
+    const dx = point.x - current.start.x;
+    const dy = point.y - current.start.y;
+    if (current.mode === 'pending' && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+      current.mode = 'stick';
+      setStick({ x: current.start.x, y: current.start.y });
+    }
+    if (current.mode === 'stick') {
+      const length = Math.hypot(dx, dy);
+      const clamped = Math.min(length, JOYSTICK_RADIUS);
+      const kx = length ? (dx / length) * clamped : 0;
+      const ky = length ? (dy / length) * clamped : 0;
+      controllerRef.current?.setStick(kx / JOYSTICK_RADIUS, ky / JOYSTICK_RADIUS);
+      if (stickKnob.current) stickKnob.current.style.transform = `translate(${kx}px, ${ky}px)`;
+    } else if (current.mode === 'steer' && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+      const now = performance.now();
+      if (now - current.lastAt > 110 && Math.hypot(point.x - current.last.x, point.y - current.last.y) > 10) {
+        controllerRef.current?.tap(point.x, point.y, { targets: false });
+        current.last = point;
+        current.lastAt = now;
+      }
+    }
+  };
+
+  const onPointerEnd = (event) => {
+    const current = pointer.current;
+    if (!current || current.id !== event.pointerId) return;
+    pointer.current = null;
+    if (current.mode === 'pending' && event.type === 'pointerup') {
+      const point = local(event);
+      controllerRef.current?.tap(point.x, point.y);
+    }
+    if (current.mode === 'stick') {
+      controllerRef.current?.setStick(0, 0);
+      setStick(null);
+    }
+  };
+
+  const showContext = ready && near && !paused;
+  return (
+    <main className={`walk ${className}`} aria-label={label}>
+      <div className="walk__stage" ref={stageRef} />
+      <div
+        className="walk__touch"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        onContextMenu={(event) => event.preventDefault()}
+        aria-hidden="true"
+      />
+      <div className="walk__labels">
+        {ready
+          ? map.targets
+              .filter((target) => target.label !== false && active.includes(target.id))
+              .map((target) => (
+                <button
+                  type="button"
+                  key={target.id}
+                  ref={(element) => {
+                    labelRefs.current[target.id] = element;
+                  }}
+                  className={`walk__label walk__label--${target.kind}${near?.id === target.id ? ' is-near' : ''}${target.beacon ? ' walk__label--beacon' : ''}`}
+                  onClick={() => controllerRef.current?.goTo(target.id)}
+                  onMouseDown={(event) => event.preventDefault()}
+                  tabIndex={-1}
+                  aria-label={`${target.verb}: ${target.name}`}
+                >
+                  {target.labelText || target.name}
+                </button>
+              ))
+          : null}
+      </div>
+      {stick ? (
+        <div className="walk__stick" ref={stickBase} style={{ left: stick.x, top: stick.y }} aria-hidden="true">
+          <span ref={stickKnob} />
+        </div>
+      ) : null}
+      {!ready ? <div className="walk__loading">{failed ? 'This place could not be drawn. Reload to try again.' : 'Setting the scene…'}</div> : null}
+      {children}
+      {showContext ? (
+        <button type="button" className="walk__context" onClick={() => controllerRef.current?.interact()}>
+          <strong>{near.verb}</strong>
+          <span>{near.name}</span>
+          {!coarse ? <kbd>Space</kbd> : null}
+        </button>
+      ) : null}
+    </main>
+  );
+}

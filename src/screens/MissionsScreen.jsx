@@ -6,6 +6,7 @@ import { operationalLocationIds, partyCapacity, partyEstimate, roleRating } from
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, RiskPips } from '../components/UI.jsx';
 import SideJobsPanel from './SideJobsPanel.jsx';
 import PixelIcon, { FORMATION_ICONS } from '../components/PixelIcon.jsx';
+import { sliceHides } from '../data/slice.js';
 
 function buildBestFormation(state, formationType) {
   const formation = FORMATION_TYPES[formationType];
@@ -139,8 +140,9 @@ export default function MissionsScreen({ state, actions, navigate }) {
           <span className="eyebrow">Operational contracts · specialist arrangements</span>
           <h1>{currentLocation?.name} Contract Board</h1>
           <p>
-            Headquarters and permanent branches can each launch companies. Choose an operational settlement, then build the arrangement that best fits its
-            petition.
+            {sliceHides('branches')
+              ? 'Pick a contract, then build the party that best fits its petition.'
+              : 'Headquarters and permanent branches can each launch companies. Choose an operational settlement, then build the arrangement that best fits its petition.'}
           </p>
         </div>
         <div className="heading-metrics">

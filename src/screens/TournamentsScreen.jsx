@@ -4,6 +4,7 @@ import { FORMATION_TYPES } from '../data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
 import { getHero, getTournamentAccess, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, RarityBadge, Tabs } from '../components/UI.jsx';
+import { sliceHides } from '../data/slice.js';
 
 function ordinal(finish) {
   if (finish === 1) return 'Champion';
@@ -526,7 +527,7 @@ export default function TournamentsScreen({ state, actions, navigate }) {
         </div>
         <div className="heading-metrics">
           <Badge tone="gold">{state.stats.individualTournamentWins || 0} hero titles</Badge>
-          <Badge tone="purple">{state.stats.guildTournamentWins || 0} guild titles</Badge>
+          {sliceHides('guildChampionships') ? null : <Badge tone="purple">{state.stats.guildTournamentWins || 0} guild titles</Badge>}
           <Badge tone={active ? 'red' : 'green'}>{active ? `${active.name} active` : 'No active entry'}</Badge>
         </div>
       </header>
@@ -537,10 +538,10 @@ export default function TournamentsScreen({ state, actions, navigate }) {
           { id: 'heroes', label: 'Hero circuits', icon: '♛' },
           { id: 'guilds', label: 'Guild championships', icon: '⚑' },
           { id: 'records', label: 'Title history', icon: '▤' },
-        ]}
+        ].filter((item) => item.id !== 'guilds' || !sliceHides('guildChampionships'))}
       />
       {tab === 'heroes' ? <HeroCircuit state={state} actions={actions} navigate={navigate} /> : null}
-      {tab === 'guilds' ? <GuildChampionships state={state} actions={actions} navigate={navigate} /> : null}
+      {tab === 'guilds' && !sliceHides('guildChampionships') ? <GuildChampionships state={state} actions={actions} navigate={navigate} /> : null}
       {tab === 'records' ? <TitleHistory state={state} actions={actions} /> : null}
     </div>
   );

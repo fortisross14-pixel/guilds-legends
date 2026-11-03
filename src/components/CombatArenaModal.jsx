@@ -2,16 +2,23 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { COMMANDS } from '../game/combat.js';
 import { SKILLS, STATUS_LABELS, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
-import { Badge, Button, HeroSprite, Modal, Motes, ProgressBar, artUrl, sceneStyle } from './UI.jsx';
+import { Badge, Button, HeroSprite, Modal, Motes, ProgressBar, artUrl, useSceneStyle } from './UI.jsx';
 import PixelIcon, { COMMAND_ICONS } from './PixelIcon.jsx';
 
-// Battle backdrop: the arena for tournaments, otherwise the scene of the
-// location's primal (see DESIGN.md, Components).
-const PRIMAL_SCENES = { Fire: 'scene_12', Plant: 'scene_11', Water: 'scene_04', Air: 'scene_05', Animal: 'scene_11', Psychic: 'scene_06', Iron: 'scene_12' };
-export function battleScene(encounter, locationPrimal) {
-  if (!encounter) return 'scene_02';
-  if (encounter.mode === 'duel' || /tournament|championship|challenge/i.test(encounter.sourceType || '')) return 'scene_02';
-  return PRIMAL_SCENES[locationPrimal] || PRIMAL_SCENES[encounter.enemies?.[0]?.primal] || 'scene_11';
+// Battle background asset id (src/data/assets.js): the arena for tournaments,
+// the slice's wild areas by name, otherwise the location's primal.
+const AREA_BATTLES = [
+  [/old road/i, 'bg.battle.oldroad'],
+  [/thornwood/i, 'bg.battle.thornwood'],
+  [/blackwood/i, 'bg.battle.blackwood'],
+];
+export function battleBackground(encounter, locationPrimal) {
+  if (!encounter) return 'bg.battle.arena';
+  if (encounter.mode === 'duel' || /tournament|championship|challenge/i.test(encounter.sourceType || '')) return 'bg.battle.arena';
+  const area = AREA_BATTLES.find(([pattern]) => pattern.test(`${encounter.title || ''} ${encounter.objective || ''}`));
+  if (area) return area[1];
+  const primal = locationPrimal || encounter.enemies?.[0]?.primal || 'Plant';
+  return `bg.battle.${String(primal).toLowerCase()}`;
 }
 
 const HIT_FX = 'effect_14';
@@ -108,6 +115,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
   const [hintsHidden, setHintsHidden] = useState(false);
   const commandsRef = useRef(null);
   const pops = useHpPops(encounter);
+  const stageStyle = useSceneStyle(battleBackground(encounter, locationPrimal));
   const turnKey = encounter ? `${encounter.id}:${encounter.turn}:${encounter.status}` : null;
 
   useEffect(() => {
@@ -212,7 +220,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal })
       className="battle-modal"
     >
       <div className={`battle-screen battle-screen--${encounter.mode}`}>
-        <section className="battle-stage scene" style={sceneStyle(battleScene(encounter, locationPrimal))} aria-label="Battlefield">
+        <section className="battle-stage scene" style={stageStyle} data-asset={battleBackground(encounter, locationPrimal)} aria-label="Battlefield">
           <Motes />
           {encounter.guaranteed && !finished && !hintsHidden ? (
             <aside className="battle-hints">

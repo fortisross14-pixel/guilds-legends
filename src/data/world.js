@@ -1,3 +1,5 @@
+import { inSlice } from './slice.js';
+
 export const PRIMALS = {
   Fire: { id: 'Fire', icon: '🔥', color: '#ef8354', beats: 'Plant', weakTo: 'Water', temperament: 'bold, proud and direct' },
   Air: { id: 'Air', icon: '🜁', color: '#8dc7d9', beats: 'Psychic', weakTo: 'Iron', temperament: 'restless, inventive and free' },
@@ -296,7 +298,7 @@ export function primalDiplomacyModifier(heroPrimal, patronPrimal) {
 
 export function unlockedLocations(tierIndex) {
   const allowed = tierIndex <= 0 ? ['Regional'] : tierIndex === 1 ? ['Regional', 'National'] : ['Regional', 'National', 'Global'];
-  return LOCATIONS.filter((location) => allowed.includes(location.tier));
+  return LOCATIONS.filter((location) => allowed.includes(location.tier) && inSlice(location.id));
 }
 
 export function travelDuration(fromId, toId) {

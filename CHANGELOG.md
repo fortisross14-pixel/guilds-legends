@@ -2,6 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 0: foundations and touch
+
+- Walkable scenes (the opening room and Dunmere) share one touch-first layer: tap to walk with pathfinding, tap a person, door or their name to walk there and interact, a single context button (Talk / Enter / Inspect), hold-and-drag steering and an optional drag-anywhere joystick. The D-pad and "Space" prompts are gone on touch devices.
+- The walkable game is created once per visit, so autosaves no longer restart it. Phaser loads only when a walkable scene opens: main bundle 2.2 MB → 781 KB.
+- Names and HUD text are drawn over the canvas for crisp text; the canvas renders at the screen's pixel density.
+- Asset registry with labelled placeholders for missing art (`src/data/assets.js`, `docs/ASSETS.md`).
+- Chapter 1 slice flag: only Dunmere, Greenhollow and Ironford are reachable; succession, branches, mentors, artifacts, alignment and guild championships are hidden.
+- Game-dev skills now load in Claude Code; `public.zip` removed.
+
 ## Unreleased — HD-2D visual pass
 
 - New interface language: art first, with every scene, the overworld and battles full-screen behind dark translucent panels with thin brass edges and corner flourishes. Replaces the 16-bit JRPG windows. See `DESIGN.md` and `docs/UX_REDESIGN.md`.

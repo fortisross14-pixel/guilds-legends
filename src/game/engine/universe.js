@@ -3,6 +3,7 @@
 import { MISSION_TEMPLATES, TIERS } from '../../data/content.js';
 import { formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, LOCATIONS, PRIMAL_IDS, unlockedLocations } from '../../data/world.js';
+import { SLICE } from '../../data/slice.js';
 import {
   GUILD_BLUEPRINTS,
   GUILD_TOURNAMENT_DEFINITIONS,
@@ -254,7 +255,8 @@ function availableTemplatePool(state, location = null) {
   const early = boardPerks(state).early;
   const eligible = MISSION_TEMPLATES.filter(
     (template) =>
-      tierIndexByName(template.tier) <= currentTier || (tierIndexByName(template.tier) === currentTier + 1 && early.includes(missionFamily(template))),
+      (!SLICE.enabled || tierIndexByName(template.tier) <= SLICE.maxTier) &&
+      (tierIndexByName(template.tier) <= currentTier || (tierIndexByName(template.tier) === currentTier + 1 && early.includes(missionFamily(template)))),
   );
   if (!location) return eligible;
   const regional = eligible.filter((template) => template.region === location.region);

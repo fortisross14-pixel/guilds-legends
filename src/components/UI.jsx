@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { normalizeClassId } from '../data/content.js';
 import { PRIMALS, RARITIES } from '../data/world.js';
+import { useAssetUrl } from './Asset.jsx';
 const CREST_SIZES = { xs: 26, sm: 32, md: 42, lg: 56, xl: 84 };
 
 // The guild crest: an engraved shield with a lantern star, in brass and wine.
@@ -38,9 +39,10 @@ export function artUrl(path) {
   return typeof document === 'undefined' ? relative : new URL(relative, document.baseURI).href;
 }
 
-/** Inline style that sets a scene backdrop (see `.scene` in art.css). */
-export function sceneStyle(scene, extra = {}) {
-  return { '--scene': `url(${artUrl(`art/scenes/${scene}.png`)})`, ...extra };
+/** Inline style that sets a scene backdrop from an asset id (see `.scene` in art.css and src/data/assets.js). */
+export function useSceneStyle(assetId, extra = {}) {
+  const url = useAssetUrl(assetId);
+  return { '--scene': url ? `url("${url}")` : 'none', ...extra };
 }
 
 export function heroArtKey(hero = {}) {
@@ -458,9 +460,10 @@ const MOTES = Array.from({ length: 18 }, (_, index) => ({
  * A full-viewport scene behind a place: the art with a slow drift, depth-of-field
  * blur at the top and bottom edges, warm bloom, vignette, a contrast scrim and dust.
  */
-export function SceneBackdrop({ scene, focus = '50% 60%', dim = 0.35 }) {
+export function SceneBackdrop({ asset, focus = '50% 60%', dim = 0.35 }) {
+  const style = useSceneStyle(asset, { '--focus': focus, '--dim': dim });
   return createPortal(
-    <div className="scene-backdrop" style={{ '--scene': `url(${artUrl(`art/scenes/${scene}.png`)})`, '--focus': focus, '--dim': dim }} aria-hidden="true">
+    <div className="scene-backdrop" style={style} data-asset={asset} aria-hidden="true">
       <div className="scene-backdrop__art" />
       <div className="scene-backdrop__dof scene-backdrop__dof--top" />
       <div className="scene-backdrop__dof scene-backdrop__dof--bottom" />

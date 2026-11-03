@@ -11,9 +11,10 @@ import GuildHallRooms from './GuildHallRooms.jsx';
 import DunmereExploration from '../components/DunmereExploration.jsx';
 import { townLayoutFor } from '../data/townLayouts.js';
 import { getLivingHistory } from '../game/engine.js';
+import { firstAsset } from '../data/assets.js';
 
-// Pixel scene behind each building's header (town street by default).
-const BUILDING_SCENES = { guildHall: 'scene_09', herald: 'scene_03', shop: 'scene_01', arena: 'scene_02', tavern: 'scene_08', noticeBoard: 'scene_10' };
+// Interior art behind each building (asset ids, src/data/assets.js); the town backdrop otherwise.
+const BUILDING_INTERIORS = { guildHall: 'interior.guildhall', herald: 'interior.herald', shop: 'interior.shop', arena: 'interior.arena', tavern: 'interior.tavern', noticeBoard: 'interior.noticeboard' };
 
 function buildingBadge(state, buildingId, locationId) {
   if (buildingId === 'noticeBoard') return state.missions.filter((mission) => mission.locationId === locationId).length || null;
@@ -41,13 +42,21 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
 
   // Exploration owns the entire viewport. Keeping it below this animated screen
   // would turn its fixed canvas into a descendant-sized strip.
-  if (!building && locationId === 'dunmere' && state.flags?.opening?.phase === 'complete') {
-    return <DunmereExploration state={state} actions={actions} openBuilding={openBuilding} />;
+  // The tile menu stays as an accessibility fallback ("Town directory").
+  if (!building && !place.directory && locationId === 'dunmere' && state.flags?.opening?.phase === 'complete') {
+    return (
+      <DunmereExploration
+        state={state}
+        actions={actions}
+        openBuilding={openBuilding}
+        openDirectory={() => setPlace({ view: 'town', building: null, directory: true })}
+      />
+    );
   }
 
   return (
     <div className={`screen screen--town town--${locationId}`} style={{ '--primal': PRIMALS[town.primal]?.color }}>
-      <SceneBackdrop scene={BUILDING_SCENES[building] || 'scene_07'} dim={building ? 0.58 : 0.28} />
+      <SceneBackdrop asset={BUILDING_INTERIORS[building] || firstAsset(`bg.town.${locationId}`, 'bg.town.default')} dim={building ? 0.58 : 0.28} />
       <header className={`town-header place-title ${building ? 'place-title--building' : ''}`}>
         {building ? (
           <Button size="sm" className="town-header__back" onClick={() => setPlace({ view: 'town', building: null })}>
@@ -60,6 +69,11 @@ export default function TownScreen({ state, actions, navigate, slot, place, setP
         </div>
         <div className="heading-metrics">
           <PrimalBadge primal={town.primal} />
+          {!building && place.directory && locationId === 'dunmere' ? (
+            <Button size="sm" variant="primary" onClick={() => setPlace({ view: 'town', building: null })}>
+              Walk the streets
+            </Button>
+          ) : null}
           <Button size="sm" onClick={() => navigate('map')}>
             World map
           </Button>

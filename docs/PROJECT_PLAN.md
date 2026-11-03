@@ -72,7 +72,16 @@ The seven pillars, and how the slice delivers each one:
 
 One phase per agent session. Each phase ends with a playable build pushed to `main` and a short summary. **Until Phase 8 the only checks are: `npm run build` succeeds, and the GitHub Pages deploy succeeds.** No tests, playthroughs, device checks or screenshots (see `CLAUDE.md`).
 
-### Phase 0 — Foundations and touch (do first)
+### Phase 0 — Foundations and touch ✅ Done (2026-11-03)
+
+**Notes:**
+- Skills copied into `.claude/skills/`. `develop-web-game` was removed from `openai/skills` (PR #370), so it is installed from the last commit that had it (pinned in `skills-lock.json`). `public.zip` removed.
+- Both walkable scenes now use one shared layer in `src/explore/` (`WalkableScene.jsx` + lazily imported `walkGame.js` + `pathfinding.js`). The Phaser game is created once per mount; React talks to it through a ref. Main bundle 2.2 MB → 781 KB (241 KB gzip); Phaser is a separate chunk loaded only by walkable scenes.
+- Touch: tap to walk (A* around blocks), tap a target or its name to walk there and interact, one context button, hold-and-drag to steer, optional drag-anywhere joystick (Settings → Controls). D-pad removed. Names and HUD are React over the canvas; canvas renders at device pixel ratio (max 2). Off-screen key targets show as edge beacons. Keyboard (arrows/WASD, Space/Enter/E) on desktop only shows hints with a fine pointer.
+- Asset registry `src/data/assets.js` (47 ids), loader + placeholder painter `src/components/assetLoader.js`, `<Asset>` / `useAssetUrl` in `src/components/Asset.jsx`. Backdrops, interiors, battle backgrounds, world map terrain and all walkable art go through it. See `docs/ASSETS.md`.
+- Slice flag `src/data/slice.js`: only Dunmere, Greenhollow and Ironford are reachable; other places show as "Beyond the known roads". Mission pool capped at Regional. Hidden in the UI: Legacy office (succession, branches, mentors, artifacts), alignment panel, mentor picker, guild championships tab, branch buttons. Dunmere has a "Directory" button for the old tile menu.
+- **Open issue for Phase 1:** in the phone check the opening room, Dunmere taps and tavern dialogue worked, but tapping the opening room's door to enter Dunmere did not trigger in the automated run (the founder reached the door; the context button should still work). Testing was stopped there at the owner's request, so Dunmere was not re-checked on the phone after that point.
+
 - **Skills:**
   - Copy or symlink `.agents/skills/*` into `.claude/skills/`, so Claude Code loads them.
   - Install `develop-web-game` (`npx skills add openai/skills --skill develop-web-game -a claude-code`) and check it lands in `.claude/skills/`.

@@ -67,6 +67,14 @@ export default function SettingsScreen({ state, actions, slot }) {
           </label>
         </Panel>
 
+        <Panel title="Controls" eyebrow="Walking in towns">
+          <label className="sound-setting">
+            <input type="checkbox" checked={Boolean(state.settings.joystick)} onChange={(event) => actions.updateSettings({ joystick: event.target.checked })} />{' '}
+            Drag-anywhere joystick
+          </label>
+          <small className="muted">Off: tap where you want to go, or hold and drag to steer. On: drag anywhere to walk with a thumb stick; a quick tap still walks there.</small>
+        </Panel>
+
         <Panel title="Simulation" eyebrow="Campaign preferences">
           <div className="settings-form">
             <label>
