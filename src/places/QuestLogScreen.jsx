@@ -1,6 +1,6 @@
 import React from 'react';
 import { LOCATION_BY_ID } from '../data/world.js';
-import { getCalendarEntries, getHero, getPromotionRequirement, getStoryView } from '../game/engine.js';
+import { getCalendarEntries, getHero, getLivingHistory, getPromotionRequirement, getStoryView } from '../game/engine.js';
 import { EmptyState, Panel, ProgressBar } from '../components/UI.jsx';
 
 // Active contracts, open promises and current objectives in one place.
@@ -12,6 +12,7 @@ export default function QuestLogScreen({ state, navigate }) {
   const promotion = getPromotionRequirement(state);
   const locationLeads = Object.entries(state.world?.knowledge?.sources || {}).map(([locationId, source]) => ({ locationId, source }));
   const eventLeads = getCalendarEntries(state, 12).filter((entry) => entry.source);
+  const livingHistory = getLivingHistory(state);
 
   const story = getStoryView(state);
   return (
@@ -36,6 +37,16 @@ export default function QuestLogScreen({ state, navigate }) {
           <p className="muted">Rumors about the old guild will reach you soon.</p>
         )}
       </Panel>
+      {livingHistory.highlights.length ? (
+        <Panel title="What the world remembers" eyebrow="Recent consequences">
+          {livingHistory.highlights.map((item, index) => (
+            <p key={`${item.kind}-${index}`} className={`quest-row quest-row--${item.tone}`}>
+              <strong>{item.title}</strong>
+              <small>{item.text}</small>
+            </p>
+          ))}
+        </Panel>
+      ) : null}
       {locationLeads.length || eventLeads.length ? (
         <Panel title="Rumors and leads" eyebrow="What the guild has heard">
           {locationLeads.map(({ locationId, source }) => (

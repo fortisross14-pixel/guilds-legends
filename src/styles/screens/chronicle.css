@@ -81,6 +81,10 @@ button.chronicle-event__content:hover, button.chronicle-event__content:focus-vis
 button.quest-row { padding-left: 28px; padding-right: 8px; }
 .quest-row strong { font-family: var(--font-display); font-size: 19px; font-weight: 700; }
 .quest-row small { color: var(--text-dim); }
+.quest-row--green strong { color: var(--hp); }
+.quest-row--red strong { color: var(--dmg); }
+.quest-row--gold strong { color: var(--gold); }
+.quest-row--purple strong { color: var(--xp); }
 .quest-row__map { color: var(--mp); font-size: var(--t-label); }
 .quest-row .progress { margin-top: 4px; }
 

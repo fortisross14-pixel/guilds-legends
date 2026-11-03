@@ -19,6 +19,13 @@
 .town-info { justify-self: end; max-width: 340px; display: grid; gap: 12px; padding: 18px 20px; }
 .town-info p { margin: 0; color: var(--text); font-family: var(--font-display); font-size: 19px; font-style: italic; line-height: 1.4; }
 .town-info > small { color: var(--text-dim); font-size: var(--t-small); }
+.town-history { display: grid; gap: 3px; padding: 10px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.town-history strong { font-family: var(--font-display); font-size: 18px; }
+.town-history span { color: var(--text-dim); font-size: var(--t-small); }
+.town-history--green strong { color: var(--hp); }
+.town-history--red strong { color: var(--dmg); }
+.town-history--gold strong { color: var(--gold); }
+.town-history--purple strong { color: var(--xp); }
 .town-info .heading-metrics { justify-content: flex-start; }
 .town-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: var(--s4); padding: 14px 18px; }
 .town-notice span { color: var(--text-dim); font-size: var(--t-small); }

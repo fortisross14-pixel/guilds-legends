@@ -103,6 +103,63 @@ function knowsTournament(state, tournament) {
   return (circuit === 'Regional' && fame >= 75) || (circuit === 'National' && fame >= 180) || (circuit === 'Global' && fame >= 420);
 }
 
+/**
+ * A presentation-only digest of consequences already recorded by the
+ * simulation. Towns and the journal use it to make history feel present
+ * without adding a second source of truth or new simulation state.
+ */
+export function getLivingHistory(state) {
+  const highlights = [];
+  const chronicle = state.chronicle || [];
+  const add = (kind, title, text, tone = 'neutral') => highlights.push({ kind, title, text, tone });
+  const latestMission = state.missionHistory?.[0];
+  if (latestMission) {
+    const failed = ['Defeat', 'Catastrophic'].includes(latestMission.grade);
+    const major = latestMission.story || latestMission.bossId || latestMission.risk >= 4;
+    add(
+      failed ? 'defeat' : 'victory',
+      failed ? `The cost of ${latestMission.title}` : `${latestMission.title} is being remembered`,
+      failed
+        ? `${state.guild.name} returned from ${latestMission.locationName || latestMission.region} carrying a hard lesson.`
+        : `${latestMission.grade || 'Success'} on ${major ? 'a major contract: ' : ''}${latestMission.title}.`,
+      failed ? 'red' : 'green',
+    );
+  }
+  const playerTournament = (state.tournamentHistory || []).find((record) => record.playerResult);
+  if (playerTournament) {
+    const finish = playerTournament.playerResult.finish;
+    add(
+      'tournament',
+      `${playerTournament.title}: ${finish === 1 ? 'champions' : `top ${finish}`}`,
+      playerTournament.narrative,
+      finish === 1 ? 'gold' : 'blue',
+    );
+  }
+  const publicEvent = chronicle.find((event) => ['death', 'retirement', 'succession', 'story'].includes(event.type));
+  if (publicEvent) add(publicEvent.type, publicEvent.title, publicEvent.text, publicEvent.type === 'death' ? 'red' : publicEvent.type === 'story' ? 'purple' : 'gold');
+
+  const reputation = getReputationSummary(state);
+  const leadingReputation = reputation.families.slice().sort((a, b) => b.points - a.points)[0];
+  if (leadingReputation?.points > 0) {
+    add(
+      'reputation',
+      `${reputation.title || state.guild.name} is known for ${leadingReputation.family.toLowerCase()}`,
+      `${leadingReputation.points} ${leadingReputation.family} reputation in the wider world.`,
+      'blue',
+    );
+  }
+  const rival = nemesisIds(state)
+    .map((id) => ({ rival: state.rivals.find((item) => item.id === id), record: state.rivalries?.[id] || {} }))
+    .find(({ rival }) => rival);
+  if (rival) {
+    const score = rival.record.score || 0;
+    add('rivalry', `Eyes on ${rival.rival.name}`, score >= 0 ? `The feud currently favors ${state.guild.name}, but the next meeting will matter.` : `${rival.rival.name} has the advantage in the current feud.`, 'red');
+  }
+  const story = getStoryView(state);
+  if (story.choice) add('story', `The Blackwood remembers the ${story.choice.title}`, `The guild's choice still carries its mark: ${story.choice.perk}.`, 'purple');
+  return { spotlight: highlights[0] || null, highlights: highlights.slice(0, 6) };
+}
+
 export function acknowledgeCouncilReport(state) {
   const next = clone(state);
   next.council ||= { lastReport: null, unread: false };

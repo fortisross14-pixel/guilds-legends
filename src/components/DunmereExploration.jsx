@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { DUNMERE_DOORS, DUNMERE_NPCS, DUNMERE_SIZE, dialogueForDunmereNpc } from '../data/dunmere.js';
+import { getLivingHistory } from '../game/engine.js';
 import { Button } from './UI.jsx';
 
 function TownScene({ state, getDialogueTarget, onPrompt, onTarget }) {
@@ -90,6 +91,7 @@ export default function DunmereExploration({ state, actions, openBuilding }) {
     return () => { game.current?.destroy(true); game.current = null; };
   }, [actions, openBuilding, state]);
   const move = (direction, pressed) => { movement.current[direction] = pressed; };
+  const livingHistory = getLivingHistory(state);
   const dialogue = conversation ? dialogueForDunmereNpc(conversation.id, state) : null;
   const availableCompanion = conversation?.id === 'innkeeper' ? state.candidates.find((candidate) => (candidate.locationId || 'dunmere') === 'dunmere') : null;
   const advance = () => { if (line < dialogue.lines.length - 1) setLine((value) => value + 1); else setConversation(null); };
@@ -99,5 +101,6 @@ export default function DunmereExploration({ state, actions, openBuilding }) {
     <div className="exploration-prompt">{prompt} · <b>Space</b></div>
     <div className="exploration-controls"><div className="exploration-dpad">{[['up','▲'],['left','◀'],['right','▶'],['down','▼']].map(([direction, mark]) => <button key={direction} aria-label={`Move ${direction}`} onPointerDown={() => move(direction, true)} onPointerUp={() => move(direction, false)} onPointerLeave={() => move(direction, false)}>{mark}</button>)}</div><button className="exploration-action" onClick={() => game.current?.scene.getScene('dunmere-square').interact()}>ACT</button></div>
     {dialogue ? <section className="town-dialogue" aria-live="polite"><div className="town-dialogue__box"><span className="town-dialogue__speaker">{dialogue.speaker}</span><p>{dialogue.lines[line]}</p><div className="town-dialogue__actions">{line < dialogue.lines.length - 1 ? <Button variant="primary" onClick={advance}>Continue</Button> : <><Button variant="primary" onClick={advance}>Leave</Button>{availableCompanion ? <Button variant="primary" onClick={() => { actions.recruit(availableCompanion.id); setConversation(null); }}>Invite {availableCompanion.name}</Button> : null}{dialogue.door ? <Button onClick={() => openBuilding(dialogue.door)}>Go to {DUNMERE_DOORS.find((door) => door.id === dialogue.door)?.label}</Button> : null}</>}</div></div></section> : null}
+    {livingHistory.spotlight ? <div className={`exploration-history exploration-history--${livingHistory.spotlight.tone}`}>{livingHistory.spotlight.title}</div> : null}
   </main>;
 }
