@@ -260,7 +260,7 @@ export default function LegacyScreen({ state, actions, navigate }) {
                   </label>
                   <div className="legacy-cost">
                     <span>Founding budget</span>
-                    <strong>{state.guild.tierIndex >= 2 ? BRANCH_RULES.Global.cost : BRANCH_RULES.National.cost} crowns</strong>
+                    <strong>{state.guild.tierIndex >= 2 ? BRANCH_RULES.Global.cost : BRANCH_RULES.National.cost} gold</strong>
                   </div>
                   <Button
                     variant="primary"

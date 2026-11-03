@@ -195,7 +195,7 @@ export function getNextAction(state) {
       return {
         kind: 'warning',
         title: 'The guild is in debt',
-        body: `You have ${state.guild.crowns} crowns and heroes are losing loyalty. A patron will advance ${loanOffer.amount} crowns (repay ${loanOffer.installment}/month).`,
+        body: `You have ${state.guild.crowns} gold and heroes are losing loyalty. A patron will advance ${loanOffer.amount} gold (repay ${loanOffer.installment}/month).`,
         screen: 'hall',
         action: 'patron-loan',
       };
@@ -203,7 +203,7 @@ export function getNextAction(state) {
     return {
       kind: 'warning',
       title: 'Treasury under pressure',
-      body: `You have ${state.guild.crowns} crowns. Monthly upkeep is ${monthlyUpkeep(state)}. Take a contract before expanding.`,
+      body: `You have ${state.guild.crowns} gold. Monthly upkeep is ${monthlyUpkeep(state)}. Take a contract before expanding.`,
       screen: 'missions',
     };
   }

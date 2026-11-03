@@ -115,7 +115,7 @@ function buildBlocker(state, roomId) {
   const status = requirementStatus(state, next.requires);
   if (!status.met) return `${room.name} needs: ${status.missing.join(', ')}.`;
   if (!level && wings(state).free <= 0) return 'No empty wing left. Raise the hall’s renown to open more.';
-  if (state.guild.crowns < roomCost(state, roomId, next)) return `${room.name} costs ${roomCost(state, roomId, next)} crowns.`;
+  if (state.guild.crowns < roomCost(state, roomId, next)) return `${room.name} costs ${roomCost(state, roomId, next)} gold.`;
   return null;
 }
 
@@ -152,7 +152,7 @@ export function buyHall(state) {
   if (!hall.owned) return { state, error: 'Rent the old stable first (story mission 1).' };
   if (!hall.lease) return { state, error: 'The hall is already yours outright.' };
   const cost = HALL_PURCHASE.buy.cost;
-  if (state.guild.crowns < cost) return { state, error: `Gideon wants ${cost} crowns for it.` };
+  if (state.guild.crowns < cost) return { state, error: `Gideon wants ${cost} gold for it.` };
   const next = clone(state);
   next.guild.crowns -= cost;
   tallySpend(next, 'hall', cost);

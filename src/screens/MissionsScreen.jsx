@@ -253,7 +253,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
                     <span>
                       {mission.duration} week{mission.duration === 1 ? '' : 's'}
                     </span>
-                    <strong>{mission.reward} crowns</strong>
+                    <strong>{mission.reward} gold</strong>
                     <span>+{mission.fame} fame</span>
                   </div>
                 </div>
@@ -491,13 +491,13 @@ export default function MissionsScreen({ state, actions, navigate }) {
                           (state.guild.appointments?.Quartermaster ? 0.88 : 1),
                       ),
                     )}{' '}
-                    crowns
+                    gold
                   </strong>
                 </div>
                 <div>
                   <span>Potential reward</span>
                   <strong>
-                    {selected.reward} crowns · {selected.fame} fame
+                    {selected.reward} gold · {selected.fame} fame
                   </strong>
                 </div>
                 <Button

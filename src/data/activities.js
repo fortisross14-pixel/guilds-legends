@@ -3,7 +3,7 @@ export const MONTHLY_ACTIVITIES = [
     id: 'Training',
     label: 'Train',
     icon: '⚔',
-    description: 'Build experience and long-term ability. Needs a Training ground; the drill sets the emphasis.',
+    description: 'Gain XP. Needs a Training ground; the drill sets the focus.',
   },
   {
     id: 'Rest',
@@ -27,13 +27,13 @@ export const MONTHLY_ACTIVITIES = [
     id: 'Public Exhibition',
     label: 'Exhibit',
     icon: '✦',
-    description: 'Build fame and renown at the cost of some fatigue and occasional embarrassment.',
+    description: 'Earn fame and renown; costs some fatigue.',
   },
   {
     id: 'Guild Duty',
     label: 'Guild duty',
     icon: '♜',
-    description: 'Work an institutional appointment, improve loyalty and strengthen the organization. Needs the hall.',
+    description: 'Hold an appointment and build loyalty. Needs the hall.',
   },
 ];
 

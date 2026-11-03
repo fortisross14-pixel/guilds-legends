@@ -99,7 +99,7 @@ export function launchMission(state, missionId, formationTypeOrAssignments, mayb
   if (unavailable.length) return { state, error: 'Every assigned hero must be available.' };
   const baseSupplyCost = 25 + mission.risk * 18 + mission.duration * 12 + (selectedFormation === 'Expedition' ? 12 : 0);
   const supplyCost = Math.max(20, Math.round(baseSupplyCost * (appointmentHolder(next, 'Quartermaster') ? 0.88 : 1)));
-  if (next.guild.crowns < supplyCost) return { state, error: `The guild needs ${supplyCost} crowns for supplies.` };
+  if (next.guild.crowns < supplyCost) return { state, error: `The guild needs ${supplyCost} gold for supplies.` };
 
   next.guild.crowns -= supplyCost;
   const normalizedAssignments = assignments.map((assignment) => {

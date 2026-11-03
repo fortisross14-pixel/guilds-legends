@@ -53,7 +53,7 @@ export function startTravel(state, destinationId) {
   if (!quote.destination) return { state, error: 'Unknown destination.' };
   if (!quote.unlocked) return { state, error: `${quote.destination.name} requires ${quote.destination.tier} status.` };
   if (quote.same) return { state, error: `The guild is already in ${quote.destination.name}.` };
-  if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} crowns.` };
+  if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} gold.` };
   next.guild.crowns -= quote.cost;
   tallySpend(next, 'travel', quote.cost);
   next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
@@ -75,7 +75,7 @@ export function startTravel(state, destinationId) {
     type: 'travel',
     importance: 1,
     title: `The guild departs for ${quote.destination.name}`,
-    text: `The party takes the road; the heroes at home keep to their tasks. The journey will take ${quote.label} and ${quote.cost} crowns.`,
+    text: `The party takes the road; the heroes at home keep to their tasks. The journey will take ${quote.label} and ${quote.cost} gold.`,
     tags: ['travel', quote.destination.primal],
   });
   next.notifications.push({
@@ -190,14 +190,14 @@ export function takePatronLoan(state) {
     type: 'treasury',
     importance: 2,
     title: `${next.guild.name} accepts a patron loan`,
-    text: `A patron advances ${offer.amount} crowns. The guild owes ${remaining} crowns, repaid at ${offer.installment} per month.`,
+    text: `A patron advances ${offer.amount} gold. The guild owes ${remaining} gold, repaid at ${offer.installment} per month.`,
     tags: ['treasury', 'loan'],
   });
   next.notifications.push({
     id: `loan-${next.date.year}-${next.date.month}-${next.stats.patronLoans}`,
     tone: 'gold',
     title: 'Patron loan accepted',
-    text: `+${offer.amount} crowns now. Repay ${offer.installment} per month until ${remaining} is cleared.`,
+    text: `+${offer.amount} gold now. Repay ${offer.installment} per month until ${remaining} is cleared.`,
   });
   return { state: finalize(next), error: null };
 }

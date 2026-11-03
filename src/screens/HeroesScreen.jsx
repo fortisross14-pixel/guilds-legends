@@ -404,14 +404,15 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       variant="primary"
                       onClick={() => actions.recruit(candidate.id, 'accept', yearsFor(candidate.id))}
                       disabled={freeBeds(state) <= 0 || state.guild.crowns < candidate.signingFee}
+                      why={freeBeds(state) <= 0 ? 'No free bed: build bunks in the Guild Hall.' : `The fee is ${candidate.signingFee} gold.`}
                     >
                       {candidate.signingFee === 0
                         ? 'Choose as founding companion'
                         : state.guild.crowns < candidate.signingFee
-                          ? `Need ${candidate.signingFee - state.guild.crowns} more crowns`
+                          ? `Need ${candidate.signingFee - state.guild.crowns} more gold`
                           : candidate.demand
                             ? `Sign & promise · ${candidate.signingFee}`
-                            : `Offer ${candidate.signingFee} crowns`}
+                            : `Offer ${candidate.signingFee} gold`}
                     </Button>
                     {candidate.demand ? (
                       <Button

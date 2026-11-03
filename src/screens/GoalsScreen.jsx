@@ -71,7 +71,7 @@ export default function GoalsScreen({ state }) {
                           compact
                         />
                         <small>
-                          Reward: {goal.reward.crowns} crowns{goal.reward.fame ? ` · ${goal.reward.fame} fame` : ''}
+                          Reward: {goal.reward.crowns} gold{goal.reward.fame ? ` · ${goal.reward.fame} fame` : ''}
                         </small>
                       </div>
                     </article>

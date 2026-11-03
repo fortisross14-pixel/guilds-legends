@@ -97,7 +97,7 @@ export function foundBranch(state, locationId, commanderHeroId) {
     return { state, error: 'Choose an available active hero to command the branch.' };
   if ((commander.level || 1) < minLevel) return { state, error: `A branch commander must be at least level ${minLevel}.` };
   const cost = next.guild.tierIndex >= 2 ? BRANCH_RULES.Global.cost : BRANCH_RULES.National.cost;
-  if (next.guild.crowns < cost) return { state, error: `Founding a branch requires ${cost} crowns.` };
+  if (next.guild.crowns < cost) return { state, error: `Founding a branch requires ${cost} gold.` };
   next.guild.crowns -= cost;
   const rng = rngFor(next, `branch-${locationId}-${commander.id}`);
   const branch = {
@@ -167,7 +167,7 @@ export function upgradeBranch(state, branchId) {
   if (!branch) return { state, error: 'Branch not found.' };
   if (branch.level >= 3) return { state, error: 'This branch is already fully developed.' };
   const cost = 900 * branch.level + 500;
-  if (next.guild.crowns < cost) return { state, error: `Branch expansion requires ${cost} crowns.` };
+  if (next.guild.crowns < cost) return { state, error: `Branch expansion requires ${cost} gold.` };
   next.guild.crowns -= cost;
   branch.level += 1;
   branch.fame += 8;

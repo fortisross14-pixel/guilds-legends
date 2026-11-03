@@ -150,7 +150,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
                   <span>
                     <strong>{candidate.name}</strong>
                     <small>
-                      {candidate.classId} · {candidate.primal} · fee {candidate.signingFee} crowns
+                      {candidate.classId} · {candidate.primal} · fee {candidate.signingFee} gold
                     </small>
                     {recruitObjection(state, candidate) ? <small className="dialogue__refusal">“{recruitObjection(state, candidate)}”</small> : null}
                   </span>

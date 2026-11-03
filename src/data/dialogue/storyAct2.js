@@ -124,7 +124,7 @@ export default {
     variants: withNessa(
       [
         narrate('Columns of small, careful numbers. Dates. Names.'),
-        'There. “Road work, Blackwood. Four hundred crowns.” Signed off by the Crown’s treasury, spring of ’83.',
+        'There. “Road work, Blackwood. Four hundred gold.” Signed off by the Crown’s treasury, spring of ’83.',
         'And there: “Special services, G.T.” Three times. Garrick Thorne paid someone out of his own purse.',
       ],
       '“Seven heads, Thornfield included.” They wrote my brother’s name in a ledger. Like a mule.',

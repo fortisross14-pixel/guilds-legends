@@ -88,7 +88,7 @@
  * @property {string} tier
  * @property {number} fame
  * @property {number} legacy
- * @property {number} crowns gold
+ * @property {number} crowns gold (shown to the player as "gold")
  * @property {number} rank
  * @property {boolean} fallen
  * @property {PatronLoan | null} loan

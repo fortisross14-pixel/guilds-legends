@@ -62,7 +62,7 @@ export function giftPatron(state, patronId) {
   const patron = PATRONS[patronId];
   if (!patron) return { state, error: 'Unknown patron.' };
   if (state.patrons?.[patronId]?.lastGift === campaignMonthSerial(state)) return { state, error: `${patron.rep.name} already took a gift this month.` };
-  if (state.guild.crowns < PATRON_DELTAS.giftCost) return { state, error: `A fitting gift costs ${PATRON_DELTAS.giftCost} crowns.` };
+  if (state.guild.crowns < PATRON_DELTAS.giftCost) return { state, error: `A fitting gift costs ${PATRON_DELTAS.giftCost} gold.` };
   const next = clone(state);
   next.guild.crowns -= PATRON_DELTAS.giftCost;
   tallySpend(next, 'patrons', PATRON_DELTAS.giftCost);

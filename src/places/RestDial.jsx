@@ -57,7 +57,7 @@ export default function RestDial({ state, disabled, onRest }) {
         <b>{spanLabel(days)}</b> → {MONTHS[target.month]} {target.year}, week {target.week + 1}, day {target.day + 1}
         {just ? <small> · just before: {just.title}</small> : next ? <small> · next: {next.title}</small> : null}
       </p>
-      <Button variant="primary" size="lg" disabled={disabled} onClick={() => onRest(days)}>
+      <Button variant="primary" size="lg" disabled={disabled} why="Something needs you first (a fight, a decision or a road event)." onClick={() => onRest(days)}>
         Rest {spanLabel(days)}
       </Button>
     </div>

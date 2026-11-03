@@ -263,12 +263,27 @@ export function Badge({ children, tone = 'neutral', title = undefined }) {
   );
 }
 
-export function Button({ children, variant = 'secondary', size = 'md', icon = undefined, className = '', ...props }) {
-  return (
+/** Shows a short message in the app's message bar (App.jsx listens). */
+export function toast(text, tone = 'blue') {
+  window.dispatchEvent(new CustomEvent('gol:toast', { detail: { text, tone } }));
+}
+
+/**
+ * A button. `why` explains a disabled button: tapping or long-pressing it says
+ * why it can't be used (disabled buttons get no events, so a wrapper listens).
+ */
+export function Button({ children, variant = 'secondary', size = 'md', icon = undefined, className = '', why = null, ...props }) {
+  const button = (
     <button className={`button button--${variant} button--${size} ${className}`} {...props}>
       {icon ? <span className="button__icon">{icon}</span> : null}
       <span>{children}</span>
     </button>
+  );
+  if (!props.disabled || !why) return button;
+  return (
+    <span className="why-wrap" role="presentation" onClick={() => toast(why, 'red')} onContextMenu={(event) => event.preventDefault()}>
+      {button}
+    </span>
   );
 }
 

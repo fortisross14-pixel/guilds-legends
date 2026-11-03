@@ -68,7 +68,7 @@ export function signUpForTournament(state, tournamentId, heroId) {
   if (!hero || ['dead', 'retired'].includes(hero.status)) return { state, error: 'Choose one of your heroes.' };
   const access = getTournamentAccess(state, tournament, heroId);
   if (!access.unlocked) return { state, error: `${hero.name} does not meet the entry rules yet.` };
-  if (state.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} crowns.` };
+  if (state.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} gold.` };
   const next = clone(state);
   const entry = next.tournaments.find((item) => item.id === tournamentId);
   next.guild.crowns -= entry.entryFee;
@@ -302,7 +302,7 @@ export function enterGuildTournament(state, tournamentId, formationType, assignm
   if (!estimate.valid) return { state, error: 'A guild championship company needs a Commander, a Fighter and no duplicate heroes.' };
   const unavailable = assignments.map((assignment) => getHero(next, assignment.heroId)).filter((hero) => !hero || hero.status !== 'available');
   if (unavailable.length) return { state, error: 'Every company member must be available.' };
-  if (next.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} crowns.` };
+  if (next.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} gold.` };
   if (next.tournaments.some((item) => item.status === 'active') || next.guildTournaments.some((item) => item.status === 'active'))
     return { state, error: 'Finish the current tournament before entering another.' };
   next.guild.crowns -= tournament.entryFee;

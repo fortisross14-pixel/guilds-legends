@@ -15,7 +15,7 @@ import LoreCodex from '../screens/LoreCodex.jsx';
 const PAGES = [
   { id: 'calendar', name: 'Calendar', icon: '▦', description: 'Weeks ahead: tournaments, company returns, wage days. Advance to a date.' },
   { id: 'news', name: 'News', icon: '✉', description: 'Town talk, side-job results and world events.' },
-  { id: 'quests', name: 'Quest log', icon: '✎', description: 'The main story, side quests and guild goals. Show any of them on the map.' },
+  { id: 'quests', name: 'Quest log', icon: '✎', description: 'Main story, side quests and guild goals.' },
   { id: 'lore', name: 'Lore codex', icon: '✦', description: 'The world’s history: unlocked by the story, people, arena boards and discoveries.' },
   { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
   { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline and era summaries.' },

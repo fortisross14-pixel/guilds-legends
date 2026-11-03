@@ -203,7 +203,7 @@ function BuildOffer({ plan, hall, actions, compact = false }) {
         <dt>Needs</dt>
         <dd>{next.met ? 'Ready' : next.missing.join(', ')}</dd>
       </dl>
-      <Button variant="primary" disabled={!next.met || busy || noWing} onClick={() => actions.buildRoom(plan.id)}>
+      <Button variant="primary" disabled={!next.met || busy || noWing} why={busy ? 'The builders are busy.' : noWing ? 'No empty wing left.' : `Needs: ${next.missing?.join(', ') || 'more gold'}.`} onClick={() => actions.buildRoom(plan.id)}>
         {busy ? 'Builders are busy' : noWing ? 'No empty wing' : `Build (${next.cost} G)`}
       </Button>
     </article>

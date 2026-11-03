@@ -132,7 +132,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
       type: 'combat-victory',
       importance: group.isBoss ? 3 : 1,
       title: group.isBoss ? `${encounter.title} falls` : `${encounter.title} driven off`,
-      text: `${fighters.map((hero) => hero.name).join(', ')} win in ${area.name} and take ${gold} crowns.`,
+      text: `${fighters.map((hero) => hero.name).join(', ')} win in ${area.name} and take ${gold} gold.`,
       heroIds: fighters.map((hero) => hero.id),
       tags: ['combat', 'explore'],
     });

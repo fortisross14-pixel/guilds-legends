@@ -146,7 +146,8 @@ function Registrar({ state, view, actions, navigate }) {
                   </button>
                 ))}
               </div>
-              <Button variant="primary" size="lg" disabled={!chosen?.meets || state.guild.crowns < open.entryFee || !view.present} onClick={() => actions.signUpForTournament(open.id, chosen.hero.id)}>
+              <Button variant="primary" size="lg" disabled={!chosen?.meets || state.guild.crowns < open.entryFee || !view.present}
+                why={!view.present ? `Be in ${view.location.name} to sign up.` : !chosen?.meets ? 'Pick a hero who meets the entry rules.' : `Entry costs ${open.entryFee} gold.`} onClick={() => actions.signUpForTournament(open.id, chosen.hero.id)}>
                 {state.guild.crowns < open.entryFee ? `Entry costs ${open.entryFee} G` : `Sign up ${chosen?.hero.name || ''} (${open.entryFee} G)`}
               </Button>
               <small className="muted">The entrant must be fit and the guild in {view.location.name} on the start day, or it's a forfeit.</small>

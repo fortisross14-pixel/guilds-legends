@@ -296,7 +296,7 @@ function recordIndividualTournamentInPlace(state, tournament, championId, player
   addHeroHistory(champion, state, {
     type: 'tournament-title',
     title: `Won ${tournament.name}`,
-    text: `Claimed the ${tournament.trophy} and ${tournament.purse} crowns in prize money.`,
+    text: `Claimed the ${tournament.trophy} and ${tournament.purse} gold in prize money.`,
   });
   updateIndividualTitleRecordInPlace(state, tournament, champion);
 

@@ -70,13 +70,13 @@ function evaluateGoalsInPlace(state) {
         id: `goal-${goal.id}`,
         tone: 'gold',
         title: `Objective complete: ${goal.title}`,
-        text: `Reward: ${goal.reward.crowns} crowns${goal.reward.fame ? ` and ${goal.reward.fame} fame` : ''}.`,
+        text: `Reward: ${goal.reward.crowns} gold${goal.reward.fame ? ` and ${goal.reward.fame} fame` : ''}.`,
       });
       addChronicle(state, {
         type: 'goal',
         importance: 3,
         title: goal.title,
-        text: `${goal.description} The guild receives ${goal.reward.crowns} crowns.`,
+        text: `${goal.description} The guild receives ${goal.reward.crowns} gold.`,
         tags: ['goal'],
       });
     }

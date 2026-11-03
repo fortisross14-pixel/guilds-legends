@@ -540,7 +540,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     id: `result-${mission.id}`,
     tone: cleanSuccess ? 'green' : grade === 'Partial' ? 'gold' : 'red',
     title: `${grade}: ${mission.title}`,
-    text: `${reward} crowns · ${fame >= 0 ? '+' : ''}${fame} fame${injuries.length ? ` · ${injuries.length} injured` : ''}`,
+    text: `${reward} gold · ${fame >= 0 ? '+' : ''}${fame} fame${injuries.length ? ` · ${injuries.length} injured` : ''}`,
   });
   next.activeMissions.splice(missionIndex, 1);
   next.pendingDecisions.splice(decisionIndex, 1);
@@ -567,7 +567,7 @@ function resultNarrative(mission, option, grade, reward, fame, injuries, deaths)
     : injuries.length
       ? ` ${injuries.join(', ')} return wounded.`
       : ' Every hero returns alive.';
-  return `${opening}${consequence} The guild receives ${reward} crowns and ${fame} fame.`;
+  return `${opening}${consequence} The guild receives ${reward} gold and ${fame} fame.`;
 }
 
 export function acknowledgeReport(state, reference) {

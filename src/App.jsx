@@ -365,7 +365,7 @@ function RefoundModal({ state, open, onRefound, onReturnHome }) {
         <div className="new-campaign__premise">
           <strong>The banner has fallen</strong>
           <p>
-            All {fallen} heroes of {state.guild.name} are dead or retired. The guild keeps its name, treasury ({state.guild.crowns} crowns), history and
+            All {fallen} heroes of {state.guild.name} are dead or retired. The guild keeps its name, treasury ({state.guild.crowns} gold), history and
             rankings. Choose a new founder to carry it forward. One local recruit will join without a fee.
           </p>
         </div>
@@ -891,6 +891,12 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   };
   const [reportModalRef, setReportModalRef] = useState(null);
   const [message, setMessage] = useState(null);
+  // Short messages from anywhere (a disabled button saying why, src/components/UI.jsx toast).
+  useEffect(() => {
+    const show = (event) => setMessage({ text: event.detail.text, tone: event.detail.tone || 'blue' });
+    window.addEventListener('gol:toast', show);
+    return () => window.removeEventListener('gol:toast', show);
+  }, []);
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
@@ -1176,6 +1182,21 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     setPlaceState(next);
     window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
   };
+  // One back behavior everywhere: the top-bar ◀ and a swipe from the left edge.
+  // Back closes the open room, then the building or menu page, then returns to town.
+  const backTarget =
+    place.view === 'town' && place.building
+      ? place.tab
+        ? { ...place, tab: null }
+        : { view: 'town', building: null }
+      : place.view === 'menu' && place.page
+        ? { view: 'menu', page: null }
+        : place.view !== 'town'
+          ? { view: 'town' }
+          : null;
+  const goBack = () => backTarget && setPlace(backTarget);
+  const edge = useRef(null);
+
   const navigate = (target) => {
     const route = resolveRoute(target);
     setPlace({ ...route });
@@ -1190,6 +1211,27 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   const activeReportReference = reportModalRef || state.pendingReports?.[0] || null;
   const activeReport = getReport(state, activeReportReference);
   const defunct = isGuildDefunct(state);
+  // The one interruption shown now: fights, decisions and road events first, then reports,
+  // story scenes, reward moments, town events and the council report. Never two at once.
+  const interruption = state.activeEncounter
+    ? 'combat'
+    : state.activeMissionGame
+      ? 'missionGame'
+      : state.pendingDecisions.length
+        ? 'decision'
+        : state.pendingRoadEvent
+          ? 'road'
+          : activeReport
+            ? 'report'
+            : storyScene
+              ? 'scene'
+              : state.moments?.length
+                ? 'moment'
+                : state.pendingEvent
+                  ? 'event'
+                  : state.council?.unread && !defunct
+                    ? 'council'
+                    : null;
   const closeReport = () => {
     if (!activeReportReference) return;
     const isPending = state.pendingReports?.some(
@@ -1204,7 +1246,17 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   }
 
   return (
-    <div className="game-shell">
+    <div
+      className="game-shell"
+      onPointerDown={(event) => {
+        edge.current = event.clientX < 24 ? { x: event.clientX, y: event.clientY } : null;
+      }}
+      onPointerUp={(event) => {
+        const from = edge.current;
+        edge.current = null;
+        if (from && event.clientX - from.x > 80 && Math.abs(event.clientY - from.y) < 60) goBack();
+      }}
+    >
       <aside className="sidebar">
         <div className="sidebar__brand">
           <Crest size="md" />
@@ -1240,6 +1292,11 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
       <div className="game-main">
         <header className="topbar">
+          {backTarget ? (
+            <button className="topbar__back" onClick={goBack} aria-label="Back">
+              ◀
+            </button>
+          ) : null}
           <button className="topbar__date" onClick={() => navigate('calendar')} title="Open the calendar">
             <span className="topbar__month">
               {MONTHS[state.date.month]} · Week {(state.date.week || 0) + 1} · Day {(state.date.day || 0) + 1}
@@ -1344,10 +1401,13 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         ))}
       </nav>
       <PartyRail state={state} actions={actions} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
-      <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} />
-      <MissionGameModal game={state.activeMissionGame} actions={actions} />
-      <DecisionModal state={state} actions={actions} />
-      {storyScene ? (
+      {/* One interruption at a time, in priority order (docs/UX.md). */}
+      {interruption === 'combat' ? <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} /> : null}
+      {interruption === 'missionGame' ? <MissionGameModal game={state.activeMissionGame} actions={actions} /> : null}
+      {interruption === 'decision' ? <DecisionModal state={state} actions={actions} /> : null}
+      {interruption === 'road' ? <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} /> : null}
+      {interruption === 'report' ? <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} /> : null}
+      {interruption === 'scene' ? (
         <div className="story-scene">
           <DialogueBox
             key={storyScene}
@@ -1362,36 +1422,12 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           />
         </div>
       ) : null}
-      <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} />
-      <EventCardModal
-        card={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !state.activeMissionGame ? state.pendingEvent : null}
-        onChoose={actions.resolveTownEvent}
-        heroes={state.heroes}
-      />
-      <MomentModal
-        moment={!state.activeEncounter && !state.pendingDecisions.length && !state.pendingRoadEvent && !activeReport ? state.moments?.[0] : null}
-        state={state}
-        onClose={actions.acknowledgeMoment}
-      />
-      <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} />
-      <CouncilReportModal
-        state={state}
-        open={Boolean(
-          state.council?.unread &&
-            !state.pendingDecisions.length &&
-            !activeReport &&
-            !state.activeEncounter &&
-            !state.activeMissionGame &&
-            !state.pendingRoadEvent &&
-            !state.moments?.length &&
-            !defunct,
-        )}
-        onClose={actions.acknowledgeCouncilReport}
-        openHero={actions.openHero}
-      />
+      {interruption === 'moment' ? <MomentModal moment={state.moments?.[0]} state={state} onClose={actions.acknowledgeMoment} /> : null}
+      {interruption === 'event' ? <EventCardModal card={state.pendingEvent} onChoose={actions.resolveTownEvent} heroes={state.heroes} /> : null}
+      <CouncilReportModal state={state} open={interruption === 'council'} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
       <RefoundModal
         state={state}
-        open={defunct && !state.activeEncounter && !state.activeMissionGame && !state.pendingDecisions.length && !activeReport}
+        open={defunct && !interruption}
         onRefound={actions.refoundGuild}
         onReturnHome={actions.returnHome}
       />

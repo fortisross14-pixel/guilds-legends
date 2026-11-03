@@ -25,7 +25,7 @@ export default function CouncilReportModal({ state, open, onClose, openHero }) {
             <strong>−{report.upkeep + (report.loanPayment || 0)}</strong>
             <small>
               {report.loanPayment ? `incl. ${report.loanPayment} loan · ` : ''}
-              {report.crownsBefore.toLocaleString()} → {report.crownsAfter.toLocaleString()} crowns
+              {report.crownsBefore.toLocaleString()} → {report.crownsAfter.toLocaleString()} gold
             </small>
           </div>
           <div>

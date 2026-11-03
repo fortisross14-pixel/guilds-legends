@@ -345,15 +345,16 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   </div>
                   <div>
                     <span>Travel budget</span>
-                    <strong>{quote.cost} crowns</strong>
+                    <strong>{quote.cost} gold</strong>
                   </div>
                   <Button
                     variant="primary"
                     size="lg"
                     onClick={startJourney}
                     disabled={Boolean(travel) || state.guild.crowns < quote.cost}
+                    why={travel ? 'Already on the road.' : `Travel costs ${quote.cost} gold.`}
                   >
-                    {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name} (${quote.label})`}
+                    {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more gold` : `Travel to ${selected.name} (${quote.label})`}
                   </Button>
                 </div>
               ) : (
@@ -373,7 +374,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                       <div>
                         <strong>{mission.title}</strong>
                         <small>
-                          {mission.family} · {mission.enemyPrimal} threat · {mission.reward} crowns
+                          {mission.family} · {mission.enemyPrimal} threat · {mission.reward} gold
                         </small>
                       </div>
                       <RiskPips risk={mission.risk} />
@@ -391,8 +392,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <p>{selectedSource?.note || `Travelers have spoken of ${selected.name}, but little else is certain.`}</p>
               <small>Source: {selectedSource?.source || 'Travelers'}</small>
               {selected.id !== currentLocationId ? (
-                <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}>
-                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Travel to ${selected.name} (${quote.label})`}
+                <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}
+                    why={travel ? 'Already on the road.' : `Travel costs ${quote.cost} gold.`}>
+                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more gold` : `Travel to ${selected.name} (${quote.label})`}
                 </Button>
               ) : null}
             </div>
@@ -402,8 +404,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <h3>An uncharted route</h3>
               <p>The guild knows only that a settlement lies beyond this road. Travel there to put a name, people and opportunities to the mark.</p>
               {selected.id !== currentLocationId ? (
-                <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}>
-                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more crowns` : `Chart this route (${quote.label})`}
+                <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost}
+                    why={travel ? 'Already on the road.' : `Travel costs ${quote.cost} gold.`}>
+                  {travel ? 'Already traveling' : state.guild.crowns < quote.cost ? `Need ${quote.cost - state.guild.crowns} more gold` : `Chart this route (${quote.label})`}
                 </Button>
               ) : null}
             </div>
@@ -531,9 +534,10 @@ function WildCard({ area, state, actions }) {
               </div>
               <div>
                 <span>Travel budget</span>
-                <strong>{quote.cost} crowns</strong>
+                <strong>{quote.cost} gold</strong>
               </div>
-              <Button variant="primary" size="lg" disabled={Boolean(travel) || state.guild.crowns < quote.cost} onClick={() => actions.travel(area.hub)}>
+              <Button variant="primary" size="lg" disabled={Boolean(travel) || state.guild.crowns < quote.cost}
+                    why={travel ? 'Already on the road.' : `Travel costs ${quote.cost} gold.`} onClick={() => actions.travel(area.hub)}>
                 {travel ? 'Already traveling' : `Travel to ${hub?.name} (${quote.label})`}
               </Button>
             </div>

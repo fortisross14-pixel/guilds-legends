@@ -156,7 +156,7 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
   if (objection) return { state, error: `${candidate.name} refuses: “${objection}”` };
   const acceptingPromise = negotiation !== 'buyout' || !candidate.demand;
   const totalFee = candidate.signingFee + (!acceptingPromise ? candidate.buyoutFee || 0 : 0);
-  if (next.guild.crowns < totalFee) return { state, error: `Recruitment requires ${totalFee} crowns.` };
+  if (next.guild.crowns < totalFee) return { state, error: `Recruitment requires ${totalFee} gold.` };
   if (candidate.interest < 35 && next.guild.tierIndex === 0)
     return { state, error: `${candidate.name} does not believe the guild can fulfill their ambitions yet.` };
   next.guild.crowns -= totalFee;
@@ -209,7 +209,7 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
     title: `${hero.name} joins the guild`,
     text: wasFoundingSolo
       ? `${hero.name}, a level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId}, becomes ${next.guild.founder}’s first companion.`
-      : `The level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId} signs for ${totalFee} crowns in ${LOCATION_BY_ID[recruitedLocationId]?.name || getCurrentLocation(next).name}.${acceptedDemand ? ` The contract includes a promise: ${acceptedDemand.label}.` : candidate.demand && !acceptingPromise ? ' A buyout premium removes the candidate’s original career demand.' : ''}`,
+      : `The level ${hero.level} ${hero.rarity} ${hero.primal} ${hero.classId} signs for ${totalFee} gold in ${LOCATION_BY_ID[recruitedLocationId]?.name || getCurrentLocation(next).name}.${acceptedDemand ? ` The contract includes a promise: ${acceptedDemand.label}.` : candidate.demand && !acceptingPromise ? ' A buyout premium removes the candidate’s original career demand.' : ''}`,
     heroIds: [hero.id, ...(wasFoundingSolo ? [next.guild.founderHeroId] : [])],
     tags: ['recruitment', hero.rarity, hero.primal, ...(acceptedDemand ? ['promise'] : []), ...(wasFoundingSolo ? ['founding-companion'] : [])],
   });

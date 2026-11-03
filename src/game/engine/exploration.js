@@ -318,7 +318,7 @@ export function gatherAtSpot(state, areaId, spotId) {
   if (spot.reward.gold) {
     const gold = rng.int(spot.reward.gold[0], spot.reward.gold[1]);
     earnGoldInPlace(next, gold);
-    parts.push(`${gold} crowns`);
+    parts.push(`${gold} gold`);
   }
   if (spot.reward.items) {
     addItemsInPlace(next, spot.reward.items);

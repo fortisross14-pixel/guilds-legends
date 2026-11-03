@@ -51,7 +51,7 @@ export default {
     variants: [
       {
         if: { notFlag: 'paidToll' },
-        lines: ['Bridge toll is two crowns. Guild members on business cross free, if they are polite about it.'],
+        lines: ['Bridge toll is two gold. Guild members on business cross free, if they are polite about it.'],
         choices: [
           { text: 'Pay the toll', if: { goldAtLeast: 2 }, effects: [{ gold: -2 }, { flag: 'paidToll' }, { relationship: 1 }], reply: ['Much obliged. Not many pay when they do not have to.'] },
           { text: 'We are on business.', effects: [{ flag: 'paidToll' }], reply: ['And polite about it. Go on.'] },
@@ -121,7 +121,7 @@ export default {
   'ironford.plaque': {
     speaker: 'Bridge plaque',
     portrait: 'portrait.poi',
-    variants: [{ lines: ['“Raised by the Smiths’ Guild, paid for in sweat. Cross gently.” Below it, smaller: “Toll two crowns.”'] }],
+    variants: [{ lines: ['“Raised by the Smiths’ Guild, paid for in sweat. Cross gently.” Below it, smaller: “Toll two gold.”'] }],
   },
   'ironford.statue': {
     speaker: 'Statue of the First Smith',

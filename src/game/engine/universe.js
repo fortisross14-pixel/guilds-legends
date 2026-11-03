@@ -182,7 +182,7 @@ function createHistoricHero(base, state, rng) {
       date: 'Before the campaign',
       type: 'legacy',
       title: `${base.titles} major titles`,
-      text: `${base.name} entered the historical record with ${base.prizeMoney} crowns in prize money and a peak power of ${base.peakPower}.`,
+      text: `${base.name} entered the historical record with ${base.prizeMoney} gold in prize money and a peak power of ${base.peakPower}.`,
     },
   ];
   return hero;

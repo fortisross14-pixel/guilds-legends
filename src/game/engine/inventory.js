@@ -96,7 +96,7 @@ export function upgradeGear(state, heroId, slot) {
   const itemId = hero?.gear?.[slot];
   const cost = itemId ? gearUpgradeCost(state, itemId) : null;
   if (!hero || cost === null) return { state, error: 'That cannot be upgraded.' };
-  if (state.guild.crowns < cost) return { state, error: `The upgrade costs ${cost} crowns.` };
+  if (state.guild.crowns < cost) return { state, error: `The upgrade costs ${cost} gold.` };
   const next = clone(state);
   next.guild.crowns -= cost;
   tallySpend(next, 'shop', cost);
