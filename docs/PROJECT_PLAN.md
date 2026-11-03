@@ -225,6 +225,8 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - **Hall of fame** for retired and fallen heroes.
 - **Rankings:** the three ladders with history charts, your best-ever rank, and rival comparison.
 
+> **Main story:** [`docs/STORY.md`](STORY.md) ("The Last Banner", by the author) is the source of truth for the story. Chapter 1 = Prologue + Acts I–II (missions 1–8). Phase 6 implements it, together with the new time model and arenas.
+
 ### Phase 6 — Story: Chapter 1, the Blackwood
 - Rewrite the Blackwood arc with the `narrative-design` skill: **6–8 beats** connecting the three towns and the wild areas, 3–4 memorable NPCs, one rival guild involved, and a choice at the end with lasting effects.
 - **Main quest guidance:** a quest marker on the world map and in town, and a quest log entry with the next step.
