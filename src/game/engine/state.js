@@ -69,7 +69,7 @@ export function createNewGame(options = {}) {
     rngState: seed,
     createdAt: new Date().toISOString(),
     lastPlayedAt: new Date().toISOString(),
-    date: { year: 1187, month: 0, week: 0 },
+    date: { year: 1187, month: 0, week: 0, day: 0 },
     guild: {
       id: 'player',
       name: options.guildName || 'The Broken Lantern',

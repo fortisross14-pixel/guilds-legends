@@ -2,10 +2,10 @@
 // Read models for the UI (next action, summary) and small UI-state actions.
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
 import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
-import { LOCATIONS, LOCATION_BY_ID } from '../../data/world.js';
+import { LOCATIONS, LOCATION_BY_ID, travelDays } from '../../data/world.js';
 import { ROOM_BY_ID } from '../../data/rooms.js';
 import { tournamentRequirements } from './tournaments.js';
-import { WEEKS_PER_MONTH, campaignWeekSerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
+import { WEEKS_PER_MONTH, campaignDaySerial, campaignWeekSerial, dateFromDaySerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
   activeHeroCount,
   clone,
@@ -348,10 +348,13 @@ function tournamentEntry(state, tournament, now) {
     weeksAway: dateWeekSerial(date) - now,
     locationId: tournament.locationId,
     enterable: !locked && !missing.length && tournament.status !== 'completed',
+    signedUp: Boolean(tournament.signup),
     almost: !locked && missing.length > 0,
     locked,
     source,
-    detail: locked
+    detail: tournament.signup
+      ? `Signed up. Be in ${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location} when it starts, or forfeit.`
+      : locked
       ? `Unlocks at ${TIERS[req.tierIndex]?.id}`
       : missing.length
         ? `Missing: ${missing.map((check) => `${check.label} ${check.target} (have ${check.current})`).join(', ')}`
@@ -381,9 +384,12 @@ export function getCalendarEntries(state, months = 12) {
   const now = campaignWeekSerial(state);
   const end = now + months * WEEKS_PER_MONTH;
   const entries = [];
+  // Events in other towns say how far away the guild is (travel days from here).
+  const here = state.world?.activeTravel ? state.world.activeTravel.toId : state.world?.currentLocationId || 'dunmere';
   const add = (entry) => {
     const serial = dateWeekSerial(entry.date);
-    if (serial >= now && serial <= end) entries.push({ ...entry, weeksAway: serial - now });
+    const awayDays = entry.locationId && entry.locationId !== here ? travelDays(here, entry.locationId) || null : null;
+    if (serial >= now && serial <= end) entries.push({ ...entry, weeksAway: serial - now, awayDays });
   };
   const years = [state.date.year, state.date.year + 1];
   years.forEach((year) => {
@@ -406,9 +412,9 @@ export function getCalendarEntries(state, months = 12) {
       kind: 'travel',
       id: 'travel',
       title: `Arrive in ${LOCATION_BY_ID[travel.toId]?.name || travel.toId}`,
-      date: dateFromWeekSerial(now + travel.weeksRemaining),
+      date: dateFromDaySerial(campaignDaySerial(state) + travel.daysRemaining),
       locationId: travel.toId,
-      detail: 'End of the journey',
+      detail: `End of the journey (${travel.daysRemaining} day${travel.daysRemaining === 1 ? '' : 's'})`,
     });
   state.heroes
     .filter((hero) => !['dead', 'retired'].includes(hero.status))

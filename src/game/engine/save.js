@@ -259,6 +259,7 @@ export function migrateGame(raw) {
   next.world.currentLocationId ||= 'dunmere';
   next.world.visitedLocationIds ||= [next.world.currentLocationId];
   next.world.activeTravel ||= null;
+  next.date.day ||= 0;
   next.world.roadEvents ||= [];
   next.pendingRoadEvent ??= null;
   next.inventory ||= {};
@@ -486,7 +487,9 @@ export function validateGame(state) {
   if (!state.guild?.currentGuildmasterHeroId) errors.push('Current guildmaster is missing.');
   if (!state.legacy || !Array.isArray(state.legacy.inheritedAmbitions)) errors.push('Legacy state is missing.');
 
+  if (!Number.isInteger(state.date?.day) || state.date.day < 0 || state.date.day > 6) errors.push('Calendar day is invalid.');
   if (state.world?.activeTravel && !LOCATION_BY_ID[state.world.activeTravel.toId]) errors.push('Travel destination is invalid.');
+  if (state.world?.activeTravel && !Number.isFinite(state.world.activeTravel.daysRemaining)) errors.push('Travel days are invalid.');
   if (state.world?.wildAreaId && (!WILD_AREAS[state.world.wildAreaId] || state.world.activeTravel)) errors.push('Wild area state is invalid.');
   if (state.activeEncounter && !['active', 'won', 'lost'].includes(state.activeEncounter.status)) errors.push('Combat encounter state is invalid.');
   if (state.activeMissionGame && !['active', 'won', 'lost', 'partial'].includes(state.activeMissionGame.status))

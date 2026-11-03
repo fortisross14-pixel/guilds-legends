@@ -1,62 +1,69 @@
 // @ts-check
-// Player actions that move time: travel (with road events), continuing a
-// journey, resting at the Guild Hall, and sending companies out.
+// Player actions that move time (the only way time moves): travel with road
+// events, continuing a journey, resting at the Guild Hall or an inn, and
+// sending companies out (time passes for the player only if the founder goes).
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
-import { addChronicle, clamp, clone, commitRng, completeTutorialTargetInPlace, finalize, hashString, partyCapacity, rngFor, uid } from './core.js';
+import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone, commitRng, completeTutorialTargetInPlace, finalize, hashString, rngFor, tallySpend, travellingPartyIds, uid } from './core.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
 import { launchMission } from './missions.js';
 import { concludeActiveCombat } from './encounters.js';
-import { advanceToNextEvent, advanceWeeks } from './time.js';
+import { advanceDays, advanceUntilMissionReturns, advanceWeeks } from './time.js';
 import { charterEffect } from './charter.js';
 
 /**
- * Plans 0–2 road events for a journey of `months` weeks. Each fires on a
- * distinct week. Shortcuts need two weeks left; delays need one.
+ * Plans 0–2 road events for a journey of `days` days. Each fires on a
+ * distinct day. Shortcuts need two days left; delays need one.
  */
-export function planRoadEvents(rng, months) {
+export function planRoadEvents(rng, days) {
   const roll = rng.next();
-  let count = months <= 1 ? (roll < 0.4 ? 1 : 0) : roll < 0.2 ? 2 : roll < 0.65 ? 1 : 0;
-  count = Math.min(count, months);
-  const monthPool = Array.from({ length: months }, (_, index) => index + 1);
+  let count = days <= 2 ? (roll < 0.25 ? 1 : 0) : days <= 7 ? (roll < 0.4 ? 1 : 0) : roll < 0.2 ? 2 : roll < 0.65 ? 1 : 0;
+  count = Math.min(count, days);
+  const dayPool = Array.from({ length: days }, (_, index) => index + 1);
   const events = [];
   for (let index = 0; index < count; index += 1) {
-    const month = monthPool.splice(rng.int(0, monthPool.length - 1), 1)[0];
+    const day = dayPool.splice(rng.int(0, dayPool.length - 1), 1)[0];
     const types = ['ambush', 'merchant', 'recruit'];
-    if (months - month >= 2) types.push('shortcut');
-    if (months - month >= 1) types.push('delay');
-    events.push({ id: uid('road', rng), type: rng.pick(types), month });
+    if (days - day >= 2) types.push('shortcut');
+    if (days - day >= 1) types.push('delay');
+    events.push({ id: uid('road', rng), type: rng.pick(types), day });
   }
-  return events.sort((a, b) => a.month - b.month);
+  return events.sort((a, b) => a.day - b.day);
 }
 
-/** Departs for a town and lets the journey's months pass (pausing for events). */
+function keepTravellingInPlace(next) {
+  const travel = next.world?.activeTravel;
+  if (!travel || next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame || next.pendingRoadEvent) return { state: finalize(next), error: null };
+  return advanceDays(next, travel.daysRemaining, true);
+}
+
+/** Departs for a town and lets the journey's days pass (pausing for events). */
 export function travelTo(state, destinationId) {
   const started = startTravel(state, destinationId);
   if (started.error) return started;
   const next = started.state;
   const rng = rngFor(next, `road-${destinationId}`);
-  next.world.roadEvents = planRoadEvents(rng, next.world.activeTravel.totalWeeks);
+  next.world.roadEvents = planRoadEvents(rng, next.world.activeTravel.totalDays);
   // Shield of the People: folk on the road warn you off ambushes and share supplies.
   if (charterEffect(next, 'roadHelp', false)) {
     next.world.roadEvents = next.world.roadEvents.map((event) => (event.type === 'ambush' && rng.chance(0.6) ? { ...event, type: 'peddler' } : event));
   }
   commitRng(next, rng);
-  return advanceWeeks(next, next.world.activeTravel.totalWeeks, true);
+  return advanceDays(next, next.world.activeTravel.totalDays, true);
 }
 
 /** Resumes an interrupted journey. */
 export function continueJourney(state) {
-  const travel = state.world?.activeTravel;
-  if (!travel) return { state, error: 'The guild is not travelling.' };
-  return advanceWeeks(state, travel.weeksRemaining);
+  if (!state.world?.activeTravel) return { state, error: 'The guild is not travelling.' };
+  return keepTravellingInPlace(clone(state));
 }
 
 function travellers(state) {
-  return state.heroes.filter((hero) => hero.status === 'available' && !hero.branchId);
+  const party = travellingPartyIds(state);
+  return state.heroes.filter((hero) => hero.status === 'available' && (party.length ? party.includes(hero.id) : !hero.branchId));
 }
 
 function woundInPlace(hero, rng) {
@@ -137,17 +144,17 @@ export function resolveRoadEvent(state, optionId) {
     candidate.scoutLevel = 1;
     next.candidates.push(candidate);
     result = `${candidate.name}, a level ${candidate.level} ${candidate.classId}, will wait for you at the tavern in ${LOCATION_BY_ID[locationId]?.name || 'town'}.`;
-  } else if (event.type === 'shortcut' && optionId === 'take' && travel && travel.weeksRemaining >= 2) {
-    travel.weeksRemaining -= 1;
-    travel.totalWeeks -= 1;
+  } else if (event.type === 'shortcut' && optionId === 'take' && travel && travel.daysRemaining >= 2) {
+    travel.daysRemaining -= 1;
+    travel.totalDays -= 1;
     party.forEach((hero) => {
       hero.fatigue = clamp(hero.fatigue + 10, 0, 100);
     });
-    result = 'The steep trail saves a week.';
+    result = 'The steep trail saves a day.';
   } else if (event.type === 'delay' && optionId === 'wait' && travel) {
-    travel.weeksRemaining += 1;
-    travel.totalWeeks += 1;
-    result = 'The storm costs the journey a week.';
+    travel.daysRemaining += 1;
+    travel.totalDays += 1;
+    result = 'The storm costs the journey a day.';
   } else if (event.type === 'delay' && optionId === 'push') {
     party.forEach((hero) => {
       hero.fatigue = clamp(hero.fatigue + 15, 0, 100);
@@ -164,17 +171,16 @@ export function resolveRoadEvent(state, optionId) {
   if (event.scripted) {
     // The opening march: after the road event, time runs until the wolves.
     completeTutorialTargetInPlace(next, 'roadEvent');
-    return advanceToNextEvent(next);
+    const mission = next.activeMissions.find((item) => item.locationId === event.toId) || next.activeMissions[0];
+    return mission ? advanceUntilMissionReturns(next, mission.id, true) : { state: finalize(next), error: null };
   }
-  if (next.world.activeTravel && !next.pendingDecisions.length && !next.activeEncounter && !next.activeMissionGame) {
-    return advanceWeeks(next, next.world.activeTravel.weeksRemaining, true);
-  }
-  return { state: finalize(next), error: null };
+  return keepTravellingInPlace(next);
 }
 
 /**
- * Launches a mission. When every field company is now deployed, time passes
- * until the next company comes back (a mission "runs").
+ * Launches a mission. The company is away for the contract's listed time. If
+ * the founder goes, time passes for the player too until they are back;
+ * otherwise the player keeps exploring.
  */
 export function launchExpedition(state, missionId, formationType, assignments) {
   const mission = state.missions.find((item) => item.id === missionId);
@@ -183,11 +189,12 @@ export function launchExpedition(state, missionId, formationType, assignments) {
   // Scripted opening: a guaranteed easy road event on the way to the first contract.
   if (mission?.templateId === 'wolves-old-road' && !launched.state.tutorial.completed && !launched.state.flags.openingPeddler) {
     launched.state.flags.openingPeddler = true;
-    launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', month: 0, scripted: true, toId: mission.locationId };
+    launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', day: 0, scripted: true, toId: mission.locationId };
     return launched;
   }
-  if (launched.state.activeMissions.length < partyCapacity(launched.state)) return launched;
-  return advanceToNextEvent(launched.state);
+  const founderGoes = (assignments || []).some((assignment) => assignment.heroId === launched.state.guild.founderHeroId);
+  if (!founderGoes) return launched;
+  return advanceUntilMissionReturns(launched.state, missionId);
 }
 
 /** Conclude a finished battle; if it interrupted a journey, keep travelling. */
@@ -195,8 +202,48 @@ export function concludeCombatAndContinue(state) {
   const concluded = concludeActiveCombat(state);
   if (concluded.error) return concluded;
   const next = concluded.state;
-  if (next.world?.activeTravel && !next.pendingDecisions.length && !next.activeEncounter && !next.activeMissionGame && !next.pendingRoadEvent) {
-    return advanceWeeks(next, next.world.activeTravel.weeksRemaining, true);
-  }
+  if (next.world?.activeTravel) return keepTravellingInPlace(next);
   return concluded;
+}
+
+// ---------------------------------------------------------------- resting
+
+export const HALL_REST_WEEKS = [1, 4, 12];
+export const INN_NIGHT_COST = 6;
+
+/**
+ * Rests at the Guild Hall (home only): first applies the heroes' tasks chosen
+ * on the rest screen ({ heroId: activity }), then lets 1 week, 1 month or
+ * 3 months pass. Room activities resolve at each month start during the wait.
+ */
+export function restAtHall(state, weeks, tasks = {}) {
+  if (!HALL_REST_WEEKS.includes(weeks)) return { state, error: 'Rest for a week, a month or three months.' };
+  if (!atHome(state)) return { state, error: `Rest at the Guild Hall in ${LOCATION_BY_ID[HOME_LOCATION_ID].name}, or at an inn while away.` };
+  const next = clone(state);
+  Object.entries(tasks || {}).forEach(([heroId, activity]) => {
+    const hero = next.heroes.find((item) => item.id === heroId);
+    if (!hero || ['dead', 'retired', 'mission', 'sidejob', 'tournament'].includes(hero.status)) return;
+    if (activityAvailable(next, activity)) hero.monthlyActivity = activity;
+  });
+  return advanceWeeks(next, weeks, true);
+}
+
+/** A night or three at an inn away from home: the party heals and time passes. */
+export function restAtInn(state, nights) {
+  if (![1, 2, 3].includes(nights)) return { state, error: 'Stay one, two or three nights.' };
+  if (state.world?.activeTravel || state.world?.wildAreaId) return { state, error: 'Inns are in towns.' };
+  if (atHome(state)) return { state, error: 'At home, rest at the Guild Hall.' };
+  const party = travellingPartyIds(state);
+  const cost = INN_NIGHT_COST * nights * Math.max(1, party.length);
+  if (state.guild.crowns < cost) return { state, error: `${nights} night${nights === 1 ? '' : 's'} for the party cost ${cost} gold.` };
+  const next = clone(state);
+  next.guild.crowns -= cost;
+  tallySpend(next, 'other', cost);
+  next.heroes
+    .filter((hero) => party.includes(hero.id))
+    .forEach((hero) => {
+      hero.health = clamp((hero.health ?? 100) + 12 * nights, 0, 100);
+      hero.fatigue = clamp((hero.fatigue ?? 0) - 15 * nights, 0, 100);
+    });
+  return advanceDays(next, nights, true);
 }

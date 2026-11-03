@@ -2,15 +2,16 @@
 // Upkeep, patron loans and debt, travel, facility upgrades.
 import { HALL_PURCHASE, RENTED_ROOM, ROOM_BY_ID } from '../../data/rooms.js';
 import { charterEffect } from './charter.js';
-import { LOCATION_BY_ID, travelWeeks, unlockedLocations } from '../../data/world.js';
+import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
 import {
-  activeHeroCount,
   addChronicle,
   appointmentHolder,
   clamp,
   clone,
   finalize,
   roomLevel,
+  spanLabel,
+  travellingPartyIds,
   tallyGuild,
   tallySpend,
 } from './core.js';
@@ -29,13 +30,15 @@ const DEBT_WALKOUT_MONTHS = 3;
 
 const DEBT_WALKOUT_LOYALTY = 50;
 
+/** Days, cost and a label for a journey from where the guild stands. */
 export function getTravelQuote(state, destinationId) {
   const fromId = state.world?.currentLocationId || 'dunmere';
   const destination = LOCATION_BY_ID[destinationId];
   const unlocked = unlockedLocations(state.guild.tierIndex).some((location) => location.id === destinationId);
-  const weeks = destination ? travelWeeks(fromId, destinationId) : 0;
-  const cost = Math.round(35 + weeks * (16 + activeHeroCount(state) * 3) * (appointmentHolder(state, 'Quartermaster') ? 0.86 : 1));
-  return { destination, unlocked, weeks, cost, same: fromId === destinationId };
+  const days = destination ? travelDays(fromId, destinationId) : 0;
+  const party = Math.max(1, travellingPartyIds(state, true).length);
+  const cost = Math.round((12 + days * (4 + party * 2)) * (appointmentHolder(state, 'Quartermaster') ? 0.86 : 1));
+  return { destination, unlocked, days, label: spanLabel(days), cost, same: fromId === destinationId };
 }
 
 export function startTravel(state, destinationId) {
@@ -44,8 +47,6 @@ export function startTravel(state, destinationId) {
   if (next.activeEncounter) return { state, error: 'Conclude the active combat before leaving.' };
   if (next.activeMissionGame) return { state, error: 'Conclude the active mission challenge before leaving.' };
   if (next.pendingDecisions.length) return { state, error: 'Resolve the critical decision before leaving.' };
-  if (next.activeMissions.length && next.guild.tierIndex === 0)
-    return { state, error: 'At Regional scale, wait for every deployed company to return before relocating headquarters.' };
   if ([...(next.tournaments || []), ...(next.guildTournaments || [])].some((tournament) => tournament.status === 'active'))
     return { state, error: 'Finish the active tournament before traveling.' };
   const quote = getTravelQuote(next, destinationId);
@@ -66,44 +67,45 @@ export function startTravel(state, destinationId) {
   next.world.activeTravel = {
     fromId: next.world.currentLocationId,
     toId: destinationId,
-    weeksRemaining: quote.weeks,
-    totalWeeks: quote.weeks,
+    daysRemaining: quote.days,
+    totalDays: quote.days,
     cost: quote.cost,
   };
   addChronicle(next, {
     type: 'travel',
     importance: 1,
     title: `The guild departs for ${quote.destination.name}`,
-    text: `${next.guild.tierIndex === 0 ? activeHeroCount(next) : next.heroes.filter((hero) => hero.status === 'available' && !hero.branchId).length} headquarters heroes take the road. Deployed companies and branches continue operating. The journey will require ${quote.weeks} week${quote.weeks === 1 ? '' : 's'} and ${quote.cost} crowns.`,
+    text: `The party takes the road; the heroes at home keep to their tasks. The journey will take ${quote.label} and ${quote.cost} crowns.`,
     tags: ['travel', quote.destination.primal],
   });
   next.notifications.push({
     id: `travel-${destinationId}-${next.date.year}-${next.date.month}`,
     tone: 'blue',
     title: `Journey to ${quote.destination.name}`,
-    text: `${quote.weeks} week${quote.weeks === 1 ? '' : 's'} on the road.`,
+    text: `${quote.label} on the road.`,
   });
   return { state: finalize(next), error: null };
 }
 
+/** One day on the road: road events fire on their day; arrival when the days run out. */
 export function progressTravelInPlace(state, rng) {
   const travel = state.world?.activeTravel;
   if (!travel) return;
-  travel.weeksRemaining -= 1;
-  // Road events planned at departure fire on their month (one per month).
-  const elapsed = travel.totalWeeks - travel.weeksRemaining;
+  travel.daysRemaining -= 1;
+  const elapsed = travel.totalDays - travel.daysRemaining;
   const roadEvents = state.world.roadEvents || [];
-  const due = roadEvents.find((event) => event.month <= elapsed);
+  const due = roadEvents.find((event) => event.day <= elapsed);
   if (due) {
     state.world.roadEvents = roadEvents.filter((event) => event !== due);
     state.pendingRoadEvent = { ...due, fromId: travel.fromId, toId: travel.toId };
   }
+  const party = travellingPartyIds(state);
   state.heroes
-    .filter((hero) => hero.status === 'available')
+    .filter((hero) => party.includes(hero.id) && hero.status === 'available' && rng.chance(0.3))
     .forEach((hero) => {
-      hero.fatigue = clamp(hero.fatigue + rng.int(0, 1), 0, 100);
+      hero.fatigue = clamp(hero.fatigue + 1, 0, 100);
     });
-  if (travel.weeksRemaining > 0) return;
+  if (travel.daysRemaining > 0) return;
   const destination = LOCATION_BY_ID[travel.toId] || LOCATION_BY_ID.dunmere;
   state.world.currentLocationId = destination.id;
   state.world.visitedLocationIds ||= [];

@@ -301,16 +301,6 @@ export function unlockedLocations(tierIndex) {
   return LOCATIONS.filter((location) => allowed.includes(location.tier) && inSlice(location.id));
 }
 
-export function travelDuration(fromId, toId) {
-  const from = LOCATION_BY_ID[fromId];
-  const to = LOCATION_BY_ID[toId];
-  if (!from || !to || fromId === toId) return 0;
-  const dx = Math.abs(from.x - to.x);
-  const dy = Math.abs(from.y - to.y);
-  const distanceBand = Math.ceil((dx + dy) / 34);
-  return Math.max(1, Math.min(5, Math.max(from.travel, to.travel, distanceBand)));
-}
-
 // Town buildings. The Guild Hall is the guild's own headquarters and appears in
 // whichever town the guild is based; the rest depend on the town.
 export const BUILDINGS = {
@@ -330,7 +320,7 @@ export const LOCATION_BUILDINGS = {
   dunmere: ARENA_TOWN,
   greenhollow: ['tavern', 'noticeBoard', 'arena', 'shop'],
   ironford: ARENA_TOWN,
-  windmere: VILLAGE,
+  windmere: ['tavern', 'noticeBoard', 'arena', 'shop'],
   tidecross: ARENA_TOWN,
   sunspire: ARENA_TOWN,
   thornwatch: VILLAGE,
@@ -352,10 +342,15 @@ export function locationBuildings(locationId) {
   return ['guildHall', ...(LOCATION_BUILDINGS[locationId] || VILLAGE)];
 }
 
-/** Journey length in weeks (1–6), from map distance. */
-export function travelWeeks(fromId, toId) {
+/**
+ * Journey length in days, from map distance: nearby towns take 1–4 days,
+ * farther places 1, 2 or 3 weeks.
+ */
+export function travelDays(fromId, toId) {
   const from = LOCATION_BY_ID[fromId];
   const to = LOCATION_BY_ID[toId];
   if (!from || !to || fromId === toId) return 0;
-  return Math.max(1, Math.min(6, Math.ceil((Math.abs(from.x - to.x) + Math.abs(from.y - to.y)) / 18)));
+  const distance = Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
+  if (distance <= 40) return Math.max(1, Math.min(4, Math.ceil(distance / 10)));
+  return (distance <= 60 ? 1 : distance <= 90 ? 2 : 3) * 7;
 }

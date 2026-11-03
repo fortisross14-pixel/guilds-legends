@@ -19,6 +19,8 @@ import {
   operationalLocationIds,
   partyCapacity,
   roomLevel,
+  campaignDaySerial,
+  DAYS_PER_WEEK,
   tallyFamily,
   tallyGuild,
 } from './core.js';
@@ -124,6 +126,7 @@ export function launchMission(state, missionId, formationTypeOrAssignments, mayb
     formationType: selectedFormation,
     assignments: clone(normalizedAssignments),
     remaining: mission.duration,
+    dueDay: campaignDaySerial(next) + mission.duration * DAYS_PER_WEEK,
     startedYear: next.date.year,
     startedMonth: next.date.month,
     estimateAtLaunch: estimate.chance,

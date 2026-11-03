@@ -25,6 +25,7 @@ import {
   clamp,
   tallyGuild,
   tallySpend,
+  travellingPartyIds,
 } from './core.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { candidateDemandFor, recruitObjection, refreshCandidatesForLocationInPlace } from './candidates.js';
@@ -347,9 +348,9 @@ export function inspectHero(state, heroId) {
 export const MAIN_PARTY_SIZE = 4;
 const BASIC_ROOMS = ['Training', 'Rest', 'Infirmary'];
 
-/** Away heroes (mission, tournament, branch duty, or travelling with the guild) can't change rooms. */
+/** Away heroes (mission, tournament, branch duty, or travelling with you) can't change rooms. */
 export function isHeroAway(state, hero) {
-  return ['mission', 'tournament', 'sidejob'].includes(hero.status) || Boolean(hero.branchId) || Boolean(state.world?.activeTravel);
+  return ['mission', 'tournament', 'sidejob'].includes(hero.status) || Boolean(hero.branchId) || travellingPartyIds(state).includes(hero.id);
 }
 
 function homeHeroes(state) {

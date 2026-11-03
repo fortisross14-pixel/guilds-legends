@@ -1472,7 +1472,7 @@ export const ONBOARDING_STEPS = [
   {
     id: 'first-tournament',
     title: 'Next: the Dunmere Harvest Melee',
-    body: 'The calendar shows the first tournament. Enter it at the Arena when the time comes.',
+    body: 'The calendar shows the first tournament. Sign up at the arena registrar, then be in Dunmere on the day it starts. Rest at the Guild Hall to pass the time.',
     screen: 'tournaments',
     target: 'finishTutorial',
     reward: 50,

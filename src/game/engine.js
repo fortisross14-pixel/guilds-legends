@@ -50,7 +50,7 @@ export {
 } from './engine/seasons.js';
 export { recruitObjection } from './engine/candidates.js';
 export { getTournamentAccess } from './engine/tournaments.js';
-export { enterHeroTournament, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
+export { signUpForTournament, getArenaView, tournamentStartDay, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
 export { inspectMission, notePartySelection, saveFormation, launchMission } from './engine/missions.js';
 export { resolveDecision, acknowledgeReport } from './engine/outcomes.js';
 export {
@@ -61,7 +61,6 @@ export {
   autoResolveActiveCombat,
   concludeActiveCombat,
 } from './engine/encounters.js';
-export { advanceMonths, advanceToNextEvent } from './engine/time.js';
 export {
   recruitCandidate,
   releaseHero,
@@ -91,7 +90,7 @@ export { getLivingHistory } from './engine/dashboard.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
-export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition } from './engine/timeActions.js';
+export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition, restAtHall, restAtInn, HALL_REST_WEEKS, INN_NIGHT_COST } from './engine/timeActions.js';
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero, shopPrice, chestUsed, gearUpgradeCost, upgradeGear } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
@@ -125,8 +124,19 @@ export {
   officialPointsFor,
 } from './engine/rankings.js';
 export { noteTutorialStep, skipTutorial } from './engine/dashboard.js';
-export { advanceWeeks, advanceToDate } from './engine/time.js';
-export { WEEKS_PER_MONTH, campaignWeekSerial, dateWeekSerial, dateFromWeekSerial } from './engine/core.js';
+export { advanceDays, advanceWeeks, advanceToDate } from './engine/time.js';
+export {
+  WEEKS_PER_MONTH,
+  DAYS_PER_WEEK,
+  HOME_LOCATION_ID,
+  atHome,
+  campaignDaySerial,
+  campaignWeekSerial,
+  dateWeekSerial,
+  dateFromWeekSerial,
+  spanLabel,
+  travellingPartyIds,
+} from './engine/core.js';
 export { getCalendarEntries } from './engine/dashboard.js';
 export { MAIN_PARTY_SIZE, isHeroAway, sendIdleHeroesTo, autoAssignRooms, setMainParty, toggleMainPartyMember } from './engine/recruitment.js';
 export {

@@ -17,7 +17,7 @@ import { addItemsInPlace, battleItems, settleBattleItemsInPlace } from './invent
 import { concludeActiveCombat } from './encounters.js';
 import { adjustRegionReputationInPlace } from './reputation.js';
 import { getStoryView } from './stories.js';
-import { advanceWeeks } from './time.js';
+import { advanceDays } from './time.js';
 
 
 /** Pixel centre of a tile, for saved positions. */
@@ -361,20 +361,20 @@ export function gatherAtSpot(state, areaId, spotId) {
   return { state: finalize(next), error: null, message: `${spot.name}: ${parts.join(' and ')}.` };
 }
 
-/** Rests at the area's camp: one week passes, the party heals. */
+/** Camps for the night: one day passes, the party heals. */
 export function restAtCamp(state, areaId) {
   const area = WILD_AREAS[areaId];
   if (!area || state.world?.wildAreaId !== areaId) return { state, error: 'There is no camp here.' };
-  const result = advanceWeeks(state, 1);
+  const result = advanceDays(state, 1);
   if (result.error) return result;
   const next = clone(result.state);
   let healed = 0;
   next.heroes.forEach((hero) => {
     if (['dead', 'retired'].includes(hero.status)) return;
-    hero.health = clamp((hero.health ?? 100) + 30, 0, 100);
-    hero.fatigue = clamp((hero.fatigue ?? 0) - 30, 0, 100);
+    hero.health = clamp((hero.health ?? 100) + 20, 0, 100);
+    hero.fatigue = clamp((hero.fatigue ?? 0) - 20, 0, 100);
     if (hero.status === 'injured') {
-      hero.injuryWeeks = Math.max(0, (hero.injuryWeeks || 0) - 2);
+      hero.injuryWeeks = Math.max(0, (hero.injuryWeeks || 0) - 1);
       if (hero.injuryWeeks === 0) {
         hero.status = 'available';
         hero.injury = null;
@@ -382,7 +382,7 @@ export function restAtCamp(state, areaId) {
       }
     }
   });
-  return { state: finalize(next), error: null, message: `A week by the fire at ${area.camp.name}. Wounds close${healed ? `; ${healed} hero${healed === 1 ? '' : 'es'} fit to fight again` : ''}.` };
+  return { state: finalize(next), error: null, message: `A night by the fire at ${area.camp.name}. Wounds close${healed ? `; ${healed} hero${healed === 1 ? '' : 'es'} fit to fight again` : ''}.` };
 }
 
 /** The heroes who fight in the wild: the main party if fit, else the strongest available. */

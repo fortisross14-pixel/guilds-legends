@@ -1,6 +1,6 @@
 // @ts-check
-// The monthly and annual loop: council activities, aging, advanceMonths.
-import { normalizeClassId, ONBOARDING_STEPS } from '../../data/content.js';
+// The day, week, month and year loop: council activities, aging, advanceDays.
+import { normalizeClassId } from '../../data/content.js';
 import { LOCATIONS, unlockedLocations } from '../../data/world.js';
 import {
   MAX_HEROES,
@@ -15,15 +15,18 @@ import {
   clone,
   commitRng,
   compactHero,
-  completeTutorialTargetInPlace,
   ensureTournamentCareer,
   finalize,
   getCurrentLocation,
   getHero,
   rngFor,
+  atHome,
+  campaignDaySerial,
   campaignWeekSerial,
+  dateDaySerial,
   dateLabel,
-  dateWeekSerial,
+  travellingPartyIds,
+  DAYS_PER_WEEK,
   WEEKS_PER_MONTH,
 } from './core.js';
 import { applyXpInPlace, calculatePower, generateHero } from './heroes.js';
@@ -39,6 +42,7 @@ import { adjustPatronInPlace, patronAtLeast } from './charter.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { createTournamentsInPlace, simulateScheduledCompetitionsInPlace } from './guildTournaments.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
+import { startScheduledTournamentsInPlace } from './tournamentEntry.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
 import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings.js';
 import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace } from './contracts.js';
@@ -62,6 +66,7 @@ function resolveMonthlyHeroActivities(state, rng) {
   const results = [];
   let scouts = 0;
   let exhibitionFame = 0;
+  const party = travellingPartyIds(state);
 
   state.heroes.forEach((hero) => {
     if (['dead', 'retired'].includes(hero.status)) return;
@@ -75,6 +80,10 @@ function resolveMonthlyHeroActivities(state, rng) {
     }
     if (hero.status === 'tournament') {
       results.push({ heroId: hero.id, name: hero.name, activity: 'Tournament', icon: '♛', summary: 'Committed to an active tournament.' });
+      return;
+    }
+    if (party.includes(hero.id)) {
+      results.push({ heroId: hero.id, name: hero.name, activity: 'Travelling', icon: '➜', summary: 'On the road with you, away from the hall.' });
       return;
     }
 
@@ -422,65 +431,86 @@ function runMonthInPlace(next, rng) {
   return { upkeep, debt, council, branches };
 }
 
+/** Everything that happens once a week, when a new week starts. */
+function runWeekInPlace(next, rng, summary) {
+  weeklyInjuriesInPlace(next);
+  progressConstructionInPlace(next);
+  expireChallengeInPlace(next);
+  progressSideJobsInPlace(next, rng);
+  expireWagerInPlace(next);
+  next.date.week = (next.date.week || 0) + 1;
+  if (next.date.week >= WEEKS_PER_MONTH) {
+    next.date.week = 0;
+    next.date.month += 1;
+    if (next.date.month >= 12) {
+      next.date.month = 0;
+      next.date.year += 1;
+    }
+    const month = runMonthInPlace(next, rng);
+    summary.months += 1;
+    summary.upkeep += month.upkeep;
+    summary.loanPayment += month.debt.loanPayment;
+    summary.walkouts.push(...month.debt.walkouts);
+    summary.scouts += month.council.scouts || 0;
+    summary.exhibitionFame += month.council.exhibitionFame || 0;
+    summary.activities = month.council.results;
+    summary.branches = month.branches;
+  }
+  simulateScheduledCompetitionsInPlace(next, rng);
+  rollWeeklyEventInPlace(next, rng);
+  maybeFriendlyChallengeInPlace(next, rng);
+  summary.weeks += 1;
+  if (next.date.week === 0 && summary.months > 0) {
+    recordRankSnapshotInPlace(next);
+    if (next.date.month % 3 === 0) pushRankingsMomentInPlace(next, 'Season rankings', next.rankHistory.at(-4) || null);
+  }
+}
+
+/** Deployed companies count down to the day they are due. */
+function updateMissionClocksInPlace(state) {
+  const today = campaignDaySerial(state);
+  state.activeMissions.forEach((mission) => {
+    if (!Number.isFinite(mission.dueDay)) mission.dueDay = today + Math.max(0, mission.remaining) * DAYS_PER_WEEK;
+    mission.remaining = Math.max(0, Math.ceil((mission.dueDay - today) / DAYS_PER_WEEK));
+  });
+}
+
 /**
- * Advances time week by week. Monthly systems run when a new month starts.
- * Stops early when a decision, battle, mission game, road event or tournament
- * needs the player. A council report summarizes the advance when it crossed a month.
+ * Advances time day by day. Weekly systems run when a new week starts and
+ * monthly ones when a new month starts. Stops early when a decision, battle,
+ * mission game, road event or tournament needs the player, or when `until`
+ * returns true. A council report summarizes the advance when it crossed a month.
+ * Time only moves through player actions (travel, rest, camps, contracts).
  */
-export function advanceWeeks(state, count = 1, mutate = false) {
+export function advanceDays(state, count = 1, mutate = false, until = null) {
   const blocked = pauseReason(state);
   if (blocked) return { state, error: blocked };
   const next = mutate ? state : clone(state);
+  next.date.day ||= 0;
   const start = { crowns: next.guild.crowns, fame: next.guild.fame, legacy: next.guild.legacy, label: dateLabel(next) };
-  const summary = { weeks: 0, months: 0, upkeep: 0, loanPayment: 0, walkouts: [], scouts: 0, exhibitionFame: 0, activities: [], branches: [] };
+  const summary = { days: 0, weeks: 0, months: 0, upkeep: 0, loanPayment: 0, walkouts: [], scouts: 0, exhibitionFame: 0, activities: [], branches: [] };
   for (let step = 0; step < count; step += 1) {
-    if (next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame || next.pendingRoadEvent) break;
-    const rng = rngFor(next, `week-${step}`);
+    if (pauseReason(next)) break;
+    const rng = rngFor(next, `day-${step}`);
     progressTravelInPlace(next, rng);
-    weeklyInjuriesInPlace(next);
-    progressConstructionInPlace(next);
-    expireChallengeInPlace(next);
-    progressSideJobsInPlace(next, rng);
-    expireWagerInPlace(next);
-    next.activeMissions.forEach((mission) => {
-      mission.remaining -= 1;
-    });
+    next.date.day += 1;
+    if (next.date.day >= DAYS_PER_WEEK) {
+      next.date.day = 0;
+      runWeekInPlace(next, rng, summary);
+    }
+    updateMissionClocksInPlace(next);
     queueDueCombatMissionInPlace(next);
     queueDueMissionGameInPlace(next);
-    next.date.week = (next.date.week || 0) + 1;
-    if (next.date.week >= WEEKS_PER_MONTH) {
-      next.date.week = 0;
-      next.date.month += 1;
-      if (next.date.month >= 12) {
-        next.date.month = 0;
-        next.date.year += 1;
-      }
-      const month = runMonthInPlace(next, rng);
-      summary.months += 1;
-      summary.upkeep += month.upkeep;
-      summary.loanPayment += month.debt.loanPayment;
-      summary.walkouts.push(...month.debt.walkouts);
-      summary.scouts += month.council.scouts || 0;
-      summary.exhibitionFame += month.council.exhibitionFame || 0;
-      summary.activities = month.council.results;
-      summary.branches = month.branches;
-    }
-    simulateScheduledCompetitionsInPlace(next, rng);
-    rollWeeklyEventInPlace(next, rng);
-    maybeFriendlyChallengeInPlace(next, rng);
-    summary.weeks += 1;
+    startScheduledTournamentsInPlace(next);
+    summary.days += 1;
     commitRng(next, rng);
-    if (!next.tutorial.completed && ONBOARDING_STEPS[next.tutorial.step]?.target === 'advanceMonth') completeTutorialTargetInPlace(next, 'advanceMonth');
     evaluateStateInPlace(next);
-    if (next.date.week === 0 && summary.weeks > 0 && summary.months > 0) {
-      recordRankSnapshotInPlace(next);
-      if (next.date.month % 3 === 0) pushRankingsMomentInPlace(next, 'Season rankings', next.rankHistory.at(-4) || null);
-    }
+    if (until && until(next)) break;
   }
   if (summary.months > 0) {
     next.council ||= { lastReport: null, unread: false };
     next.council.lastReport = {
-      id: `council-${campaignWeekSerial(next)}`,
+      id: `council-${campaignDaySerial(next)}`,
       label: `${start.label} → ${dateLabel(next)}`,
       advancedWeeks: summary.weeks,
       advancedMonths: summary.months,
@@ -501,23 +531,24 @@ export function advanceWeeks(state, count = 1, mutate = false) {
   return { state: finalize(next), error: null };
 }
 
-/** +N months: the same week, N months later. */
-export function advanceMonths(state, count = 1, mutate = false) {
-  return advanceWeeks(state, count * WEEKS_PER_MONTH, mutate);
+/** N weeks of days (used by simulations and resting). */
+export function advanceWeeks(state, count = 1, mutate = false) {
+  return advanceDays(state, count * DAYS_PER_WEEK, mutate);
 }
 
-/** Advance until a given { year, month, week }. */
+/** Waits at the Guild Hall until the start of a given { year, month, week }. */
 export function advanceToDate(state, date) {
-  const weeks = dateWeekSerial(date) - campaignWeekSerial(state);
-  if (!Number.isFinite(weeks) || weeks <= 0) return { state, error: 'Pick a date in the future.' };
-  return advanceWeeks(state, weeks);
+  if (!atHome(state)) return { state, error: 'Only the Guild Hall lets you wait for a date. Travel home to Dunmere first.' };
+  const days = dateDaySerial({ ...date, day: 0 }) - campaignDaySerial(state);
+  if (!Number.isFinite(days) || days <= 0) return { state, error: 'Pick a date in the future.' };
+  return advanceDays(state, days);
 }
 
-/** Advance until the next deployed company returns (or the journey ends); one week if nothing is pending. */
-export function advanceToNextEvent(state) {
-  const blocked = pauseReason(state);
-  if (blocked) return { state, error: blocked };
-  const waits = state.activeMissions.map((mission) => mission.remaining);
-  if (state.world?.activeTravel) waits.push(state.world.activeTravel.weeksRemaining);
-  return advanceWeeks(state, Math.max(1, waits.length ? Math.min(...waits) : 1));
+/** Lets time pass until a deployed company is back (or something needs the player). */
+export function advanceUntilMissionReturns(state, missionId, mutate = false) {
+  const mission = state.activeMissions.find((item) => item.id === missionId);
+  if (!mission) return { state, error: null };
+  const today = campaignDaySerial(state);
+  const days = Math.max(1, (Number.isFinite(mission.dueDay) ? mission.dueDay - today : mission.remaining * DAYS_PER_WEEK) + 1);
+  return advanceDays(state, days, mutate, (next) => !next.activeMissions.some((item) => item.id === missionId));
 }

@@ -11,6 +11,11 @@ export const SCHEMA_VERSION = 15;
 export const MAX_MOMENTS = 12;
 export const WEEKS_PER_MONTH = 4;
 
+export const DAYS_PER_WEEK = 7;
+
+/** The guild's home town: its hall is the only place to rest freely. */
+export const HOME_LOCATION_ID = 'dunmere';
+
 export const MAX_CHRONICLE = 900;
 
 export const MAX_HERO_HISTORY = 80;
@@ -443,6 +448,46 @@ export function campaignWeekSerial(state) {
 export function dateFromWeekSerial(serial) {
   const monthSerial = Math.floor(serial / WEEKS_PER_MONTH);
   return { year: Math.floor(monthSerial / 12), month: monthSerial % 12, week: serial % WEEKS_PER_MONTH };
+}
+
+/** Days since year 0 (7 days a week, 4 weeks a month). */
+export function dateDaySerial(date) {
+  return dateWeekSerial(date) * DAYS_PER_WEEK + (date.day || 0);
+}
+
+export function campaignDaySerial(state) {
+  return dateDaySerial(state.date);
+}
+
+export function dateFromDaySerial(serial) {
+  return { ...dateFromWeekSerial(Math.floor(serial / DAYS_PER_WEEK)), day: serial % DAYS_PER_WEEK };
+}
+
+/** "3 days" or "2 weeks" for a span of days. */
+export function spanLabel(days) {
+  if (days > 0 && days % DAYS_PER_WEEK === 0) return `${days / DAYS_PER_WEEK} week${days === DAYS_PER_WEEK ? '' : 's'}`;
+  return `${days} day${days === 1 ? '' : 's'}`;
+}
+
+/** True when the guild stands in its home town (not on the road, not in the wild). */
+export function atHome(state) {
+  return !state.world?.activeTravel && !state.world?.wildAreaId && (state.world?.currentLocationId || HOME_LOCATION_ID) === HOME_LOCATION_ID;
+}
+
+/**
+ * Heroes travelling with the player while away from home: the main party if
+ * set, otherwise the founder and the strongest fit heroes (up to four).
+ * Everyone else stays at the hall and keeps to their task. `evenAtHome`
+ * returns who would set out from home (travel quotes).
+ */
+export function travellingPartyIds(state, evenAtHome = false) {
+  if (!evenAtHome && atHome(state)) return [];
+  const fit = (hero) => hero && ['available', 'injured'].includes(hero.status) && !hero.branchId;
+  const main = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter(fit);
+  if (main.length) return main.slice(0, 4).map((hero) => hero.id);
+  const founder = state.heroes.find((hero) => hero.id === state.guild.founderHeroId && fit(hero));
+  const others = state.heroes.filter((hero) => fit(hero) && hero !== founder && hero.status === 'available').sort((a, b) => b.power - a.power);
+  return [founder, ...others].filter(Boolean).slice(0, 4).map((hero) => hero.id);
 }
 
 export const MAX_NEWS = 60;
