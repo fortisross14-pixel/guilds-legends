@@ -243,16 +243,32 @@ export const GUILD_BLUEPRINTS = [
     homeLocationId: 'sunspire',
   },
 
+  // The Argent Crown (docs/STORY.md): the kingdom's powerhouse, nine Crownfall
+  // titles in a row, and the guild behind the Broken Lantern's destruction.
+  // Garrick Thorne leads it now; Lord Cassian Rook is publicly "tragically dead".
   {
-    name: 'Crown Champions',
-    motto: 'The world is the arena.',
+    name: 'The Argent Crown',
+    storyId: 'argent-crown',
+    motto: 'A crown is never lent.',
     archetype: 'Noble Order',
-    color: '#d0a14c',
+    color: '#c8ccd4',
     strategy: 'prestige',
-    risk: 0.58,
+    risk: 0.52,
     specialty: 'Duelist',
-    tierIndex: 2,
-    homeLocationId: 'ashen-caldera',
+    tierIndex: 1,
+    homeLocationId: 'mooncourt',
+    founded: 1121,
+    titles: 14,
+    star: {
+      name: 'Garrick Thorne',
+      classId: 'Duelist',
+      primal: 'Iron',
+      rarity: 'Legend',
+      level: 16,
+      age: 44,
+      personality: 'Cautious',
+      hook: 'Guildmaster of the Argent Crown since Lord Rook’s “tragic death”. A strategist, a charmer and a fighter few have beaten.',
+    },
   },
   {
     name: 'Ivory Griffins',
@@ -366,7 +382,7 @@ export const INDIVIDUAL_TOURNAMENT_DEFINITIONS = [
     tierIndex: 0,
     trophy: 'The Living Thorn',
     description: 'A forest arena where movement, patience and terrain control matter as much as raw force.',
-    record: { name: 'Nessa Briar', wins: 3, years: [1173, 1178, 1183] },
+    record: { name: 'Nell Briar', wins: 3, years: [1173, 1178, 1183] },
   },
   {
     id: 'ironford-hammer-trials',
@@ -400,7 +416,7 @@ export const INDIVIDUAL_TOURNAMENT_DEFINITIONS = [
     tierIndex: 0,
     trophy: 'The Gull Feather',
     description: 'A small ring on the cliffs above the monastery. Old duelists come home to fight here, and the wind decides as many bouts as the blades.',
-    record: { name: 'Corin Ashdale', wins: 3, years: [1170, 1175, 1179] },
+    record: { name: 'Halden Marsh', wins: 5, years: [1168, 1171, 1175, 1179, 1182] },
   },
   {
     id: 'tidecross-open',
@@ -492,8 +508,9 @@ export const INDIVIDUAL_TOURNAMENT_DEFINITIONS = [
 
 export const GUILD_TOURNAMENT_DEFINITIONS = [
   {
-    id: 'kings-shield',
-    name: 'The King’s Shield',
+    id: 'crownfall',
+    name: 'The Crownfall Tournament',
+    nickname: 'the King’s Tourney',
     circuit: 'National',
     locationId: 'mooncourt',
     month: 8,
@@ -504,9 +521,10 @@ export const GUILD_TOURNAMENT_DEFINITIONS = [
     minFame: 280,
     minCombatWins: 12,
     tierIndex: 1,
-    trophy: 'The King’s Shield',
-    description: 'Eight nationally licensed guilds enter one fixed Combat Company. Depth and role discipline matter more than one brilliant duelist.',
-    record: { name: 'Order of the White Mantle', wins: 4 },
+    trophy: 'The Crownfall Crown',
+    description: 'The kingdom’s premier guild championship, called the King’s Tourney in every tavern. Eight licensed guilds enter one fixed Combat Company.',
+    // Nine straight titles for the Argent Crown; the 1183 title is officially “vacated”.
+    record: { name: 'The Argent Crown', wins: 9, years: [1174, 1175, 1176, 1177, 1178, 1179, 1180, 1181, 1182], vacated: { year: 1183, guildName: 'The Broken Lantern' } },
   },
   {
     id: 'grand-companies',
@@ -523,7 +541,7 @@ export const GUILD_TOURNAMENT_DEFINITIONS = [
     tierIndex: 2,
     trophy: 'Banner of the Open Sky',
     description: 'The world championship for guild companies. Five heroes, one arrangement and no easy bracket.',
-    record: { name: 'Crown Champions', wins: 5 },
+    record: { name: 'Ivory Griffins', wins: 5 },
   },
 ];
 
@@ -606,7 +624,7 @@ export const HISTORIC_LEGENDS = [
     renown: 590,
     status: 'dead',
     age: 71,
-    guildName: 'Crown Champions',
+    guildName: 'Ivory Griffins',
   },
   {
     id: 'historic-maelis-stormborn',
@@ -641,8 +659,8 @@ export const HISTORIC_LEGENDS = [
     guildName: 'Pearl Knives',
   },
   {
-    id: 'historic-nessa-briar',
-    name: 'Nessa Briar',
+    id: 'historic-nell-briar',
+    name: 'Nell Briar',
     classId: 'Ranger',
     primal: 'Plant',
     rarity: 'Rare',

@@ -53,22 +53,26 @@ function createRival(blueprint, state, rng, index) {
           : starRoll < 0.7
             ? 'Epic'
             : 'Rare';
-  const starLevel = tierIndex === 2 ? rng.int(14, 19) : tierIndex === 1 ? rng.int(9, 15) : rng.int(4, 10);
+  const starLevel = blueprint.star?.level || (tierIndex === 2 ? rng.int(14, 19) : tierIndex === 1 ? rng.int(9, 15) : rng.int(4, 10));
+  // Story guilds name their star (the Argent Crown's Garrick Thorne).
   const star = ensureTournamentCareer(
     generateHero(state, rng, quality, {
       guildId,
       homeLocationId: home.id,
-      classId: blueprint.specialty,
-      rarity: starRarity,
+      classId: blueprint.star?.classId || blueprint.specialty,
+      rarity: blueprint.star?.rarity || starRarity,
       level: starLevel,
-      age: clamp(rng.int(20, 31) + Math.floor(starLevel / 5), 20, 38),
+      age: blueprint.star?.age || clamp(rng.int(20, 31) + Math.floor(starLevel / 5), 20, 38),
+      ...(blueprint.star?.name ? { name: blueprint.star.name, primal: blueprint.star.primal } : {}),
     }),
   );
+  if (blueprint.star?.personality) star.personality = blueprint.star.personality;
   star.status = 'active';
   star.renown += 8 + tierIndex * 18 + rng.int(0, 15);
   star.legacy += 12 + tierIndex * 38 + rng.int(0, 28);
   star.specializations.tournament = rng.int(5, 11) + tierIndex * 2;
-  star.hook = `${blueprint.name} built its public identity around ${star.name}, a ${star.rarity.toLowerCase()} ${star.classId.toLowerCase()} with a reputation for tournament pressure.`;
+  star.hook = blueprint.star?.hook || `${blueprint.name} built its public identity around ${star.name}, a ${star.rarity.toLowerCase()} ${star.classId.toLowerCase()} with a reputation for tournament pressure.`;
+  if (blueprint.star?.name) star.storyId = blueprint.storyId;
 
   const rosterSize = tierIndex === 2 ? rng.int(6, 8) : tierIndex === 1 ? rng.int(5, 7) : rng.int(4, 6);
   const members = [];
@@ -97,6 +101,7 @@ function createRival(blueprint, state, rng, index) {
   );
   return {
     id: guildId,
+    storyId: blueprint.storyId || null,
     name: blueprint.name,
     motto: blueprint.motto,
     archetype: blueprint.archetype,
@@ -106,7 +111,7 @@ function createRival(blueprint, state, rng, index) {
     specialty: blueprint.specialty,
     homeLocationId: home.id,
     region: home.region,
-    founded: state.date.year - rng.int(tierIndex === 2 ? 45 : 3, tierIndex === 2 ? 180 : tierIndex === 1 ? 110 : 70),
+    founded: blueprint.founded || state.date.year - rng.int(tierIndex === 2 ? 45 : 3, tierIndex === 2 ? 180 : tierIndex === 1 ? 110 : 70),
     fame: rng.int(...fameBand),
     legacy: rng.int(...legacyBand),
     crowns: rng.int(900 + tierIndex * 1800, 3800 + tierIndex * 5200),
@@ -116,7 +121,7 @@ function createRival(blueprint, state, rng, index) {
     power,
     wins: rng.int(4 + tierIndex * 12, 20 + tierIndex * 32),
     losses: rng.int(2, 14 + tierIndex * 8),
-    titles: rng.int(tierIndex, 2 + tierIndex * 4),
+    titles: blueprint.titles ?? rng.int(tierIndex, 2 + tierIndex * 4),
     prizeMoney: rng.int(tierIndex * 800, 1800 + tierIndex * 8000),
     seasonPoints: rng.int(10, 90) + tierIndex * 75,
     careerPoints: rng.int(40, 280) + tierIndex * 480,
@@ -215,7 +220,13 @@ export function createTitleRecords() {
         locationId: definition.locationId,
         recordHolderName: definition.record.name,
         recordWins: definition.record.wins,
-        winners: [],
+        // Historical champions by year; a vacated title keeps its year and the struck name.
+        winners: [
+          ...(definition.record.vacated
+            ? [{ year: definition.record.vacated.year, guildId: null, guildName: 'Title vacated', struck: definition.record.vacated.guildName, vacated: true, player: false }]
+            : []),
+          ...[...(definition.record.years || [])].reverse().map((year) => ({ year, guildId: null, guildName: definition.record.name, player: false })),
+        ],
         winsByGuild: { [`historic:${definition.record.name}`]: definition.record.wins },
       },
     ]),

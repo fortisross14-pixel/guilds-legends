@@ -183,12 +183,12 @@ export const AREA_BOSSES = {
   },
   'bandit-captain': {
     id: 'bandit-captain',
-    name: 'Captain Rook',
+    name: 'Captain Vask',
     role: 'tank',
     sprite: 'enemy_05',
     skills: ['taunt', 'shield-bash', 'blade-dance'],
     intro: '“Shields up, lads. Let them tire themselves out.”',
-    phases: [{ at: 0.5, banner: 'Rook throws the shield aside: “Enough. Cut them down!”', profile: 'brute', statuses: { atkUp: 9 }, areaSkill: 'blade-dance' }],
+    phases: [{ at: 0.5, banner: 'Vask throws the shield aside: “Enough. Cut them down!”', profile: 'brute', statuses: { atkUp: 9 }, areaSkill: 'blade-dance' }],
   },
   'lantern-brood': {
     id: 'lantern-brood',

@@ -3,7 +3,7 @@ import { AREA_BOSSES } from '../enemies.js';
 
 // The Thornwood edge, north of Greenhollow. One lane climbs from the town into
 // the trees and forks: west to a mossy clearing (camp), east to the brutes'
-// meadow. Captain Rook's bandits hold the north thicket.
+// meadow. Captain Vask's bandits hold the north thicket.
 export default {
   id: 'thornwood-edge',
   kind: 'wild',
@@ -54,7 +54,7 @@ export default {
   ],
   boss: {
     id: 'bandit-captain',
-    name: 'Captain Rook’s camp',
+    name: 'Captain Vask’s camp',
     at: [24, 3],
     asset: 'enemy.boss.captain',
     types: ['thorn-stalker', 'grove-mender'],

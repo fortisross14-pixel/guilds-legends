@@ -66,8 +66,8 @@ export default {
     { id: 'lamp-2', asset: 'prop.lamp', at: [28, 14], size: [1, 1] },
   ],
   npcs: [
-    { id: 'innkeeper', name: 'Sella Rowan', role: 'Innkeeper', at: [14, 9], dialogue: 'dunmere.innkeeper' },
-    { id: 'merchant', name: 'Bram Hallow', role: 'Road merchant', at: [23, 14], dialogue: 'dunmere.merchant' },
+    { id: 'innkeeper', name: 'Mara Fen', role: 'Innkeeper', at: [14, 9], dialogue: 'dunmere.innkeeper' },
+    { id: 'merchant', name: 'Corwin Pell', role: 'Road merchant', at: [23, 14], dialogue: 'dunmere.merchant' },
     { id: 'fighter', name: 'Nia Voss', role: 'Local fighter', at: [24, 21], dialogue: 'dunmere.fighter' },
     { id: 'traveler', name: 'Iven Quill', role: 'Traveler', at: [4, 18], dialogue: 'dunmere.traveler' },
     { id: 'herald', name: 'Orren Pike', role: 'Herald', at: [7, 8], dialogue: 'dunmere.herald' },

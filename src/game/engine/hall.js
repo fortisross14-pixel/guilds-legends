@@ -135,7 +135,7 @@ export function rentBed(state) {
   next.guild.crowns -= RENTED_ROOM.bedCost;
   tallySpend(next, 'hall', RENTED_ROOM.bedCost);
   next.guild.hall.rentedBeds += 1;
-  addChronicle(next, { type: 'facility', importance: 1, title: 'Another bed upstairs', text: `Sella squeezes a ${next.guild.hall.rentedBeds}th bed into the rented room. The rent goes up.`, tags: ['hall'] });
+  addChronicle(next, { type: 'facility', importance: 1, title: 'Another bed upstairs', text: `Mara squeezes a ${next.guild.hall.rentedBeds}th bed into the rented room. The rent goes up.`, tags: ['hall'] });
   return { state: finalize(next), error: null };
 }
 

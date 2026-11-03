@@ -2,18 +2,18 @@
 import { patronChoices } from './patronTalk.js';
 const P = (id) => `portrait.dunmere.${id}`;
 
-// Bram speaks for the Dunmere Trade House (src/data/patrons.js).
+// Corwin speaks for the Dunmere Trade House (src/data/patrons.js).
 const TRADE = patronChoices('trade', 'Trade House', {
   ally: 'Allies. The House opens its books to you, and its warehouses.',
   partner: 'Partners. There is a charter contract on the board each month with your name on it.',
   contact: 'A name in the ledger, and a good one. Keep taking our work and the prices get kinder.',
   stranger: 'Honestly? A guild we have not done business with yet. Our contracts carry our seal on the board.',
-  gift: 'Bram weighs the purse and smiles. “The House notices courtesy.”',
+  gift: 'Corwin weighs the purse and smiles. “The House notices courtesy.”',
 });
 
 export default {
   'dunmere.innkeeper': {
-    speaker: 'Sella Rowan',
+    speaker: 'Mara Fen',
     portrait: P('innkeeper'),
     variants: [
       {
@@ -48,7 +48,7 @@ export default {
     ],
   },
   'dunmere.merchant': {
-    speaker: 'Bram Hallow',
+    speaker: 'Corwin Pell',
     portrait: P('merchant'),
     variants: [
       {
@@ -184,7 +184,7 @@ export default {
       },
       {
         lines: ['Are you the new banner? I light the plaza lamps. If you need to find someone, I know who walks where after dark.'],
-        choices: [{ text: 'Who should I meet?', reply: ['Bram by the Notice Board has a job. Sella at the Wayfarer knows everyone looking for one.'] }],
+        choices: [{ text: 'Who should I meet?', reply: ['Corwin by the Notice Board has a job. Mara at the Wayfarer knows everyone looking for one.'] }],
       },
     ],
   },

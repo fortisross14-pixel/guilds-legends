@@ -270,7 +270,7 @@ export const MISSION_TEMPLATES = [
     fame: [8, 16],
     roles: ['Striker', 'Captain'],
     tournament: true,
-    brief: 'Dunmere’s annual melee is the fastest route to public recognition. Rival guilds have begun scouting Mara Veyne.',
+    brief: 'Dunmere’s annual melee is the fastest route to public recognition. Rival guilds have begun scouting Tessaly Rune.',
     stakes: 'Place among the final four to complete a first-year objective.',
     choice: {
       prompt: 'A rival offers to arrange an easier quarterfinal draw in exchange for a future favor.',
@@ -654,7 +654,7 @@ export const MISSION_TEMPLATES = [
     brief: 'The undefeated Gate Champion accepts one challenger from a guild without a royal patron.',
     stakes: 'Begin a multi-year challenge against the seven most celebrated fighters of the age.',
     choice: {
-      prompt: 'The champion offers Mara a private deal: lose with dignity now and receive a place in the national circuit.',
+      prompt: 'The champion offers Tessaly a private deal: lose with dignity now and receive a place in the national circuit.',
       options: [
         {
           id: 'refuse',
@@ -1222,9 +1222,7 @@ export const RIVAL_ARCHETYPES = [
 
 export const FIRST_NAMES = [
   'Aela',
-  'Aldric',
   'Anwen',
-  'Bram',
   'Cassia',
   'Corin',
   'Dara',
@@ -1232,7 +1230,6 @@ export const FIRST_NAMES = [
   'Elian',
   'Elowen',
   'Fara',
-  'Garrick',
   'Hale',
   'Ilya',
   'Isolde',
@@ -1253,7 +1250,6 @@ export const FIRST_NAMES = [
   'Thane',
   'Ulric',
   'Vara',
-  'Wren',
   'Yara',
   'Zephan',
 ];
@@ -1276,7 +1272,6 @@ export const LAST_NAMES = [
   'Oakheart',
   'Pyre',
   'Quickwater',
-  'Rook',
   'Stone',
   'Thorn',
   'Vale',
@@ -1339,8 +1334,8 @@ export const HIDDEN_TRAITS = [
 
 export const STARTING_HEROES = [
   {
-    id: 'mara-veyne',
-    name: 'Mara Veyne',
+    id: 'tessaly-rune',
+    name: 'Tessaly Rune',
     classId: 'Duelist',
     age: 22,
     power: 58,

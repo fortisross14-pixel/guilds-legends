@@ -43,7 +43,7 @@ export default {
         lines: ['Lantern light in the Blackwood again. The wardens will not go near it. If your guild does, go together.'],
       },
       {
-        lines: ['North of here is the Thornwood edge. Stalkers in the brush, and a bandit crew in the meadow that thinks it is clever.', 'Their captain, Rook, keeps to the north thicket behind a wall of shields. When the shield drops, run or finish it.'],
+        lines: ['North of here is the Thornwood edge. Stalkers in the brush, and a bandit crew in the meadow that thinks it is clever.', 'Their captain, Vask, keeps to the north thicket behind a wall of shields. When the shield drops, run or finish it.'],
         choices: [{ text: 'Thanks for the warning.', effects: [{ relationship: 1 }] }],
       },
     ],

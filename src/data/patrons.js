@@ -31,7 +31,7 @@ export const PATRONS = {
     short: 'Trade House',
     home: 'dunmere',
     crest: 'crest.patron.trade',
-    rep: { name: 'Bram Hallow', role: 'Road merchant', portrait: 'portrait.dunmere.merchant', dialogue: 'dunmere.merchant' },
+    rep: { name: 'Corwin Pell', role: 'Road merchant', portrait: 'portrait.dunmere.merchant', dialogue: 'dunmere.merchant' },
     about: 'Money, caravans and merchant contracts. They like a guild that turns a profit and keeps the roads open.',
     families: ['Political', 'Investigation', 'Tournament'],
     // Working for the Trade House undercuts the Smiths and worries the Temple.
