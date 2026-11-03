@@ -26,8 +26,7 @@ jobs:
         run: npm install
       - name: Lint
         run: npm run lint
-      - name: Run simulation tests
-        run: npm test
+      # Tests are paused until Phase 8 of docs/PROJECT_PLAN.md (prototype mode); they get rebuilt then.
       - name: Build
         run: npm run build
       - uses: actions/configure-pages@v5

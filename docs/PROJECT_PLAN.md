@@ -229,7 +229,7 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - Placeholder fallback stays, so art can arrive in batches.
 
 ### Phase 8 — Polish, balance and testing
-- Turn the safety net back on: restore the full testing policy, add tests for the new systems, and run `npm run sim` for balance (the slice should take 2–3 hours; promotion near the end).
+- Turn the safety net back on: restore the full testing policy, put `npm test` back in `.github/workflows/deploy-pages.yml` (removed after Phase 3), add tests for the new systems, and run `npm run sim` for balance (the slice should take 2–3 hours; promotion near the end).
 - Touch QA on phone and tablet sizes, performance (60 fps in walkable scenes on a mid-range phone), save stability.
 - Then the Impeccable pass once real art has arrived.
 
