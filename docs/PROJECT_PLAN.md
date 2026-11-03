@@ -70,7 +70,7 @@ The seven pillars, and how the slice delivers each one:
 
 ## 4. Phases
 
-One phase per agent session. Each phase ends with a playable build pushed to `main` and a short summary. Prototype-mode testing rules from `CLAUDE.md` apply until Phase 8.
+One phase per agent session. Each phase ends with a playable build pushed to `main` and a short summary. **Until Phase 8 the only checks are: `npm run build` succeeds, and the GitHub Pages deploy succeeds.** No tests, playthroughs, device checks or screenshots (see `CLAUDE.md`).
 
 ### Phase 0 — Foundations and touch (do first)
 - **Skills:**
@@ -90,7 +90,7 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
   - crisp text: render HUD text in React over the canvas, or use integer scaling
 - **Asset registry** plus placeholder component (React) and placeholder textures (Phaser). Start `docs/ASSETS.md`.
 - **Slice flag:** hide out-of-slice systems and locations.
-- **Done when:** the opening room and Dunmere play smoothly by touch on a phone, with no "Space" anywhere and no restarts on state change.
+- **Done when:** the build and deploy succeed. The player checks the touch feel on their own device.
 
 ### Phase 1 — Explore: towns, interiors, NPCs and the world map
 - Walkable **Dunmere, Greenhollow, Ironford**, built from small tile layouts (use the `tilemaps` and `level-design` skills): streets, doors, 5–8 NPCs each, and a few points of interest (a well, a statue, a notice board).
@@ -197,6 +197,7 @@ Phase 0 → Phase 1 → Phase 2 ┐
 Phases 2–5 can run in any order after Phase 1. Phase 6 needs the towns, combat and growth in place. Phase 7 can be updated continuously but is finalized last.
 
 ## 6. Rules for every phase
+- Testing: only `npm run build` and a successful GitHub Pages deploy until Phase 8. No playthroughs or screenshots.
 - Touch first: design every interaction for a thumb on a 390px phone, then check tablet and desktop.
 - No keyboard-only actions and no hover-only information.
 - Placeholders through the asset registry, never hard-coded colors standing in for art.

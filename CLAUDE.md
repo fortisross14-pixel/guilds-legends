@@ -24,15 +24,16 @@ launchMission: (id, formation, assignments) =>
 
 The UI calls an engine function and gets `{ state, error }`. `applyResult` shows the error, or passes the new state to `commitState`. `commitState` runs `validateGame` and then `setState`, and autosave writes the slot about 0.7 s later. Screens receive `{ state, actions, navigate, slot }` and must not modify `state` directly.
 
-## Testing policy (prototype mode, until all GAME_VISION waves are done)
+## Testing policy (prototype mode, until Phase 8 of docs/PROJECT_PLAN.md)
 
-- **Do NOT write new tests.** Do NOT run the full suite, long simulations, balance, performance, typecheck or e2e tests. Each wave will rework the previous one, so that effort is wasted now.
-- After a change, only do a quick sanity check:
-  - `npm run build` must succeed.
-  - If you touched engine logic, run `npm run test:fast` once. If old tests break because of an intended design change, delete or update those tests. Don't work around the design to keep them passing.
-- Then commit and push to `main`.
-- Balance, performance, visual, save-compatibility and full regression testing happen once, after the final wave.
-- If the same check fails twice in a row, stop and report what is failing. Don't loop on retries.
+The game is an early prototype and changes completely between phases. Tests written now get thrown away.
+
+- **The only checks:**
+  1. `npm run build` succeeds.
+  2. After pushing to `main`, the "Deploy to GitHub Pages" workflow run succeeds.
+- **Do NOT** write tests, run test suites (including `test:fast`), simulations, balance or performance checks, Playwright, browser or device playthroughs, or take screenshots. This includes "quick" phone or touch runs.
+- If old tests or lint rules break because of an intended change, leave the tests alone; they get rebuilt in Phase 8. Fix lint only if it blocks the build or deploy.
+- If the build or deploy fails twice in a row, stop and report what is failing. Don't loop on retries.
 
 ## Commands
 
