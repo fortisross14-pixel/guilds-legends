@@ -16,6 +16,7 @@ import {
 import { NemesisView, ReputationView } from './RivalryScreens.jsx';
 import { Badge, Button, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline, Tabs } from '../components/UI.jsx';
 import { ConnectionsPage, IdentityStrip, PathPanel } from './IdentityScreens.jsx';
+import { HallOfFame, LadderHistoryPanel, RecordBook } from './HistoryScreens.jsx';
 
 const LADDER_COPY = {
   strength: 'Current power: the average of each guild’s top five heroes. Moves fast.',
@@ -60,6 +61,7 @@ function GuildLadders({ state, actions }) {
           ))}
         </div>
       </div>
+      <LadderHistoryPanel state={state} />
       <LadderPicker ladder={ladder} setLadder={setLadder} />
       <div className="scope-picker">
         {['Regional', 'National', 'Global'].map((item) => (
@@ -433,6 +435,8 @@ export default function RankingsScreen({ state, actions }) {
           { id: 'connections', label: 'Connections', icon: '✉' },
           { id: 'guilds', label: 'Guild ladders', icon: '⚑' },
           { id: 'heroLadders', label: 'Hero ladders', icon: '♟' },
+          { id: 'records', label: 'Record book', icon: '✦' },
+          { id: 'hall', label: 'Hall of fame', icon: '♛' },
           { id: 'heroes', label: 'All-time greats', icon: '✦' },
           { id: 'tournaments', label: 'Tournament legends', icon: '♛' },
           { id: 'reputation', label: 'Reputation', icon: '❖' },
@@ -445,6 +449,8 @@ export default function RankingsScreen({ state, actions }) {
       {tab === 'connections' ? <ConnectionsPage state={state} actions={actions} /> : null}
       {tab === 'guilds' ? <GuildLadders state={state} actions={actions} /> : null}
       {tab === 'heroLadders' ? <HeroLadders state={state} actions={actions} /> : null}
+      {tab === 'records' ? <RecordBook state={state} actions={actions} /> : null}
+      {tab === 'hall' ? <HallOfFame state={state} actions={actions} /> : null}
       {tab === 'reputation' ? <ReputationView state={state} /> : null}
       {tab === 'rivals' ? <NemesisView state={state} actions={actions} initialRivalId={rivalFocus} /> : null}
       {tab === 'heroes' ? <HeroGoat state={state} actions={actions} /> : null}

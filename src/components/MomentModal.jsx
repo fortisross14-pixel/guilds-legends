@@ -3,6 +3,8 @@ import { Badge, Button, CountUp, HeroPortrait, Modal, PrimalBadge, RankChange, R
 import PixelIcon from './PixelIcon.jsx';
 import Asset from './Asset.jsx';
 import { Dialogue } from './EventCardModal.jsx';
+import { SeasonReview } from '../screens/HistoryScreens.jsx';
+import { getSeasonReview } from '../game/engine.js';
 
 // Reward effect sprites from public/art/effects.
 const FX = { sparkle: 'effect_12', burst: 'effect_10' };
@@ -24,7 +26,8 @@ function Ceremony({ fx = 'sparkle', children }) {
   );
 }
 
-// Reward moments: victory, level up, rankings, status title, nemesis and recruit.
+// Reward moments: victory, level up, rankings, status title, nemesis, recruit,
+// a broken record and the end-of-year season review.
 // A click anywhere on a ceremony finishes its animation.
 export default function MomentModal({ moment, state, onClose }) {
   const [skipped, setSkipped] = useState(null);
@@ -127,9 +130,7 @@ export default function MomentModal({ moment, state, onClose }) {
     return (
       <Modal open title={`${moment.name} reached level ${moment.levelAfter}`} eyebrow="Level up" onClose={onClose} width="medium" className="modal--ceremony">
         <div className={`moment moment--level-up ${skipClass}`} onClick={skip}>
-          <Ceremony fx={null}>
-            {hero ? <HeroPortrait hero={hero} size="lg" /> : null}
-          </Ceremony>
+          <Ceremony fx={null}>{hero ? <HeroPortrait hero={hero} size="lg" /> : null}</Ceremony>
           <p className="moment__headline">Level {moment.levelAfter}</p>
           <ul className="moment__stats">
             {Object.entries(moment.statGains || {}).map(([key, delta]) => (
@@ -217,6 +218,33 @@ export default function MomentModal({ moment, state, onClose }) {
           <p className="muted">See the head-to-head record and issue challenges at the Herald (Rivals & nemeses).</p>
           <Button variant="primary" onClick={onClose}>
             Bring it on
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (moment.type === 'seasonReview') {
+    return <SeasonReview key={moment.id} review={getSeasonReview(state, moment.year)} onClose={onClose} />;
+  }
+
+  if (moment.type === 'record') {
+    return (
+      <Modal open title={moment.label} eyebrow="Record broken!" onClose={onClose} width="medium" className="modal--ceremony">
+        <div className={`moment moment--record ${skipClass}`} onClick={skip}>
+          <Ceremony fx="burst">
+            <span className="moment__fanfare">
+              <Asset id="trophy.record" alt="" />
+            </span>
+          </Ceremony>
+          <p className="moment__headline">Record broken!</p>
+          <p className="moment__record-value num">{moment.display}</p>
+          <p>
+            <strong>{moment.holder}</strong> takes the record from {moment.previous}.
+          </p>
+          <p className="muted">The Herald keeps the record book.</p>
+          <Button variant="primary" onClick={onClose}>
+            Continue
           </Button>
         </div>
       </Modal>

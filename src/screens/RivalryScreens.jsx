@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getNemesisView, getReputationSummary, nemesisIds, rivalRecord } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
+import { HeadToHeadPanel } from './HistoryScreens.jsx';
 
 // Herald → Reputation: families (with perks) and regions.
 export function ReputationView({ state }) {
@@ -141,6 +142,7 @@ export function NemesisView({ state, actions, initialRivalId = null }) {
           )}
         </Panel>
       ) : null}
+      {rivalId ? <HeadToHeadPanel state={state} rivalId={rivalId} /> : null}
     </div>
   );
 }

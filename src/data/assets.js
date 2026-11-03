@@ -115,6 +115,17 @@ const LIST = [
   ...CHARTER_LIST.map((charter) => ({ id: charter.crest, group: 'crest', path: `art/crests/charter-${charter.id}.png`, w: 128, h: 128, use: `Charter crest: ${charter.name} (new game, top bar, Herald)` })),
   ...PATRON_LIST.map((patron) => ({ id: patron.crest, group: 'crest', path: `art/crests/patron-${patron.id}.png`, w: 128, h: 128, use: `Patron crest: ${patron.name} (Connections)` })),
 
+  // History (Phase 5): the season review backdrop, award badges and record-book trophies.
+  { id: 'bg.season.review', group: 'bg', path: 'art/bg/season-review.png', borrow: scene(9), ...SCENE, use: 'Season review cards (end of each year, re-opened from the record book)' },
+  ...[
+    ['award.mvp', 'MVP of the season (review, career tab, hall of fame)'],
+    ['award.rookie', 'Rookie of the year'],
+    ['award.signing', 'Best signing of the year'],
+    ['trophy.title', 'Tournament title (season review, record book)'],
+    ['trophy.record', 'Record broken (moment, record book)'],
+    ['trophy.hall', 'Hall of fame plaque'],
+  ].map(([id, use]) => ({ id, group: 'ui', path: `art/awards/${id.replace('.', '-')}.png`, w: 64, h: 64, use })),
+
   // Interface art.
   { id: 'ui.overworld', group: 'ui', path: 'ui/overworld.png', w: 200, h: 125, use: 'World map terrain' },
 ];

@@ -21,32 +21,12 @@ button.chronicle-event__content:hover, button.chronicle-event__content:focus-vis
 .founder-portraits { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 .founder-portraits button { display: grid; justify-items: center; gap: 4px; padding: 8px 6px 8px 24px; }
 .founder-portraits strong { font-size: var(--t-label); text-align: center; }
-.report-archive { display: grid; }
-.report-archive > button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 8px 10px 8px 30px; border-bottom: 1px solid var(--line-soft); }
-.report-archive__seal { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line-soft); background: var(--panel-deep); color: var(--gold); }
-.report-archive > button > div { display: flex; flex-direction: column; min-width: 0; }
-.report-archive > button h3 { order: -1; margin: 0; font-size: 18px; }
-.report-archive > button p { margin: 2px 0 0; font-size: var(--t-small); }
-.report-archive > button > i { color: var(--text-faint); font-style: normal; }
 .era-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .era-grid article { padding: 10px 12px; }
 .era-year { color: var(--gold); font-family: var(--font-display); font-size: 30px; font-weight: 700; }
 .era-grid h3 { margin: 4px 0; }
 .era-grid p { font-size: var(--t-small); }
 .era-grid article > div { display: flex; flex-wrap: wrap; gap: 4px; }
-.hall-of-fame { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 14px; }
-.hall-of-fame > button { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 10px; padding: 6px 8px 6px 28px; border-bottom: 1px solid var(--line-soft); }
-.hall-of-fame > button.podium { grid-column: span 2; padding-top: 10px; padding-bottom: 10px; }
-.hall-of-fame > button.podium .hall-of-fame__rank { color: var(--gold); }
-.hall-of-fame__rank { color: var(--text-faint); font-size: 20px; }
-.hall-of-fame h3 { margin: 0; }
-.hall-of-fame p { margin: 2px 0; font-size: var(--t-small); }
-.hall-of-fame > button > strong { color: var(--gold); font-size: 20px; }
-.record-book { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
-.record-holder { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 4px 6px 4px 28px; }
-.record-holder h3 { margin: 0; }
-.record-holder p { margin: 2px 0 0; font-size: var(--t-small); }
-.record-holder > strong { color: var(--gold); font-size: 24px; }
 
 /* Calendar: one window, weeks as rows. */
 .calendar { display: grid; margin-bottom: var(--s4); padding: 6px 12px 12px; }
@@ -113,11 +93,9 @@ button.quest-row { padding-left: 28px; padding-right: 8px; }
 @media (max-width: 1099px) {
   .chronicle-layout { grid-template-columns: 1fr; }
   .chronicle-sidebar { position: static; }
-  .record-book { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 759px) {
-  .era-grid, .hall-of-fame, .record-book { grid-template-columns: 1fr; }
-  .hall-of-fame > button.podium { grid-column: auto; }
+  .era-grid { grid-template-columns: 1fr; }
   .calendar { padding: 4px 8px 8px; }
   .calendar__header { flex-wrap: wrap; }
   .calendar__header h2 { order: -1; flex-basis: 100%; }
@@ -125,6 +103,4 @@ button.quest-row { padding-left: 28px; padding-right: 8px; }
   .calendar__week h3 { padding-top: 0; }
   .calendar__week.is-today { margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
   .calendar__week > .button { justify-self: start; }
-  .report-archive > button { grid-template-columns: auto 1fr; }
-  .report-archive > button > i { display: none; }
 }

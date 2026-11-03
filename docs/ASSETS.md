@@ -18,6 +18,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `bg.town.greenhollow` | `art/bg/town-greenhollow.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Greenhollow town directory |
 | `bg.town.ironford` | `art/bg/town-ironford.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Ironford town directory |
 | `bg.town.default` | `art/bg/town-default.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Any other town directory |
+| `bg.season.review` | `art/bg/season-review.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Season review cards (end of each year, re-opened from the record book) |
 
 ## Building exterior (`building`, placeholder #5a4636)
 
@@ -236,6 +237,12 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
+| `award.mvp` | `art/awards/award-mvp.png` | 64×64 | — | placeholder | MVP of the season (review, career tab, hall of fame) |
+| `award.rookie` | `art/awards/award-rookie.png` | 64×64 | — | placeholder | Rookie of the year |
+| `award.signing` | `art/awards/award-signing.png` | 64×64 | — | placeholder | Best signing of the year |
+| `trophy.title` | `art/awards/trophy-title.png` | 64×64 | — | placeholder | Tournament title (season review, record book) |
+| `trophy.record` | `art/awards/trophy-record.png` | 64×64 | — | placeholder | Record broken (moment, record book) |
+| `trophy.hall` | `art/awards/trophy-hall.png` | 64×64 | — | placeholder | Hall of fame plaque |
 | `ui.overworld` | `ui/overworld.png` | 200×125 | — | ready | World map terrain |
 
 ## Enemy on the map (`enemy`, placeholder #7a3a22)

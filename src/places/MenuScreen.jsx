@@ -9,13 +9,16 @@ import CalendarScreen from './CalendarScreen.jsx';
 import QuestLogScreen from './QuestLogScreen.jsx';
 import { BestiaryScreen, NewsScreen } from './NewsScreen.jsx';
 import { sliceHides } from '../data/slice.js';
+import { MissionLog, SeasonReviewsPage } from '../screens/HistoryScreens.jsx';
 
 const PAGES = [
   { id: 'calendar', name: 'Calendar', icon: '▦', description: 'Weeks ahead: tournaments, company returns, wage days. Advance to a date.' },
   { id: 'news', name: 'News', icon: '✉', description: 'Town talk, side-job results and world events.' },
   { id: 'quests', name: 'Quest log', icon: '✎', description: 'Active contracts, open promises and current objectives.' },
   { id: 'settings', name: 'Campaign settings', icon: '⚙', description: 'Save, export or import the campaign, rename the guild, preferences.' },
-  { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline, field reports, eras and the hall of fame.' },
+  { id: 'chronicle', name: 'Chronicle', icon: '▤', description: 'The living history: timeline and era summaries.' },
+  { id: 'log', name: 'Mission log', icon: '⌖', description: 'Every contract, boss fight and tournament run. Filter and open any report.' },
+  { id: 'seasons', name: 'Season reviews', icon: '◷', description: 'Each finished year: record, awards, best moments and ladder movement.' },
   { id: 'codex', name: 'Codex', icon: '✓', description: 'Goals, promotion path, achievements and the bestiary.' },
 ];
 
@@ -70,6 +73,8 @@ export default function MenuScreen({ state, actions, navigate, slot, place, setP
       {page.id === 'settings' ? <SettingsScreen {...props} /> : null}
       {page.id === 'chronicle' ? <ChronicleScreen {...props} /> : null}
       {page.id === 'calendar' ? <CalendarScreen {...props} /> : null}
+      {page.id === 'log' ? <MissionLog {...props} /> : null}
+      {page.id === 'seasons' ? <SeasonReviewsPage {...props} /> : null}
       {page.id === 'quests' ? <QuestLogScreen {...props} /> : null}
       {page.id === 'news' ? <NewsScreen {...props} /> : null}
       {page.id === 'codex' ? (
