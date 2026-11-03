@@ -1,4 +1,5 @@
 import { rows } from '../tiles.js';
+import { AREA_BOSSES } from '../enemies.js';
 
 // The Blackwood: dead trees and black mud past the Old Road. Locked until the
 // Blackwood story opens it. A path leads from the east edge to the hollow
@@ -50,18 +51,19 @@ export default {
   enemies: [
     { id: 'hollow-knights', name: 'Hollow knights', at: [24, 4], asset: 'enemy.group.hollow', types: ['hollow-knight', 'veil-shade'], count: 3, level: 5, power: 56, reward: { gold: [50, 80], xp: 45 } },
     { id: 'shades', name: 'Veil shades', at: [20, 11], asset: 'enemy.group.shades', types: ['veil-shade', 'mind-leech'], count: 3, level: 5, power: 58, reward: { gold: [55, 85], xp: 48 } },
-    { id: 'leeches', name: 'Mind leeches', at: [8, 9], asset: 'enemy.group.shades', types: ['mind-leech', 'dream-weaver'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
+    { id: 'leeches', name: 'Mind leeches and a weaver', at: [8, 9], asset: 'enemy.group.shades', types: ['mind-leech', 'dream-weaver'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
+    { id: 'hulks', name: 'Void hulks', at: [28, 13], asset: 'enemy.group.hollow', types: ['void-hulk', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
   ],
   boss: {
     id: 'lantern-brood',
     name: 'The Lantern-eater’s brood',
     at: [6, 14],
     asset: 'enemy.boss.brood',
-    types: ['hollow-knight', 'void-hulk'],
+    types: ['veil-shade', 'mind-leech'],
     count: 3,
     level: 7,
     power: 64,
-    boss: { name: 'Brood of the Lantern-eater', role: 'tank', sprite: 'enemy_10', skills: ['bulwark', 'earthshaker'], intro: 'Lantern light gathers into a shape that remembers being hungry.' },
+    boss: AREA_BOSSES['lantern-brood'],
     respawnWeeks: 20,
     reward: { gold: [160, 220], xp: 110, items: { 'phoenix-feather': 1 } },
   },

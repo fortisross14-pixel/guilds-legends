@@ -1,4 +1,5 @@
 import { rows } from '../tiles.js';
+import { AREA_BOSSES } from '../enemies.js';
 
 // The Old Road west of Dunmere. Teach → test: a lone pack near the entrance,
 // a second pack deeper in, a rest at the roadside camp, then the wolf den.
@@ -45,22 +46,24 @@ export default {
   exit: { at: [35, 8], size: [1, 1], name: 'Back to Dunmere' },
   camp: { at: [6, 5], size: [2, 2], name: 'Roadside camp' },
   props: [{ id: 'milestone', asset: 'prop.milestone', at: [29, 7], size: [1, 1], poi: { name: 'Old milestone', verb: 'Inspect', dialogue: 'wild.oldroad.milestone' } }],
+  // Before the Wolves contract: two wolf packs and bandit lookouts. After it: the bandits move in.
   enemies: [
-    { id: 'wolves-near', name: 'Grey wolf pack', at: [26, 10], asset: 'enemy.group.wolves', types: ['grey-wolf'], count: 2, level: 1, power: 36, if: { oldRoadCleared: false }, reward: { gold: [12, 24], xp: 18 } },
-    { id: 'wolves-deep', name: 'Hungry wolf pack', at: [14, 12], asset: 'enemy.group.wolves', types: ['grey-wolf', 'road-bandit'], count: 3, level: 2, power: 40, if: { oldRoadCleared: false }, reward: { gold: [18, 34], xp: 24 } },
-    { id: 'bandits', name: 'Bandit lookouts', at: [24, 4], asset: 'enemy.group.bandits', types: ['road-bandit', 'shield-thug'], count: 3, level: 2, power: 42, if: { oldRoadCleared: true }, reward: { gold: [30, 50], xp: 26 } },
-    { id: 'hedge-witch', name: 'Hedge witch and thugs', at: [20, 15], asset: 'enemy.group.bandits', types: ['hedge-witch', 'shield-thug'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [34, 56], xp: 30 } },
+    { id: 'wolves-near', name: 'Grey wolf pair', at: [26, 10], asset: 'enemy.group.wolves', types: ['grey-wolf'], count: 2, level: 1, power: 36, if: { oldRoadCleared: false }, reward: { gold: [12, 24], xp: 18 } },
+    { id: 'wolf-pack', name: 'Wolf pack and a bandit', at: [14, 12], asset: 'enemy.group.wolves', types: ['grey-wolf', 'road-bandit'], count: 3, level: 2, power: 40, if: { oldRoadCleared: false }, reward: { gold: [18, 34], xp: 24 } },
+    { id: 'bandit-lookouts', name: 'Bandit lookouts', at: [24, 4], asset: 'enemy.group.bandits', types: ['road-bandit', 'shield-thug'], count: 3, level: 2, power: 42, reward: { gold: [30, 50], xp: 26 } },
+    { id: 'hedge-witch', name: 'Hedge witch and guards', at: [20, 15], asset: 'enemy.group.witch', types: ['hedge-witch', 'shield-thug', 'field-priest'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [34, 56], xp: 30 } },
+    { id: 'renegades', name: 'Renegade priest’s band', at: [31, 15], asset: 'enemy.group.bandits', types: ['field-priest', 'road-bandit', 'grey-wolf'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [34, 56], xp: 30 } },
   ],
   boss: {
-    id: 'den-matron',
-    name: 'The Grey Matron’s den',
+    id: 'grey-alpha',
+    name: 'The Grey Alpha’s den',
     at: [4, 15],
-    asset: 'enemy.boss.matron',
+    asset: 'enemy.boss.alpha',
     types: ['grey-wolf'],
-    count: 3,
+    count: 2,
     level: 3,
     power: 46,
-    boss: { name: 'The Grey Matron', role: 'brute', sprite: 'enemy_02', skills: ['lunge'], intro: 'A scarred she-wolf rises from the mud, twice the size of her pack.' },
+    boss: AREA_BOSSES['grey-alpha'],
     respawnWeeks: 16,
     reward: { gold: [80, 120], xp: 60, items: { 'hi-potion': 1 } },
   },

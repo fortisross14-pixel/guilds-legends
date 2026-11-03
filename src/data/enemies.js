@@ -2,14 +2,25 @@
 // roster (scaled by difficulty and risk). Sprites are public/art/enemies/enemy_NN.png;
 // with 16 images, types reuse sprites with different names, stats and primals.
 
-/** Stat multipliers and base class (for skills) per role. */
+/**
+ * Stat multipliers, base class (for skills) and behavior profile per role.
+ * Profiles (src/game/combat.js, planFor):
+ *   brute       hits the hero with the lowest defense; enrages below 40% HP
+ *   caster      casts at the hero weak to its primal; retreats behind allies when hurt
+ *   healer      heals the most-damaged ally; buffs when everyone is healthy
+ *   skirmisher  picks off the lowest-HP hero; may flee when left alone
+ *   tank        guards allies and taunts
+ */
 export const ENEMY_ROLES = {
-  brute: { classId: 'Guardian', mods: { hp: 1.15, atk: 1.25, def: 1, mag: 0.7, spd: 0.9 } },
-  swift: { classId: 'Rogue', mods: { hp: 0.85, atk: 1.05, def: 0.8, mag: 0.8, spd: 1.4 } },
-  caster: { classId: 'Mage', mods: { hp: 0.8, atk: 0.7, def: 0.8, mag: 1.35, spd: 1 } },
-  healer: { classId: 'Cleric', mods: { hp: 0.95, atk: 0.7, def: 0.9, mag: 1.1, spd: 0.95 } },
-  tank: { classId: 'Guardian', mods: { hp: 1.5, atk: 0.85, def: 1.45, mag: 0.7, spd: 0.8 } },
+  brute: { classId: 'Guardian', profile: 'brute', mods: { hp: 1.15, atk: 1.25, def: 1, mag: 0.7, spd: 0.9 } },
+  swift: { classId: 'Rogue', profile: 'skirmisher', mods: { hp: 0.85, atk: 1.05, def: 0.8, mag: 0.8, spd: 1.4 } },
+  caster: { classId: 'Mage', profile: 'caster', mods: { hp: 0.8, atk: 0.7, def: 0.8, mag: 1.35, spd: 1 } },
+  healer: { classId: 'Cleric', profile: 'healer', mods: { hp: 0.95, atk: 0.7, def: 0.9, mag: 1.1, spd: 0.95 } },
+  tank: { classId: 'Guardian', profile: 'tank', mods: { hp: 1.5, atk: 0.85, def: 1.45, mag: 0.7, spd: 0.8 } },
 };
+
+/** Profile for enemies built from real heroes (rival guilds, duels). */
+export const CLASS_PROFILES = { Guardian: 'tank', Duelist: 'brute', Ranger: 'skirmisher', Rogue: 'skirmisher', Cleric: 'healer', Mage: 'caster', Scholar: 'caster', Artificer: 'caster' };
 
 // [id, name, role, sprite, abilities]
 const ROSTERS = {
@@ -17,14 +28,14 @@ const ROSTERS = {
     ['road-bandit', 'Road Bandit', 'swift', 1, ['backstab']],
     ['grey-wolf', 'Grey Wolf', 'brute', 2, ['lunge']],
     ['hedge-witch', 'Hedge Witch', 'caster', 3, ['bolt', 'sleep']],
-    ['field-priest', 'Renegade Priest', 'healer', 4, ['cure']],
+    ['field-priest', 'Renegade Priest', 'healer', 4, ['cure', 'war-chant']],
     ['shield-thug', 'Shield Thug', 'tank', 5, ['taunt']],
   ],
   'Verdant Marches': [
     ['thorn-stalker', 'Thorn Stalker', 'swift', 6, ['poison-arrow']],
     ['bark-brute', 'Barkhide Brute', 'brute', 7, ['shield-bash']],
     ['spore-caller', 'Spore Caller', 'caster', 8, ['storm', 'sleep']],
-    ['grove-mender', 'Grove Mender', 'healer', 9, ['cure', 'cura']],
+    ['grove-mender', 'Grove Mender', 'healer', 9, ['cure', 'renew']],
     ['moss-golem', 'Moss Golem', 'tank', 10, ['bulwark']],
   ],
   'Ember Coast': [
@@ -60,7 +71,7 @@ const ROSTERS = {
     ['veil-shade', 'Veil Shade', 'swift', 16, ['backstab', 'venom']],
     ['mind-leech', 'Mind Leech', 'caster', 3, ['mind-spike']],
     ['hollow-knight', 'Hollow Knight', 'tank', 5, ['bulwark']],
-    ['dream-weaver', 'Dream Weaver', 'healer', 8, ['cura']],
+    ['dream-weaver', 'Dream Weaver', 'healer', 8, ['cura', 'renew']],
     ['void-hulk', 'Void Hulk', 'brute', 10, ['earthshaker']],
   ],
 };
@@ -150,9 +161,51 @@ export const STORY_BOSS = {
   skills: ['boss-lantern-eater', 'earthshaker', 'bulwark'],
   trophy: null,
   intro: '“The Broken Lantern came here once. Its light still feeds me.”',
+  charge: { skill: 'lantern-nova', every: 4 },
+  phases: [{ at: 0.5, banner: 'The Warden’s lanterns blaze white. It charges faster now.', charge: { skill: 'lantern-nova', every: 2 }, statuses: { atkUp: 9 } }],
+};
+
+/**
+ * Wild-area bosses with phase scripts. A phase starts when the boss drops
+ * below `at` of its max HP: it shows `banner` and can summon allies, change
+ * the boss's profile, add statuses, favour an area skill, or change the
+ * charged attack (`charge`: charge for a round, then release the skill).
+ */
+export const AREA_BOSSES = {
+  'grey-alpha': {
+    id: 'grey-alpha',
+    name: 'The Grey Alpha',
+    role: 'brute',
+    sprite: 'enemy_02',
+    skills: ['lunge'],
+    intro: 'A scarred wolf twice the size of the pack rises from the mud. Its eyes find the weakest of you.',
+    phases: [{ at: 0.5, banner: 'The Alpha howls, and the pack answers!', summon: { type: 'grey-wolf', count: 2 } }],
+  },
+  'bandit-captain': {
+    id: 'bandit-captain',
+    name: 'Captain Rook',
+    role: 'tank',
+    sprite: 'enemy_05',
+    skills: ['taunt', 'shield-bash', 'blade-dance'],
+    intro: '“Shields up, lads. Let them tire themselves out.”',
+    phases: [{ at: 0.5, banner: 'Rook throws the shield aside: “Enough. Cut them down!”', profile: 'brute', statuses: { atkUp: 9 }, areaSkill: 'blade-dance' }],
+  },
+  'lantern-brood': {
+    id: 'lantern-brood',
+    name: 'Brood of the Lantern-eater',
+    role: 'tank',
+    sprite: 'enemy_10',
+    skills: ['boss-lantern-eater', 'bulwark'],
+    intro: 'Lantern light gathers into a shape that remembers being hungry.',
+    charge: { skill: 'lantern-nova', every: 4 },
+    phases: [{ at: 0.5, banner: 'The light swells. It draws breath faster now.', profile: 'caster', charge: { skill: 'lantern-nova', every: 2 } }],
+  },
 };
 
 export const BOSS_LIST = [...Object.values(BOSSES), STORY_BOSS];
+
+/** Every roster type by id (for summons and wild groups). */
+export const ENEMY_TYPES = Object.fromEntries(Object.values(REGION_ENEMIES).flat().map((enemy) => [enemy.id, enemy]));
 
 export function regionRoster(region) {
   return REGION_ENEMIES[region] || REGION_ENEMIES.Crownlands;

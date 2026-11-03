@@ -22,6 +22,8 @@ export const ASSET_GROUPS = {
   portrait: { label: 'Portrait', fill: '#6a4a5e', ink: '#fbe3f1' },
   enemy: { label: 'Enemy on the map', fill: '#7a3a22', ink: '#ffe0cc' },
   tileset: { label: 'Tileset', fill: '#3a3a3a', ink: '#ffffff' },
+  fx: { label: 'Battle effect', fill: '#5a2a6a', ink: '#f6dcff' },
+  battler: { label: 'Battle sprite', fill: '#6a3a1a', ink: '#ffe6cc' },
   missing: { label: 'Unregistered', fill: '#7a1f6e', ink: '#ffd6f6' },
 };
 
@@ -77,6 +79,24 @@ const LIST = [
   { id: 'prop.gather.herb', group: 'prop', path: 'art/walk/props/gather-herb.png', w: 28, h: 28, use: 'Gathering spot: herbs' },
   { id: 'prop.gather.ore', group: 'prop', path: 'art/walk/props/gather-ore.png', w: 28, h: 28, use: 'Gathering spot: ore and shards' },
   { id: 'prop.gather.coin', group: 'prop', path: 'art/walk/props/gather-coin.png', w: 28, h: 28, use: 'Gathering spot: coin pouches' },
+
+  // Battle effects (played over a target). Each borrows the closest existing effect until its own file exists.
+  ...[
+    ['slash', 14, 'Physical hit: slash'],
+    ['pierce', 7, 'Physical hit: arrows, daggers'],
+    ['fire', 1, 'Fire spells, burn ticks, bombs'],
+    ['ice', 2, 'Water spells (ice)'],
+    ['lightning', 6, 'Air, Iron and other spells (lightning)'],
+    ['heal', 8, 'Heals, revives, regen ticks'],
+    ['buff', 9, 'Buffs, guard, taunt'],
+    ['debuff', 13, 'Debuffs, stuns, charging'],
+    ['poison', 11, 'Poison ticks'],
+  ].map(([id, n, use]) => ({ id: `fx.${id}`, group: 'fx', path: `art/fx/${id}.png`, borrow: `art/effects/effect_${String(n).padStart(2, '0')}.png`, w: 152, h: 130, use })),
+  // Enemy battle sprites (the turn order bar uses them too).
+  ...Array.from({ length: 16 }, (_, index) => {
+    const n = String(index + 1).padStart(2, '0');
+    return { id: `battle.enemy_${n}`, group: 'battler', path: `art/enemies/enemy_${n}.png`, w: 320, h: 288, use: `Enemy battle sprite ${n} (see src/data/enemies.js rosters)` };
+  }),
 
   // Interface art.
   { id: 'ui.overworld', group: 'ui', path: 'ui/overworld.png', w: 200, h: 125, use: 'World map terrain' },

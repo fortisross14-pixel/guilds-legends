@@ -3,16 +3,22 @@
 // target: 'enemy' | 'allEnemies' | 'ally' | 'allAllies' | 'self' | 'koAlly'
 // effect: 'damage' | 'heal' | 'buff' | 'status' | 'revive' | 'cure' | 'steal'
 // physical: damage uses attack vs defense; otherwise magic vs reduced defense.
-// status: { type: 'stun' | 'poison' | 'exposed' | 'buff' | 'taunt' | 'guard', turns, chance }
+// status: { type: 'stun' | 'poison' | 'burn' | 'atkUp' | 'atkDown' | 'regen' | 'taunt' | 'guard', turns, chance } (see STATUSES)
 // Damage spells use the caster's primal for primal advantage ("Fire Bolt" for a Fire mage).
 
-export const STATUS_LABELS = {
-  guard: 'Guarding',
-  poison: 'Poisoned',
-  stun: 'Stunned',
-  buff: 'Empowered',
-  taunt: 'Taunting',
-  exposed: 'Exposed',
+/**
+ * Battle statuses. Turns count down at the end of each round (stun counts
+ * down when it costs a turn). icon is a short glyph shown on unit plates.
+ */
+export const STATUSES = {
+  poison: { label: 'Poison', icon: '☠', bad: true, description: 'Loses 8% of max HP at the end of each round.' },
+  burn: { label: 'Burn', icon: '♨', bad: true, description: 'Loses 10% of max HP at the end of each round.' },
+  stun: { label: 'Stun', icon: '✷', bad: true, description: 'Loses its next turn. Stunning a charging foe interrupts it.' },
+  atkDown: { label: 'Attack down', icon: '▼', bad: true, description: 'Deals 30% less damage.' },
+  atkUp: { label: 'Attack up', icon: '▲', bad: false, description: 'Deals 30% more damage.' },
+  guard: { label: 'Guard', icon: '◆', bad: false, description: 'Takes half damage.' },
+  regen: { label: 'Regen', icon: '✚', bad: false, description: 'Recovers 8% of max HP at the end of each round.' },
+  taunt: { label: 'Taunt', icon: '!', bad: false, description: 'Enemies must target this unit. Also guards.' },
 };
 
 const list = [
@@ -49,7 +55,7 @@ const list = [
     mp: 8,
     target: 'allAllies',
     effect: 'buff',
-    status: { type: 'buff', turns: 3, chance: 1 },
+    status: { type: 'atkUp', turns: 3, chance: 1 },
     description: 'The whole party hits harder for 3 rounds.',
   },
   {
@@ -252,8 +258,8 @@ const list = [
     effect: 'damage',
     physical: true,
     power: 2.2,
-    status: { type: 'exposed', turns: 2, chance: 0.6 },
-    description: 'Strike from the shadows; may expose the target.',
+    status: { type: 'atkDown', turns: 2, chance: 0.6 },
+    description: 'Strike from the shadows; may weaken the target.',
   },
   {
     id: 'assassinate',
@@ -270,6 +276,17 @@ const list = [
 
   // Cleric: healing, cleansing, revival.
   { id: 'cure', classId: 'Cleric', level: 1, name: 'Cure', mp: 4, target: 'ally', effect: 'heal', power: 0.9, description: 'Heal one ally.' },
+  {
+    id: 'renew',
+    classId: 'Cleric',
+    level: 4,
+    name: 'Renew',
+    mp: 5,
+    target: 'ally',
+    effect: 'buff',
+    status: { type: 'regen', turns: 3, chance: 1 },
+    description: 'One ally regains HP each round for 3 rounds.',
+  },
   {
     id: 'purify',
     classId: 'Cleric',
@@ -391,19 +408,19 @@ const list = [
     mp: 3,
     target: 'ally',
     effect: 'buff',
-    status: { type: 'buff', turns: 3, chance: 1 },
+    status: { type: 'atkUp', turns: 3, chance: 1 },
     description: 'One ally hits harder for 3 rounds.',
   },
   {
     id: 'expose',
     classId: 'Scholar',
     level: 3,
-    name: 'Expose Weakness',
+    name: 'Sap Strength',
     mp: 4,
     target: 'enemy',
     effect: 'status',
-    status: { type: 'exposed', turns: 3, chance: 0.9 },
-    description: 'Halves the target’s defense for 3 rounds.',
+    status: { type: 'atkDown', turns: 3, chance: 0.9 },
+    description: 'Cuts the target’s attack by 30% for 3 rounds.',
   },
   { id: 'mend', classId: 'Scholar', level: 5, name: 'Mend', mp: 6, target: 'ally', effect: 'heal', power: 0.7, description: 'Heal one ally.' },
   {
@@ -414,7 +431,7 @@ const list = [
     mp: 10,
     target: 'allAllies',
     effect: 'buff',
-    status: { type: 'buff', turns: 3, chance: 1 },
+    status: { type: 'atkUp', turns: 3, chance: 1 },
     description: 'The whole party hits harder for 3 rounds.',
   },
   {
@@ -455,7 +472,8 @@ const list = [
     effect: 'damage',
     physical: false,
     power: 0.8,
-    description: 'Explosives hit every enemy.',
+    status: { type: 'burn', turns: 2, chance: 0.3 },
+    description: 'Explosives hit every enemy and may set them burning.',
   },
   { id: 'repair-kit', classId: 'Artificer', level: 7, name: 'Field Kit', mp: 6, target: 'ally', effect: 'heal', power: 0.8, description: 'Patch up one ally.' },
   {
@@ -466,7 +484,7 @@ const list = [
     mp: 10,
     target: 'ally',
     effect: 'buff',
-    status: { type: 'buff', turns: 4, chance: 1 },
+    status: { type: 'atkUp', turns: 4, chance: 1 },
     description: 'One ally hits harder for 4 rounds.',
   },
   {
@@ -495,8 +513,8 @@ list.push(
     effect: 'damage',
     physical: true,
     power: 1.1,
-    status: { type: 'exposed', turns: 2, chance: 0.5 },
-    description: 'A cursed sweep that leaves armor cracked.',
+    status: { type: 'atkDown', turns: 2, chance: 0.5 },
+    description: 'A cursed sweep that saps strength.',
   },
   {
     id: 'boss-thorn-bloom',
@@ -580,8 +598,37 @@ list.push(
     effect: 'damage',
     physical: false,
     power: 1.3,
-    status: { type: 'exposed', turns: 2, chance: 0.6 },
-    description: 'It drinks the light from the party.',
+    status: { type: 'atkDown', turns: 2, chance: 0.6 },
+    description: 'It drinks the light, and the strength, from the party.',
+  },
+);
+
+// Enemy-only abilities (classId 'Enemy'): healer support and the charged boss attack.
+list.push(
+  {
+    id: 'war-chant',
+    classId: 'Enemy',
+    level: 1,
+    name: 'War Chant',
+    mp: 5,
+    target: 'allAllies',
+    effect: 'buff',
+    status: { type: 'atkUp', turns: 3, chance: 1 },
+    description: 'Every ally hits harder for 3 rounds.',
+  },
+  {
+    id: 'lantern-nova',
+    classId: 'Enemy',
+    level: 1,
+    name: 'Lantern Nova',
+    mp: 0,
+    target: 'allEnemies',
+    effect: 'damage',
+    physical: false,
+    power: 2.1,
+    status: { type: 'burn', turns: 2, chance: 0.5 },
+    charged: true,
+    description: 'Released after a round of charging. Defend to halve it; stun or hit hard to interrupt the charge.',
   },
 );
 

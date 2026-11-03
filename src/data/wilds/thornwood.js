@@ -1,8 +1,9 @@
 import { rows } from '../tiles.js';
+import { AREA_BOSSES } from '../enemies.js';
 
 // The Thornwood edge, north of Greenhollow. One lane climbs from the town into
-// the trees and forks: west to a mossy clearing (camp), east to a bandit camp
-// in a meadow. The Thornback waits in the north thicket.
+// the trees and forks: west to a mossy clearing (camp), east to the brutes'
+// meadow. Captain Rook's bandits hold the north thicket.
 export default {
   id: 'thornwood-edge',
   kind: 'wild',
@@ -47,19 +48,20 @@ export default {
   props: [{ id: 'ward-marker', asset: 'prop.wardstone', at: [19, 14], size: [1, 1], poi: { name: 'Fallen ward marker', verb: 'Inspect', dialogue: 'wild.thornwood.marker' } }],
   enemies: [
     { id: 'stalkers', name: 'Thorn stalkers', at: [14, 12], asset: 'enemy.group.stalkers', types: ['thorn-stalker'], count: 2, level: 3, power: 46, reward: { gold: [24, 40], xp: 30 } },
-    { id: 'spores', name: 'Spore callers', at: [21, 8], asset: 'enemy.group.spores', types: ['spore-caller', 'grove-mender'], count: 3, level: 3, power: 48, reward: { gold: [26, 44], xp: 32 } },
-    { id: 'bandit-camp', name: 'Thornwood bandit camp', at: [30, 11], asset: 'enemy.group.bandits', types: ['thorn-stalker', 'bark-brute', 'grove-mender'], count: 4, level: 4, power: 50, reward: { gold: [50, 80], xp: 40, items: { potion: 1 } } },
+    { id: 'spores', name: 'Spore callers and a mender', at: [21, 8], asset: 'enemy.group.spores', types: ['spore-caller', 'grove-mender'], count: 3, level: 3, power: 48, reward: { gold: [26, 44], xp: 32 } },
+    { id: 'barkhides', name: 'Barkhide brutes', at: [30, 11], asset: 'enemy.group.barkhides', types: ['bark-brute', 'moss-golem'], count: 3, level: 4, power: 50, reward: { gold: [36, 60], xp: 36 } },
+    { id: 'bandit-scouts', name: 'Bandit scouts', at: [11, 18], asset: 'enemy.group.bandits', types: ['thorn-stalker', 'bark-brute', 'grove-mender'], count: 3, level: 4, power: 50, reward: { gold: [40, 66], xp: 38, items: { potion: 1 } } },
   ],
   boss: {
-    id: 'thornback',
-    name: 'The Thornback’s thicket',
+    id: 'bandit-captain',
+    name: 'Captain Rook’s camp',
     at: [24, 3],
-    asset: 'enemy.boss.thornback',
-    types: ['bark-brute', 'moss-golem'],
+    asset: 'enemy.boss.captain',
+    types: ['thorn-stalker', 'grove-mender'],
     count: 3,
     level: 5,
     power: 54,
-    boss: { name: 'The Thornback', role: 'tank', sprite: 'enemy_10', skills: ['bulwark', 'shield-bash'], intro: 'The thicket stands up. It was never a thicket.' },
+    boss: AREA_BOSSES['bandit-captain'],
     if: { visitedArea: 'thornwood-edge' },
     respawnWeeks: 16,
     reward: { gold: [110, 160], xp: 80, items: { 'hi-potion': 1 } },
