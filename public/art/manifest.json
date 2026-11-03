@@ -1,0 +1,870 @@
+{
+  "name": "Guilds of Legend HD-2D Art Library",
+  "revision": "public-art-v2",
+  "source": "Rebuilt from supplied public.zip and generated HD-2D art atlases",
+  "classes": [
+    "guardian",
+    "duelist",
+    "ranger",
+    "rogue",
+    "cleric",
+    "mage",
+    "scholar",
+    "artificer"
+  ],
+  "legacyClassAliases": {
+    "berserker": "guardian",
+    "beastmaster": "ranger",
+    "bard": "scholar"
+  },
+  "rarities": {
+    "Common": "neutral",
+    "Uncommon": "green",
+    "Rare": "blue",
+    "Epic": "purple",
+    "Legend": "gold"
+  },
+  "primals": [
+    "fire",
+    "water",
+    "air",
+    "plant",
+    "animal",
+    "psychic",
+    "iron"
+  ],
+  "scenes": [
+    {
+      "file": "scene_01.png",
+      "label": "Harbor market"
+    },
+    {
+      "file": "scene_02.png",
+      "label": "Stone arena"
+    },
+    {
+      "file": "scene_03.png",
+      "label": "Royal throne hall"
+    },
+    {
+      "file": "scene_04.png",
+      "label": "Sacred waterfall temple"
+    },
+    {
+      "file": "scene_05.png",
+      "label": "Sky ruins"
+    },
+    {
+      "file": "scene_06.png",
+      "label": "Crystal caverns"
+    },
+    {
+      "file": "scene_07.png",
+      "label": "Town fountain"
+    },
+    {
+      "file": "scene_08.png",
+      "label": "Guild tavern"
+    },
+    {
+      "file": "scene_09.png",
+      "label": "Guild strategy hall"
+    },
+    {
+      "file": "scene_10.png",
+      "label": "Town notice board"
+    },
+    {
+      "file": "scene_11.png",
+      "label": "Forest road"
+    },
+    {
+      "file": "scene_12.png",
+      "label": "Frontier camp"
+    }
+  ],
+  "integration": "Keep portrait, frame and primal as independent composited layers. Choose one matching class portrait and sprite. Use CSS for rarity frames; primal image for background.",
+  "assets": [
+    {
+      "id": "portraits/guardian",
+      "path": "art/portraits/guardian.png",
+      "role": "Guardian face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 157563
+    },
+    {
+      "id": "sprites/guardian",
+      "path": "art/sprites/guardian.png",
+      "role": "Guardian full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 129344
+    },
+    {
+      "id": "portraits/duelist",
+      "path": "art/portraits/duelist.png",
+      "role": "Duelist face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 157709
+    },
+    {
+      "id": "sprites/duelist",
+      "path": "art/sprites/duelist.png",
+      "role": "Duelist full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 109560
+    },
+    {
+      "id": "portraits/ranger",
+      "path": "art/portraits/ranger.png",
+      "role": "Ranger face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 156141
+    },
+    {
+      "id": "sprites/ranger",
+      "path": "art/sprites/ranger.png",
+      "role": "Ranger full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 113947
+    },
+    {
+      "id": "portraits/rogue",
+      "path": "art/portraits/rogue.png",
+      "role": "Rogue face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 150743
+    },
+    {
+      "id": "sprites/rogue",
+      "path": "art/sprites/rogue.png",
+      "role": "Rogue full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 144644
+    },
+    {
+      "id": "portraits/cleric",
+      "path": "art/portraits/cleric.png",
+      "role": "Cleric face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 156269
+    },
+    {
+      "id": "sprites/cleric",
+      "path": "art/sprites/cleric.png",
+      "role": "Cleric full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 119653
+    },
+    {
+      "id": "portraits/mage",
+      "path": "art/portraits/mage.png",
+      "role": "Mage face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 165282
+    },
+    {
+      "id": "sprites/mage",
+      "path": "art/sprites/mage.png",
+      "role": "Mage full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 120951
+    },
+    {
+      "id": "portraits/scholar",
+      "path": "art/portraits/scholar.png",
+      "role": "Scholar face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 152103
+    },
+    {
+      "id": "sprites/scholar",
+      "path": "art/sprites/scholar.png",
+      "role": "Scholar full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 95520
+    },
+    {
+      "id": "portraits/artificer",
+      "path": "art/portraits/artificer.png",
+      "role": "Artificer face/medallion",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 159984
+    },
+    {
+      "id": "sprites/artificer",
+      "path": "art/sprites/artificer.png",
+      "role": "Artificer full-body combat",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 113621
+    },
+    {
+      "id": "portraits/berserker",
+      "path": "art/portraits/berserker.png",
+      "role": "Legacy filename; visual alias of guardian",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 157563
+    },
+    {
+      "id": "sprites/berserker",
+      "path": "art/sprites/berserker.png",
+      "role": "Legacy filename; visual alias of guardian",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 129344
+    },
+    {
+      "id": "portraits/beastmaster",
+      "path": "art/portraits/beastmaster.png",
+      "role": "Legacy filename; visual alias of ranger",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 156141
+    },
+    {
+      "id": "sprites/beastmaster",
+      "path": "art/sprites/beastmaster.png",
+      "role": "Legacy filename; visual alias of ranger",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 113947
+    },
+    {
+      "id": "portraits/bard",
+      "path": "art/portraits/bard.png",
+      "role": "Legacy filename; visual alias of scholar",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": true,
+      "bytes": 152103
+    },
+    {
+      "id": "sprites/bard",
+      "path": "art/sprites/bard.png",
+      "role": "Legacy filename; visual alias of scholar",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 95520
+    },
+    {
+      "id": "enemies/enemy_01",
+      "path": "art/enemies/enemy_01.png",
+      "role": "Enemy archetype 01",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 87312
+    },
+    {
+      "id": "enemies/enemy_02",
+      "path": "art/enemies/enemy_02.png",
+      "role": "Enemy archetype 02",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 85222
+    },
+    {
+      "id": "enemies/enemy_03",
+      "path": "art/enemies/enemy_03.png",
+      "role": "Enemy archetype 03",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 95448
+    },
+    {
+      "id": "enemies/enemy_04",
+      "path": "art/enemies/enemy_04.png",
+      "role": "Enemy archetype 04",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 124539
+    },
+    {
+      "id": "enemies/enemy_05",
+      "path": "art/enemies/enemy_05.png",
+      "role": "Enemy archetype 05",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 82106
+    },
+    {
+      "id": "enemies/enemy_06",
+      "path": "art/enemies/enemy_06.png",
+      "role": "Enemy archetype 06",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 57605
+    },
+    {
+      "id": "enemies/enemy_07",
+      "path": "art/enemies/enemy_07.png",
+      "role": "Enemy archetype 07",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 91675
+    },
+    {
+      "id": "enemies/enemy_08",
+      "path": "art/enemies/enemy_08.png",
+      "role": "Enemy archetype 08",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 122546
+    },
+    {
+      "id": "enemies/enemy_09",
+      "path": "art/enemies/enemy_09.png",
+      "role": "Enemy archetype 09",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 104271
+    },
+    {
+      "id": "enemies/enemy_10",
+      "path": "art/enemies/enemy_10.png",
+      "role": "Enemy archetype 10",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 83316
+    },
+    {
+      "id": "enemies/enemy_11",
+      "path": "art/enemies/enemy_11.png",
+      "role": "Enemy archetype 11",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 85843
+    },
+    {
+      "id": "enemies/enemy_12",
+      "path": "art/enemies/enemy_12.png",
+      "role": "Enemy archetype 12",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 77934
+    },
+    {
+      "id": "enemies/enemy_13",
+      "path": "art/enemies/enemy_13.png",
+      "role": "Enemy archetype 13",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 154572
+    },
+    {
+      "id": "enemies/enemy_14",
+      "path": "art/enemies/enemy_14.png",
+      "role": "Enemy archetype 14",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 115268
+    },
+    {
+      "id": "enemies/enemy_15",
+      "path": "art/enemies/enemy_15.png",
+      "role": "Enemy archetype 15",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 160123
+    },
+    {
+      "id": "enemies/enemy_16",
+      "path": "art/enemies/enemy_16.png",
+      "role": "Enemy archetype 16",
+      "px": [
+        320,
+        288
+      ],
+      "transparent": true,
+      "bytes": 138971
+    },
+    {
+      "id": "effects/effect_01",
+      "path": "art/effects/effect_01.png",
+      "role": "Combat effect 01",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 34165
+    },
+    {
+      "id": "effects/effect_02",
+      "path": "art/effects/effect_02.png",
+      "role": "Combat effect 02",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 35548
+    },
+    {
+      "id": "effects/effect_03",
+      "path": "art/effects/effect_03.png",
+      "role": "Combat effect 03",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 33453
+    },
+    {
+      "id": "effects/effect_04",
+      "path": "art/effects/effect_04.png",
+      "role": "Combat effect 04",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 37531
+    },
+    {
+      "id": "effects/effect_05",
+      "path": "art/effects/effect_05.png",
+      "role": "Combat effect 05",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 31654
+    },
+    {
+      "id": "effects/effect_06",
+      "path": "art/effects/effect_06.png",
+      "role": "Combat effect 06",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 31715
+    },
+    {
+      "id": "effects/effect_07",
+      "path": "art/effects/effect_07.png",
+      "role": "Combat effect 07",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 34751
+    },
+    {
+      "id": "effects/effect_08",
+      "path": "art/effects/effect_08.png",
+      "role": "Combat effect 08",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 36363
+    },
+    {
+      "id": "effects/effect_09",
+      "path": "art/effects/effect_09.png",
+      "role": "Combat effect 09",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 33681
+    },
+    {
+      "id": "effects/effect_10",
+      "path": "art/effects/effect_10.png",
+      "role": "Combat effect 10",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 37445
+    },
+    {
+      "id": "effects/effect_11",
+      "path": "art/effects/effect_11.png",
+      "role": "Combat effect 11",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 34531
+    },
+    {
+      "id": "effects/effect_12",
+      "path": "art/effects/effect_12.png",
+      "role": "Combat effect 12",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 34448
+    },
+    {
+      "id": "effects/effect_13",
+      "path": "art/effects/effect_13.png",
+      "role": "Combat effect 13",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 35273
+    },
+    {
+      "id": "effects/effect_14",
+      "path": "art/effects/effect_14.png",
+      "role": "Combat effect 14",
+      "px": [
+        152,
+        130
+      ],
+      "transparent": true,
+      "bytes": 35144
+    },
+    {
+      "id": "scenes/scene_01",
+      "path": "art/scenes/scene_01.png",
+      "role": "Harbor market",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1435379
+    },
+    {
+      "id": "scenes/scene_02",
+      "path": "art/scenes/scene_02.png",
+      "role": "Stone arena",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1349955
+    },
+    {
+      "id": "scenes/scene_03",
+      "path": "art/scenes/scene_03.png",
+      "role": "Royal throne hall",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1308226
+    },
+    {
+      "id": "scenes/scene_04",
+      "path": "art/scenes/scene_04.png",
+      "role": "Sacred waterfall temple",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1302004
+    },
+    {
+      "id": "scenes/scene_05",
+      "path": "art/scenes/scene_05.png",
+      "role": "Sky ruins",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1450435
+    },
+    {
+      "id": "scenes/scene_06",
+      "path": "art/scenes/scene_06.png",
+      "role": "Crystal caverns",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1275744
+    },
+    {
+      "id": "scenes/scene_07",
+      "path": "art/scenes/scene_07.png",
+      "role": "Town fountain",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1444650
+    },
+    {
+      "id": "scenes/scene_08",
+      "path": "art/scenes/scene_08.png",
+      "role": "Guild tavern",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1210876
+    },
+    {
+      "id": "scenes/scene_09",
+      "path": "art/scenes/scene_09.png",
+      "role": "Guild strategy hall",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1289001
+    },
+    {
+      "id": "scenes/scene_10",
+      "path": "art/scenes/scene_10.png",
+      "role": "Town notice board",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1400896
+    },
+    {
+      "id": "scenes/scene_11",
+      "path": "art/scenes/scene_11.png",
+      "role": "Forest road",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1490343
+    },
+    {
+      "id": "scenes/scene_12",
+      "path": "art/scenes/scene_12.png",
+      "role": "Frontier camp",
+      "px": [
+        1280,
+        576
+      ],
+      "transparent": false,
+      "bytes": 1370254
+    },
+    {
+      "id": "primals/fire",
+      "path": "art/primals/fire.png",
+      "role": "Fire portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 30813
+    },
+    {
+      "id": "primals/water",
+      "path": "art/primals/water.png",
+      "role": "Water portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 40750
+    },
+    {
+      "id": "primals/air",
+      "path": "art/primals/air.png",
+      "role": "Air portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 40547
+    },
+    {
+      "id": "primals/plant",
+      "path": "art/primals/plant.png",
+      "role": "Plant portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 21762
+    },
+    {
+      "id": "primals/animal",
+      "path": "art/primals/animal.png",
+      "role": "Animal portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 26896
+    },
+    {
+      "id": "primals/psychic",
+      "path": "art/primals/psychic.png",
+      "role": "Psychic portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 28419
+    },
+    {
+      "id": "primals/iron",
+      "path": "art/primals/iron.png",
+      "role": "Iron portrait background layer",
+      "px": [
+        320,
+        320
+      ],
+      "transparent": false,
+      "bytes": 27709
+    }
+  ]
+}
