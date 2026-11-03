@@ -20,6 +20,11 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState('lines'); // lines → choices → (reply lines) → done
   const [auto, setAuto] = useState(false);
+  // Hold anywhere to fast-forward the lines; swipe up for the conversation so far.
+  const [holding, setHolding] = useState(false);
+  const [log, setLog] = useState(false);
+  const seen = useRef([]);
+  const press = useRef(null);
   const [recruit, setRecruit] = useState(false);
   const followUp = useRef({});
   const started = useRef(false);
@@ -57,8 +62,8 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   };
 
   useEffect(() => {
-    if (!auto || phase !== 'lines') return undefined;
-    const timer = window.setTimeout(advance, AUTO_MS);
+    if ((!auto && !holding) || phase !== 'lines') return undefined;
+    const timer = window.setTimeout(advance, holding ? 260 : AUTO_MS);
     return () => window.clearTimeout(timer);
   });
 
@@ -76,11 +81,55 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
 
   if (!view) return null;
   const line = lines[index] || { speaker: view.speaker, portrait: view.portrait, text: '' };
+  if (line.text && seen.current.at(-1) !== line) seen.current.push(line);
   const here = state.world?.currentLocationId || 'dunmere';
   const recruits = recruit ? state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === here).slice(0, 3) : [];
 
   return (
-    <section className="dialogue" aria-live="polite" onClick={phase === 'lines' ? advance : undefined}>
+    <section
+      className="dialogue"
+      aria-live="polite"
+      onClick={phase === 'lines' && !press.current?.used ? advance : undefined}
+      onPointerDown={(event) => {
+        const state = { y: event.clientY, used: false, timer: 0 };
+        state.timer = window.setTimeout(() => {
+          state.used = true;
+          setHolding(true);
+        }, 400);
+        press.current = state;
+      }}
+      onPointerUp={(event) => {
+        const state = press.current;
+        if (!state) return;
+        window.clearTimeout(state.timer);
+        setHolding(false);
+        if (state.y - event.clientY > 60) {
+          state.used = true;
+          setLog(true);
+        }
+        window.setTimeout(() => (press.current = null), 0);
+      }}
+      onPointerCancel={() => {
+        window.clearTimeout(press.current?.timer);
+        setHolding(false);
+        press.current = null;
+      }}
+    >
+      {log ? (
+        <div className="dialogue__log panel" onClick={(event) => {
+          event.stopPropagation();
+          setLog(false);
+        }}>
+          <strong>So far</strong>
+          {seen.current.map((entry, row) => (
+            <p key={row}>
+              {entry.speaker ? <b>{entry.speaker}: </b> : null}
+              {entry.text}
+            </p>
+          ))}
+          <small>Tap to close</small>
+        </div>
+      ) : null}
       <div className="dialogue__box" onClick={(event) => phase !== 'lines' && event.stopPropagation()}>
         <div className="dialogue__portrait">
           <Asset id={line.portrait || 'portrait.poi'} alt="" />
@@ -144,7 +193,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
           ) : null}
           {phase === 'lines' ? (
             <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
-              <span className="dialogue__hint">{atLastLine && !(view.choices.length && !followUp.current.replied) ? 'Tap to close' : 'Tap to continue'}</span>
+              <span className="dialogue__hint">{atLastLine && !(view.choices.length && !followUp.current.replied) ? 'Tap to close' : 'Tap · hold = faster · swipe up = log'}</span>
               <button type="button" className={auto ? 'is-on' : ''} onClick={() => setAuto((value) => !value)} aria-pressed={auto}>
                 Auto
               </button>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PixelIcon from '../components/PixelIcon.jsx';
 
 const JOYSTICK_RADIUS = 48;
 const DRAG_THRESHOLD = 12;
@@ -36,7 +37,10 @@ export function useCoarsePointer() {
  * The game is created once per mount: `map` and `start` are read only then.
  * Changing props (`activeTargets`, `paused`, `onInteract`) never rebuilds it.
  */
-export default function WalkableScene({ map, start, activeTargets, beacons = [], paused = false, joystick = false, onInteract, className = '', label, apiRef = null, children }) {
+export default function WalkableScene({ map, start, activeTargets, beacons = [], paused = false, joystick = false, onInteract, onPeek = null, className = '', label, apiRef = null, children }) {
+  // Long-press a label to peek (who is inside, what is for sale…) without walking there.
+  const peekTimer = useRef(0);
+  const peeked = useRef(false);
   // Quest markers: targets pinned to the screen edge like beacons, which can change at any time.
   const beaconsRef = useRef(beacons);
   beaconsRef.current = beacons;
@@ -239,7 +243,6 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
     }
   };
 
-  const showContext = ready && near && !paused;
   return (
     <main className={`walk ${className}`} aria-label={label}>
       <div className="walk__stage" ref={stageRef} />
@@ -264,11 +267,31 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
                     labelRefs.current[target.id] = element;
                   }}
                   className={`walk__label walk__label--${target.kind}${near?.id === target.id ? ' is-near' : ''}${target.beacon || beacons.includes(target.id) ? ' walk__label--beacon' : ''}${beacons.includes(target.id) ? ' walk__label--quest' : ''}`}
-                  onClick={() => controllerRef.current?.goTo(target.id)}
+                  onClick={() => {
+                    if (peeked.current) {
+                      peeked.current = false;
+                      return;
+                    }
+                    controllerRef.current?.goTo(target.id);
+                  }}
+                  onPointerDown={() => {
+                    peeked.current = false;
+                    window.clearTimeout(peekTimer.current);
+                    if (onPeek) {
+                      peekTimer.current = window.setTimeout(() => {
+                        peeked.current = true;
+                        onPeek(target);
+                      }, 400);
+                    }
+                  }}
+                  onPointerUp={() => window.clearTimeout(peekTimer.current)}
+                  onPointerLeave={() => window.clearTimeout(peekTimer.current)}
+                  onContextMenu={(event) => event.preventDefault()}
                   onMouseDown={(event) => event.preventDefault()}
                   tabIndex={-1}
                   aria-label={`${target.verb}: ${target.name}`}
                 >
+                  {target.icon ? <PixelIcon name={target.icon} size={16} /> : null}
                   {target.labelText || target.name}
                 </button>
               ))
@@ -281,13 +304,6 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
       ) : null}
       {!ready ? <div className="walk__loading">{failed ? 'This place could not be drawn. Reload to try again.' : 'Setting the scene…'}</div> : null}
       {children}
-      {showContext ? (
-        <button type="button" className="walk__context" onClick={() => controllerRef.current?.interact()}>
-          <strong>{near.verb}</strong>
-          <span>{near.name}</span>
-          {!coarse ? <kbd>Space</kbd> : null}
-        </button>
-      ) : null}
     </main>
   );
 }

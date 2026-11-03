@@ -55,3 +55,25 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
   .modal-layer:has(.modal--ceremony), .modal-layer:has(.modal--season) { align-items: center; padding: 12px; }
   .modal-layer:has(.modal--ceremony) .modal, .modal-layer:has(.modal--season) .modal { border-radius: 6px; max-height: 96dvh; }
 }
+
+/* Exploring: icons on labels, the goal chip (thumb zone, bottom left), peek cards */
+.walk__label svg, .walk__label img { width: 16px; height: 16px; margin-right: 4px; vertical-align: -3px; }
+.quest-chip { position: absolute; z-index: 6; left: max(12px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px; max-width: min(70vw, 340px); min-height: 48px; padding: 6px 14px 6px 8px; border: 1px solid var(--gold-bright); border-radius: 24px; background: rgba(10, 9, 14, .86); color: var(--text); font: 600 13px var(--font-ui); cursor: pointer; }
+.quest-chip b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--gold-bright); color: #1b140a; font-size: 18px; }
+.quest-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.peek-card { position: absolute; z-index: 8; left: 50%; bottom: max(76px, calc(env(safe-area-inset-bottom) + 76px)); display: grid; gap: 6px; width: min(92vw, 360px); padding: 12px 14px; transform: translateX(-50%); }
+.peek-card header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.peek-card header button { width: 44px; height: 44px; border: 0; background: none; color: var(--text); font-size: 22px; cursor: pointer; }
+.peek-card p { margin: 0; color: var(--text-dim); font-size: 13.5px; }
+.peek-card .button { justify-self: start; min-height: 44px; }
+
+/* Dialogue log (swipe up) */
+.dialogue__log { position: absolute; z-index: 3; left: 50%; bottom: 40%; display: grid; gap: 6px; width: min(94vw, 680px); max-height: 50dvh; overflow: auto; padding: 14px; transform: translateX(-50%); color: var(--text); }
+.dialogue__log p { margin: 0; font-size: 14px; }
+.dialogue__log small { color: var(--text-dim); }
+.dialogue { touch-action: none; }
+
+/* World map: pan and pinch */
+.world-map { touch-action: none; overflow: hidden; }
+.world-map__plane { will-change: transform; }
+.world-map__reset { position: absolute; z-index: 5; right: 10px; top: 10px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .85); color: var(--text); font-size: 20px; cursor: pointer; }

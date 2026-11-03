@@ -93,6 +93,9 @@ function base(place) {
   };
 }
 
+// What a door is for, at a glance: coin = shop, sword = arena, bed = rest (hall and inns), crown = rankings.
+const DOOR_ICONS = { shop: 'coin', arena: 'sword', guildHall: 'moon', tavern: 'moon', herald: 'crown', noticeBoard: 'scroll' };
+
 /**
  * Walkable map for a town. `hall` ({ asset, label }) swaps the main Guild Hall
  * building's art and name for the guild's current hall stage.
@@ -116,6 +119,7 @@ export function townMap(town, hall = null) {
       name: building.label,
       verb: 'Enter',
       building: building.building,
+      icon: DOOR_ICONS[building.building] || null,
       x: door.x,
       y: row * T,
       hit: rect(left, top, BUILDING.w, BUILDING.h),
@@ -142,6 +146,7 @@ function npcTarget(placeId, npc) {
     role: npc.role,
     verb: 'Talk',
     dialogue: npc.dialogue,
+    icon: 'letter',
     if: npc.if || null,
     hideWhenInactive: Boolean(npc.if),
     x,

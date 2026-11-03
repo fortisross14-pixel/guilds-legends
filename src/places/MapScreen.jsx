@@ -1,3 +1,4 @@
+import { usePanZoom } from '../components/usePanZoom.js';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
@@ -46,6 +47,8 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const selectedBeyond = !inSlice(selected.id);
   const unlocked = TIER_ORDER[selected.tier] <= state.guild.tierIndex && !selectedBeyond;
   const overworld = useAssetUrl('ui.overworld');
+  // Drag to pan, pinch (or wheel) to zoom; a tap still picks a location.
+  const panZoom = usePanZoom({ max: 3 });
   const showBranches = !sliceHides('branches');
   const quote = getTravelQuote(state, selected.id);
   const current = LOCATION_BY_ID[currentLocationId];
@@ -108,8 +111,13 @@ export default function MapScreen({ state, actions, navigate, place }) {
 
       <div className="world-layout world-layout--locations">
         {createPortal(
-          <section className="world-map world-map--locations" aria-label="Fictional world travel map">
-            <div className="world-map__plane">
+          <section className="world-map world-map--locations" aria-label="Fictional world travel map (drag to pan, pinch to zoom)" {...panZoom.handlers}>
+            {panZoom.zoomed ? (
+              <button type="button" className="world-map__reset" onClick={panZoom.reset} aria-label="Reset the map view">
+                ⤢
+              </button>
+            ) : null}
+            <div className="world-map__plane" style={panZoom.style}>
               <div className="world-map__terrain" style={{ '--overworld': overworld ? `url("${overworld}")` : 'none' }} data-asset="ui.overworld" />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
                 {MAP_ROUTES.map((route) => (
