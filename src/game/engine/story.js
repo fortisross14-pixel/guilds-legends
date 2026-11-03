@@ -1,0 +1,612 @@
+// @ts-check
+// The Last Banner (src/data/story.js): story missions and their steps, scenes,
+// story contracts and duels, evidence, the Lore codex and story recruits. Also
+// the shared condition checker (dialogue, gates, wild areas). Progress runs
+// after every engine action through the finalize hook, so gates open the
+// moment their condition holds; nothing here runs on the calendar.
+import { EVIDENCE, PROLOGUE, REGIONAL_TOURNAMENTS, STORY_HEROES, STORY_MISSIONS, STORY_MISSION_BY_ID } from '../../data/story.js';
+import { DIALOGUES, SEASON_MONTHS, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
+import { LORE_BY_ID, PLACE_LORE } from '../../data/lore.js';
+import { MISSION_TEMPLATES } from '../../data/content.js';
+import { LOCATION_BY_ID } from '../../data/world.js';
+import { TOWNS } from '../../data/towns/index.js';
+import { PATRON_DELTAS } from '../../data/patrons.js';
+import { createDuelEncounter } from '../combat.js';
+import {
+  addChronicle,
+  addHeroHistory,
+  atHome,
+  campaignDaySerial,
+  campaignMonthSerial,
+  clone,
+  commitRng,
+  earnGoldInPlace,
+  finalize,
+  freeBeds,
+  hashString,
+  onFinalize,
+  pushMoment,
+  pushNewsInPlace,
+  rngFor,
+  tallyGuild,
+} from './core.js';
+import { adjustPatronInPlace, patronAtLeast, patronLevel } from './charter.js';
+import { createHeroFromBase, generateHero } from './heroes.js';
+import { addItemsInPlace, battleItems } from './inventory.js';
+import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
+import { instantiateMission } from './universe.js';
+import { makeContract } from './contracts.js';
+
+// ---------------------------------------------------------------- state
+
+/** The story record with defaults filled in (read-only use). */
+export function storyState(state) {
+  return {
+    missions: {},
+    evidence: {},
+    codex: {},
+    choices: {},
+    scene: null,
+    tutorial: 'active',
+    prologue: 'house',
+    chapter: 1,
+    chapterDone: false,
+    ...(state.story || {}),
+  };
+}
+
+function storyInPlace(state) {
+  state.story = storyState(state);
+  return state.story;
+}
+
+function missionState(story, id) {
+  story.missions[id] ||= { status: 'locked', step: 0, route: null };
+  return story.missions[id];
+}
+
+export function storyDone(state, missionId) {
+  return state.story?.missions?.[missionId]?.status === 'done';
+}
+
+function storyHero(state, id) {
+  return state.heroes.find((hero) => hero.storyId === id && !['dead', 'retired'].includes(hero.status)) || null;
+}
+
+function tournamentPlayed(state, definitionId) {
+  return (state.tournamentHistory || []).some(
+    (record) => record.playerResult && (definitionId === 'any' ? REGIONAL_TOURNAMENTS.includes(record.definitionId) : record.definitionId === definitionId),
+  );
+}
+
+// ---------------------------------------------------------------- conditions
+
+const oldRoadCleared = (state) => (state.missionHistory || []).some((mission) => mission.templateId === 'wolves-old-road');
+
+/**
+ * True when every key of `condition` holds. Shared by dialogue, story gates,
+ * wild-area unlocks and enemy groups (keys: src/data/dialogue/index.js).
+ */
+export function checkCondition(state, condition, context = {}) {
+  if (!condition) return true;
+  const exploration = state.world?.exploration || {};
+  const flags = { ...(state.flags?.dialogue || {}), ...Object.fromEntries(TOP_LEVEL_FLAGS.map((name) => [name, state.flags?.[name]])) };
+  const story = storyState(state);
+  const list = (value) => (Array.isArray(value) ? value : [value]);
+  return Object.entries(condition).every(([key, value]) => {
+    switch (key) {
+      case 'any':
+        return value.some((item) => checkCondition(state, item, context));
+      case 'talked':
+        return Boolean(exploration.talked?.[context.conversationId]) === value;
+      case 'oldRoadCleared':
+        return oldRoadCleared(state) === value;
+      case 'tierAtLeast':
+        return (state.guild?.tierIndex || 0) >= value;
+      case 'fameAtLeast':
+        return (state.guild?.fame || 0) >= value;
+      case 'goldAtLeast':
+        return (state.guild?.crowns || 0) >= value;
+      case 'season':
+        return list(value).some((season) => (SEASON_MONTHS[season] || []).includes(state.date.month));
+      case 'flag':
+        return Boolean(flags[value]);
+      case 'notFlag':
+        return !flags[value];
+      case 'candidateHere':
+        return (state.candidates || []).some((candidate) => (candidate.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere')) === value;
+      case 'visitedArea':
+        return Boolean(exploration.wild?.[value]?.visited);
+      case 'bossDefeated':
+        return (exploration.wild?.[value]?.bosses || 0) > 0;
+      case 'charter':
+        return list(value).includes(state.guild?.charter);
+      case 'patronAtLeast':
+        return Object.entries(value).every(([id, level]) => patronAtLeast(state, id, level));
+      case 'patronBelow':
+        return Object.entries(value).every(([id, level]) => !patronAtLeast(state, id, level));
+      case 'patronRival':
+        return patronLevel(state, value).index < 0;
+      case 'patronGiftReady':
+        return state.patrons?.[value]?.lastGift !== campaignMonthSerial(state) && (state.guild?.crowns || 0) >= PATRON_DELTAS.giftCost;
+      // The story
+      case 'prologueDone':
+        return (story.prologue === 'done') === value;
+      case 'tutorialSkipped':
+        return (story.tutorial === 'skipped') === value;
+      case 'tutorialDone':
+        return (story.tutorial !== 'active') === value;
+      case 'chapterAtLeast':
+        return (story.chapter || 1) >= value;
+      case 'storyDone':
+        return list(value).every((id) => storyDone(state, id));
+      case 'notStoryDone':
+        return !storyDone(state, value);
+      case 'storyActive':
+        return story.missions?.[value]?.status === 'active';
+      case 'evidence':
+        return Boolean(story.evidence?.[value]);
+      case 'evidenceAtLeast':
+        return Object.keys(story.evidence || {}).length >= value;
+      case 'codex':
+        return Boolean(story.codex?.[value]);
+      case 'choice':
+        return Object.entries(value).every(([name, wanted]) => list(wanted).includes(story.choices?.[name]));
+      case 'notChoice':
+        return Object.entries(value).every(([name, unwanted]) => !list(unwanted).includes(story.choices?.[name]));
+      case 'storyHero':
+        return Boolean(storyHero(state, value));
+      case 'notStoryHero':
+        return !storyHero(state, value);
+      case 'storyHeroLoyalty':
+        return (storyHero(state, value.id)?.loyalty || 0) >= value.at;
+      case 'contractsWon':
+        return (state.stats?.missionsWon || 0) >= value;
+      case 'regionLevel':
+        return Object.entries(value).every(([region, level]) => regionLevel(state, region) >= level);
+      case 'heroClass':
+        return state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status) && hero.classId === value.classId && hero.level >= (value.level || 1));
+      case 'signedUp':
+        return (state.tournaments || []).some((tournament) => tournament.definitionId === value && (tournament.signup || tournament.playerHeroId));
+      case 'tournamentPlayed':
+        return tournamentPlayed(state, value);
+      case 'freeBed':
+        return (freeBeds(state) > 0) === value;
+      case 'atHome':
+        return atHome(state) === value;
+      case 'hallLeased':
+        return Boolean(state.guild?.hall?.owned) === value;
+      default:
+        return false;
+    }
+  });
+}
+
+// ---------------------------------------------------------------- codex, evidence, recruits
+
+/** Unlocks a Lore codex entry (quietly, or with a notification). */
+export function unlockCodexInPlace(state, id, quiet = false) {
+  const entry = LORE_BY_ID[id];
+  const story = storyInPlace(state);
+  if (!entry || story.codex[id]) return false;
+  story.codex[id] = campaignDaySerial(state);
+  if (!quiet) state.notifications.push({ id: `codex-${id}`, tone: 'purple', title: `Lore: ${entry.title}`, text: 'A new entry in the Lore codex (Chronicle menu).' });
+  return true;
+}
+
+export function addEvidenceInPlace(state, id) {
+  const story = storyInPlace(state);
+  const item = EVIDENCE.find((entry) => entry.id === id);
+  if (!item || story.evidence[id]) return false;
+  story.evidence[id] = campaignDaySerial(state);
+  state.notifications.push({ id: `evidence-${id}`, tone: 'gold', title: `Evidence: ${item.name}`, text: item.text });
+  addChronicle(state, { type: 'story', importance: 3, title: `Evidence: ${item.name}`, text: item.text, tags: ['story', 'evidence'] });
+  return true;
+}
+
+/** A story hero joins the guild (free, two-year contract). */
+export function storyRecruitInPlace(state, id) {
+  const base = STORY_HEROES[id];
+  if (!base || state.heroes.some((hero) => hero.id === base.id)) return null;
+  const rng = rngFor(state, `story-recruit-${id}`);
+  const hero = createHeroFromBase({ ...base, homeLocationId: state.world?.currentLocationId || 'dunmere' }, state, rng, {});
+  hero.storyId = id;
+  hero.status = 'available';
+  hero.guildId = 'player';
+  hero.joinedYear = state.date.year;
+  hero.contract = makeContract(state, base.salary, 2);
+  hero.salary = hero.contract.salary;
+  hero.signedFee = 0;
+  hero.promises = [];
+  addHeroHistory(hero, state, { type: 'joined', title: `Joined ${state.guild.name}`, text: base.hook });
+  state.heroes.push(hero);
+  tallyGuild(state, 'recruits');
+  pushMoment(state, { type: 'recruit', heroId: hero.id, name: hero.name, classId: hero.classId, primal: hero.primal, rarity: hero.rarity, level: hero.level, personality: hero.personality, hook: hero.hook });
+  addChronicle(state, { type: 'recruitment', importance: 4, title: `${hero.name} joins the guild`, text: base.hook, heroIds: [hero.id], tags: ['recruitment', 'story'] });
+  commitRng(state, rng);
+  return hero;
+}
+
+// ---------------------------------------------------------------- missions and steps
+
+export function currentStep(state, missionId) {
+  const mission = STORY_MISSION_BY_ID[missionId];
+  const record = state.story?.missions?.[missionId];
+  if (!mission || record?.status !== 'active') return null;
+  return mission.steps[record.step] || null;
+}
+
+/** The active mission whose current step is `kind` with `field` = value, and that step. */
+function activeStepWhere(state, test) {
+  for (const mission of STORY_MISSIONS) {
+    const step = currentStep(state, mission.id);
+    if (step && test(step, mission)) return { mission, step };
+  }
+  return null;
+}
+
+function templateFor(approach) {
+  return (
+    MISSION_TEMPLATES.find((template) => template.tier === 'Regional' && (template.approach || '') === approach) ||
+    MISSION_TEMPLATES.find((template) => missionFamily(template) === approach) ||
+    MISSION_TEMPLATES[0]
+  );
+}
+
+function stepVariant(state, mission, step) {
+  const route = state.story?.missions?.[mission.id]?.route;
+  return step.contracts?.[route] || step.contracts?.default || null;
+}
+
+/** Posts the step's story contract on its notice board (once; again after a failure). */
+function postStoryContractInPlace(state, mission, step, variant) {
+  const key = `${mission.id}.${step.id}`;
+  if ([...state.missions, ...state.activeMissions].some((item) => item.story === key)) return false;
+  const record = missionState(storyInPlace(state), mission.id);
+  if (record.retryDay && campaignDaySerial(state) < record.retryDay) return false;
+  const rng = rngFor(state, `story-${key}-${record.attempts || 0}`);
+  const location = LOCATION_BY_ID[variant.locationId || mission.locationId];
+  const template = variant.templateId ? MISSION_TEMPLATES.find((item) => item.id === variant.templateId) : templateFor(variant.approach);
+  const contract = instantiateMission(template, state, rng, location);
+  if (!variant.templateId) {
+    Object.assign(contract, {
+      title: variant.title,
+      stakes: variant.stakes,
+      brief: `${variant.stakes} (Story: ${mission.title}.)`,
+      approach: variant.approach,
+      difficulty: variant.difficulty + state.guild.tierIndex * 6,
+      risk: variant.risk,
+      reward: variant.reward,
+      fame: variant.fame,
+      duration: variant.duration,
+      patron: null,
+    });
+  }
+  Object.assign(contract, { id: `story-${key}-${campaignDaySerial(state)}`, story: key, availableUntil: { year: state.date.year + 20, month: 0 } });
+  state.missions.push(contract);
+  commitRng(state, rng);
+  state.notifications.push({ id: `story-contract-${key}`, tone: 'purple', title: `Story: ${contract.title}`, text: `Posted at the Notice Board in ${location?.name || 'town'}.` });
+  return true;
+}
+
+function advanceStepInPlace(state, mission) {
+  const record = missionState(storyInPlace(state), mission.id);
+  record.step += 1;
+  record.snooze = 0;
+}
+
+function completeMissionInPlace(state, mission) {
+  const story = storyInPlace(state);
+  const record = missionState(story, mission.id);
+  record.status = 'done';
+  record.doneDay = campaignDaySerial(state);
+  const rewards = mission.rewards || {};
+  if (rewards.gold) earnGoldInPlace(state, rewards.gold);
+  if (rewards.fame) state.guild.fame += rewards.fame;
+  if (rewards.legacy) state.guild.legacy += rewards.legacy;
+  if (rewards.items) addItemsInPlace(state, rewards.items);
+  if (rewards.patron) adjustPatronInPlace(state, rewards.patron.id, rewards.patron.amount, mission.title);
+  if (rewards.region) adjustRegionReputationInPlace(state, rewards.region.id, rewards.region.amount);
+  if (rewards.evidence) addEvidenceInPlace(state, rewards.evidence);
+  (rewards.codex || []).forEach((id) => unlockCodexInPlace(state, id, true));
+  addChronicle(state, { type: 'story', importance: 4, title: `Story: ${mission.title}`, text: mission.summary, tags: ['story', `act-${mission.act}`] });
+  pushNewsInPlace(state, { title: `Story: ${mission.title} complete`, text: mission.summary, tone: 'purple' });
+  state.notifications.push({ id: `story-done-${mission.id}`, tone: 'purple', title: `${mission.title}: complete`, text: 'See the Quest Log for what comes next.' });
+  // The end of Act I is the end of the tutorial.
+  if (mission.id === 'm4' && story.tutorial === 'active') {
+    story.tutorial = 'done';
+    pushMoment(state, { type: 'tutorialComplete', title: 'Tutorial complete' });
+  }
+  if (mission.endsChapter) {
+    story.chapterDone = true;
+    pushMoment(state, { type: 'chapterEnd', chapter: mission.endsChapter, title: 'Chapter 1 complete' });
+    addChronicle(state, { type: 'story', importance: 5, title: 'The end of Chapter 1', text: 'Wren has seen the banner. The names they erased are known again. The Crown must fall.', tags: ['story', 'chapter'] });
+  }
+}
+
+function gateOpen(state, mission) {
+  if (mission.locked) return false;
+  return checkCondition(state, mission.gate?.if) || (mission.alternatives || []).some((alternative) => checkCondition(state, alternative.if));
+}
+
+/** One pass over the missions; true when something changed. */
+function storyPassInPlace(state) {
+  const story = storyInPlace(state);
+  for (const mission of STORY_MISSIONS) {
+    const record = missionState(story, mission.id);
+    if (record.status === 'done') continue;
+    if (record.status === 'locked') {
+      if (!gateOpen(state, mission)) continue;
+      record.status = 'active';
+      record.step = 0;
+      record.openDay = campaignDaySerial(state);
+      if (mission.act > 1) {
+        state.notifications.push({ id: `story-open-${mission.id}`, tone: 'purple', title: `New story mission: ${mission.title}`, text: mission.summary });
+        pushNewsInPlace(state, { title: `Story: ${mission.title}`, text: mission.summary, tone: 'purple' });
+      }
+      return true;
+    }
+    const step = mission.steps[record.step];
+    if (!step) {
+      completeMissionInPlace(state, mission);
+      return true;
+    }
+    if (step.skipIf && checkCondition(state, step.skipIf)) {
+      advanceStepInPlace(state, mission);
+      return true;
+    }
+    if (step.kind === 'check' && checkCondition(state, step.if)) {
+      advanceStepInPlace(state, mission);
+      return true;
+    }
+    if (step.kind === 'contract') {
+      const variant = stepVariant(state, mission, step);
+      if (variant?.skip) {
+        advanceStepInPlace(state, mission);
+        return true;
+      }
+      if (variant) postStoryContractInPlace(state, mission, step, variant);
+    }
+  }
+  return false;
+}
+
+function walkable(locationId) {
+  return Boolean(TOWNS[locationId]);
+}
+
+function stepPlaceHere(state, step) {
+  if (state.world?.activeTravel || state.world?.wildAreaId) return false;
+  if (step.at === 'hall') return atHome(state);
+  return (state.world?.currentLocationId || 'dunmere') === step.at;
+}
+
+/** Queues the scene of a step that plays on arrival (no NPC, or a town without streets). */
+function triggerSceneInPlace(state) {
+  const story = storyInPlace(state);
+  if (story.scene || state.activeEncounter || state.activeMissionGame || state.pendingRoadEvent || state.pendingDecisions?.length || state.pendingEvent) return;
+  const today = campaignDaySerial(state);
+  const found = activeStepWhere(
+    state,
+    (step, mission) =>
+      step.kind === 'scene' &&
+      Boolean(DIALOGUES[step.scene]) &&
+      (!step.npc || !walkable(step.at)) &&
+      stepPlaceHere(state, step) &&
+      (story.missions[mission.id]?.snooze || 0) <= today,
+  );
+  if (found) story.scene = { conversation: found.step.scene, missionId: found.mission.id, stepId: found.step.id };
+}
+
+/** Runs after every engine action: opens gates, walks steps, posts contracts, queues scenes. */
+export function progressStoryInPlace(state) {
+  if (!state?.story || !Array.isArray(state.heroes) || state.story.prologue !== 'done') return;
+  (state.world?.visitedLocationIds || []).forEach((id) => PLACE_LORE[id] && unlockCodexInPlace(state, PLACE_LORE[id], true));
+  if (state.world?.exploration?.wild?.blackwood?.visited) unlockCodexInPlace(state, 'blackwood', true);
+  for (let guard = 0; guard < 40; guard += 1) if (!storyPassInPlace(state)) break;
+  triggerSceneInPlace(state);
+}
+
+onFinalize(progressStoryInPlace);
+
+// ---------------------------------------------------------------- scenes
+
+/** A town NPC whose conversation is the current story scene plays the scene instead. */
+export function storyConversationFor(state, conversationId) {
+  const found = activeStepWhere(state, (step) => step.kind === 'scene' && step.npc === conversationId && stepPlaceHere(state, step) && Boolean(DIALOGUES[step.scene]));
+  return found ? found.step.scene : conversationId;
+}
+
+/** Town NPC dialogue ids that hold a story scene right now (quest markers). */
+export function storyNpcsHere(state) {
+  return STORY_MISSIONS.map((mission) => currentStep(state, mission.id))
+    .filter((step) => step?.kind === 'scene' && step.npc && stepPlaceHere(state, step))
+    .map((step) => step.npc);
+}
+
+/**
+ * A story scene's choice was taken: the step is done (or, with { wait: true },
+ * snoozed until tomorrow). Called by chooseDialogueOption.
+ */
+export function storySceneChoiceInPlace(state, conversationId, wait = false) {
+  const found = activeStepWhere(state, (step) => step.kind === 'scene' && step.scene === conversationId);
+  const story = storyInPlace(state);
+  if (story.scene?.conversation === conversationId) story.scene = null;
+  if (!found) return false;
+  if (wait) {
+    missionState(story, found.mission.id).snooze = campaignDaySerial(state) + 1;
+    return false;
+  }
+  advanceStepInPlace(state, found.mission);
+  return true;
+}
+
+/** Sets the route for the mission whose current scene this is (story contracts and skips). */
+export function storyRouteInPlace(state, conversationId, route) {
+  const found = activeStepWhere(state, (step) => step.kind === 'scene' && step.scene === conversationId);
+  if (found) missionState(storyInPlace(state), found.mission.id).route = route;
+}
+
+export function storyChoiceInPlace(state, choices) {
+  Object.assign(storyInPlace(state).choices, choices);
+}
+
+/** The modal story scene was closed. Scenes without choices complete here; leaving one with choices snoozes it a day. */
+export function finishStoryScene(state, conversationId) {
+  if (state.story?.scene?.conversation !== conversationId) return state;
+  const next = clone(state);
+  next.story.scene = null;
+  const found = activeStepWhere(next, (step) => step.kind === 'scene' && step.scene === conversationId);
+  if (found) {
+    const variant = DIALOGUES[conversationId]?.variants?.find((item) => checkCondition(next, item.if, { conversationId }));
+    if (!variant?.choices?.length) advanceStepInPlace(next, found.mission);
+    else missionState(next.story, found.mission.id).snooze = campaignDaySerial(next) + 1;
+  }
+  return finalize(next);
+}
+
+/** Plays the current scene of a mission now (from the quest log, when at its place). */
+export function playStoryScene(state, missionId) {
+  const step = currentStep(state, missionId);
+  if (!step || step.kind !== 'scene' || !DIALOGUES[step.scene]) return { state, error: 'Nothing to talk about yet.' };
+  if (!stepPlaceHere(state, step)) return { state, error: step.at === 'hall' ? 'Go home to the Guild Hall in Dunmere.' : `Go to ${LOCATION_BY_ID[step.at]?.name || 'that place'} first.` };
+  const next = clone(state);
+  next.story.scene = { conversation: step.scene, missionId, stepId: step.id };
+  return { state: finalize(next), error: null };
+}
+
+// ---------------------------------------------------------------- duels
+
+/** Starts the story duel of the current step (one hero against a named opponent). */
+export function startStoryDuel(state, missionId, heroId = null) {
+  const mission = STORY_MISSION_BY_ID[missionId];
+  const step = currentStep(state, missionId);
+  if (!mission || step?.kind !== 'duel') return { state, error: 'There is no duel to fight.' };
+  if (state.activeEncounter) return { state, error: 'Another fight is already waiting.' };
+  if (!stepPlaceHere(state, step)) return { state, error: `The duel is in ${LOCATION_BY_ID[step.at]?.name}.` };
+  const ready = state.heroes.filter((hero) => hero.status === 'available');
+  const champion = (heroId && ready.find((hero) => hero.id === heroId)) || [...ready].sort((a, b) => b.power - a.power)[0];
+  if (!champion) return { state, error: 'Nobody is fit to fight.' };
+  const next = clone(state);
+  const rng = rngFor(next, `story-duel-${missionId}-${next.story.missions[missionId].duelLosses || 0}`);
+  const opponent = generateHero(next, rng, 'veteran', { ...step.opponent, guildId: null, homeLocationId: step.at });
+  opponent.id = step.opponent.id;
+  next.activeEncounter = createDuelEncounter({
+    id: `story-duel-${missionId}-${campaignDaySerial(next)}`,
+    seed: (next.rngState ^ hashString(`story-duel:${missionId}:${campaignDaySerial(next)}`)) >>> 0,
+    sourceType: 'story-duel',
+    sourceId: missionId,
+    title: `${mission.title}: ${opponent.name}`,
+    roundName: 'A duel for the truth',
+    playerHero: next.heroes.find((hero) => hero.id === champion.id),
+    opponentHero: opponent,
+    prestige: 20,
+    items: battleItems(next),
+  });
+  commitRng(next, rng);
+  return { state: finalize(next), error: null };
+}
+
+/** A story duel ended (encounters.js). Winning completes the step; losing can be retried. */
+export function storyDuelResultInPlace(state, missionId, won) {
+  const mission = STORY_MISSION_BY_ID[missionId];
+  const record = missionState(storyInPlace(state), missionId);
+  if (!mission || currentStep(state, missionId)?.kind !== 'duel') return;
+  if (won) {
+    advanceStepInPlace(state, mission);
+    addChronicle(state, { type: 'story', importance: 3, title: `${mission.title}: the duel is won`, text: 'The old champion lowers his blade and nods.', tags: ['story', 'duel'] });
+  } else {
+    record.duelLosses = (record.duelLosses || 0) + 1;
+    state.notifications.push({ id: `duel-lost-${missionId}-${record.duelLosses}`, tone: 'red', title: 'The duel is lost', text: 'Rest, train and try again from the Quest Log.' });
+  }
+}
+
+// ---------------------------------------------------------------- contracts
+
+/** A story contract resolved (outcomes.js): success completes its step; failure re-posts it in a week. */
+export function storyContractResolvedInPlace(state, contract, success) {
+  if (!contract?.story) return;
+  const [missionId, stepId] = contract.story.split('.');
+  const mission = STORY_MISSION_BY_ID[missionId];
+  const step = currentStep(state, missionId);
+  if (!mission || step?.id !== stepId) return;
+  const record = missionState(storyInPlace(state), missionId);
+  if (success) {
+    advanceStepInPlace(state, mission);
+    return;
+  }
+  record.attempts = (record.attempts || 0) + 1;
+  record.retryDay = campaignDaySerial(state) + 7;
+  pushNewsInPlace(state, { title: `Story setback: ${contract.title}`, text: 'The lead goes cold for a week. The contract will be posted again.', tone: 'red' });
+}
+
+// ---------------------------------------------------------------- read models
+
+function stepView(state, mission, step, index, record) {
+  const done = record.status === 'done' || index < record.step;
+  return {
+    id: step.id,
+    kind: step.kind,
+    text: step.text,
+    hint: step.hint || null,
+    screen: step.screen || null,
+    at: step.at || mission.locationId,
+    done,
+    current: record.status === 'active' && index === record.step,
+    skipped: done && step.skipIf ? checkCondition(state, step.skipIf) : false,
+    here: step.at ? stepPlaceHere(state, step) : false,
+    canTalk: record.status === 'active' && index === record.step && step.kind === 'scene' && Boolean(DIALOGUES[step.scene]) && stepPlaceHere(state, step),
+    canDuel: record.status === 'active' && index === record.step && step.kind === 'duel' && stepPlaceHere(state, step),
+  };
+}
+
+/** Everything the Quest Log, the map marker and the objective ribbon need. */
+export function getStoryView(state) {
+  const story = storyState(state);
+  const missions = STORY_MISSIONS.map((mission) => {
+    const record = story.missions[mission.id] || { status: 'locked', step: 0 };
+    const steps = mission.steps.map((step, index) => stepView(state, mission, step, index, record));
+    const current = steps.find((step) => step.current) || null;
+    return {
+      ...mission,
+      status: record.status,
+      route: record.route || null,
+      steps,
+      current,
+      pin: current?.at === 'hall' ? 'dunmere' : current?.at || mission.locationId,
+      gateMet: record.status !== 'locked' || gateOpen(state, mission),
+    };
+  });
+  const active = missions.find((mission) => mission.status === 'active') || null;
+  const next = active ? null : missions.find((mission) => mission.status === 'locked' && !mission.locked) || null;
+  return {
+    missions,
+    active,
+    next,
+    pin: active?.pin || null,
+    tutorial: story.tutorial,
+    prologue: story.prologue,
+    chapterDone: story.chapterDone,
+    doneCount: missions.filter((mission) => mission.status === 'done').length,
+    evidence: EVIDENCE.map((item) => ({ ...item, found: Boolean(story.evidence[item.id]) })),
+    choices: story.choices,
+  };
+}
+
+/** The Lore codex: unlocked entries by category. */
+export function getLoreCodex(state) {
+  const unlocked = storyState(state).codex;
+  return Object.keys(unlocked)
+    .map((id) => ({ ...LORE_BY_ID[id], unlockedDay: unlocked[id] }))
+    .filter((entry) => entry.id);
+}
+
+/** Reading an arena's history board unlocks its tournament lore. */
+export function readHistoryBoard(state, loreId) {
+  if (!LORE_BY_ID[loreId] || state.story?.codex?.[loreId]) return state;
+  const next = clone(state);
+  unlockCodexInPlace(next, loreId);
+  return finalize(next);
+}
+
+export { PROLOGUE };

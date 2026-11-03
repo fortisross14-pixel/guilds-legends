@@ -3,20 +3,31 @@
 // positions per scene, wild-area entry, gathering, resting at camp and
 // starting battles with enemy groups standing on the map.
 // Walking itself is presentation; only facts and positions are recorded here.
-import { DIALOGUES, SEASON_MONTHS, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
+// Conditions are shared with the story (checkCondition, story.js).
+import { DIALOGUES, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { TILE_SIZE } from '../../data/tiles.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
 import { createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
-import { adjustPatronInPlace, patronAtLeast, patronLevel } from './charter.js';
+import { adjustPatronInPlace } from './charter.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { grantPatronRewardsInPlace } from './connections.js';
 import { addItemsInPlace, battleItems, settleBattleItemsInPlace } from './inventory.js';
 import { concludeActiveCombat } from './encounters.js';
 import { adjustRegionReputationInPlace } from './reputation.js';
-import { getStoryView } from './stories.js';
+import {
+  addEvidenceInPlace,
+  checkCondition,
+  storyChoiceInPlace,
+  storyConversationFor,
+  storyRecruitInPlace,
+  storyRouteInPlace,
+  storySceneChoiceInPlace,
+  unlockCodexInPlace,
+} from './story.js';
+import { leaseHallInPlace } from './hall.js';
 import { advanceDays } from './time.js';
 
 
@@ -50,70 +61,6 @@ function knowledgeInPlace(state) {
   return state.world.knowledge;
 }
 
-const oldRoadCleared = (state) => (state.missionHistory || []).some((mission) => mission.templateId === 'wolves-old-road');
-
-// ---------------------------------------------------------------------------
-// Conditions
-
-/**
- * True when every key of `condition` holds. Shared by dialogue, wild-area
- * unlocks and enemy groups (see src/data/dialogue/index.js for the keys).
- */
-export function checkCondition(state, condition, context = {}) {
-  if (!condition) return true;
-  const exploration = state.world?.exploration || {};
-  const flags = { ...(state.flags?.dialogue || {}), ...Object.fromEntries(TOP_LEVEL_FLAGS.map((name) => [name, state.flags?.[name]])) };
-  const story = () => getStoryView(state);
-  return Object.entries(condition).every(([key, value]) => {
-    switch (key) {
-      case 'talked':
-        return Boolean(exploration.talked?.[context.conversationId]) === value;
-      case 'oldRoadCleared':
-        return oldRoadCleared(state) === value;
-      case 'tierAtLeast':
-        return (state.guild?.tierIndex || 0) >= value;
-      case 'fameAtLeast':
-        return (state.guild?.fame || 0) >= value;
-      case 'goldAtLeast':
-        return (state.guild?.crowns || 0) >= value;
-      case 'storyStarted':
-        return story().started === value;
-      case 'storyStepAtLeast':
-        return story().step >= value;
-      case 'storyDone':
-        return Boolean(story().done) === value;
-      case 'storyOpen':
-        return Boolean(story().blackwoodOpen) === value;
-      case 'season': {
-        const seasons = Array.isArray(value) ? value : [value];
-        return seasons.some((season) => (SEASON_MONTHS[season] || []).includes(state.date.month));
-      }
-      case 'flag':
-        return Boolean(flags[value]);
-      case 'notFlag':
-        return !flags[value];
-      case 'candidateHere':
-        return (state.candidates || []).some((candidate) => (candidate.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere')) === value;
-      case 'visitedArea':
-        return Boolean(exploration.wild?.[value]?.visited);
-      case 'bossDefeated':
-        return (exploration.wild?.[value]?.bosses || 0) > 0;
-      case 'charter':
-        return (Array.isArray(value) ? value : [value]).includes(state.guild?.charter);
-      case 'patronAtLeast':
-        return Object.entries(value).every(([id, level]) => patronAtLeast(state, id, level));
-      case 'patronBelow':
-        return Object.entries(value).every(([id, level]) => !patronAtLeast(state, id, level));
-      case 'patronRival':
-        return patronLevel(state, value).index < 0;
-      case 'patronGiftReady':
-        return state.patrons?.[value]?.lastGift !== campaignMonthSerial(state) && (state.guild?.crowns || 0) >= PATRON_DELTAS.giftCost;
-      default:
-        return false;
-    }
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Dialogue
 
@@ -134,7 +81,8 @@ function resolveLines(state, conversation, lines = []) {
  * What a conversation shows right now: speaker, portrait, lines and the
  * choices whose conditions pass (each keeps its index in the data).
  */
-export function getDialogueView(state, conversationId) {
+export function getDialogueView(state, requestedId) {
+  const conversationId = storyConversationFor(state, requestedId);
   const conversation = DIALOGUES[conversationId];
   if (!conversation) return null;
   const context = { conversationId };
@@ -164,6 +112,17 @@ export function getDialogueReply(state, conversationId, variantIndex, choiceInde
 /** Applies dialogue effects; returns what the UI should do next ({ open, recruit }). */
 function applyEffectsInPlace(state, effects = [], context = {}) {
   const ui = {};
+  // Story effects first: a route or choice can matter to the effects after it.
+  effects.forEach((effect) => {
+    if (effect.route) storyRouteInPlace(state, context.conversationId, effect.route);
+    if (effect.choice) storyChoiceInPlace(state, effect.choice);
+    if (effect.codex) (Array.isArray(effect.codex) ? effect.codex : [effect.codex]).forEach((id) => unlockCodexInPlace(state, id));
+    if (effect.evidence) addEvidenceInPlace(state, effect.evidence);
+    if (effect.storyRecruit) storyRecruitInPlace(state, effect.storyRecruit);
+    if (typeof effect.leaseHall === 'number') leaseHallInPlace(state, effect.leaseHall);
+    if (typeof effect.fame === 'number') state.guild.fame = Math.max(0, state.guild.fame + effect.fame);
+    if (typeof effect.legacy === 'number') state.guild.legacy += effect.legacy;
+  });
   const knowledge = knowledgeInPlace(state);
   const exploration = explorationInPlace(state);
   effects.forEach((effect) => {
@@ -207,7 +166,8 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
  * Starts a conversation: counts it and applies the shown variant's own effects.
  * `visit` ({ sceneId, targetId, position }) also records who was talked to and where.
  */
-export function talkTo(state, conversationId, visit = null) {
+export function talkTo(state, requestedId, visit = null) {
+  const conversationId = storyConversationFor(state, requestedId);
   const conversation = DIALOGUES[conversationId];
   const view = getDialogueView(state, conversationId);
   if (!conversation || !view) return { state, error: 'Nobody answers.' };
@@ -226,6 +186,10 @@ export function chooseDialogueOption(state, conversationId, variantIndex, choice
   if (!checkCondition(state, choice.if, { conversationId })) return { state, error: 'That choice is no longer open.' };
   const next = clone(state);
   const ui = applyEffectsInPlace(next, choice.effects, { conversationId, speaker: conversation.speaker });
+  // A story scene's choice completes its step ({ wait: true } keeps it open for tomorrow).
+  storySceneChoiceInPlace(next, conversationId, (choice.effects || []).some((effect) => effect.wait));
+  const days = (choice.effects || []).reduce((sum, effect) => sum + (effect.passDays || 0), 0);
+  if (days > 0) return { ...advanceDays(next, days, true), ui };
   return { state: finalize(next), error: null, ui };
 }
 
@@ -473,3 +437,5 @@ export function retreatToCamp(state) {
   explorationInPlace(next).positions[area.id] = { x: Math.round((col + w / 2) * TILE_SIZE), y: Math.round((row + h) * TILE_SIZE + 18) };
   return { state: finalize(next), error: null };
 }
+
+export { checkCondition };

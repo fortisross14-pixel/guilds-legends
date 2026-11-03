@@ -48,12 +48,11 @@ import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings
 import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace } from './contracts.js';
 import { EXPIRE_PENALTY, adjustRegionReputationInPlace } from './reputation.js';
 import { expireChallengeInPlace, maybeIssueChallengeInPlace, nemesisBidsInPlace, rivalTakesContractInPlace, updateNemesesInPlace } from './rivalry.js';
-import { checkBossesInPlace, checkStoryInPlace } from './stories.js';
+import { checkBossesInPlace } from './stories.js';
 import {
   expireWagerInPlace,
   maybeFriendlyChallengeInPlace,
   progressSideJobsInPlace,
-  queueStoryCardInPlace,
   refreshSideJobsInPlace,
   rollWeeklyEventInPlace,
 } from './townLife.js';
@@ -349,6 +348,7 @@ function pauseReason(state) {
   if (state.activeMissionGame) return 'Conclude the active mission challenge before advancing time.';
   if (state.pendingDecisions.length) return 'Resolve the critical decision before advancing time.';
   if (state.pendingRoadEvent) return 'Deal with the event on the road before advancing time.';
+  if (state.story?.scene) return 'Someone wants a word with you first.';
   if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
     return 'Finish the active tournament before advancing time.';
   }
@@ -423,7 +423,6 @@ function runMonthInPlace(next, rng) {
   });
   updateNemesesInPlace(next);
   refreshSideJobsInPlace(next, rng);
-  queueStoryCardInPlace(next, checkStoryInPlace(next, rng));
   checkBossesInPlace(next, rng);
   nemesisBidsInPlace(next, rng);
   if (next.date.month % 3 === 0) maybeIssueChallengeInPlace(next, rng);

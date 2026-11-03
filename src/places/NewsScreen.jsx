@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { BOSSES, STORY_BOSS } from '../data/enemies.js';
-import { getStoryView } from '../game/engine.js';
+import { BOSSES } from '../data/enemies.js';
 import { EmptyState, Panel } from '../components/UI.jsx';
 
 // Chronicle → News: minor world events that didn't need a pop-up.
@@ -28,14 +27,13 @@ export function NewsScreen({ state, actions }) {
   );
 }
 
-// Codex → Bestiary: regional bosses (defeated ones are remembered) and the story arc.
+// Codex → Bestiary: regional bosses (defeated ones are remembered). The story lives in the Quest Log and the Lore codex.
 export function BestiaryScreen({ state }) {
   const defeated = new Map((state.defeatedBosses || []).map((item) => [item.id, item]));
-  const story = getStoryView(state);
   return (
     <div className="bestiary">
       <Panel title="Regional bosses" eyebrow="One per region; their contracts appear once you are Known there">
-        {[...Object.entries(BOSSES), ['The Blackwood', STORY_BOSS]].map(([region, boss]) => (
+        {Object.entries(BOSSES).map(([region, boss]) => (
           <article key={boss.id} className={`bestiary-row ${defeated.has(boss.id) ? 'is-defeated' : ''}`}>
             <img src={`${import.meta.env.BASE_URL}art/enemies/${boss.sprite}.png`} alt="" />
             <div>
@@ -47,15 +45,6 @@ export function BestiaryScreen({ state }) {
             </div>
           </article>
         ))}
-      </Panel>
-      <Panel title="The Lantern in the Blackwood" eyebrow={story.done ? 'Complete' : `Chapter ${story.step + 1} of ${story.total}`}>
-        <p>
-          {story.done
-            ? `The guild is known as the ${story.honorific}. Perk: ${story.choice?.perk}.`
-            : story.started
-              ? story.beat?.title
-              : 'The story has not begun yet.'}
-        </p>
       </Panel>
     </div>
   );

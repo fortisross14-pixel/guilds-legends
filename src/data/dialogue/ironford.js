@@ -82,7 +82,7 @@ export default {
     portrait: P('scholar'),
     variants: [
       {
-        if: { storyStarted: true },
+        if: { storyDone: 'm4' },
         lines: ['Lantern light without lanterns? There is a word for it in the old assay books. The word is “trouble”.'],
       },
       {

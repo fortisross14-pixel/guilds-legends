@@ -27,7 +27,7 @@ import { getTournamentAccess } from './tournaments.js';
 import { FAMILY_PERKS, getReputationSummary, specializationTitle } from './reputation.js';
 import { nemesisIds } from './rivalry.js';
 import { festivalFor } from './townLife.js';
-import { getStoryView } from './stories.js';
+import { getStoryView } from './story.js';
 
 export function acknowledgeWelcome(state) {
   const next = clone(state);
@@ -117,7 +117,7 @@ export function getLivingHistory(state) {
     add('rivalry', `Eyes on ${rival.rival.name}`, score >= 0 ? `The feud currently favors ${state.guild.name}, but the next meeting will matter.` : `${rival.rival.name} has the advantage in the current feud.`, 'red');
   }
   const story = getStoryView(state);
-  if (story.choice) add('story', `The Blackwood remembers the ${story.choice.title}`, `The guild's choice still carries its mark: ${story.choice.perk}.`, 'purple');
+  if (story.active && story.active.act > 1) add('story', `Story: ${story.active.title}`, story.active.current?.text || story.active.summary, 'purple');
   return { spotlight: highlights[0] || null, highlights: highlights.slice(0, 6) };
 }
 
@@ -474,16 +474,18 @@ export function getCalendarEntries(state, months = 12) {
       date: dateFromWeekSerial(state.wager.deadlineWeek),
       detail: `Finish a ${state.wager.family} contract first to win ${state.wager.gold} gold`,
     });
-  const story = getStoryView(state);
-  if (story.posted)
-    add({
-      kind: 'story',
-      id: 'story',
-      title: `Story: ${story.posted.title}`,
-      date: dateFromWeekSerial(now + 1),
-      locationId: story.posted.locationId,
-      detail: `Special contract in ${story.posted.locationName}`,
-    });
+  state.missions
+    .filter((mission) => mission.story)
+    .forEach((mission) =>
+      add({
+        kind: 'story',
+        id: `story-${mission.id}`,
+        title: `Story: ${mission.title}`,
+        date: dateFromWeekSerial(now + 1),
+        locationId: mission.locationId,
+        detail: `Story contract in ${mission.locationName}`,
+      }),
+    );
   if (state.challenge?.status === 'pending') {
     add({
       kind: 'challenge',

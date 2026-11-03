@@ -2,7 +2,7 @@
 // Engine: src/game/engine/hall.js (actions) and core.js (bedCount, roomLevel, hallStage).
 //
 // Requirements (all keys must hold): fame, tier (0 Regional…), contracts
-// (completed contracts), storyStep, trophies, rooms ({ roomId: level }).
+// (completed contracts), trophies, rooms ({ roomId: level }).
 
 /** The room above the Wayfarer in Dunmere: where every campaign starts. */
 export const RENTED_ROOM = {

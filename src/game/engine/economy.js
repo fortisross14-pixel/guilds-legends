@@ -150,7 +150,7 @@ export function upkeepBreakdown(state) {
   const hall = hallUpkeep(state);
   const appointments = Object.keys(state.guild.appointments || {}).length * 7;
   const subtotal = wages + hall.total + appointments;
-  const total = state.story?.choice === 'bury' && state.story?.done ? Math.round(subtotal * 0.9) : subtotal;
+  const total = subtotal;
   return { wages, hall, appointments, loan: state.guild.loan?.installment || 0, total };
 }
 

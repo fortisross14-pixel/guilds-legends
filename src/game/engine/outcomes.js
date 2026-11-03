@@ -39,6 +39,7 @@ import { missionFamily } from './reputation.js';
 import { adjustPatronInPlace, charterEffect, patronAtLeast, patronContractResultInPlace } from './charter.js';
 import { grantPatronRewardsInPlace } from './connections.js';
 import { afterContractInPlace } from './seasons.js';
+import { storyContractResolvedInPlace } from './story.js';
 
 function gradeFromMargin(margin, roll, chance) {
   if (roll < 0.04 && chance >= 25) return 'Legendary';
@@ -243,12 +244,10 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   // Charter pay (Merchant House +15%, Shield −10%) and allied patrons paying more for their own work.
   rewardMultiplier *= charterEffect(next, 'contractPay');
   if (mission.patron && ['trade', 'temple'].includes(mission.patron) && patronAtLeast(next, mission.patron, 'ally')) rewardMultiplier *= 1.25;
-  if (next.story?.choice === 'revenge' && missionFamily(mission) === 'Combat') rewardMultiplier += 0.1;
   const reward = Math.max(0, Math.round((mission.reward + (option.reward || 0)) * multiplier * rewardMultiplier));
   const rawFame = Math.round((mission.fame + (option.fame || 0)) * multiplier);
   let fameMultiplier = 1 + (appointmentHolder(next, 'Chronicler') ? 0.08 : 0);
   fameMultiplier += contractFameBonus(next, mission) - 1;
-  if (next.story?.choice === 'restore') fameMultiplier += 0.1;
   if (next.guild.policies.treasure === 'Public Trust') fameMultiplier += 0.18;
   if (next.guild.policies.publicity === 'Heroic') fameMultiplier += 0.12;
   if (next.guild.policies.publicity === 'Private') fameMultiplier -= 0.35;
@@ -375,7 +374,8 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     patronContractResultInPlace(next, mission.patron, grade);
     grantPatronRewardsInPlace(next);
   }
-  onContractResolvedInPlace(next, mission, grade, cleanSuccess, rng);
+  onContractResolvedInPlace(next, mission, grade, cleanSuccess);
+  storyContractResolvedInPlace(next, mission, success);
   if (cleanSuccess) checkWagerOnContractInPlace(next, missionFamily(mission));
   addMissionLegacyInPlace(
     next,

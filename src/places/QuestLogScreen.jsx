@@ -17,24 +17,15 @@ export default function QuestLogScreen({ state, navigate }) {
   const story = getStoryView(state);
   return (
     <div className="quest-log">
-      <Panel
-        title="The Lantern in the Blackwood"
-        eyebrow={story.done ? 'Complete' : story.started ? `Chapter ${story.step + 1} of ${story.total}` : 'Not begun'}
-      >
-        {story.done ? (
-          <p className="quest-row">
-            <strong>{story.honorific}</strong> <small>Perk: {story.choice?.perk}</small>
-          </p>
-        ) : story.started ? (
+      <Panel title="The Last Banner" eyebrow={`${story.doneCount} of 8 Chapter 1 missions`}>
+        {story.active ? (
           <button className="quest-row" onClick={() => story.pin && navigate({ view: 'map', pin: story.pin })}>
-            <strong>{story.posted ? story.posted.title : story.beat?.title}</strong>
-            <small>
-              {story.posted ? `Special contract at the Notice Board in ${story.posted.locationName}` : 'The next lead will turn up in a few months.'}
-            </small>
+            <strong>{story.active.title}</strong>
+            <small>{story.active.current?.text || story.active.summary}</small>
             {story.pin ? <span className="quest-row__map">Show on map 📍</span> : null}
           </button>
         ) : (
-          <p className="muted">Rumors about the old guild will reach you soon.</p>
+          <p className="muted">{story.next ? `Next: ${story.next.title} (${story.next.gate.text}).` : 'Chapter 1 is complete.'}</p>
         )}
       </Panel>
       {livingHistory.highlights.length ? (

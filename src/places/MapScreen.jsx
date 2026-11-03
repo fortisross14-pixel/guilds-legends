@@ -38,10 +38,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const selectedWild = String(selectedId).startsWith('wild:') ? WILD_AREAS[String(selectedId).slice(5)] || null : null;
   const selected = LOCATION_BY_ID[selectedId] || LOCATION_BY_ID[currentLocationId];
   const story = getStoryView(state);
-  const oldRoadDone = (state.missionHistory || []).some((mission) => mission.templateId === 'wolves-old-road');
-  // The main quest marker is always on the map: the story's next place, or Dunmere's first contract.
-  const questId = story.pin || (!oldRoadDone ? 'dunmere' : null);
-  const questTitle = story.beat?.title || (story.pin ? 'The Blackwood story' : 'Wolves on the Old Road');
+  // The main quest marker: where the current story step happens (it can be hidden in the Quest Log).
+  const questId = state.settings?.questMarker === false ? null : story.pin;
+  const questTitle = story.active?.title || '';
   const knowledge = getWorldKnowledge(state);
   const knownLocationCount = Object.values(knowledge).filter((status) => status !== 'unknown').length;
   const selectedBeyond = !inSlice(selected.id);

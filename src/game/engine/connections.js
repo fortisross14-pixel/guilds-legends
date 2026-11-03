@@ -13,7 +13,6 @@ import { addItemsInPlace } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { instantiateMission } from './universe.js';
 import { getPlayerRanks } from './rankings.js';
-import { getStoryView } from './stories.js';
 
 function patronStateInPlace(state, patronId) {
   state.patrons ||= {};
@@ -106,7 +105,7 @@ export function getPathScores(state) {
   const anyAlly = PATRON_LIST.some((patron) => patronAtLeast(state, patron.id, 'ally'));
   const titles = (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0);
   const rare = [...(state.heroes || []), ...(state.historicHeroes || [])].filter((hero) => ['Epic', 'Legend'].includes(hero.rarity)).length;
-  const story = getStoryView(state).step || 0;
+  const story = Object.values(state.story?.missions || {}).filter((mission) => mission.status === 'done').length;
   const scores = {
     richest: { score: state.stats?.goldEarned || 0, detail: `${(state.stats?.goldEarned || 0).toLocaleString()} gold earned` },
     connected: { score: patronTotal + Math.round(regions / 10), detail: `${patronTotal} patron standing · ${Math.round(regions / 10)} from regional reputation` },
@@ -116,7 +115,7 @@ export function getPathScores(state) {
     },
     legendary: {
       score: (state.guild?.legacy || 0) + titles * 25 + (state.artifacts?.length || 0) * 15 + trophyCount(state) * 5 + story * 10 + rare * 10,
-      detail: `${state.guild?.legacy || 0} legacy · ${titles} titles · ${state.artifacts?.length || 0} artifacts · story step ${story} · ${rare} rare recruits`,
+      detail: `${state.guild?.legacy || 0} legacy · ${titles} titles · ${state.artifacts?.length || 0} artifacts · ${story} story missions · ${rare} rare recruits`,
     },
   };
   return Object.values(PATHS).map((path) => {

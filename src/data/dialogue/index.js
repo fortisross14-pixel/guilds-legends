@@ -14,7 +14,13 @@
 //   oldRoadCleared: bool     the Wolves on the Old Road contract is done
 //   tierAtLeast: n           guild tier (0 Regional, 1 National…)
 //   fameAtLeast: n, goldAtLeast: n
-//   storyStarted: bool, storyStepAtLeast: n, storyDone: bool, storyOpen: bool (Blackwood open)
+//   any: [Condition, …]      at least one holds
+//   The story (src/data/story.js): prologueDone, tutorialSkipped, tutorialDone: bool;
+//   chapterAtLeast: n; storyDone: missionId (or list), notStoryDone, storyActive: id;
+//   evidence: id, evidenceAtLeast: n, codex: id; choice / notChoice: { name: value };
+//   storyHero / notStoryHero: id, storyHeroLoyalty: { id, at }; contractsWon: n;
+//   regionLevel: { region: n }; heroClass: { classId, level }; signedUp: tournamentId;
+//   tournamentPlayed: tournamentId | 'any'; freeBed, atHome, hallLeased: bool
 //   season: 'spring' | 'summer' | 'autumn' | 'winter' (or a list)
 //   flag: name, notFlag: name  (state.flags.dialogue)
 //   candidateHere: bool      a recruit is in this town

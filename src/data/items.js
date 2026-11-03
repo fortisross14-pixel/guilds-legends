@@ -104,15 +104,9 @@ const list = [
   { id: 'roc-feather', name: 'Roc Feather', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { spd: 8, atk: 3 } },
   { id: 'frost-heart', name: 'Frost Heart', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { def: 9, hp: 40 } },
   { id: 'veil-mask', name: 'Veil Mask', kind: 'accessory', tier: 9, price: 800, unique: true, stats: { mag: 9, spd: 3 } },
-  {
-    id: 'lantern-of-the-lost',
-    name: 'Lantern of the Lost Company',
-    kind: 'accessory',
-    tier: 9,
-    price: 1200,
-    unique: true,
-    stats: { atk: 6, def: 6, mag: 6, hp: 30 },
-  },
+  // Story rewards (The Last Banner, src/data/story.js).
+  { id: 'marens-satchel', name: 'Maren’s Satchel', kind: 'accessory', tier: 9, price: 500, unique: true, stats: { hp: 25, mag: 3 } },
+  { id: 'gull-feather', name: 'Halden’s Gull Feather', kind: 'accessory', tier: 9, price: 600, unique: true, stats: { spd: 6, atk: 3 } },
 ];
 
 export const ITEMS = Object.fromEntries(list.map((item) => [item.id, item]));

@@ -274,7 +274,7 @@ export function migrateGame(raw) {
   next.news ||= [];
   next.sideJobs ||= [];
   next.activeSideJobs ||= [];
-  next.story ||= { step: 0, next: null, choice: null, rivalId: null, done: false, postedMissionId: null };
+  next.story = { missions: {}, evidence: {}, codex: {}, choices: {}, scene: null, tutorial: 'active', prologue: 'done', chapter: 1, chapterDone: false, ...(next.story?.missions ? next.story : {}) };
   next.defeatedBosses ||= [];
   next.rankHistory ||= [];
   next.council = { lastReport: null, unread: false, ...(next.council || {}) };

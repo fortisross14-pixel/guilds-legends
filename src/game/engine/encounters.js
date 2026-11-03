@@ -7,6 +7,7 @@ import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGame
 import { addChronicle, campaignWeekSerial, clone, commitRng, completeTutorialTargetInPlace, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
+import { storyDuelResultInPlace } from './story.js';
 import { applyXpInPlace, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
@@ -214,6 +215,13 @@ export function concludeActiveCombat(state, mutate = false) {
     next.activeEncounter = null;
     evaluateStateInPlace(next);
     return { state: finalize(next), error: null, result: { kind: 'challenge', combat: combatResult } };
+  }
+
+  if (encounter.sourceType === 'story-duel') {
+    storyDuelResultInPlace(next, encounter.sourceId, combatResult.playerWon);
+    next.activeEncounter = null;
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'story-duel', combat: combatResult } };
   }
 
   if (encounter.sourceType === 'road') {

@@ -416,7 +416,14 @@ export function getReport(state, reference) {
   return state.tournamentHistory?.find((record) => record.id === id) || state.missionHistory?.find((record) => record.id === id) || null;
 }
 
+/** Hooks that run at the end of every engine action (the story registers one). */
+const FINALIZE_HOOKS = [];
+export function onFinalize(hook) {
+  if (!FINALIZE_HOOKS.includes(hook)) FINALIZE_HOOKS.push(hook);
+}
+
 export function finalize(state) {
+  FINALIZE_HOOKS.forEach((hook) => hook(state));
   state.lastPlayedAt = new Date().toISOString();
   state.guild.tier = TIERS[state.guild.tierIndex]?.id || state.guild.tier;
   state.notifications = state.notifications.slice(-12);

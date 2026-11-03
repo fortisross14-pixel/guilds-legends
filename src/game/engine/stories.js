@@ -1,15 +1,13 @@
 // @ts-check
-// The Blackwood story arc, regional boss contracts, and the shared effect
-// rules for event cards (town events, festivals, story beats).
+// Regional boss contracts and the shared effect rules for event cards (town
+// events, festivals). The main story lives in story.js.
 import { MISSION_TEMPLATES } from '../../data/content.js';
-import { BOSSES, STORY_BOSS } from '../../data/enemies.js';
+import { BOSSES } from '../../data/enemies.js';
 import { LOCATION_BY_ID, unlockedLocations } from '../../data/world.js';
-import { STORY_BEATS, STORY_CHOICES, STORY_PACING } from '../../data/story.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, getHero, pushNewsInPlace } from './core.js';
 import { applyXpInPlace, adjustRelationshipInPlace } from './heroes.js';
 import { addItemsInPlace } from './inventory.js';
 import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
-import { adjustPatronInPlace } from './charter.js';
 import { recordRivalryInPlace } from './rivalry.js';
 import { instantiateMission } from './universe.js';
 
@@ -77,16 +75,7 @@ export function fillEventText(text, ctx, state) {
     .replaceAll('{festival}', ctx.festival || 'festival');
 }
 
-// ---------------------------------------------------------------- story arc
-
-export function storyState(state) {
-  return { step: 0, next: null, choice: null, rivalId: null, done: false, postedMissionId: null, ...(state.story || {}) };
-}
-
-export function currentBeat(state) {
-  const story = storyState(state);
-  return story.done ? null : STORY_BEATS[story.step] || null;
-}
+// ---------------------------------------------------------------- regional bosses
 
 function templateFor(approach) {
   return (
@@ -100,137 +89,8 @@ function farFuture(state, years = 5) {
   return { year: state.date.year + years, month: state.date.month };
 }
 
-function postStoryContractInPlace(state, beat, rng) {
-  const mission = instantiateMission(templateFor(beat.approach), state, rng, LOCATION_BY_ID[beat.locationId]);
-  Object.assign(mission, {
-    id: `story-${beat.id}-${campaignMonthSerial(state)}`,
-    templateId: `story-${beat.id}`,
-    title: beat.title,
-    stakes: beat.stakes,
-    approach: beat.approach,
-    difficulty: beat.difficulty + state.guild.tierIndex * 6,
-    risk: beat.risk,
-    reward: beat.reward,
-    fame: beat.fame,
-    duration: 2,
-    story: beat.id,
-    bossId: beat.boss ? STORY_BOSS.id : null,
-    availableUntil: farFuture(state),
-  });
-  state.missions.push(mission);
-  state.story = { ...storyState(state), postedMissionId: mission.id };
-  state.notifications.push({
-    id: `story-${beat.id}`,
-    tone: 'purple',
-    title: `Story: ${beat.title}`,
-    text: `A new lead in ${mission.locationName}. See the Quest Log.`,
-  });
-  pushNewsInPlace(state, { title: `Story: ${beat.title}`, text: `A special contract is posted in ${mission.locationName}.`, tone: 'purple' });
-}
-
-/** Story beat as an event card (the caller places it in pendingEvent). */
-export function storyEventCard(state, beat, rng) {
-  const rivalId = beat.id === 'rival-hunt' ? pickStoryRival(state, rng) : storyState(state).rivalId;
-  return {
-    source: 'story',
-    beatId: beat.id,
-    rivalId,
-    title: beat.title,
-    text: beat.text,
-    options: beat.options.map(({ id, label, note }) => ({ id, label, note })),
-  };
-}
-
-function pickStoryRival(state, rng) {
-  const scored = Object.entries(state.rivalries || {}).sort((a, b) => b[1].score - a[1].score)[0]?.[0];
-  if (scored) return scored;
-  const regional = state.rivals.filter((rival) => (rival.leagueTierIndex ?? rival.tierIndex) <= state.guild.tierIndex);
-  return rng.pick(regional.length ? regional : state.rivals).id;
-}
-
-/** Monthly: start the arc or post the next beat when its time comes. Returns an event card or null. */
-export function checkStoryInPlace(state, rng) {
-  const story = storyState(state);
-  if (story.done || story.postedMissionId) return null;
-  const now = campaignMonthSerial(state);
-  if (story.step === 0 && story.next === null) {
-    const monthsPlayed = (state.date.year - 1187) * 12 + state.date.month;
-    const started =
-      state.guild.contractsCompleted >= STORY_PACING.firstAfterContracts ||
-      state.guild.fame >= STORY_PACING.firstAfterFame ||
-      monthsPlayed >= STORY_PACING.firstAfterMonths;
-    if (!started) return null;
-  } else if (story.next !== null && now < story.next) return null;
-  const beat = STORY_BEATS[story.step];
-  if (!beat) return null;
-  if (beat.kind === 'contract') {
-    postStoryContractInPlace(state, beat, rng);
-    return null;
-  }
-  return storyEventCard(state, beat, rng);
-}
-
-function scheduleNextInPlace(state, rng) {
-  const story = storyState(state);
-  const gap = rng ? rng.int(STORY_PACING.minMonthsBetween, STORY_PACING.maxMonthsBetween) : STORY_PACING.minMonthsBetween;
-  state.story = { ...story, step: story.step + 1, next: campaignMonthSerial(state) + gap, postedMissionId: null };
-}
-
-/** A story event card was answered. */
-export function advanceStoryEventInPlace(state, beatId, optionId, ctx, rng) {
-  const beat = STORY_BEATS.find((item) => item.id === beatId);
-  const option = beat?.options.find((item) => item.id === optionId);
-  if (!beat || !option) return null;
-  applyEventEffectsInPlace(state, option.effects, ctx);
-  const story = storyState(state);
-  state.story = { ...story, rivalId: ctx.rivalId || story.rivalId, choice: beat.id === 'truth' ? optionId : story.choice };
-  // The Blackwood truth matters to the patrons: restoring the Lantern's name pleases the Temple,
-  // revenge the Smiths, burying it quietly the Trade House.
-  if (beat.id === 'truth') {
-    const patron = { restore: 'temple', revenge: 'smiths', bury: 'trade' }[optionId];
-    if (patron) adjustPatronInPlace(state, patron, 10, 'your choice in the Blackwood');
-  }
-  addChronicle(state, {
-    type: 'story',
-    importance: 4,
-    title: beat.title,
-    text: fillEventText(option.result || beat.text, ctx, state),
-    tags: ['story', 'blackwood'],
-  });
-  scheduleNextInPlace(state, rng);
-  return fillEventText(option.result, ctx, state);
-}
-
-/** Called when any contract resolves. Advances story beats and records bosses. */
-export function onContractResolvedInPlace(state, mission, grade, success, rng) {
-  if (mission.story) {
-    const beat = STORY_BEATS.find((item) => item.id === mission.story);
-    if (!success) {
-      state.story = { ...storyState(state), postedMissionId: null, next: campaignMonthSerial(state) + STORY_PACING.retryMonths };
-      pushNewsInPlace(state, { title: `Story setback: ${beat.title}`, text: 'The lead goes cold for now. It will come back next month.', tone: 'red' });
-      return;
-    }
-    addChronicle(state, { type: 'story', importance: 5, title: beat.title, text: beat.resultText, tags: ['story', 'blackwood'] });
-    state.notifications.push({ id: `story-done-${beat.id}`, tone: 'purple', title: beat.title, text: beat.resultText });
-    if (beat.id === 'finale') {
-      const choice = STORY_CHOICES[storyState(state).choice] || STORY_CHOICES.restore;
-      state.story = { ...storyState(state), done: true, postedMissionId: null, step: STORY_BEATS.length };
-      state.guild.honorific = choice.title;
-      state.guild.legacy += 60;
-      addItemsInPlace(state, { 'lantern-of-the-lost': 1 });
-      state.defeatedBosses = [...(state.defeatedBosses || []), { id: STORY_BOSS.id, name: STORY_BOSS.name, year: state.date.year }];
-      addChronicle(state, {
-        type: 'story',
-        importance: 5,
-        title: `${state.guild.name} become the ${choice.title}`,
-        text: `The Blackwood is quiet. Permanent perk: ${choice.perk}.`,
-        tags: ['story', 'blackwood', 'finale'],
-      });
-      return;
-    }
-    scheduleNextInPlace(state, rng);
-    return;
-  }
+/** Called when any contract resolves: records a defeated regional boss. */
+export function onContractResolvedInPlace(state, mission, grade, success) {
   if (mission.bossId && success) {
     const boss = Object.values(BOSSES).find((item) => item.id === mission.bossId);
     if (!boss) return;
@@ -249,8 +109,6 @@ export function onContractResolvedInPlace(state, mission, grade, success, rng) {
     pushNewsInPlace(state, { title: `${boss.name} defeated`, text: `All of ${mission.region} is talking about it.`, tone: 'gold' });
   }
 }
-
-// ---------------------------------------------------------------- regional bosses
 
 /** Monthly: post a boss contract in each region where the guild is Known and the boss lives. */
 export function checkBossesInPlace(state, rng) {
@@ -284,28 +142,7 @@ export function checkBossesInPlace(state, rng) {
 
 export function bossForMission(mission) {
   if (!mission?.bossId) return null;
-  return mission.bossId === STORY_BOSS.id ? STORY_BOSS : Object.values(BOSSES).find((item) => item.id === mission.bossId) || null;
-}
-
-/** Quest Log / map data for the arc. */
-export function getStoryView(state) {
-  const story = storyState(state);
-  const beat = currentBeat(state);
-  const posted = story.postedMissionId
-    ? state.missions.find((mission) => mission.id === story.postedMissionId) || state.activeMissions.find((mission) => mission.id === story.postedMissionId)
-    : null;
-  return {
-    started: story.step > 0 || story.next !== null || Boolean(posted),
-    done: story.done,
-    step: story.step,
-    total: STORY_BEATS.length,
-    beat,
-    posted,
-    pin: posted?.locationId || beat?.pin || beat?.locationId || null,
-    choice: story.choice ? STORY_CHOICES[story.choice] : null,
-    honorific: state.guild.honorific || null,
-    blackwoodOpen: story.done || beat?.id === 'finale',
-  };
+  return Object.values(BOSSES).find((item) => item.id === mission.bossId) || null;
 }
 
 export function heroHistoryNote(state, heroId, title, text) {

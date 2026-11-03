@@ -19,7 +19,7 @@ import { applyXpInPlace } from './heroes.js';
 import { addItemsInPlace } from './inventory.js';
 import { adjustRegionReputationInPlace } from './reputation.js';
 import { issueChallengeInPlace, nemesisIds, recordRivalryInPlace } from './rivalry.js';
-import { advanceStoryEventInPlace, applyEventEffectsInPlace, fillEventText } from './stories.js';
+import { applyEventEffectsInPlace, fillEventText } from './stories.js';
 import { makeCandidate } from './candidates.js';
 
 export const EVENT_CARD_CHANCE = 0.45;
@@ -131,48 +131,31 @@ export function rollWeeklyEventInPlace(state, rng) {
   state.pendingEvent = cardFromEvent(state, event, contextFor(state, event, rng, townId));
 }
 
-/** Answer the waiting event card (town event, festival or story beat). */
+/** Answer the waiting event card (town event or festival). */
 export function resolveTownEvent(state, optionId) {
   const card = state.pendingEvent;
   if (!card) return { state, error: 'There is no event waiting.' };
   if (!card.options.some((option) => option.id === optionId)) return { state, error: 'Choose one of the offered options.' };
   const next = clone(state);
-  const rng = rngFor(next, `event-${card.eventId || card.beatId}-${campaignWeekSerial(next)}`);
+  const rng = rngFor(next, `event-${card.eventId}-${campaignWeekSerial(next)}`);
   const ctx = { heroId: card.heroId, hero2Id: card.hero2Id, rivalId: card.rivalId, townId: card.townId, festival: card.festival };
   next.pendingEvent = null;
-  let result;
-  if (card.source === 'story') {
-    result = advanceStoryEventInPlace(next, card.beatId, optionId, ctx, rng) || '';
-  } else {
-    const event = card.source === 'festival' ? FESTIVAL_EVENT : TOWN_EVENTS.find((item) => item.id === card.eventId);
-    const option = event?.options.find((item) => item.id === optionId);
-    if (!option) return { state, error: 'That event no longer exists.' };
-    const success = option.chance === undefined || rng.next() < option.chance;
-    applyEventEffectsInPlace(next, success ? option.effects : option.fail || {}, ctx);
-    result = fillEventText(success ? option.result || option.note : option.failResult || option.note, ctx, next);
-    if (option.effects?.rivalry && ctx.rivalId) recordRivalryInPlace(next, ctx.rivalId, 'close');
-  }
+  const event = card.source === 'festival' ? FESTIVAL_EVENT : TOWN_EVENTS.find((item) => item.id === card.eventId);
+  const option = event?.options.find((item) => item.id === optionId);
+  if (!option) return { state, error: 'That event no longer exists.' };
+  const success = option.chance === undefined || rng.next() < option.chance;
+  applyEventEffectsInPlace(next, success ? option.effects : option.fail || {}, ctx);
+  const result = fillEventText(success ? option.result || option.note : option.failResult || option.note, ctx, next);
+  if (option.effects?.rivalry && ctx.rivalId) recordRivalryInPlace(next, ctx.rivalId, 'close');
   commitRng(next, rng);
-  pushNewsInPlace(next, { title: card.title, text: result, tone: card.source === 'story' ? 'purple' : 'neutral' });
+  pushNewsInPlace(next, { title: card.title, text: result, tone: 'neutral' });
   next.notifications.push({
     id: `event-${campaignWeekSerial(next)}-${optionId}`,
-    tone: card.source === 'story' ? 'purple' : 'blue',
+    tone: 'blue',
     title: card.title,
     text: result,
   });
-  if (card.source === 'story') addChronicle(next, { type: 'story', importance: 2, title: card.title, text: result, tags: ['story'] });
   return { state: finalize(next), error: null };
-}
-
-/** Story beats arrive as event cards too (queued if another card is waiting). */
-export function queueStoryCardInPlace(state, card) {
-  if (!card) return;
-  if (state.pendingEvent) {
-    state.flags.storyCardWaiting = true;
-    return;
-  }
-  state.pendingEvent = card;
-  state.flags.storyCardWaiting = false;
 }
 
 // ---------------------------------------------------------------- side jobs

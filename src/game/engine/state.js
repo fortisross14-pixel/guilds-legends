@@ -135,7 +135,8 @@ export function createNewGame(options = {}) {
     newsUnread: 0,
     sideJobs: [],
     activeSideJobs: [],
-    story: { step: 0, next: null, choice: null, rivalId: null, done: false, postedMissionId: null },
+    // The Last Banner (src/data/story.js, engine story.js). The prologue plays first.
+    story: { missions: {}, evidence: {}, codex: {}, choices: {}, scene: null, tutorial: 'active', prologue: 'house', chapter: 1, chapterDone: false },
     defeatedBosses: [],
     rankHistory: [],
     council: { lastReport: null, unread: false },

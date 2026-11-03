@@ -179,7 +179,7 @@ export default {
     portrait: P('lamplighter'),
     variants: [
       {
-        if: { storyStarted: true },
+        if: { storyDone: 'm4' },
         lines: ['People say lanterns went out in the Blackwood all at once. I keep mine lit extra long now. Just in case.'],
       },
       {

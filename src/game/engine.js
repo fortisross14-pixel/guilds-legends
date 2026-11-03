@@ -157,4 +157,14 @@ export { REPUTATION_FAMILIES, REPUTATION_LEVELS, FAMILY_PERKS, getReputationSumm
 export { nemesisIds, rivalRecord, getNemesisView, challengeNemesis, acceptChallenge, declineChallenge } from './engine/rivalry.js';
 export { declineContract } from './engine/missions.js';
 export { resolveTownEvent, startSideJob, markNewsRead, festivalFor } from './engine/townLife.js';
-export { getStoryView, bossForMission } from './engine/stories.js';
+export { bossForMission } from './engine/stories.js';
+export {
+  getStoryView,
+  getLoreCodex,
+  storyState,
+  playStoryScene,
+  finishStoryScene,
+  startStoryDuel,
+  readHistoryBoard,
+  storyNpcsHere,
+} from './engine/story.js';

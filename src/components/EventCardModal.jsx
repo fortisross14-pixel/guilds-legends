@@ -24,15 +24,15 @@ export function Dialogue({ speaker, text, hero = null }) {
   );
 }
 
-// Town events, festivals and story beats: a dialogue box with 2–3 choices.
+// Town events and festivals: a dialogue box with 2–3 choices.
 export default function EventCardModal({ card, onChoose, heroes = [] }) {
   if (!card) return null;
-  const speaker = card.source === 'story' ? 'The Lantern in the Blackwood' : card.source === 'festival' ? card.festival || 'Festival' : 'Town crier';
-  const subtitle = card.source === 'story' ? 'Story' : card.source === 'festival' ? 'Festival' : 'This week in town';
+  const speaker = card.source === 'festival' ? card.festival || 'Festival' : 'Town crier';
+  const subtitle = card.source === 'festival' ? 'Festival' : 'This week in town';
   return (
     <Modal open title={card.title} eyebrow={subtitle} preventClose width="medium" className="modal--story">
       <div className={`decision-scene event-card event-card--${card.source}`}>
-        <Dialogue speaker={speaker} text={card.text} hero={card.source === 'story' ? null : heroInText(heroes, card.text)} />
+        <Dialogue speaker={speaker} text={card.text} hero={heroInText(heroes, card.text)} />
         <div className="decision-options" data-menu>
           {card.options.map((option, index) => (
             <button key={option.id} onClick={() => onChoose(option.id)}>

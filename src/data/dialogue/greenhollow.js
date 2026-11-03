@@ -39,7 +39,7 @@ export default {
     portrait: P('warden'),
     variants: [
       {
-        if: { storyStarted: true },
+        if: { storyDone: 'm4' },
         lines: ['Lantern light in the Blackwood again. The wardens will not go near it. If your guild does, go together.'],
       },
       {

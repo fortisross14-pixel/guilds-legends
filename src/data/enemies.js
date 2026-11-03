@@ -153,18 +153,6 @@ export const BOSSES = {
   },
 };
 
-export const STORY_BOSS = {
-  id: 'boss-hollow-warden',
-  name: 'The Hollow Warden',
-  role: 'tank',
-  sprite: 'enemy_10',
-  skills: ['boss-lantern-eater', 'earthshaker', 'bulwark'],
-  trophy: null,
-  intro: '“The Broken Lantern came here once. Its light still feeds me.”',
-  charge: { skill: 'lantern-nova', every: 4 },
-  phases: [{ at: 0.5, banner: 'The Warden’s lanterns blaze white. It charges faster now.', charge: { skill: 'lantern-nova', every: 2 }, statuses: { atkUp: 9 } }],
-};
-
 /**
  * Wild-area bosses with phase scripts. A phase starts when the boss drops
  * below `at` of its max HP: it shows `banner` and can summon allies, change
@@ -202,7 +190,7 @@ export const AREA_BOSSES = {
   },
 };
 
-export const BOSS_LIST = [...Object.values(BOSSES), STORY_BOSS];
+export const BOSS_LIST = Object.values(BOSSES);
 
 /** Every roster type by id (for summons and wild groups). */
 export const ENEMY_TYPES = Object.fromEntries(Object.values(REGION_ENEMIES).flat().map((enemy) => [enemy.id, enemy]));

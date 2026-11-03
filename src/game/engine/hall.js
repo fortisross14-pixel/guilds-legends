@@ -19,7 +19,6 @@ import {
   tallySpend,
   trophyCount,
 } from './core.js';
-import { getStoryView } from './stories.js';
 import { charterEffect } from './charter.js';
 import { evaluateStateInPlace } from './goals.js';
 import { hallUpkeep } from './economy.js';
@@ -42,7 +41,6 @@ export function requirementStatus(state, requires = {}) {
   if (requires.fame && state.guild.fame < requires.fame) missing.push(`${requires.fame} fame (you have ${state.guild.fame})`);
   if (requires.tier && state.guild.tierIndex < requires.tier) missing.push(`${TIERS[requires.tier]?.id || 'Higher'} status`);
   if (requires.contracts && completedContracts(state) < requires.contracts) missing.push(`${requires.contracts} contracts completed (${completedContracts(state)} so far)`);
-  if (requires.storyStep && getStoryView(state).step < requires.storyStep) missing.push(`Blackwood story, step ${requires.storyStep}`);
   if (requires.trophies && trophyCount(state) < requires.trophies) missing.push(`${requires.trophies} trophy (a title, artifact or boss)`);
   Object.entries(requires.rooms || {}).forEach(([id, level]) => {
     if (roomLevel(state, id) < level) missing.push(`${ROOM_BY_ID[id]?.name || id}${level > 1 ? ` level ${level}` : ''}`);
@@ -137,6 +135,33 @@ export function rentBed(state) {
   next.guild.hall.rentedBeds += 1;
   addChronicle(next, { type: 'facility', importance: 1, title: 'Another bed upstairs', text: `Mara squeezes a ${next.guild.hall.rentedBeds}th bed into the rented room. The rent goes up.`, tags: ['hall'] });
   return { state: finalize(next), error: null };
+}
+
+/**
+ * Leases the hall in place (mission 1's scene, or acquireHall). `deposit` is
+ * what the owner takes up front (0 when the work is done instead).
+ */
+export function leaseHallInPlace(state, deposit = HALL_PURCHASE.lease.cost) {
+  const hall = state.guild.hall;
+  if (hall.owned) return false;
+  if (deposit > 0) {
+    state.guild.crowns -= deposit;
+    tallySpend(state, 'hall', deposit);
+  }
+  hall.owned = true;
+  hall.lease = true;
+  state.guild.legacy += 5;
+  pushMoment(state, {
+    type: 'construction',
+    roomId: 'hall',
+    title: `${HALL_PURCHASE.name}: yours to build in`,
+    effect: `${HALL_PURCHASE.wings} empty wings to build rooms in, and ${HALL_PURCHASE.beds} beds to start. Rent is ${HALL_PURCHASE.lease.rent} gold a month.`,
+    unlocked: ['Room building', 'Guild duty (Office)', `${bedCount(state)} beds in total`],
+    stage: hallStage(state).name,
+    interior: hallStage(state).interior,
+  });
+  addChronicle(state, { type: 'facility', importance: 3, title: `${state.guild.name} rents ${HALL_PURCHASE.name}`, text: 'Dusty, drafty and theirs. The banner goes up over the door on Banner Plaza.', tags: ['hall'] });
+  return true;
 }
 
 /** Buys (or leases) the old hall on Banner Plaza: the guild's first real home. */
