@@ -9,7 +9,8 @@ This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code 
 | Wave 4 — Rankings as the hook, and the scripted opening | ✅ Done (2026-11-02) |
 | Wave 5 — Your team, your time (party bar, rooms, status screen, weeks, calendar) | ✅ Done (2026-11-02) |
 | Wave 6 — Recruitment depth | ✅ Done (2026-11-02) |
-| Wave 7 — Specialization and rivalries | Not started |
+| Wave 7 — Specialization, rivalries and fixes | In progress |
+| Wave 8 — Content and pacing | Not started |
 
 ## The goal: turn a stack of menus into a game
 
@@ -41,7 +42,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - Prefer reusing existing systems (missions, recruitment, tournaments, rivals, combat.js) over rewriting them. Remove code that a wave makes obsolete instead of leaving dead paths.
 - If a design detail here is unclear or conflicts with the code, make the simplest reasonable choice and list it in the summary.
 
-## Wave 2 — The world is the game (map, towns, time)
+## Wave 2 — The world is the game (map, towns, time) (done)
 
 1. **World map as the home screen.**
    - Show all locations as nodes connected by real routes, built from location coordinates.
@@ -79,7 +80,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - The Codex holds the full Goals/promotion/achievements list and the Legacy office; the Guild Hall overview shows the Objectives panels (current goal and next threshold).
 - The old screen components now live inside buildings (`src/places/TownScreen.jsx`); they were not renamed.
 
-## Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards)
+## Wave 3 — Real combat (per-hero commands, skills, items, gear, rewards) (done)
 
 1. **Per-hero battle model** in combat.js (replace the shared party HP pool):
    - Each hero and each enemy has its own HP, MP, attack, defense, speed and status effects (e.g. guard, poison, stun, buff).
@@ -132,7 +133,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - Tournament prizes: the champion gets a better loot roll, the runner-up a normal one. Victory moments appear after combat missions (after the aftermath choice, so XP and gold are final), road ambushes and tournament bouts.
 - Removed: the old tactic-dropdown round path, the shared party HP pool, stances (guard/feint/recover/objective/signature), and their tests.
 
-## Wave 4 — Rankings as the hook, and the scripted opening
+## Wave 4 — Rankings as the hook, and the scripted opening (done)
 
 1. **Three ladders**, for guilds and for heroes, in rankings.js:
    - **Strength:** current power (guild = average of its top 5 heroes). Moves fast.
@@ -171,7 +172,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - Known effect for the balance pass: the autoplay governor never enters tournaments, so with Official-based promotion the simulated guild stays Regional (`npm run sim`).
 - Removed: the composite guild score and the old 10-step menu tutorial.
 
-## Wave 5 — Your team, your time
+## Wave 5 — Your team, your time (done)
 
 The problem: the team is invisible (three clicks deep), assigning heroes to train, rest or recover isn't discoverable, and time has no calendar. Wave 5 makes the team and the calendar always present, and keeps the "menus become places" idea.
 
@@ -237,7 +238,7 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
 - The old Hall overview (next-step panel, objectives, expeditions) is gone. Objectives live in the Quest Log, and the next-step ribbon now shows on every screen.
 - Removed: the Guild Hall Overview/Roster/Equipment/Facilities tabs, HallScreen, CouncilPlanner ("Resolve month" / "Rest 1–3 months"), restAtGuildHall, and the hero dossier modal (replaced by the status screen).
 
-## Wave 6 — Recruitment depth
+## Wave 6 — Recruitment depth (done)
 
 - Contracts with length and salary, expiry and renewal talks.
 - Candidate stats shown as ranges until narrowed by scouting.
@@ -264,6 +265,13 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
 - Reputation per mission family (Combat/Diplomacy/Expedition/Intrigue) and per region, with perks.
 - Declined contracts go to rivals.
 - 1–2 rival guilds become nemeses, with head-to-head records and challenge matches.
+
+## Wave 8 — Content and pacing (not started)
+
+- More to do between contracts: town events, rival challenges, short side jobs, so "+1 week" usually brings something.
+- More enemy types per region, plus one boss contract per region.
+- A story arc about the Blackwood, where the old Broken Lantern guild vanished (continuing the opening premise).
+- A few sound effects and a victory jingle, with a mute toggle.
 
 ## End of each wave
 

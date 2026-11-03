@@ -2,7 +2,7 @@
 
 Newest first. Older entries were moved here from the README.
 
-## Unreleased — Wave 6 (recruitment depth)
+## Wave 6 (recruitment depth)
 
 - Contracts of 1–3 years with salary and expiry. A warning comes 3 months before, and heroes leave as free agents if not renewed. Renewal talks from the status screen: the asking salary depends on loyalty and level, and disloyal heroes refuse.
 - Candidate stats show as ranges until scouting narrows them.
