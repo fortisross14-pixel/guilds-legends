@@ -26,6 +26,18 @@
       "skillPath": "skills/disciplines/game-ai/SKILL.md",
       "computedHash": "8e1a99b7cb56731c2b264eb1972f1fcd79248e1c33c870d1aeed351be584f5d1"
     },
+    "game-ui-ux": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/disciplines/game-ui-ux/SKILL.md",
+      "computedHash": "490f2da7505775f88c4bbd7c98bc2552ea60821210f5ae8c1e00414161be60f7"
+    },
+    "information-architecture-navigation": {
+      "source": "hueyexe/frontend-agent-skills",
+      "sourceType": "github",
+      "skillPath": "information-architecture-navigation/SKILL.md",
+      "computedHash": "dfc2466f47c66118ce30373f33ac9e2df1168d3c240a929a5ced1f7a5b0ec594"
+    },
     "input-keyboard-mouse-touch": {
       "source": "phaserjs/phaser",
       "sourceType": "github",
@@ -55,6 +67,18 @@
       "sourceType": "github",
       "skillPath": "skills/tilemaps/SKILL.md",
       "computedHash": "42007a40324eb14675db75b7cb9239c203c44caeefb97942ac3a6bae9fb92604"
+    },
+    "user-flows": {
+      "source": "kushal-commits/ux-skills",
+      "sourceType": "github",
+      "skillPath": "skills/user-flows/SKILL.md",
+      "computedHash": "c5c0714ab41c065f25b77160c6bd61bd1b4acba41702b2e2813edb422b38bc69"
+    },
+    "ux-usability-foundations": {
+      "source": "hueyexe/frontend-agent-skills",
+      "sourceType": "github",
+      "skillPath": "ux-usability-foundations/SKILL.md",
+      "computedHash": "f8e0c25e860ad50486c0d460ea90c15ef2c5c29e0ebcac8a0a6749ecc2d5f833"
     }
   }
 }
