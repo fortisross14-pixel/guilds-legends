@@ -73,6 +73,8 @@ const list = [
   { id: 'archmage-rod', name: 'Archmage Rod', kind: 'weapon', tier: 3, price: 460, stats: { mag: 16, mp: 10 }, classes: CASTERS },
   { id: 'mallet', name: 'Mallet', kind: 'weapon', tier: 1, price: 55, stats: { atk: 4, mag: 2 }, classes: ['Artificer', 'Guardian'] },
   { id: 'war-hammer', name: 'War Hammer', kind: 'weapon', tier: 2, price: 170, stats: { atk: 9, mag: 3 }, classes: ['Artificer', 'Guardian'] },
+  // Forged by the Ironford Smiths' Guild for an allied guild (src/data/patrons.js); not sold in shops.
+  { id: 'oathblade', name: 'Oathblade', kind: 'weapon', tier: 3, price: 600, unique: true, stats: { atk: 15, def: 3, spd: 2 }, classes: ['Guardian', 'Duelist', 'Rogue', 'Artificer', 'Ranger'], description: 'Ironford steel with the guild’s oath on the blade.' },
   { id: 'thunder-maul', name: 'Thunder Maul', kind: 'weapon', tier: 3, price: 440, stats: { atk: 14, mag: 5 }, classes: ['Artificer', 'Guardian'] },
 
   // Armor

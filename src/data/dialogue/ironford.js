@@ -1,5 +1,15 @@
 // Ironford conversations. Format: src/data/dialogue/index.js.
+import { patronChoices } from './patronTalk.js';
 const P = (id) => `portrait.ironford.${id}`;
+
+// Dagna speaks for the Ironford Smiths' Guild (src/data/patrons.js).
+const SMITHS = patronChoices('smiths', 'Smiths’ Guild', {
+  ally: 'Allies. We forged you a blade. Do not make us regret it.',
+  partner: 'Partners. Our steel is cheaper for you, and your chest got bigger.',
+  contact: 'Customers we trust. Our smiths will upgrade your gear even without an armory of your own.',
+  stranger: 'Strangers. Take a monster contract with our seal and we will talk.',
+  gift: 'Dagna pockets the purse. “The furnace thanks you.”',
+});
 
 export default {
   'ironford.foreman': {
@@ -7,12 +17,23 @@ export default {
     portrait: P('foreman'),
     variants: [
       {
-        if: { tierAtLeast: 1 },
-        lines: ['A promoted guild. The Smiths’ Guild will want to talk to you about armour contracts. Bring your own tea.'],
+        if: { patronRival: 'smiths' },
+        lines: ['The Guild has you down as people who undercut good smiths. Fix that, or buy your nails elsewhere.'],
+        choices: [...SMITHS],
       },
       {
-        lines: ['Foundry Row. Everything here is hot, heavy or both. Stay on the cobbles and you will keep your eyebrows.'],
-        choices: [{ text: 'Who runs Ironford?', reply: ['The Smiths’ Guild sets prices, the toll-keeper sets the bridge, and the river sets everything else.'] }],
+        if: { tierAtLeast: 1 },
+        lines: ['A promoted guild. The Smiths’ Guild will want to talk to you about armour contracts. Bring your own tea.'],
+        choices: [...SMITHS],
+      },
+      {
+        if: { charter: 'free', talked: false },
+        lines: ['A Free Company. Good. Smiths like customers who pay in coin and carcasses, not favours.', 'I speak for the Smiths’ Guild. Bring us monsters and ore and we will bring you steel.'],
+        choices: [...SMITHS],
+      },
+      {
+        lines: ['Foundry Row. Everything here is hot, heavy or both. Stay on the cobbles and you will keep your eyebrows.', 'I speak for the Smiths’ Guild. We pay for monster hunts and deep work.'],
+        choices: [{ text: 'Who runs Ironford?', reply: ['The Smiths’ Guild sets prices, the toll-keeper sets the bridge, and the river sets everything else.'] }, ...SMITHS],
       },
     ],
   },

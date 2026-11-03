@@ -1,11 +1,32 @@
 // Dunmere conversations. Format: src/data/dialogue/index.js.
+import { patronChoices } from './patronTalk.js';
 const P = (id) => `portrait.dunmere.${id}`;
+
+// Bram speaks for the Dunmere Trade House (src/data/patrons.js).
+const TRADE = patronChoices('trade', 'Trade House', {
+  ally: 'Allies. The House opens its books to you, and its warehouses.',
+  partner: 'Partners. There is a charter contract on the board each month with your name on it.',
+  contact: 'A name in the ledger, and a good one. Keep taking our work and the prices get kinder.',
+  stranger: 'Honestly? A guild we have not done business with yet. Our contracts carry our seal on the board.',
+  gift: 'Bram weighs the purse and smiles. “The House notices courtesy.”',
+});
 
 export default {
   'dunmere.innkeeper': {
     speaker: 'Sella Rowan',
     portrait: P('innkeeper'),
     variants: [
+      {
+        if: { charter: 'shield', talked: false },
+        lines: [
+          'Shield of the People? Then half of Dunmere likes you already. The other half will, once you earn it.',
+          'The rooms upstairs are yours. Come in when you are ready to meet Dunmere’s strays and strivers.',
+        ],
+        choices: [
+          { text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }] },
+          { text: 'Go inside', effects: [{ open: 'tavern' }] },
+        ],
+      },
       {
         if: { talked: true },
         lines: ['The Wayfarer keeps a chair open for {guild}. You are becoming the sort of name people save a seat for.'],
@@ -31,26 +52,42 @@ export default {
     portrait: P('merchant'),
     variants: [
       {
+        if: { patronRival: 'trade' },
+        lines: ['The Trade House keeps two lists. You are on the other one now.', 'Bring us profit and an apology, in that order, and we will see.'],
+        choices: [...TRADE],
+      },
+      {
         if: { oldRoadCleared: true },
         lines: ['You cleared the Old Road. My wagons made the run at dawn, and every driver knew whose work made it possible.', 'I will send business your way, {guild}.'],
         choices: [
           {
             text: 'Business is welcome.',
             if: { notFlag: 'bramThanks' },
-            effects: [{ gold: 40 }, { reputation: { region: 'Crownlands', amount: 5 } }, { relationship: 2 }, { flag: 'bramThanks' }],
-            reply: ['Forty crowns, and my name on your door if anyone asks. Fair?'],
+            effects: [{ gold: 40 }, { reputation: { region: 'Crownlands', amount: 5 } }, { relationship: 2 }, { patron: { id: 'trade', amount: 8 } }, { flag: 'bramThanks' }],
+            reply: ['Forty crowns, and my name on your door if anyone asks. The Trade House will hear about this.'],
           },
+          ...TRADE,
         ],
+      },
+      {
+        if: { charter: 'merchant' },
+        effects: [{ flag: 'oldRoadIntroduced' }],
+        lines: [
+          'A Merchant House charter! Finally, a guild that reads the ledger before it draws a sword.',
+          'The Old Road is eating our mules and our margins. The contract is on the Notice Board, and the Trade House remembers who takes its work.',
+        ],
+        choices: [{ text: 'Show me the contract', effects: [{ open: 'noticeBoard' }] }, ...TRADE],
       },
       {
         effects: [{ flag: 'oldRoadIntroduced' }],
         lines: [
           'The Old Road is wrong lately. Wolves are bold enough to take a mule in daylight, and someone is driving them closer.',
-          'I posted the contract at the Notice Board. I need people who will see it through.',
+          'I posted the contract at the Notice Board. The Trade House backs it, and we pay people who see things through.',
         ],
         choices: [
           { text: 'Show me the contract', effects: [{ open: 'noticeBoard' }] },
           { text: 'Where is the road?', reply: ['West, over the river bridge. Walk past the last kiln and keep going. You will hear them before you see them.'] },
+          ...TRADE,
         ],
       },
     ],
@@ -64,6 +101,11 @@ export default {
         effects: [{ flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'The Dunmere Harvest Melee is held at the local arena.' } }],
         lines: ['So the stories are true. The road is open and {guild} did it. The Harvest Melee will be more interesting now.'],
         choices: [{ text: 'Show me the arena', effects: [{ open: 'arena' }] }],
+      },
+      {
+        if: { charter: 'free' },
+        lines: ['A Free Company. No patron to hide behind and no ledger to blame. I respect that. I will be watching.'],
+        choices: [{ text: 'Any advice?', reply: ['Wolves circle. Do not chase the one in front of you; watch the two beside it.'] }],
       },
       {
         lines: ['I like a company that starts small. I like it better if it survives. Come back when Dunmere has a reason to remember your name.'],
@@ -95,6 +137,11 @@ export default {
       {
         if: { tierAtLeast: 1 },
         lines: ['{guild}, promoted. I have written it on three boards and shouted it from the fountain. Twice.'],
+      },
+      {
+        if: { charter: 'scholars' },
+        lines: ['The Scholars’ Lodge! I keep a shelf of rumors nobody can prove. Borrow it any time.', 'And when {guild} earns a name, I will make certain Dunmere hears it.'],
+        choices: [{ text: 'How do we earn one?', effects: [{ open: 'herald' }], reply: ['Contracts finished, tournaments won, rivals beaten. Come inside; the ladders are on the wall.'] }],
       },
       {
         lines: ['Names are my trade. When {guild} has earned one, I will make certain Dunmere hears it.'],

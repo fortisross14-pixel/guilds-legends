@@ -7,6 +7,8 @@ import { TILES, TILE_SIZE } from './tiles.js';
 import { TOWNS } from './towns/index.js';
 import { WILD_AREA_LIST } from './wilds/index.js';
 import { HALL_STAGES, ROOMS, roomInterior } from './rooms.js';
+import { CHARTER_LIST } from './charters.js';
+import { PATRON_LIST } from './patrons.js';
 
 /** Placeholder colors per group (background, ink). */
 export const ASSET_GROUPS = {
@@ -24,6 +26,7 @@ export const ASSET_GROUPS = {
   enemy: { label: 'Enemy on the map', fill: '#7a3a22', ink: '#ffe0cc' },
   tileset: { label: 'Tileset', fill: '#3a3a3a', ink: '#ffffff' },
   fx: { label: 'Battle effect', fill: '#5a2a6a', ink: '#f6dcff' },
+  crest: { label: 'Crest', fill: '#5c4a1e', ink: '#fff0c4' },
   battler: { label: 'Battle sprite', fill: '#6a3a1a', ink: '#ffe6cc' },
   missing: { label: 'Unregistered', fill: '#7a1f6e', ink: '#ffd6f6' },
 };
@@ -106,6 +109,11 @@ const LIST = [
     const n = String(index + 1).padStart(2, '0');
     return { id: `battle.enemy_${n}`, group: 'battler', path: `art/enemies/enemy_${n}.png`, w: 320, h: 288, use: `Enemy battle sprite ${n} (see src/data/enemies.js rosters)` };
   }),
+
+  // Identity (Phase 4): founding charter crests and patron crests. Patron representatives
+  // use their town NPC portraits (portrait.dunmere.merchant, portrait.greenhollow.cleric, portrait.ironford.foreman).
+  ...CHARTER_LIST.map((charter) => ({ id: charter.crest, group: 'crest', path: `art/crests/charter-${charter.id}.png`, w: 128, h: 128, use: `Charter crest: ${charter.name} (new game, top bar, Herald)` })),
+  ...PATRON_LIST.map((patron) => ({ id: patron.crest, group: 'crest', path: `art/crests/patron-${patron.id}.png`, w: 128, h: 128, use: `Patron crest: ${patron.name} (Connections)` })),
 
   // Interface art.
   { id: 'ui.overworld', group: 'ui', path: 'ui/overworld.png', w: 200, h: 125, use: 'World map terrain' },

@@ -19,6 +19,9 @@
 //   flag: name, notFlag: name  (state.flags.dialogue)
 //   candidateHere: bool      a recruit is in this town
 //   visitedArea: id, bossDefeated: area id
+//   charter: id (or list)    the founding charter (src/data/charters.js)
+//   patronAtLeast: { patronId: 'contact'|'partner'|'ally' }, patronBelow: { … }
+//   patronRival: patronId, patronGiftReady: patronId (no gift this month and 50 gold)
 //
 // Effects:
 //   { gold: n }  { item: { itemId: n } }  { reputation: { region, amount } }
@@ -28,6 +31,8 @@
 //   { event: { id, note } }                 records a known event
 //   { open: buildingId }                    UI: opens that building
 //   { recruit: true }                       UI: shows a recruit offer from this town
+//   { patron: { id, amount } }              standing with a patron (src/data/patrons.js)
+//   { patronGift: patronId }                50 gold for standing, once a month
 import dunmere from './dunmere.js';
 import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';

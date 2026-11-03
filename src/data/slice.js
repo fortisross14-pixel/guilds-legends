@@ -11,7 +11,7 @@ export const SLICE = {
   // Highest guild tier with content in the slice (0 = Regional).
   maxTier: 0,
   // Systems kept in code but not surfaced in Chapter 1.
-  hiddenSystems: ['branches', 'succession', 'mentorship', 'artifactCustody', 'alignment', 'sagas', 'guildChampionships', 'nationalGlobal'],
+  hiddenSystems: ['branches', 'succession', 'mentorship', 'artifactCustody', 'sagas', 'guildChampionships', 'nationalGlobal'],
 };
 
 export const BEYOND_TEASER = {

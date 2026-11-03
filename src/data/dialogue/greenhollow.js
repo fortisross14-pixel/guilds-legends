@@ -1,5 +1,15 @@
 // Greenhollow conversations. Format: src/data/dialogue/index.js.
+import { patronChoices } from './patronTalk.js';
 const P = (id) => `portrait.greenhollow.${id}`;
+
+// Brother Alder speaks for the Temple of the Dawn (src/data/patrons.js).
+const TEMPLE = patronChoices('temple', 'Temple', {
+  ally: 'As family. The Dawn will pay you more for every life you bring back.',
+  partner: 'As friends. Our healers count you as their own, and Sister Maelle has asked to walk with you.',
+  contact: 'Kindly. Our healing comes cheaper to friends, and the hurt mend sooner.',
+  stranger: 'As strangers still. Take a rescue contract and we will learn your faces.',
+  gift: 'Alder accepts the coin for the infirmary. “The Dawn sees.”',
+});
 
 export default {
   'greenhollow.herbalist': {
@@ -86,17 +96,35 @@ export default {
     portrait: P('cleric'),
     variants: [
       {
+        if: { patronRival: 'temple' },
+        lines: ['The Dawn still rises for you, {guild}. It simply does not wait for you any more.'],
+        choices: [...TEMPLE],
+      },
+      {
+        if: { notFlag: 'alderBlessing', charter: 'shield' },
+        lines: ['A Shield of the People. The Temple of the Dawn has prayed for a guild like yours.'],
+        choices: [
+          {
+            text: 'Then bless us.',
+            effects: [{ flag: 'alderBlessing' }, { reputation: { region: 'Verdant Marches', amount: 4 } }, { relationship: 1 }, { patron: { id: 'temple', amount: 8 } }],
+            reply: ['Walk gently, and the forest will remember it. So will the Temple.'],
+          },
+          ...TEMPLE,
+        ],
+      },
+      {
         if: { notFlag: 'alderBlessing' },
-        lines: ['The grove blesses travellers who ask. Most do not ask.'],
+        lines: ['The grove blesses travellers who ask. Most do not ask.', 'I speak for the Temple of the Dawn here. We tend the hurt, and we pay those who rescue them.'],
         choices: [
           {
             text: 'I am asking.',
-            effects: [{ flag: 'alderBlessing' }, { reputation: { region: 'Verdant Marches', amount: 4 } }, { relationship: 1 }],
+            effects: [{ flag: 'alderBlessing' }, { reputation: { region: 'Verdant Marches', amount: 4 } }, { relationship: 1 }, { patron: { id: 'temple', amount: 4 } }],
             reply: ['Then walk gently, and the forest will remember it. So will Greenhollow.'],
           },
+          ...TEMPLE,
         ],
       },
-      { lines: ['The grove remembers you. Walk gently.'] },
+      { lines: ['The grove remembers you. Walk gently.'], choices: [...TEMPLE] },
     ],
   },
 
