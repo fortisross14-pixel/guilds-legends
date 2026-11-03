@@ -3,6 +3,7 @@
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
 import { ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID } from '../../data/world.js';
+import { ROOM_BY_ID } from '../../data/rooms.js';
 import { tournamentRequirements } from './tournaments.js';
 import { WEEKS_PER_MONTH, campaignWeekSerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
@@ -13,7 +14,7 @@ import {
   finalize,
   getCurrentLocation,
   getReport,
-  heroCapacity,
+  bedCount,
   isGuildDefunct,
   partyCapacity,
   tierIndexByName,
@@ -240,7 +241,7 @@ export function getNextAction(state) {
       fame: 'missions',
       alignmentChosen: 'headquarters',
       tierIndex: 'goals',
-      greatHallLevel: 'headquarters',
+      hallStage: 'hall',
       legendHero: 'heroes',
       highestLevel: 'heroes',
       primalDiversity: 'world',
@@ -254,7 +255,7 @@ export function getNextAction(state) {
       fame: 'Favor high-fame contracts, saga choices and public victories.',
       alignmentChosen: 'Open Headquarters and decide who the guild will serve.',
       tierIndex: 'Review the promotion checklist and complete its next missing condition.',
-      greatHallLevel: 'Save enough crowns to upgrade the Great Hall.',
+      hallStage: 'Buy the old hall, then build rooms in its empty wings.',
       legendHero: 'Give a high-potential hero missions, training and meaningful roles.',
       highestLevel: 'Missions grant much more experience than monthly training. Keep the hero active without exhausting them.',
       primalDiversity: 'Travel to a differently aligned settlement and inspect its local recruitment market.',
@@ -316,7 +317,7 @@ export function getDashboardSummary(state) {
     loan: state.guild.loan || null,
     unpaidMonths: state.guild.unpaidMonths || 0,
     activeHeroes: activeHeroCount(state),
-    capacity: heroCapacity(state),
+    capacity: bedCount(state),
     activeMissions: state.activeMissions.length,
     partyCapacity: partyCapacity(state),
     decisions: state.pendingDecisions.length,
@@ -529,6 +530,16 @@ export function getCalendarEntries(state, months = 12) {
     });
     if (date.month % 3 === 0) add({ kind: 'season', id: `season-${serial}`, title: 'Season ends', date, detail: 'Rankings update' });
   }
+  const work = state.guild.hall?.construction;
+  if (work) {
+    add({
+      kind: 'construction',
+      id: `construction-${work.roomId}`,
+      title: `${ROOM_BY_ID[work.roomId]?.name || 'Room'}${work.level > 1 ? ` level ${work.level}` : ''} complete`,
+      date: dateFromWeekSerial(now + work.weeksLeft),
+      detail: 'Guild Hall construction',
+    });
+  }
   return entries.sort((x, y) => x.weeksAway - y.weeksAway || x.kind.localeCompare(y.kind));
 }
 
@@ -538,7 +549,7 @@ export function getUpcomingEvents(state, limit = 3) {
     .filter((entry) =>
       entry.kind === 'tournament'
         ? entry.enterable
-        : ['mission', 'travel', 'promise', 'contract', 'challenge', 'festival', 'boss', 'story'].includes(entry.kind) && entry.id !== 'reputation-goal',
+        : ['mission', 'travel', 'promise', 'contract', 'challenge', 'festival', 'boss', 'story', 'construction'].includes(entry.kind) && entry.id !== 'reputation-goal',
     )
     .slice(0, limit);
 }

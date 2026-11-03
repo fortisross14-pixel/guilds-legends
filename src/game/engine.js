@@ -9,10 +9,15 @@ export {
   getHero,
   getGuild,
   getHeroGuildName,
-  heroCapacity,
-  headquartersRoomCapacity,
-  usedFacilityRooms,
   activeHeroCount,
+  roomLevel,
+  bedCount,
+  freeBeds,
+  chestCapacity,
+  trophyCount,
+  hallStage,
+  activityAvailable,
+  availableDrills,
   branchCapacity,
   operationalLocationIds,
   getGuildmaster,
@@ -26,7 +31,8 @@ export { xpForNextLevel, calculatePower, generateHero, roleRating, partyEstimate
 export { getGuildRankings, getGuildRankSummary, getHeroRankings } from './engine/rankings.js';
 export { designateSuccessor, assignMentor, foundBranch, assignBranchCommander, upgradeBranch, assignArtifact, inheritAmbition } from './engine/institution.js';
 export { getGoalMetric, getPromotionRequirement } from './engine/goals.js';
-export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upgradeFacility } from './engine/economy.js';
+export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep } from './engine/economy.js';
+export { getHallView, requirementStatus, nextUpgrade, rentBed, acquireHall, buildRoom } from './engine/hall.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { enterHeroTournament, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
 export { inspectMission, notePartySelection, saveFormation, launchMission } from './engine/missions.js';
@@ -70,7 +76,7 @@ export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
 export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition } from './engine/timeActions.js';
-export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero } from './engine/inventory.js';
+export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero, shopPrice, chestUsed, gearUpgradeCost, upgradeGear } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
 export {

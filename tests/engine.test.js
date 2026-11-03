@@ -38,7 +38,6 @@ import {
   getPromotionRequirement,
   getTournamentAccess,
   getTravelQuote,
-  headquartersRoomCapacity,
   inspectMission,
   isGuildDefunct,
   inheritAmbition,
@@ -63,9 +62,7 @@ import {
   planRoadEvents,
   makeRng,
   takePatronLoan,
-  upgradeFacility,
   upgradeBranch,
-  usedFacilityRooms,
   validateGame,
   xpForNextLevel,
 } from '../src/game/engine.js';
@@ -102,6 +99,9 @@ function combatPair(state) {
 }
 
 function hireFirstCompanion(state) {
+  // Hiring needs a free bed: these campaigns rent the rented room's every bed first.
+  state = structuredClone(state);
+  state.guild.hall.rentedBeds = 4;
   const result = recruitCandidate(state, state.candidates.find((candidate) => candidate.locationId === state.world.currentLocationId).id);
   assert.equal(result.error, null);
   return result.state;
@@ -473,18 +473,6 @@ test('Regional promotion thresholds lead to National reach', () => {
   assert.equal(requirement.contracts.target, 10);
   assert.equal(requirement.rank.target, 8);
   assert.equal(requirement.time.target, 4);
-});
-
-test('headquarters enforces room limits while allowing upgrades', () => {
-  let state = createNewGame({ seed: 77 });
-  state.guild.crowns = 20000;
-  assert.equal(headquartersRoomCapacity(state), 4);
-  assert.equal(usedFacilityRooms(state), 4);
-  const blocked = upgradeFacility(state, 'armory');
-  assert.match(blocked.error, /no free room/i);
-  const existing = upgradeFacility(state, 'training-yard');
-  assert.equal(existing.error, null);
-  assert.equal(usedFacilityRooms(existing.state), 4);
 });
 
 test('exported campaign backups import cleanly', () => {

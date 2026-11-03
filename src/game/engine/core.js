@@ -3,6 +3,7 @@
 import { MONTHS, ONBOARDING_STEPS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
+import { HALL_PURCHASE, HALL_STAGES, RENTED_ROOM, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
 
 export const SCHEMA_VERSION = 15;
 
@@ -178,20 +179,59 @@ export function getHeroGuildName(state, hero) {
   return rival?.name || hero.guildName || 'Free agent';
 }
 
-export function heroCapacity(state) {
-  return 6 + (state.guild.facilities['great-hall'] || 0) * 2 + state.guild.tierIndex * 2;
+// ---- The guild's home (src/data/rooms.js; actions in hall.js) ----
+
+/** Level of a built room (0 when not built). */
+export function roomLevel(state, roomId) {
+  return state.guild?.hall?.rooms?.[roomId] || 0;
 }
 
-export function headquartersRoomCapacity(state) {
-  // The rented Regional hall begins with four usable rooms. Social promotion and
-  // investment in the Great Hall expand the physical footprint gradually.
-  const tierRooms = [4, 7, 11][state.guild.tierIndex] || 11;
-  const hallExpansion = Math.max(0, (state.guild.facilities['great-hall'] || 0) - 1);
-  return tierRooms + hallExpansion;
+/** Beds are the only roster limit: rented beds, the hall's dormitory corner and bunk rooms. */
+export function bedCount(state) {
+  const hall = state.guild?.hall || {};
+  return (hall.rentedBeds || 0) + (hall.owned ? HALL_PURCHASE.beds : 0) + roomLevel(state, 'bunks') * 2;
 }
 
-export function usedFacilityRooms(state) {
-  return Object.entries(state.guild.facilities || {}).filter(([, level]) => Number(level) > 0).length;
+export function freeBeds(state) {
+  return bedCount(state) - activeHeroCount(state);
+}
+
+/** Items the guild chest holds (the armory adds racks and a store). */
+export function chestCapacity(state) {
+  return RENTED_ROOM.chest + (roomLevel(state, 'armory') ? 20 : 0);
+}
+
+/** Titles won, artifacts held and bosses defeated: what the Trophy hall displays. */
+export function trophyCount(state) {
+  const wildBosses = Object.values(state.world?.exploration?.wild || {}).reduce((sum, area) => sum + Math.min(1, area.bosses || 0), 0);
+  return (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0) + (state.artifacts?.length || 0) + (state.defeatedBosses?.length || 0) + wildBosses;
+}
+
+// Monthly activities that need a room. Rest and exhibitions work anywhere; guild duty needs the hall.
+const ACTIVITY_ROOM = { Training: 'training', Infirmary: 'infirmary', Scouting: 'scouts' };
+
+/** True when a monthly activity can be chosen: its room is built. */
+export function activityAvailable(state, activity) {
+  if (activity === 'Guild Duty') return Boolean(state.guild?.hall?.owned);
+  const room = ACTIVITY_ROOM[activity];
+  return room ? roomLevel(state, room) > 0 : ['Rest', 'Public Exhibition'].includes(activity);
+}
+
+/** Training drills the training ground offers at its level. */
+export function availableDrills(state) {
+  return trainingDrills(roomLevel(state, 'training'));
+}
+
+/** Hall stage: rented room → empty hall → working hall → renowned hall. */
+export function hallStage(state) {
+  const hall = state.guild?.hall || {};
+  if (!hall.owned) return HALL_STAGES[0];
+  const levels = Object.values(hall.rooms || {});
+  const built = levels.filter((level) => level > 0).length;
+  const total = levels.reduce((sum, level) => sum + level, 0);
+  if (built >= STAGE_RULES.renowned.rooms && total >= STAGE_RULES.renowned.levels) return HALL_STAGES[3];
+  if (built >= STAGE_RULES.working.rooms) return HALL_STAGES[2];
+  return HALL_STAGES[1];
 }
 
 export function activeHeroCount(state) {
@@ -234,8 +274,7 @@ export function getCurrentLocation(state) {
 }
 
 export function partyCapacity(state) {
-  const greatHallBonus = (state.guild.facilities['great-hall'] || 0) >= 3 ? 1 : 0;
-  return 1 + Math.min(2, state.guild.tierIndex) + greatHallBonus;
+  return 1 + Math.min(2, state.guild.tierIndex);
 }
 
 export function appointmentHolder(state, appointmentId) {

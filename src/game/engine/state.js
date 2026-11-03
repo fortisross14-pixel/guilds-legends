@@ -1,6 +1,6 @@
 // @ts-check
 // New campaign creation and default state pieces.
-import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, FACILITIES, SAGA_DEFINITIONS, STARTING_HEROES } from '../../data/content.js';
+import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, SAGA_DEFINITIONS, STARTING_HEROES } from '../../data/content.js';
 import { emptyFormations } from '../../data/formations.js';
 import { PRIMALS, PRIMAL_IDS } from '../../data/world.js';
 import { SCHEMA_VERSION, addChronicle, addHeroHistory, commitRng, hashString, makeRng } from './core.js';
@@ -11,13 +11,9 @@ import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
 import { refreshSideJobsInPlace } from './townLife.js';
 
-export function facilityLevels() {
-  return Object.fromEntries(
-    FACILITIES.map((facility) => [
-      facility.id,
-      facility.id === 'great-hall' ? 1 : facility.id === 'training-yard' || facility.id === 'infirmary' || facility.id === 'archive' ? 1 : 0,
-    ]),
-  );
+/** Every campaign starts in the rented room above the Wayfarer: one bed, the banner, a small chest. */
+export function startingHall() {
+  return { owned: false, lease: false, rentedBeds: 1, rooms: {}, construction: null };
 }
 
 export function initialStats() {
@@ -100,7 +96,7 @@ export function createNewGame(options = {}) {
       officialPoints: 0,
       statusTitle: 'Unknown',
       mainParty: [],
-      facilities: facilityLevels(),
+      hall: startingHall(),
       appointments: {},
       formations: emptyFormations(),
       branches: [],

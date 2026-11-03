@@ -16,6 +16,7 @@ import {
   hashString,
   operationalLocationIds,
   partyCapacity,
+  roomLevel,
 } from './core.js';
 import { formationSlotFor, normalizedFormationType, partyEstimate } from './heroes.js';
 import { fulfillPromisesInPlace } from './candidates.js';
@@ -51,6 +52,7 @@ export function notePartySelection(state, missionId, formationTypeOrAssignments,
 }
 
 export function saveFormation(state, formationType, assignments) {
+  if (!roomLevel(state, 'war')) return { state, error: 'Build a War room to save formations.' };
   const next = clone(state);
   if (!FORMATION_TYPES[formationType]) return { state, error: 'Unknown arrangement type.' };
   const availableIds = new Set(next.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).map((hero) => hero.id));

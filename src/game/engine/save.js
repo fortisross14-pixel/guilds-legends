@@ -27,7 +27,7 @@ import { candidateDemandFor, refreshCandidatesForLocationInPlace } from './candi
 import { createTitleRecords, createUniverseInPlace, createWorldArtifactsInPlace, refreshMissionsInPlace } from './universe.js';
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
-import { facilityLevels, initialStats } from './state.js';
+import { initialStats, startingHall } from './state.js';
 import { createMissionCombatEncounterInPlace } from './missions.js';
 
 export function compactForSave(state, aggressive = false) {
@@ -298,7 +298,8 @@ export function migrateGame(raw) {
   next.settings = { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', ...(next.settings || {}) };
   next.flags ||= {};
   next.flags.firstTravelCompleted ||= false;
-  next.guild.facilities = { ...facilityLevels(), ...(next.guild.facilities || {}) };
+  next.guild.hall = { ...startingHall(), ...(next.guild.hall || {}) };
+  delete next.guild.facilities;
   next.guild.appointments ||= {};
   next.guild.obligations ||= [];
   next.guild.rivalries ||= [];
@@ -473,6 +474,7 @@ export function validateGame(state) {
   if (!Array.isArray(state.heroes) || state.heroes.length < 1) errors.push('No heroes exist.');
   if (!Array.isArray(state.rivals) || state.rivals.length < 25) errors.push('Too few rival guilds.');
   if (!Number.isFinite(state.guild?.crowns)) errors.push('Treasury is invalid.');
+  if (!state.guild?.hall || typeof state.guild.hall.rooms !== 'object') errors.push('Guild home state is missing.');
   if (!Number.isFinite(state.rngState)) errors.push('RNG state is invalid.');
   if (!state.world || !LOCATION_BY_ID[state.world.currentLocationId]) errors.push('Current guild location is invalid.');
   if (!Array.isArray(state.guild?.branches)) errors.push('Guild branches are invalid.');

@@ -2,7 +2,7 @@
 // Recruitment market (candidates per location) and recruitment promises.
 import { normalizeClassId, MONTHS } from '../../data/content.js';
 import { RARITIES, unlockedLocations, LOCATION_BY_ID } from '../../data/world.js';
-import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, dateLabel } from './core.js';
+import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, dateLabel, roomLevel } from './core.js';
 import { generateHero } from './heroes.js';
 import { recruitFeeFactor } from './reputation.js';
 
@@ -106,10 +106,9 @@ export function updatePromiseDeadlinesInPlace(state) {
 }
 
 export function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere') {
-  const academyLevel = state.guild.facilities['academy'] || 0;
-  const scoutLevel = state.guild.facilities['scout-office'] || 0;
+  const scoutLevel = roomLevel(state, 'scouts');
   const spymasterBonus = state.guild.appointments?.Spymaster ? 0.08 : 0;
-  const qualityRoll = rng.next() + academyLevel * 0.08 + scoutLevel * 0.05 + spymasterBonus;
+  const qualityRoll = rng.next() + scoutLevel * 0.05 + spymasterBonus;
   const quality = forcedQuality || (qualityRoll > 1.12 ? 'elite' : qualityRoll > 0.92 ? 'veteran' : 'normal');
   const hero = generateHero(state, rng, quality, { homeLocationId: locationId });
   const rarityFactor = RARITIES[hero.rarity]?.signing || 1;
@@ -120,12 +119,7 @@ export function makeCandidate(state, rng, forcedQuality, locationId = state.worl
     ...hero,
     status: 'candidate',
     locationId,
-    channel:
-      academyLevel > 0 && hero.age <= 20 && rng.chance(0.35)
-        ? 'Academy'
-        : scoutLevel > 0 && rng.chance(0.35)
-          ? 'Scout network'
-          : rng.pick(['Tavern board', 'Mercenary market', 'Temple recommendation', 'Defector rumor']),
+    channel: scoutLevel > 0 && rng.chance(0.35) ? 'Scout network' : rng.pick(['Tavern board', 'Mercenary market', 'Temple recommendation', 'Defector rumor']),
     signingFee,
     buyoutFee: Math.round(signingFee * (hero.rarity === 'Legend' ? 0.65 : hero.rarity === 'Epic' ? 0.5 : 0.35)),
     demand: candidateDemandFor(hero, state, rng),
@@ -140,7 +134,7 @@ export function refreshCandidatesForLocationInPlace(state, rng, locationId = sta
     (candidate) => candidate.expiresYear >= state.date.year && unlockedIds.has(candidate.locationId || 'dunmere'),
   );
   const current = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === locationId).length;
-  const target = 3 + Math.min(2, state.guild.facilities['scout-office'] || 0);
+  const target = 3 + roomLevel(state, 'scouts');
   for (let i = current; i < target; i += 1) state.candidates.push(makeCandidate(state, rng, null, locationId));
   state.candidates.sort((a, b) => b.rarity.localeCompare(a.rarity) || b.level - a.level || b.potential - a.potential);
   state.candidates = state.candidates.slice(0, 60);

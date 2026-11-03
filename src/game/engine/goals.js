@@ -1,7 +1,7 @@
 // @ts-check
 // Chapter goals, achievements, promotion, and evaluateStateInPlace (run after every action).
 import { REGIONS, TIERS } from '../../data/content.js';
-import { addChronicle, commitRng, dateLabel, rngFor, tierIndexByName } from './core.js';
+import { addChronicle, commitRng, dateLabel, hallStage, rngFor, tierIndexByName } from './core.js';
 import { refreshMissionsInPlace } from './universe.js';
 import { getPlayerRanks, updateStatusTitleInPlace } from './rankings.js';
 import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace } from './institution.js';
@@ -20,8 +20,8 @@ export function getGoalMetric(state, metric) {
       return state.stats.alignmentChosen;
     case 'tierIndex':
       return state.guild.tierIndex;
-    case 'greatHallLevel':
-      return state.guild.facilities['great-hall'] || 0;
+    case 'hallStage':
+      return hallStage(state).id;
     case 'legendHero':
       return state.heroes.some((hero) => hero.power >= 80 || hero.legacy >= 150) ? 1 : 0;
     case 'highestLevel':

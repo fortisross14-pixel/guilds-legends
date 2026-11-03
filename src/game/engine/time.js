@@ -5,6 +5,8 @@ import { LOCATIONS, unlockedLocations } from '../../data/world.js';
 import {
   MAX_HEROES,
   activeHeroCount,
+  activityAvailable,
+  roomLevel,
   addChronicle,
   addHeroHistory,
   appointmentHolder,
@@ -29,6 +31,7 @@ import { refreshMissionsInPlace } from './universe.js';
 import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace, retireHeroInPlace, simulateBranchesInPlace } from './institution.js';
 import { evaluateStateInPlace } from './goals.js';
 import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace } from './economy.js';
+import { monthlyHallInPlace, progressConstructionInPlace } from './hall.js';
 import { createTournamentsInPlace, simulateScheduledCompetitionsInPlace } from './guildTournaments.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
@@ -47,9 +50,9 @@ import {
 } from './townLife.js';
 
 function resolveMonthlyHeroActivities(state, rng) {
-  const trainingLevel = state.guild.facilities['training-yard'] || 0;
+  const trainingLevel = roomLevel(state, 'training');
   const trainingMaster = appointmentHolder(state, 'Training Master');
-  const infirmaryLevel = (state.guild.facilities.infirmary || 0) + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
+  const infirmaryLevel = roomLevel(state, 'infirmary') + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
   const results = [];
   let scouts = 0;
   let exhibitionFame = 0;
@@ -70,7 +73,9 @@ function resolveMonthlyHeroActivities(state, rng) {
     }
 
     const requested = hero.monthlyActivity || (hero.status === 'injured' ? 'Infirmary' : 'Training');
-    const activity = hero.status === 'injured' && !['Infirmary', 'Rest'].includes(requested) ? 'Infirmary' : requested;
+    const wanted = hero.status === 'injured' && !['Infirmary', 'Rest'].includes(requested) ? 'Infirmary' : requested;
+    // A room's activity only works once the room is built; otherwise the hero rests.
+    const activity = activityAvailable(state, wanted) ? wanted : 'Rest';
     const before = {
       level: hero.level,
       xp: hero.xp || 0,
@@ -101,7 +106,7 @@ function resolveMonthlyHeroActivities(state, rng) {
       summary = `Rehabilitated under medical supervision and gained ${xp} XP.`;
     } else if (activity === 'Scouting') {
       scouts += 1 + (['Ranger', 'Rogue'].includes(hero.classId) ? 1 : 0);
-      const xp = 4 + (state.guild.facilities['scout-office'] || 0) * 2;
+      const xp = 4 + roomLevel(state, 'scouts') * 2;
       applyXpInPlace(hero, xp, state, 'field scouting');
       hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
       hero.fatigue = clamp(hero.fatigue + 3, 0, 100);
@@ -166,7 +171,7 @@ function resolveMonthlyHeroActivities(state, rng) {
 
   if (scouts > 0) {
     const locationId = state.world?.currentLocationId || 'dunmere';
-    const extraCandidateChance = clamp(0.2 + scouts * 0.12 + (state.guild.facilities['scout-office'] || 0) * 0.08, 0, 0.85);
+    const extraCandidateChance = clamp(0.2 + scouts * 0.12 + roomLevel(state, 'scouts') * 0.08, 0, 0.85);
     if (rng.chance(extraCandidateChance)) {
       const candidate = makeCandidate(state, rng, scouts >= 3 ? 'veteran' : null, locationId);
       candidate.expiresYear = state.date.year + 1;
@@ -291,7 +296,7 @@ function annualCycle(state, rng) {
   state.candidates = (state.candidates || []).filter((candidate) => candidate.expiresYear >= state.date.year);
   const locations = unlockedLocations(state.guild.tierIndex);
   locations.forEach((location) => {
-    const intake = 1 + (location.id === state.world?.currentLocationId ? 1 : 0) + Math.min(1, state.guild.facilities.academy || 0);
+    const intake = 1 + (location.id === state.world?.currentLocationId ? 1 : 0);
     for (let i = 0; i < intake; i += 1) state.candidates.push(makeCandidate(state, rng, null, location.id));
   });
   refreshCandidatesForLocationInPlace(state, rng, state.world?.currentLocationId || 'dunmere');
@@ -338,13 +343,13 @@ function weeklyInjuriesInPlace(state) {
   state.heroes
     .filter((hero) => hero.status === 'injured')
     .forEach((hero) => {
-      hero.injuryWeeks = (hero.injuryWeeks || 1) - (hero.monthlyActivity === 'Infirmary' ? 2 : 1);
+      hero.injuryWeeks = (hero.injuryWeeks || 1) - (hero.monthlyActivity === 'Infirmary' && roomLevel(state, 'infirmary') > 0 ? 2 : 1);
       if (hero.injuryWeeks > 0) return;
       hero.injuryWeeks = 0;
       hero.status = 'available';
       hero.injury = null;
       hero.health = Math.max(hero.health, 72);
-      if (hero.monthlyActivity === 'Infirmary') hero.monthlyActivity = 'Training';
+      if (hero.monthlyActivity === 'Infirmary') hero.monthlyActivity = activityAvailable(state, 'Training') ? 'Training' : 'Rest';
       state.notifications.push({
         id: `recover-${hero.id}-${campaignWeekSerial(state)}`,
         tone: 'green',
@@ -369,6 +374,7 @@ function runMonthInPlace(next, rng) {
   const debt = applyDebtInPlace(next);
   const council = resolveMonthlyHeroActivities(next, rng);
   scoutCandidatesInPlace(next, council.scouts);
+  monthlyHallInPlace(next, rng);
   processContractsInPlace(next);
   processPoachingInPlace(next, rng);
   const branches = simulateBranchesInPlace(next, rng);
@@ -415,6 +421,7 @@ export function advanceWeeks(state, count = 1, mutate = false) {
     const rng = rngFor(next, `week-${step}`);
     progressTravelInPlace(next, rng);
     weeklyInjuriesInPlace(next);
+    progressConstructionInPlace(next);
     expireChallengeInPlace(next);
     progressSideJobsInPlace(next, rng);
     expireWagerInPlace(next);

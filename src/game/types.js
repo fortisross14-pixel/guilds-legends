@@ -93,7 +93,7 @@
  * @property {boolean} fallen
  * @property {PatronLoan | null} loan
  * @property {number} unpaidMonths
- * @property {Record<string, number>} facilities
+ * @property {{ owned: boolean, lease: boolean, rentedBeds: number, rooms: Record<string, number>, construction: { roomId: string, level: number, weeksLeft: number, totalWeeks: number } | null }} hall  the guild's home (src/data/rooms.js)
  * @property {Record<string, string>} appointments
  * @property {Record<string, any[]>} formations
  * @property {any[]} branches

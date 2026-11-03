@@ -3,7 +3,8 @@
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { resolveRoadEvent } from './timeActions.js';
 import { FORMATION_TYPES, formationForMission } from '../../data/formations.js';
-import { WEEKS_PER_MONTH, activeHeroCount, campaignWeekSerial, clone, completeTutorialTargetInPlace } from './core.js';
+import { WEEKS_PER_MONTH, activeHeroCount, campaignWeekSerial, clone, completeTutorialTargetInPlace, freeBeds } from './core.js';
+import { acquireHall, buildRoom, getHallView, rentBed } from './hall.js';
 import { roleRating } from './heroes.js';
 import { launchMission } from './missions.js';
 import { resolveDecision } from './outcomes.js';
@@ -86,6 +87,17 @@ export function simulateAutoplay(initialState, months = 240) {
     }
 
     const localCandidates = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere'));
+    // Grow the home like a careful player: rent a bed when full, buy the hall, then build what is affordable.
+    if (activeHeroCount(state) < 2 && freeBeds(state) <= 0) {
+      const rented = rentBed(state);
+      if (!rented.error) state = rented.state;
+    }
+    const hall = getHallView(state);
+    if (!hall.owned && hall.purchase?.met && state.guild.crowns > hall.purchase.buy + 400) state = acquireHall(state, 'buy').state;
+    else if (hall.owned && !hall.construction) {
+      const plan = hall.rooms.find((room) => room.next?.met && (room.built || hall.wings.free > 0) && state.guild.crowns > room.next.cost + 300);
+      if (plan) state = buildRoom(state, plan.id).state;
+    }
     if (activeHeroCount(state) < 2 && localCandidates.length) {
       const candidate = [...localCandidates].sort((a, b) => a.signingFee - b.signingFee || b.potential - a.potential)[0];
       // The regression governor acts like a conservative AI guildmaster: when a

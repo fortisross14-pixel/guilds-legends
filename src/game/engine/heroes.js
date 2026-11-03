@@ -4,7 +4,7 @@ import { skillLabel, skillsUnlockedBetween } from '../../data/skills.js';
 import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
-import { addHeroHistory, appointmentHolder, clamp, getHero, uid, pushMoment } from './core.js';
+import { addHeroHistory, appointmentHolder, clamp, getHero, roomLevel, uid, pushMoment } from './core.js';
 import { estimateBonus } from './reputation.js';
 
 export function xpForNextLevel(level) {
@@ -160,7 +160,7 @@ export function createHeroFromBase(base, state, rng, options = {}) {
     guildId: options.guildId || 'player',
     appointment: null,
     training: 'Fundamentals',
-    monthlyActivity: 'Training',
+    monthlyActivity: 'Rest',
     roleExperience: Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])),
     career: {
       missions: 0,
@@ -211,7 +211,7 @@ export function createHeroFromBase(base, state, rng, options = {}) {
 export function generateHero(state, rng, quality = 'normal', options = {}) {
   const locationId = options.homeLocationId || state.world?.currentLocationId || 'dunmere';
   const location = LOCATION_BY_ID[locationId];
-  const scoutBonus = (state.guild?.facilities?.['scout-office'] || 0) * 0.025;
+  const scoutBonus = (state.guild?.hall?.rooms?.scouts || 0) * 0.025;
   const qualityBonus = quality === 'elite' ? 0.24 : quality === 'veteran' ? 0.12 : 0;
   const rarity = options.rarity || rarityFromRoll(rng, scoutBonus + qualityBonus);
   const level = options.level || levelBandForRarity(rarity, rng, quality === 'veteran');
@@ -350,9 +350,8 @@ export function partyEstimate(state, missionId, formationTypeOrAssignments, mayb
   partyPower += formationCompatibility(mission, formationType);
   partyPower += Math.max(0, validCount - 2) * 2.4;
   partyPower -= missingSlots.length * 18;
-  partyPower += (state.guild.facilities.armory || 0) * (formationType === 'Combat' ? 3 : 1.3);
   if (appointmentHolder(state, 'Questmaster')) partyPower += 2;
-  if (formationType === 'Expedition') partyPower += (state.guild.facilities['scout-office'] || 0) * 2;
+  if (formationType === 'Expedition') partyPower += roomLevel(state, 'scouts') * 2;
   if (formationType === 'Intrigue' && appointmentHolder(state, 'Spymaster')) partyPower += 5;
   if (formationType === 'Diplomacy' && state.guild.alignment !== 'Undeclared') partyPower += 2;
   if (formationType === 'Expedition' && breakdown.some((item) => item.role === 'Curator')) partyPower += mission.artifact ? 7 : 2;

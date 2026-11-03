@@ -2,7 +2,7 @@
 // Hero contracts (length, salary, expiry, renewal talks), candidate scouting
 // ranges, and rivals approaching disloyal heroes.
 import { RARITIES } from '../../data/world.js';
-import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, clone, finalize, getHero, hashString, operationalLocationIds } from './core.js';
+import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, clone, finalize, getHero, hashString, operationalLocationIds, roomLevel } from './core.js';
 import { releaseHeroInPlace } from './institution.js';
 import { nemesisIds, recordRivalryInPlace } from './rivalry.js';
 
@@ -94,7 +94,7 @@ export function counterOffer(state, heroId) {
 // ---------------------------------------------------------------- scouting ranges
 
 export function candidateScoutLevel(state, candidate) {
-  return clamp((candidate.scoutLevel || 0) + Math.min(1, state.guild.facilities?.['scout-office'] || 0), 0, MAX_SCOUT_LEVEL);
+  return clamp((candidate.scoutLevel || 0) + Math.min(1, roomLevel(state, 'scouts')), 0, MAX_SCOUT_LEVEL);
 }
 
 /** Stat ranges the guild knows for a candidate. The true value is always inside. */
@@ -118,7 +118,8 @@ export function candidateRanges(state, candidate) {
 /** Monthly scouting narrows the ranges of candidates where the guild operates. */
 export function scoutCandidatesInPlace(state, scouts) {
   if (!scouts) return;
-  const gain = scouts >= 3 ? 2 : 1;
+  // The Scout table's ledgers make every report count for more.
+  const gain = (scouts >= 3 ? 2 : 1) + (roomLevel(state, 'scouts') ? 1 : 0);
   const where = operationalLocationIds(state);
   (state.candidates || [])
     .filter((candidate) => where.has(candidate.locationId || 'dunmere'))

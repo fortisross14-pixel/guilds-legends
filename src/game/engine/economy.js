@@ -1,6 +1,6 @@
 // @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
-import { FACILITIES } from '../../data/content.js';
+import { HALL_PURCHASE, RENTED_ROOM, ROOM_BY_ID } from '../../data/rooms.js';
 import { LOCATION_BY_ID, travelWeeks, unlockedLocations } from '../../data/world.js';
 import {
   activeHeroCount,
@@ -9,14 +9,11 @@ import {
   clamp,
   clone,
   finalize,
-  headquartersRoomCapacity,
-  tierIndexByName,
-  usedFacilityRooms,
+  roomLevel,
 } from './core.js';
 import { refreshCandidatesForLocationInPlace } from './candidates.js';
 import { refreshMissionsInPlace } from './universe.js';
 import { releaseHeroInPlace } from './institution.js';
-import { evaluateStateInPlace } from './goals.js';
 
 // Debt rules (B2). A patron loan is the way back from an empty treasury.
 const LOAN_INTEREST = 0.25;
@@ -129,19 +126,38 @@ export function progressTravelInPlace(state, rng) {
   });
 }
 
-export function monthlyUpkeep(state) {
+/** What the guild's home costs each month: rent for the room, the hall lease, and each room's upkeep. */
+export function hallUpkeep(state) {
+  const hall = state.guild.hall || {};
+  const rent = hall.rentedBeds ? RENTED_ROOM.rent + Math.max(0, hall.rentedBeds - RENTED_ROOM.beds) * RENTED_ROOM.bedRent : 0;
+  const lease = hall.owned && hall.lease ? HALL_PURCHASE.lease.rent : 0;
+  const rooms = Object.entries(hall.rooms || {})
+    .filter(([, level]) => level > 0)
+    .map(([id, level]) => ({ id, name: ROOM_BY_ID[id]?.name || id, level, upkeep: ROOM_BY_ID[id]?.levels[level - 1]?.upkeep || 0 }));
+  const roomTotal = rooms.reduce((sum, room) => sum + room.upkeep, 0);
+  return { rent, lease, rooms, roomTotal, total: rent + lease + roomTotal };
+}
+
+/** Monthly costs by line, for the Treasury and the council report. */
+export function upkeepBreakdown(state) {
   const wages = state.heroes.filter((hero) => !['retired', 'dead', 'candidate'].includes(hero.status)).reduce((sum, hero) => sum + hero.salary, 0);
-  const facilityUpkeep = Object.values(state.guild.facilities).reduce((sum, level) => sum + level * 8, 0);
-  const appointmentUpkeep = Object.keys(state.guild.appointments).length * 7;
-  const total = wages + facilityUpkeep + appointmentUpkeep;
-  return state.story?.choice === 'bury' && state.story?.done ? Math.round(total * 0.9) : total;
+  const hall = hallUpkeep(state);
+  const appointments = Object.keys(state.guild.appointments || {}).length * 7;
+  const subtotal = wages + hall.total + appointments;
+  const total = state.story?.choice === 'bury' && state.story?.done ? Math.round(subtotal * 0.9) : subtotal;
+  return { wages, hall, appointments, loan: state.guild.loan?.installment || 0, total };
+}
+
+export function monthlyUpkeep(state) {
+  return upkeepBreakdown(state).total;
 }
 
 export function getPatronLoanOffer(state) {
   const upkeep = monthlyUpkeep(state);
   const crowns = state.guild.crowns;
   const distressed = crowns < Math.max(100, upkeep * 2);
-  const amount = Math.ceil((300 + upkeep * 2 + Math.max(0, -crowns)) / 10) * 10;
+  // A level 2 Treasury convinces patrons to lend half as much again.
+  const amount = Math.ceil(((300 + upkeep * 2 + Math.max(0, -crowns)) * (roomLevel(state, "treasury") >= 2 ? 1.5 : 1)) / 10) * 10;
   const repayment = Math.round(amount * (1 + LOAN_INTEREST));
   const remaining = (state.guild.loan?.remaining || 0) + repayment;
   return {
@@ -232,32 +248,3 @@ export function applyDebtInPlace(state) {
   return { loanPayment, walkouts };
 }
 
-export function upgradeFacility(state, facilityId) {
-  const next = clone(state);
-  const facility = FACILITIES.find((item) => item.id === facilityId);
-  if (!facility) return { state, error: 'Unknown facility.' };
-  if (facility.unlock && next.guild.tierIndex < tierIndexByName(facility.unlock))
-    return { state, error: `${facility.name} unlocks at ${facility.unlock} tier.` };
-  const level = next.guild.facilities[facilityId] || 0;
-  if (level >= facility.max) return { state, error: `${facility.name} is already fully upgraded.` };
-  if (level === 0 && usedFacilityRooms(next) >= headquartersRoomCapacity(next)) {
-    return {
-      state,
-      error: `The headquarters has no free room. Reach a higher guild tier or expand the Great Hall first (${usedFacilityRooms(next)}/${headquartersRoomCapacity(next)} rooms occupied).`,
-    };
-  }
-  const cost = Math.round(facility.baseCost * (1 + level * 0.72));
-  if (next.guild.crowns < cost) return { state, error: `The upgrade requires ${cost} crowns.` };
-  next.guild.crowns -= cost;
-  next.guild.facilities[facilityId] = level + 1;
-  next.guild.legacy += 2 + level;
-  addChronicle(next, {
-    type: 'facility',
-    importance: level + 1 >= 3 ? 2 : 1,
-    title: `${facility.name} reaches level ${level + 1}`,
-    text: `${facility.description} ${facility.effect}.`,
-    tags: ['facility'],
-  });
-  evaluateStateInPlace(next);
-  return { state: finalize(next), error: null };
-}

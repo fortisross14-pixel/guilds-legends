@@ -18,6 +18,7 @@ import {
   finalize,
   getHero,
   rngFor,
+  roomLevel,
   tierIndexByName,
   uid,
   pushMoment,
@@ -58,7 +59,8 @@ function gradeMultiplier(grade) {
 
 function injureHero(state, hero, mission, grade, rng, extraRisk = 0) {
   const supportPresent = mission.assignments.some((assignment) => ['Combat Support', 'Field Support', 'Advocate'].includes(assignment.role));
-  const infirmary = (state.guild.facilities.infirmary || 0) + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
+  // Infirmary level 2 cuts injury and death risk (about −30% with the Master Healer's help).
+  const infirmary = (roomLevel(state, 'infirmary') >= 2 ? 2 : 0) + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
   const gradeRisk = { Legendary: 0.01, 'Great Success': 0.02, Success: 0.04, Partial: 0.1, Defeat: 0.2, Catastrophic: 0.34 }[grade];
   const baseRisk = gradeRisk + mission.risk * 0.018 + extraRisk - (supportPresent ? 0.025 : 0) - infirmary * 0.012 + (hero.flaw === 'Injury-prone' ? 0.07 : 0);
   if (!rng.chance(clamp(baseRisk, 0.005, 0.7))) return { injured: false, died: false };
@@ -236,7 +238,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   if (next.story?.choice === 'revenge' && missionFamily(mission) === 'Combat') rewardMultiplier += 0.1;
   const reward = Math.max(0, Math.round((mission.reward + (option.reward || 0)) * multiplier * rewardMultiplier));
   const rawFame = Math.round((mission.fame + (option.fame || 0)) * multiplier);
-  let fameMultiplier = 1 + (next.guild.facilities.archive || 0) * 0.04 + (appointmentHolder(next, 'Chronicler') ? 0.08 : 0);
+  let fameMultiplier = 1 + (appointmentHolder(next, 'Chronicler') ? 0.08 : 0);
   fameMultiplier += contractFameBonus(next, mission) - 1;
   if (next.story?.choice === 'restore') fameMultiplier += 0.1;
   if (next.guild.policies.treasure === 'Public Trust') fameMultiplier += 0.18;
@@ -413,8 +415,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     next.stats.inheritedWill += 1;
   }
 
-  const workshopLevel = next.guild.facilities.workshop || 0;
-  const recoveredMissionArtifact = mission.artifact && (grade === 'Legendary' || (grade === 'Great Success' && rng.chance(0.12 + workshopLevel * 0.1)));
+  const recoveredMissionArtifact = mission.artifact && (grade === 'Legendary' || (grade === 'Great Success' && rng.chance(0.12)));
   const artifactName = option.artifact || (recoveredMissionArtifact ? mission.artifact : null);
   if (artifactName && cleanSuccess && !next.artifacts.some((artifact) => artifact.name === artifactName)) {
     const owner = mission.assignments

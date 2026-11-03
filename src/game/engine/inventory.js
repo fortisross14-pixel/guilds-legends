@@ -1,9 +1,20 @@
 // @ts-check
 // Guild inventory, equipment, shops and loot.
-import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, ITEM_LIST, canEquip } from '../../data/items.js';
+import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, canEquip } from '../../data/items.js';
 import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
-import { clamp, clone, finalize, hashString } from './core.js';
+import { chestCapacity, clamp, clone, finalize, hashString, roomLevel } from './core.js';
+
+/** Shop price after the Armory's 10% discount. */
+export function shopPrice(state, itemId) {
+  const price = ITEMS[itemId]?.price || 0;
+  return roomLevel(state, 'armory') ? Math.round(price * 0.9) : price;
+}
+
+/** Items in the guild chest (equipped gear does not count). */
+export function chestUsed(state) {
+  return Object.values(state.inventory || {}).reduce((sum, count) => sum + count, 0);
+}
 
 const TIER_INDEX_BY_NAME = { Regional: 0, National: 1, Global: 2 };
 
@@ -40,8 +51,10 @@ export function buyItem(state, itemId, quantity = 1) {
   const item = ITEMS[itemId];
   const count = Math.max(1, Math.round(quantity));
   if (!item || !shopStock(state.world.currentLocationId).includes(itemId)) return { state, error: 'This shop does not sell that.' };
-  const cost = item.price * count;
+  const cost = shopPrice(state, itemId) * count;
   if (state.guild.crowns < cost) return { state, error: `That costs ${cost} gold.` };
+  if (chestUsed(state) + count > chestCapacity(state))
+    return { state, error: `The chest is full (${chestUsed(state)}/${chestCapacity(state)}). Sell something${roomLevel(state, 'armory') ? '' : ' or build an Armory'}.` };
   const next = clone(state);
   next.guild.crowns -= cost;
   addItemsInPlace(next, { [itemId]: count });
@@ -56,6 +69,27 @@ export function sellItem(state, itemId, quantity = 1) {
   const next = clone(state);
   next.guild.crowns += Math.floor(ITEMS[itemId].price * SELL_RATE) * count;
   addItemsInPlace(next, { [itemId]: -count });
+  return { state: finalize(next), error: null };
+}
+
+/** Price to take an equipped item one step up its line at the Armory (null when it cannot be upgraded). */
+export function gearUpgradeCost(state, itemId) {
+  const target = GEAR_UPGRADES[itemId];
+  if (!target || !ITEMS[target] || !ITEMS[itemId]) return null;
+  return Math.max(40, ITEMS[target].price - ITEMS[itemId].price);
+}
+
+/** The Armory's smith reforges a hero's equipped item into the next tier of its line. */
+export function upgradeGear(state, heroId, slot) {
+  if (!roomLevel(state, 'armory')) return { state, error: 'Build an Armory to upgrade gear.' };
+  const hero = playerHero(state, heroId);
+  const itemId = hero?.gear?.[slot];
+  const cost = itemId ? gearUpgradeCost(state, itemId) : null;
+  if (!hero || cost === null) return { state, error: 'That cannot be upgraded.' };
+  if (state.guild.crowns < cost) return { state, error: `The upgrade costs ${cost} crowns.` };
+  const next = clone(state);
+  next.guild.crowns -= cost;
+  next.heroes.find((item) => item.id === heroId).gear[slot] = GEAR_UPGRADES[itemId];
   return { state: finalize(next), error: null };
 }
 

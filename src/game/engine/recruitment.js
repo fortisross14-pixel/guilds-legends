@@ -13,7 +13,10 @@ import {
   finalize,
   getCurrentLocation,
   getHero,
-  heroCapacity,
+  activityAvailable,
+  availableDrills,
+  freeBeds,
+  roomLevel,
   isGuildDefunct,
   operationalLocationIds,
   rngFor,
@@ -145,7 +148,7 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
     !(next.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === (candidate.locationId || 'dunmere'))
   )
     return { state, error: 'Headquarters is traveling; recruitment can continue only through established branches.' };
-  if (activeHeroCount(next) >= heroCapacity(next)) return { state, error: 'The Great Hall has no room for another active hero.' };
+  if (freeBeds(next) <= 0) return { state, error: 'No free bed. Rent another bed or build a Bunk room first.' };
   const acceptingPromise = negotiation !== 'buyout' || !candidate.demand;
   const totalFee = candidate.signingFee + (!acceptingPromise ? candidate.buyoutFee || 0 : 0);
   if (next.guild.crowns < totalFee) return { state, error: `Recruitment requires ${totalFee} crowns.` };
@@ -238,7 +241,7 @@ export function releaseHero(state, heroId) {
 export function setHeroTraining(state, heroId, training) {
   const next = clone(state);
   const hero = getHero(next, heroId);
-  if (!hero || ['dead', 'retired'].includes(hero.status)) return next;
+  if (!hero || ['dead', 'retired'].includes(hero.status) || !availableDrills(next).includes(training)) return next;
   hero.training = training;
   return finalize(next);
 }
@@ -247,7 +250,7 @@ export function setHeroMonthlyActivity(state, heroId, activity) {
   const allowed = ['Training', 'Rest', 'Infirmary', 'Scouting', 'Public Exhibition', 'Guild Duty'];
   const next = clone(state);
   const hero = getHero(next, heroId);
-  if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status) || !allowed.includes(activity)) return next;
+  if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status) || !allowed.includes(activity) || !activityAvailable(next, activity)) return next;
   hero.monthlyActivity = activity;
   return finalize(next);
 }
@@ -300,7 +303,7 @@ export function appointHero(state, heroId, appointmentId) {
   const hero = getHero(next, heroId);
   if (!hero || hero.status !== 'available') return { state, error: 'Only an available active hero can receive an appointment.' };
   if (!APPOINTMENTS.some((item) => item.id === appointmentId)) return { state, error: 'Unknown appointment.' };
-  if (appointmentId === 'Master Healer' && (next.guild.facilities.infirmary || 0) < 2) return { state, error: 'Master Healer requires Infirmary level 2.' };
+  if (appointmentId === 'Master Healer' && roomLevel(next, 'infirmary') < 2) return { state, error: 'Master Healer requires Infirmary level 2.' };
   Object.entries(next.guild.appointments).forEach(([key, value]) => {
     if (value === heroId) delete next.guild.appointments[key];
   });
@@ -369,7 +372,8 @@ function homeHeroes(state) {
 
 /** "Send all idle heroes here": moves heroes from the basic rooms (training, barracks, infirmary). */
 export function sendIdleHeroesTo(state, activity) {
-  if (!BASIC_ROOMS.includes(activity)) return { state, error: 'Only the Training Grounds, Barracks and Infirmary take everyone.' };
+  if (!BASIC_ROOMS.includes(activity)) return { state, error: 'Only the Training ground, Quarters and Infirmary take everyone.' };
+  if (!activityAvailable(state, activity)) return { state, error: 'Build that room first.' };
   const next = clone(state);
   homeHeroes(next)
     .filter((hero) => BASIC_ROOMS.includes(hero.monthlyActivity || 'Training'))
@@ -384,12 +388,14 @@ export function sendIdleHeroesTo(state, activity) {
 export function autoAssignRooms(state) {
   const next = clone(state);
   homeHeroes(next).forEach((hero) => {
-    hero.monthlyActivity = hero.status === 'injured' ? 'Infirmary' : (hero.fatigue || 0) > 60 ? 'Rest' : 'Training';
+    const wanted = hero.status === 'injured' ? 'Infirmary' : (hero.fatigue || 0) > 60 ? 'Rest' : 'Training';
+    hero.monthlyActivity = activityAvailable(next, wanted) ? wanted : 'Rest';
   });
   return { state: finalize(next), error: null };
 }
 
 export function setMainParty(state, heroIds) {
+  if (!roomLevel(state, 'war')) return { state, error: 'Build a War room to pick a main party.' };
   const ids = [...new Set(heroIds)].filter((id) => state.heroes.some((hero) => hero.id === id && !['dead', 'retired'].includes(hero.status)));
   if (ids.length > MAIN_PARTY_SIZE) return { state, error: `The main party holds up to ${MAIN_PARTY_SIZE} heroes.` };
   const next = clone(state);
@@ -409,7 +415,7 @@ export function makeOffer(state, heroId) {
   const terms = offerTerms(state, heroId);
   if (!terms.fee && !terms.available) return { state, error: terms.reason };
   if (!terms.available) return { state, error: terms.reason };
-  if (activeHeroCount(state) >= heroCapacity(state)) return { state, error: 'The Great Hall has no room for another active hero.' };
+  if (freeBeds(state) <= 0) return { state, error: 'No free bed. Rent another bed or build a Bunk room first.' };
   if (state.guild.crowns < terms.fee) return { state, error: `The offer costs ${terms.fee} gold.` };
   const next = clone(state);
   const rng = rngFor(next, `offer-${heroId}`);
