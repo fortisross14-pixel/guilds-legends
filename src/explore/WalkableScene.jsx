@@ -123,10 +123,12 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
     let controller = null;
     let observer = null;
     import('./walkGame.js')
+      // The scene may be gone before Phaser arrives (a quick place change): build nothing then.
       .then(({ createWalkGame }) =>
-        createWalkGame({ parent: stageRef.current, map: initial.current.map, start: initial.current.start, bridge, coarse: coarseRef.current }),
+        cancelled || !stageRef.current ? null : createWalkGame({ parent: stageRef.current, map: initial.current.map, start: initial.current.start, bridge, coarse: coarseRef.current }),
       )
       .then((created) => {
+        if (!created) return;
         controller = created;
         if (cancelled) {
           created.destroy();
