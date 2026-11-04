@@ -2,12 +2,13 @@
 
 .charter-picker { grid-column: 1 / -1; margin: 0; padding: 0; border: 0; }
 .charter-picker legend { margin-bottom: 8px; color: var(--text); font: 600 var(--fs-3) var(--font-ui); }
-.charter-picker__options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
-.charter-card { display: grid; align-content: start; gap: 6px; min-height: 44px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; cursor: pointer; }
+.charter-picker__options { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.charter-card { display: grid; grid-template-columns: 36px 1fr; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; cursor: pointer; }
 .charter-card.is-selected { border-color: var(--gold-bright); box-shadow: 0 0 0 1px var(--gold-bright), 0 0 22px rgba(246, 210, 140, .25); }
-.charter-card__crest { width: 44px; height: 44px; object-fit: cover; border-radius: var(--r-1); }
-.charter-card strong { font: 700 var(--fs-4) var(--font-display); }
-.charter-card small { color: var(--text-dim); font-size: var(--fs-1); }
-.charter-card ul { margin: 0; padding-left: 16px; font-size: var(--fs-1); }
-.charter-card em { color: var(--gold-bright); font-size: var(--fs-1); font-style: normal; }
+.charter-card__crest { width: 36px; height: 36px; object-fit: cover; border-radius: var(--r-1); }
+.charter-card strong { font: 700 var(--fs-3)/1.15 var(--font-display); }
+.charter-detail { display: grid; gap: 4px; margin-top: 8px; padding: 10px 12px; border-left: 3px solid var(--gold); background: rgba(10, 9, 14, .55); }
+.charter-detail small { color: var(--text-dim); font-size: var(--fs-2); }
+.charter-detail ul { margin: 0; padding-left: 16px; font-size: var(--fs-2); }
+.charter-detail em { color: var(--gold-bright); font-size: var(--fs-2); font-style: normal; }
 

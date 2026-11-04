@@ -150,18 +150,23 @@ export default function Prologue({ state, onComplete }) {
                   <button key={item.id} type="button" className={`charter-card ${charter === item.id ? 'is-selected' : ''}`} aria-pressed={charter === item.id} onClick={() => setCharter(item.id)}>
                     <Asset id={item.crest} className="charter-card__crest" />
                     <strong>{item.name}</strong>
-                    <small>{item.pitch}</small>
-                    <ul>
-                      {item.modifiers.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                    <em>
-                      {PATHS[item.path].name} path · {item.signature}
-                    </em>
                   </button>
                 ))}
               </div>
+              {/* Details for the chosen charter only (P-2): one panel, not four long cards. */}
+              {CHARTER_LIST.filter((item) => item.id === charter).map((item) => (
+                <div key={item.id} className="charter-detail" aria-live="polite">
+                  <small>{item.pitch}</small>
+                  <ul>
+                    {item.modifiers.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                  <em>
+                    {PATHS[item.path].name} path · {item.signature}
+                  </em>
+                </div>
+              ))}
             </fieldset>
             <Button
               variant="primary"

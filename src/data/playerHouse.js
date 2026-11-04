@@ -12,7 +12,8 @@ const FURNITURE = [
 export const PLAYER_HOUSE_MAP = {
   id: 'player-house',
   size: { width: 960, height: 540 },
-  spawn: { x: 300, y: 170 },
+  // The founder starts by the table, a few steps from the door: the first walk is short (P-1).
+  spawn: { x: 620, y: 300 },
   background: '#171116',
   ground: 'room.house.floor',
   player: { asset: 'char.founder', w: 26, h: 36 },
