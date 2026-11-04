@@ -1,5 +1,6 @@
 import { usePanZoom } from '../components/usePanZoom.js';
 import React, { useState } from 'react';
+import { statusName } from '../data/tournaments.js';
 import { createPortal } from 'react-dom';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
 import { activeContracts, getStoryView, knownMissions, getTravelQuote, getWildAreaView, getWorldKnowledge } from '../game/engine.js';
@@ -51,7 +52,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const quote = getTravelQuote(state, selected.id);
   const travel = state.world?.activeTravel;
   const locationMissions = knownMissions(state).filter((mission) => mission.locationId === selected.id);
-  const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id);
+  const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id && tournament.status !== 'completed');
   const selectedBranch = (state.guild.branches || []).find((branch) => branch.active !== false && branch.locationId === selected.id);
   const selectedKnowledge = knowledge[selected.id] || 'unknown';
   const selectedKnown = selectedKnowledge !== 'unknown';
@@ -148,7 +149,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     className={`location-node location-node--${knowledgeStatus} ${(state.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === location.id) ? 'is-branch' : ''} ${selected.id === location.id ? 'is-selected' : ''} ${canReach ? 'is-unlocked' : 'is-locked'} ${isCurrent ? 'is-current' : ''} ${isDestination ? 'is-destination' : ''}`}
                     style={{ left: `${location.x}%`, top: `${location.y}%`, '--primal': PRIMALS[location.primal].color }}
                     onClick={() => setSelectedId(location.id)}
-                    aria-label={beyond ? BEYOND_TEASER.title : knowledgeStatus === 'unknown' ? `Uncharted ${location.tier} frontier` : `${location.name}, ${knowledgeStatus}`}
+                    aria-label={beyond ? BEYOND_TEASER.title : knowledgeStatus === 'unknown' ? `Uncharted ${statusName(location.tier)} frontier` : `${location.name}, ${knowledgeStatus}`}
                   >
                     {isCurrent && !travel ? (
                       <em className="location-node__here">
@@ -159,7 +160,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     <span className="location-node__icon">
                       <Icon name={canReach ? (knowledgeStatus === 'unknown' ? 'pin' : isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
                     </span>
-                    <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : beyond ? 'Beyond' : location.tier}</strong>
+                    <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : beyond ? 'Beyond' : statusName(location.tier)}</strong>
                     <small>
                       {isCurrent
                         ? 'HQ here'
@@ -252,7 +253,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <Icon name={unlocked ? (selected.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={24} />
             </span>
             <div>
-              <h2>{unlocked ? (selectedKnown ? selected.name : 'Uncharted') : selectedBeyond ? BEYOND_TEASER.title : `${selected.tier} frontier`}</h2>
+              <h2>{unlocked ? (selectedKnown ? selected.name : 'Uncharted') : selectedBeyond ? BEYOND_TEASER.title : `${statusName(selected.tier)} frontier`}</h2>
               {unlocked && selectedKnown ? <PrimalBadge primal={selected.primal} /> : null}
             </div>
           </div>
@@ -307,7 +308,9 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 {locationTournament ? (
                   <div className="dossier-row">
                     <span>Tournament</span>
-                    <strong>{locationTournament.division}</strong>
+                    <strong>
+                      {locationTournament.name} · {locationTournament.circuit}
+                    </strong>
                   </div>
                 ) : null}
                 {locationMissions.length ? (
@@ -348,7 +351,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
             </div>
           ) : (
             <div className="locked-dossier">
-              <Badge tone="purple">Needs {selected.tier} status</Badge>
+              <Badge tone="purple">Needs {statusName(selected.tier)} status</Badge>
             </div>
           )}
         </aside>
@@ -381,7 +384,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <Icon name={canReach ? (location.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={12} />
               </span>
               <div>
-                <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : beyond ? BEYOND_TEASER.title : `${location.tier} frontier`}</strong>
+                <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : beyond ? BEYOND_TEASER.title : `${statusName(location.tier)} frontier`}</strong>
               </div>
               {location.id === currentLocationId ? <Icon name="pin" size={18} label="You are here" /> : null}
             </button>

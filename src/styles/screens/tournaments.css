@@ -1,4 +1,4 @@
-/* Arena: individual tournaments, guild championships, title archive. */
+/* Arena: team tournaments in three circuits, the history board. */
 
 .guild-championships { display: grid; gap: var(--s4); }
 
@@ -10,31 +10,15 @@
 .versus-card > button { min-height: 180px; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 12px 12px 12px 28px; text-align: center; }
 .versus-card > button strong { font-family: var(--font-display); font-size: var(--fs-4); font-weight: 700; }
 .versus-card > span { color: var(--gold); font-size: var(--fs-4); font-weight: 700; }
-.live-field { display: grid; max-height: 520px; overflow-y: auto; }
-.live-field > button { display: grid; grid-template-columns: 28px auto 1fr auto; align-items: center; gap: 8px; padding: 4px 6px 4px 28px; border-bottom: 1px solid var(--line-soft); }
-.live-field > button.is-player { color: var(--gold); }
-.live-field > button > span:first-child { color: var(--text-faint); font-size: var(--fs-1); }
-.live-field > button > div { min-width: 0; display: grid; }
-.live-field strong, .live-field small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.live-field strong { font-weight: 500; }
+.versus-card--teams { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; }
+.versus-card--teams > span { align-self: center; }
+.versus-team { display: grid; gap: 8px; justify-items: center; text-align: center; min-width: 0; }
+.versus-team > strong { font-family: var(--font-display); font-size: var(--fs-3); }
+.versus-team__heroes { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.versus-team__heroes > button { display: grid; justify-items: center; gap: 4px; padding: 4px; background: none; border: 0; min-width: 0; max-width: 96px; }
+.versus-team__heroes small { color: var(--text-dim); font-size: var(--fs-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 92px; }
+.arena-others li.is-player strong { color: var(--gold); }
 
-.championship-selector { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.championship-selector > button { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 12px 10px 30px; }
-.championship-selector > button > span, .championship-selector > button > strong, .championship-selector > button > small { grid-column: 1; }
-.championship-selector > button .badge { grid-column: 2; grid-row: 1 / 4; align-self: center; }
-.championship-selector > button > span { color: var(--gold); font-size: var(--fs-2); font-family: var(--font-label); font-size: var(--fs-1); letter-spacing: .12em; text-transform: uppercase; }
-.championship-selector > button > strong { font-family: var(--font-display); font-size: var(--fs-4); font-weight: 700; }
-.guild-banner-stage { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--s5); padding: 14px 18px; }
-.guild-banner-stage > div { display: flex; flex-direction: column; }
-.guild-banner-stage h2 { order: -1; margin: 0 0 6px; font-size: var(--fs-5); }
-.guild-banner-stage > span { color: var(--gold); font-size: var(--fs-5); line-height: 1; }
-.guild-banner-stage > div > div { display: flex; flex-wrap: wrap; gap: 4px; }
-.compact-formation-builder { display: grid; gap: 6px; }
-.compact-formation-builder article { display: grid; grid-template-columns: minmax(150px, .8fr) minmax(190px, 1.2fr) minmax(150px, .8fr); align-items: center; gap: 8px; padding: 6px 8px; }
-.compact-formation-builder article.is-filled { border-color: color-mix(in srgb, var(--hp) 55%, var(--line-soft)); }
-.compact-formation-builder article > div { display: grid; }
-.compact-formation-builder article > div small { font-family: var(--font-ui); font-size: var(--fs-2); font-family: var(--font-label); font-size: var(--fs-1); letter-spacing: .12em; text-transform: uppercase; }
-.compact-formation-builder article > button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; }
 .formation-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 .guild-versus { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-bottom: 12px; }
 .guild-versus > div { min-height: 96px; display: grid; justify-items: center; align-content: center; padding: 10px; text-align: center; }
@@ -48,8 +32,9 @@
   .versus-card { gap: 6px; }
   .versus-card > button { min-height: 150px; padding: 8px 8px 8px 24px; }
   .versus-card > button strong { font-size: var(--fs-3); }
-  .championship-selector { grid-template-columns: 1fr; }
-  .compact-formation-builder article { grid-template-columns: 1fr; }
-  .guild-banner-stage { grid-template-columns: 1fr; }
-  .guild-banner-stage > span { display: none; }
 }
+
+.title-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.title-list li { color: var(--text-dim); }
+.title-list li small { font-size: var(--fs-1); }
+.title-list li.is-held strong { color: var(--gold); }

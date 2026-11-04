@@ -29,7 +29,6 @@ import {
   createNewGame,
   designateSuccessor,
   dismissNotification,
-  enterGuildTournament,
   foundBranch,
   signUpForTournament,
   restAtHall,
@@ -57,8 +56,7 @@ import {
   renameGuild,
   saveFormation,
   setHeroMonthlyActivity,
-  beginGuildTournamentCombat as startGuildTournamentCombat,
-  beginHeroTournamentCombat as startHeroTournamentCombat,
+  beginTournamentBout,
   travelTo,
   concludeCombatAndContinue,
   fleeActiveCombat,
@@ -320,7 +318,6 @@ function RefoundModal({ state, open, onRefound, onReturnHome }) {
 function ReportModal({ report, onClose, openHero }) {
   if (!report) return null;
   const isMission = report.kind === 'mission';
-  const isIndividual = report.kind === 'individual-tournament';
   const playerResult = report.playerResult || null;
   const playerWon = playerResult?.finish === 1;
   const tone = isMission
@@ -343,14 +340,14 @@ function ReportModal({ report, onClose, openHero }) {
         ? 'Runner-up'
         : `Top ${playerResult.finish}`
     : 'World result';
-  const playerHero = isIndividual && playerResult ? report.entrants?.find((entrant) => entrant.heroId === playerResult.heroId) : null;
-  const champion = isIndividual ? report.entrants?.find((entrant) => entrant.heroId === report.championId) : null;
+  const playerHero = null;
+  const champion = null;
   return (
     <Modal
       open
       title={report.title}
       eyebrow={
-        isMission ? `${report.completedDate} · Expedition report` : `Year ${report.year} · ${isIndividual ? 'Individual tournament' : 'Guild championship'}`
+        isMission ? `${report.completedDate} · Expedition report` : `Year ${report.year} · ${report.circuit ? `${report.circuit} tournament` : 'Tournament'}`
       }
       onClose={onClose}
       width="wide"
@@ -898,15 +895,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       assignRoom: (heroId, roomId) => applyResult(assignRoom(state, heroId, roomId)),
       upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
       giftPatron: (patronId) => applyResult(giftPatron(state, patronId), 'A gift is sent with your compliments.'),
-      signUpForTournament: (tournamentId, heroId) => applyResult(signUpForTournament(state, tournamentId, heroId), 'Signed up. Be here on the start day.'),
-      startHeroCombat: (tournamentId) => applyResult(startHeroTournamentCombat(state, tournamentId)),
+      signUpForTournament: (tournamentId, heroIds) => applyResult(signUpForTournament(state, tournamentId, heroIds), 'Signed up. Be here on the start day.'),
+      startBout: (tournamentId) => applyResult(beginTournamentBout(state, tournamentId)),
       startStoryDuel: (missionId) => applyResult(startStoryDuel(state, missionId)),
       readHistoryBoard: (loreIds) => {
         const next = readHistoryBoard(state, loreIds);
         if (next !== state) commitState(next);
       },
-      enterGuildTournament: (tournamentId, formationType, assignments) => applyResult(enterGuildTournament(state, tournamentId, formationType, assignments)),
-      startGuildCombat: (tournamentId) => applyResult(startGuildTournamentCombat(state, tournamentId)),
       combatRound: (commands) => applyResult(performActiveCombatAction(state, commands)),
       fleeCombat: () => applyResult(fleeActiveCombat(state)),
       buyItem: (itemId) => applyResult(buyItem(state, itemId)),

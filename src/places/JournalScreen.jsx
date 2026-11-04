@@ -76,7 +76,7 @@ function NowTab({ state, actions, navigate }) {
   const hall = getHallView(state);
   const building = hall.construction ? [{ id: 'room', name: hall.construction.name, left: hall.construction.weeksLeft }] : [];
   if (hall.expansion) building.push({ id: 'land', name: hall.expansion.land, left: hall.expansion.weeksLeft });
-  const tournaments = (state.tournaments || []).filter((item) => item.signup || (item.status === 'active' && item.participants?.some?.((entry) => entry.player)));
+  const tournaments = (state.tournaments || []).filter((item) => item.signup && ['registration', 'active'].includes(item.status));
   const news = (state.news || []).slice(0, 4);
   const quiet = !working.length && !jobs.length && !injured.length && !building.length && !tournaments.length;
   return (

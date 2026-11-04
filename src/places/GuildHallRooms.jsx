@@ -318,7 +318,8 @@ function CrownShelf({ hall }) {
         <ul className="trophy-list">
           {hall.titles.map((title) => (
             <li key={title.id || title.name || title}>
-              <Icon name="banner" size={16} tone="brass" /> {title.name || title}
+              <Icon name="banner" size={16} tone="brass" /> {title.name}
+              {title.year ? <small className="muted"> · {title.year}</small> : null}
             </li>
           ))}
         </ul>

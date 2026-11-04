@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { getHallOfFame, getHeadToHead, getHeroCareer, getLadderHistory, getMissionLog, getRecordBook, getSeasonList, getSeasonReview } from '../game/engine.js';
+import { SPECIAL_TITLES } from '../data/tournaments.js';
 import { Badge, Button, EmptyState, HeroPortrait, Modal, Panel } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
@@ -112,6 +113,11 @@ function ReviewCard({ card, review }) {
           <li>
             Best tournament finish <b>{review.bestFinish ? (review.bestFinish === 1 ? 'Champion' : `Top ${review.bestFinish}`) : '—'}</b>
           </li>
+          {review.specialTitles?.length ? (
+            <li>
+              Special titles <b>{review.specialTitles.join(', ')}</b>
+            </li>
+          ) : null}
         </ul>
       </>
     );
@@ -328,6 +334,18 @@ export function RecordBook({ state, actions }) {
   const book = useMemo(() => getRecordBook(state), [state]);
   return (
     <div className="record-book-view">
+      <Panel title="Special titles" eyebrow="Earned by collections of tournament wins">
+        <ul className="title-list">
+          {SPECIAL_TITLES.map((title) => {
+            const held = (state.guild.specialTitles || []).find((item) => item.id === title.id);
+            return (
+              <li key={title.id} className={held ? 'is-held' : ''}>
+                <strong>{title.name}</strong> <small>· {held ? `won ${held.year}` : title.how}</small>
+              </li>
+            );
+          })}
+        </ul>
+      </Panel>
       <Panel title="Guild records" eyebrow="Best marks in the guild's history">
         <div className="table-scroll">
           <table className="history-table">

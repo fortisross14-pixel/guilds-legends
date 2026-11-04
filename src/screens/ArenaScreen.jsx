@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { locationBuildings } from '../data/world.js';
-import { sliceHides } from '../data/slice.js';
 import { TOURNAMENT_LORE } from '../data/lore.js';
 import { getArenaView, getHero, getStoryView } from '../game/engine.js';
-import { Badge, Button, EmptyState, HeroPortrait, Panel, PrimalBadge } from '../components/UI.jsx';
+import { Badge, Button, EmptyState, HeroPortrait, Panel } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
-import GuildChampionships from './GuildChampionships.jsx';
+import { CIRCUITS, CIRCUIT_BY_TIER } from '../data/tournaments.js';
 
 // A town's arena (Phase 6a): an interior with three spots to tap. The fighting
 // ground (referee), the sign-up desk (registrar) and the history board.
@@ -42,53 +41,41 @@ function FightingGround({ state, view, actions }) {
       </Panel>
     );
   }
-  if (view.active && view.player) {
-    const round = view.active.currentRoundSize === 16 ? 'Round of 16' : view.active.currentRoundSize === 8 ? 'Quarterfinal' : view.active.currentRoundSize === 4 ? 'Semifinal' : 'Final';
+  if (view.active && view.team.length) {
+    const size = view.active.currentRoundSize;
+    const round = size >= 16 ? 'Round of 16' : size === 8 ? 'Quarterfinal' : size === 4 ? 'Semifinal' : 'Final';
+    const rivals = state.rivals || [];
     return (
       <Panel title={`${view.active.name}: ${round}`} eyebrow={`Referee · seed #${view.active.initialSeed} · expected top ${view.active.expectedFinish}`}>
-        <div className="versus-card">
-          <button onClick={() => actions.openHero(view.player.id)}>
-            <HeroPortrait hero={view.player} size="lg" />
-            <strong>{view.player.name}</strong>
-            <small>
-              Lv {view.player.level} · fatigue {view.player.fatigue}
-            </small>
-            <PrimalBadge primal={view.player.primal} />
-          </button>
+        <div className="versus-card versus-card--teams">
+          <div className="versus-team">
+            <strong>{state.guild.name}</strong>
+            <div className="versus-team__heroes">
+              {view.team.map((hero) => (
+                <button key={hero.id} onClick={() => actions.openHero(hero.id)} aria-label={hero.name}>
+                  <HeroPortrait hero={hero} size="sm" />
+                  <small>{hero.name}</small>
+                </button>
+              ))}
+            </div>
+          </div>
           <span>VS</span>
-          {view.opponent ? (
-            <button onClick={() => actions.openHero(view.opponent.id)}>
-              <HeroPortrait hero={view.opponent} size="lg" />
-              <strong>{view.opponent.name}</strong>
-              <small>
-                {view.opponent.guildId ? state.rivals.find((guild) => guild.id === view.opponent.guildId)?.name : 'Free agent'} · Lv {view.opponent.level}
-              </small>
-              <PrimalBadge primal={view.opponent.primal} />
-            </button>
-          ) : (
-            <div>Opponent pending</div>
-          )}
+          <div className="versus-team">
+            <strong>{view.opponentGuild?.name || 'Opponent pending'}</strong>
+            {view.opponentGuild ? <small className="muted">{CIRCUIT_BY_TIER[view.opponentGuild.tierIndex || 0]?.id} guild</small> : null}
+          </div>
         </div>
-        <p className="arena-line">“Fighters ready? Then step into the ring.”</p>
-        <Button variant="primary" size="lg" disabled={Boolean(state.activeEncounter)} onClick={() => actions.startHeroCombat(view.active.id)}>
+        <p className="arena-line">“Teams ready? Then step into the ring.”</p>
+        <Button variant="primary" size="lg" disabled={Boolean(state.activeEncounter)} onClick={() => actions.startBout(view.active.id)}>
           {state.activeEncounter?.sourceId === view.active.id ? 'Bout in progress' : 'Start the next bout'}
         </Button>
-        <div className="live-field">
-          {view.active.activeEntrants.map((id) => {
-            const hero = getHero(state, id);
-            return hero ? (
-              <button key={id} className={id === view.player.id ? 'is-player' : ''} onClick={() => actions.openHero(id)}>
-                <HeroPortrait hero={hero} size="xs" />
-                <div>
-                  <strong>{hero.name}</strong>
-                  <small>
-                    Lv {hero.level} · {hero.classId}
-                  </small>
-                </div>
-              </button>
-            ) : null;
-          })}
-        </div>
+        <ul className="arena-others">
+          {view.active.activeEntrants.map((id) => (
+            <li key={id} className={id === 'player' ? 'is-player' : ''}>
+              <strong>{id === 'player' ? state.guild.name : rivals.find((guild) => guild.id === id)?.name || id}</strong>
+            </li>
+          ))}
+        </ul>
       </Panel>
     );
   }
@@ -104,68 +91,89 @@ function FightingGround({ state, view, actions }) {
   );
 }
 
-function Registrar({ state, view, actions, navigate }) {
-  const [heroId, setHeroId] = useState('');
+function Registrar({ state, view, actions }) {
   const open = view.open;
-  const chosen = view.heroes.find((row) => row.hero.id === heroId) || view.heroes.find((row) => row.meets) || null;
+  const cap = open?.teamSize || view.next?.teamSize || 2;
+  const fit = view.heroes.filter((row) => row.fit);
+  const [picked, setPicked] = useState(() => fit.slice(0, cap).map((row) => row.hero.id));
+  const team = picked.filter((id) => fit.some((row) => row.hero.id === id)).slice(0, cap);
+  const toggle = (id) => setPicked((list) => (list.includes(id) ? list.filter((item) => item !== id) : list.length >= cap ? list : [...list, id]));
+  const blocked = view.access?.checks?.filter((check) => !check.met) || [];
+  const why = !view.present
+    ? `Be in ${view.location.name} to sign up.`
+    : blocked.length
+      ? `Not yet: ${blocked.map((check) => `${check.label} ${check.current}/${check.target}`).join(', ')}.`
+      : !team.length
+        ? 'Pick at least one fit hero.'
+        : `Entry costs ${open?.entryFee} gold.`;
+  const signedNames = (open?.signup?.heroIds || []).map((id) => getHero(state, id)?.name).filter(Boolean);
   return (
     <>
-      <Panel title="Sign-up desk" eyebrow="Registrar">
+      <Panel title="Sign-up desk" eyebrow={open ? `Registrar · ${CIRCUITS[open.circuit]?.label || ''}` : 'Registrar'}>
         {open ? (
           open.signup ? (
             <p className="arena-line">
-              “You're on the list: {getHero(state, open.signup.heroId)?.name || 'your entrant'} fights in the {open.name}. Be here on {when({ year: open.year, month: open.month, week: open.week || 0 })}. If you're not, the name is
-              struck and the fee is kept.”
+              “You're on the list: {signedNames.join(', ') || 'your team'} fight in the {open.name}. Be here on {when({ year: open.year, month: open.month, week: open.week || 0 })}. If you're not, the name is struck and the fee is kept.”
             </p>
           ) : (
             <>
               <p className="arena-line">
-                “The {open.name} starts {inWeeks(view.next.days)} ({when(view.next.date)}). Entry is {open.entryFee} gold; the purse is {open.purse} gold.”
+                “The {open.name} starts {inWeeks(view.next.days)} ({when(view.next.date)}). Teams of up to {cap}. Entry is {open.entryFee} gold; the purse is {open.purse} gold.”
               </p>
               <p>
                 <b>Entry rules:</b> {view.next.rules.join(' · ')}
               </p>
-              <div className="arena-entrants" role="radiogroup" aria-label="Who enters">
-                {view.heroes.map((row) => (
-                  <button
-                    key={row.hero.id}
-                    role="radio"
-                    aria-checked={chosen?.hero.id === row.hero.id}
-                    className={`arena-entrant ${chosen?.hero.id === row.hero.id ? 'is-selected' : ''} ${row.meets ? '' : 'is-blocked'}`}
-                    disabled={!row.meets}
-                    onClick={() => setHeroId(row.hero.id)}
-                  >
-                    <HeroPortrait hero={row.hero} size="xs" showStatus={false} />
-                    <span>
-                      <strong>{row.hero.name}</strong>
-                      <small>
-                        Lv {row.hero.level} {row.hero.classId}
-                        {row.meets ? (row.hero.status !== 'available' ? ' · busy now' : '') : ` · ${row.access.checks.filter((check) => !check.met).map((check) => `${check.label} ${check.target}`).join(', ')}`}
-                      </small>
-                    </span>
-                  </button>
-                ))}
+              <p className="muted">
+                Your team: {team.length} of {cap}. Fewer is allowed.
+              </p>
+              <div className="arena-entrants" role="group" aria-label="Who fights for the guild">
+                {view.heroes.map((row) => {
+                  const on = team.includes(row.hero.id);
+                  return (
+                    <button
+                      key={row.hero.id}
+                      aria-pressed={on}
+                      className={`arena-entrant ${on ? 'is-selected' : ''} ${row.fit ? '' : 'is-blocked'}`}
+                      disabled={!row.fit || (!on && team.length >= cap)}
+                      onClick={() => toggle(row.hero.id)}
+                    >
+                      <HeroPortrait hero={row.hero} size="xs" showStatus={false} />
+                      <span>
+                        <strong>{row.hero.name}</strong>
+                        <small>
+                          Lv {row.hero.level} {row.hero.classId}
+                          {row.fit ? '' : ' · not fit'}
+                        </small>
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              <Button variant="primary" size="lg" disabled={!chosen?.meets || state.guild.crowns < open.entryFee || !view.present}
-                why={!view.present ? `Be in ${view.location.name} to sign up.` : !chosen?.meets ? 'Pick a hero who meets the entry rules.' : `Entry costs ${open.entryFee} gold.`} onClick={() => actions.signUpForTournament(open.id, chosen.hero.id)}>
-                {state.guild.crowns < open.entryFee ? `Entry costs ${open.entryFee} G` : `Sign up ${chosen?.hero.name || ''} (${open.entryFee} G)`}
+              <Button
+                variant="primary"
+                size="lg"
+                disabled={!view.present || blocked.length > 0 || !team.length || state.guild.crowns < open.entryFee}
+                why={why}
+                onClick={() => actions.signUpForTournament(open.id, team)}
+              >
+                {state.guild.crowns < open.entryFee ? `Entry costs ${open.entryFee} G` : `Sign up ${team.length} (${open.entryFee} G)`}
               </Button>
-              <small className="muted">The entrant must be fit and the guild in {view.location.name} on the start day, or it's a forfeit.</small>
+              <p className="muted">The team must be fit and the guild in {view.location.name} on the start day, or it's a forfeit.</p>
             </>
           )
         ) : (
           <p className="arena-line">
-            {view.next ? `“Sign-ups for the ${view.next.definition.name} open when the ${view.next.date.year} calendar is published.”` : '“Nothing to sign up for here.”'}
+            {view.next ? `“Sign-ups for the ${view.next.definition.name} open when the ${view.next.date.year} calendar is published.”` : '“Nothing to sign up for here at your status.”'}
           </p>
         )}
       </Panel>
-      <Panel title="Other regional tournaments" eyebrow="Information only: sign up at each town's arena">
+      <Panel title="Other tournaments you can enter" eyebrow="Sign up at each town's arena">
         <ul className="arena-others">
           {view.others.map((item) => (
             <li key={item.definition.id}>
               <strong>{item.definition.name}</strong>
               <small>
-                {item.town} · {when(item.date)} ({inWeeks(item.days)}) · {item.rules.join(' · ')}
+                {item.definition.circuit} · {item.town} · {when(item.date)} ({inWeeks(item.days)}) · {item.rules.join(' · ')}
               </small>
               {item.signup ? (
                 <Badge tone="gold">
@@ -178,7 +186,6 @@ function Registrar({ state, view, actions, navigate }) {
           ))}
         </ul>
       </Panel>
-      {!sliceHides('guildChampionships') ? <GuildChampionships state={state} actions={actions} navigate={navigate} /> : null}
     </>
   );
 }
@@ -195,8 +202,14 @@ function HistoryBoard({ state, view, actions, navigate }) {
               <ul>
                 {item.winners.map((winner, index) => (
                   <li key={`${winner.year}-${index}`}>
-                    <b className="num">{winner.year}</b> {winner.heroName || winner.guildName}
-                    {winner.guildName && winner.heroName ? <small> · {winner.guildName}</small> : null}
+                    <b className="num">{winner.year}</b>{' '}
+                    {winner.vacated ? (
+                      <>
+                        <s>{winner.struck}</s> <small>· title vacated</small>
+                      </>
+                    ) : (
+                      winner.guildName
+                    )}
                   </li>
                 ))}
                 {!item.winners.length ? <li className="muted">No champions recorded.</li> : null}
@@ -212,7 +225,7 @@ function HistoryBoard({ state, view, actions, navigate }) {
               <h3>Your best</h3>
               {item.best ? (
                 <Button size="sm" onClick={() => actions.openReport({ kind: 'tournament', id: item.best.id })}>
-                  {ordinal(item.best.finish)} in {item.best.year} ({item.best.hero}) ›
+                  {ordinal(item.best.finish)} in {item.best.year} ›
                 </Button>
               ) : (
                 <p className="muted">The guild has not fought here yet.</p>
@@ -256,7 +269,7 @@ export default function ArenaScreen({ state, actions, navigate, locationId, init
           active={spot === 'registrar'}
           asset="portrait.arena.registrar"
           title="Sign-up desk"
-          text={view.open?.signup ? 'Signed up' : view.open ? `${view.open.name}: sign-ups open` : 'Entries and the regional calendar'}
+          text={view.open?.signup ? 'Signed up' : view.open ? `${view.open.name}: sign-ups open` : 'Entries and the tournament calendar'}
           badge={view.open && !view.open.signup ? 'Open' : null}
           onClick={() => setSpot('registrar')}
         />
@@ -273,7 +286,7 @@ export default function ArenaScreen({ state, actions, navigate, locationId, init
         />
       </nav>
       {spot === 'ground' ? <FightingGround state={state} view={view} actions={actions} /> : null}
-      {spot === 'registrar' ? <Registrar state={state} view={view} actions={actions} navigate={navigate} /> : null}
+      {spot === 'registrar' ? <Registrar state={state} view={view} actions={actions} /> : null}
       {spot === 'board' ? <HistoryBoard state={state} view={view} actions={actions} navigate={navigate} /> : null}
       {!spot ? <p className="muted arena-hint">Tap the fighting ground, the sign-up desk or the history board.</p> : null}
     </div>

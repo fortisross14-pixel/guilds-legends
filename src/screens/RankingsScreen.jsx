@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { TIERS } from '../data/content.js';
+import { statusName } from '../data/tournaments.js';
 import { LADDERS, LADDER_LABELS, getGuildLadder, getHeroLadder, getHeroRankings, getPlayerRanks, getPointsToPass, getRankMovement, getStatusTitle } from '../game/engine.js';
 import { Button, HeroPortrait, Panel, PrimalBadge, RankChange, toast } from '../components/UI.jsx';
 import { HallOfFame, RecordBook } from './HistoryScreens.jsx';
@@ -129,7 +130,9 @@ export default function RankingsScreen({ state, actions }) {
         {who === 'guilds' && state.guild.tierIndex > 0 ? (
           <select aria-label="Scope" value={scope} onChange={(event) => setScope(event.target.value)}>
             {['Regional', 'National', 'Global'].map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {statusName(item)}
+              </option>
             ))}
           </select>
         ) : null}
@@ -142,13 +145,13 @@ export default function RankingsScreen({ state, actions }) {
 function TournamentLegends({ state, actions }) {
   const heroes = useMemo(() => getHeroRankings(state), [state]);
   const titleKings = [...heroes]
-    .sort((a, b) => (b.career?.individualTitles || 0) - (a.career?.individualTitles || 0) || (b.career?.prizeMoney || 0) - (a.career?.prizeMoney || 0))
+    .sort((a, b) => (b.career?.titles || 0) - (a.career?.titles || 0) || (b.career?.prizeMoney || 0) - (a.career?.prizeMoney || 0))
     .slice(0, 12);
   const prizeLeaders = [...heroes].sort((a, b) => (b.career?.prizeMoney || 0) - (a.career?.prizeMoney || 0)).slice(0, 12);
   const records = Object.values(state.titleRecords || {});
   return (
     <div className="tournament-almanac-grid">
-      <Panel title="Most individual titles" eyebrow="Repeat champions define an era">
+      <Panel title="Most tournament titles" eyebrow="Heroes who fought on winning teams">
         <div className="leader-list">
           {titleKings.map((hero, index) => (
             <button key={hero.id} onClick={() => actions.openHero(hero.id)}>
@@ -158,7 +161,7 @@ function TournamentLegends({ state, actions }) {
                 <strong>{hero.name}</strong>
                 <small>{hero.guildName}</small>
               </div>
-              <b>{hero.career?.individualTitles || 0}</b>
+              <b>{hero.career?.titles || 0}</b>
             </button>
           ))}
         </div>
@@ -183,7 +186,7 @@ function TournamentLegends({ state, actions }) {
           {records.map((record) => (
             <article key={record.id}>
               <small>
-                {record.circuit} · {record.kind}
+                {record.circuit}
               </small>
               <strong>{record.name}</strong>
               <p>
@@ -191,9 +194,7 @@ function TournamentLegends({ state, actions }) {
               </p>
               <span>
                 Your best:{' '}
-                {record.kind === 'individual'
-                  ? Math.max(0, ...state.heroes.map((hero) => hero.career?.titleWins?.[record.id] || 0))
-                  : record.winsByGuild?.player || 0}
+                {record.winsByGuild?.player || 0}
               </span>
             </article>
           ))}
@@ -252,7 +253,7 @@ export function GuildDirectory({ state, actions, onOpenRival }) {
             <div>
               <strong>{item.name}</strong>
               <small>
-                {TIERS[item.tierIndex]?.id} · {item.titles} titles
+                {TIERS[item.tierIndex]?.name} · {item.titles} titles
               </small>
             </div>
             <span>{item.power}</span>
