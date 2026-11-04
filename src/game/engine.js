@@ -53,12 +53,11 @@ export {
 export { recruitObjection } from './engine/candidates.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { signUpForTournament, getArenaView, tournamentStartDay, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
-export { inspectMission, saveFormation, launchMission } from './engine/missions.js';
+export { saveFormation, acceptContract, contractSite, contractPlace, activeContracts, contractSteps, firstStep, reportTo, contractDaysLeft, siteObjects, siteDoors, objectiveOpen } from './engine/missions.js';
+export { siteObjectiveView, siteAct, startSiteFight, retrySiteBattle, checkLabel } from './engine/sites.js';
 export { townPeople, peopleIn, findPerson, getPersonTalk, meetPerson, talkToPerson, hireTerms, getContacts, knownMissions, missionPosted, shortLabels } from './engine/people.js';
-export { resolveDecision, acknowledgeReport } from './engine/outcomes.js';
+export { reportContract, contractGrade, acknowledgeReport, GRADES } from './engine/outcomes.js';
 export {
-  performActiveMissionGameAction,
-  autoResolveActiveMissionGame,
   performActiveCombatAction,
   fleeActiveCombat,
   autoResolveActiveCombat,
@@ -87,7 +86,7 @@ export { getLivingHistory } from './engine/dashboard.js';
 export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
-export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, launchExpedition, restAtHall, restAtInn, MAX_REST_DAYS, INN_NIGHT_COST } from './engine/timeActions.js';
+export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, restAtHall, restAtInn, MAX_REST_DAYS, INN_NIGHT_COST } from './engine/timeActions.js';
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero, shopPrice, chestUsed, gearUpgradeCost, upgradeGear } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';

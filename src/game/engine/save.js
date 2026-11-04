@@ -29,7 +29,6 @@ import { createTitleRecords, createUniverseInPlace, createWorldArtifactsInPlace,
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
 import { initialStats, startingHome } from './state.js';
-import { createMissionCombatEncounterInPlace } from './missions.js';
 
 export function compactForSave(state, aggressive = false) {
   const saved = clone(state);
@@ -244,8 +243,6 @@ export function migrateGame(raw) {
   next.notifications ||= [];
   next.historicHeroes ||= [];
   next.activeEncounter ||= null;
-  next.activeMissionGame ||= null;
-  next.pendingDecisions ||= [];
   next.missionHistory ||= [];
   next.tournamentHistory ||= [];
   next.pendingReports ||= [];
@@ -414,20 +411,6 @@ export function migrateGame(raw) {
     mission.enemyPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
     mission.patronPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
   });
-  (next.activeMissions || []).forEach((mission) => {
-    mission.approach ||= formationForMission(mission);
-    mission.formationType ||= mission.approach;
-    mission.locationId ||= defaultLocationByRegion[mission.region] || next.world.currentLocationId;
-    mission.locationName ||= LOCATION_BY_ID[mission.locationId]?.name || mission.region;
-    mission.enemyPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
-    mission.patronPrimal ||= LOCATION_BY_ID[mission.locationId]?.primal || 'Fire';
-    const slots = FORMATION_TYPES[mission.formationType]?.slots || FORMATION_TYPES.Combat.slots;
-    mission.assignments = (mission.assignments || []).slice(0, 5).map((assignment, index) => ({
-      heroId: assignment.heroId,
-      slotId: assignment.slotId || slots[index]?.id || slots[slots.length - 1].id,
-      role: assignment.role || slots[index]?.role || slots[slots.length - 1].role,
-    }));
-  });
 
   // Migration must be idempotent: loading a current save may not reroll its
   // mission board, recruitment market, tournament bracket or active combat.
@@ -453,14 +436,8 @@ export function migrateGame(raw) {
         hero.status = 'available';
       });
   }
-  // v15 replaced the shared-HP combat model. An in-progress old battle is
-  // rebuilt for missions; a tournament bout is simply started again.
-  if (next.activeEncounter && !Array.isArray(next.activeEncounter.party)) {
-    const old = next.activeEncounter;
-    next.activeEncounter = null;
-    const mission = old.sourceType === 'mission' ? next.activeMissions.find((item) => item.id === old.sourceId) : null;
-    if (mission) createMissionCombatEncounterInPlace(next, mission);
-  }
+  // v15 replaced the shared-HP combat model: an old battle in progress is dropped.
+  if (next.activeEncounter && !Array.isArray(next.activeEncounter.party)) next.activeEncounter = null;
   commitRng(next, universeRng);
   delete next.tournament;
   evaluateStateInPlace(next);
@@ -500,8 +477,6 @@ export function validateGame(state) {
   if (state.world?.activeTravel && !Number.isFinite(state.world.activeTravel.daysRemaining)) errors.push('Travel days are invalid.');
   if (state.world?.wildAreaId && (!WILD_AREAS[state.world.wildAreaId] || state.world.activeTravel)) errors.push('Wild area state is invalid.');
   if (state.activeEncounter && !['active', 'won', 'lost'].includes(state.activeEncounter.status)) errors.push('Combat encounter state is invalid.');
-  if (state.activeMissionGame && !['active', 'won', 'lost', 'partial'].includes(state.activeMissionGame.status))
-    errors.push('Mission challenge state is invalid.');
   const ids = new Set();
   const validateHero = (hero, context = 'hero') => {
     if (!hero?.id) {
@@ -529,15 +504,6 @@ export function validateGame(state) {
   (state.worldHistoricHeroes || []).forEach((hero) => validateHero(hero, 'world historic hero'));
   if (!TIERS[state.guild?.tierIndex]) errors.push('Guild tier index is invalid.');
   const deployed = new Set();
-  (state.activeMissions || []).forEach((mission) => {
-    (mission.assignments || []).forEach((assignment) => {
-      if (deployed.has(assignment.heroId)) errors.push(`Hero is deployed twice: ${assignment.heroId}`);
-      deployed.add(assignment.heroId);
-      const hero = state.heroes.find((item) => item.id === assignment.heroId);
-      if (!hero) errors.push(`Mission references missing hero: ${assignment.heroId}`);
-      else if (hero.status !== 'mission') errors.push(`Deployed hero has invalid status: ${hero.name}`);
-    });
-  });
   (state.tournaments || [])
     .filter((tournament) => tournament.status === 'active')
     .forEach((tournament) => {
@@ -569,10 +535,6 @@ export function validateGame(state) {
     if (!APPOINTMENTS.some((item) => item.id === appointmentId)) errors.push(`Unknown appointment: ${appointmentId}`);
     const hero = state.heroes.find((item) => item.id === heroId);
     if (!hero || ['dead', 'retired'].includes(hero.status)) errors.push(`Appointment references inactive hero: ${appointmentId}`);
-  });
-  (state.pendingDecisions || []).forEach((decision) => {
-    if (decision.missionId && !state.activeMissions.some((mission) => mission.id === decision.missionId))
-      errors.push(`Decision references missing mission: ${decision.id}`);
   });
   return errors;
 }

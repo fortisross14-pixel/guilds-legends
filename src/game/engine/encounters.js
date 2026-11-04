@@ -1,10 +1,9 @@
 // @ts-check
-// Active combat and mission-game actions, and concluding them.
+// Active combat actions, and concluding a battle (wild areas, roads, contract sites, tournaments, duels).
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
 import { defeatInPlace } from './hall.js';
 import { VITALS } from '../../data/activities.js';
-import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
-import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
+import { attemptFlee, autoResolveEncounter, performCombatRound } from '../combat.js';
 import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
@@ -24,73 +23,9 @@ import { addItemsInPlace, lootList, rollLoot, settleBattleItemsInPlace } from '.
 import { evaluateStateInPlace } from './goals.js';
 import { completeIndividualTournamentInPlace, resolveIndividualRoundInPlace } from './tournaments.js';
 import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guildTournaments.js';
-import { missionDecision } from './missions.js';
+import { siteFightConcludedInPlace } from './sites.js';
 import { recordRivalryInPlace, settleChallengeInPlace } from './rivalry.js';
 import { personBoutResultInPlace } from './people.js';
-
-function concludeMissionGameInPlace(state) {
-  const game = state.activeMissionGame;
-  if (!game || game.status === 'active' || !game.result) return false;
-  const mission = state.activeMissions.find((item) => item.id === game.sourceId);
-  if (!mission) {
-    state.activeMissionGame = null;
-    return false;
-  }
-  mission.missionGameResolved = true;
-  const grade = missionGradeFromMissionGame(game);
-  const decision = missionDecision(mission);
-  decision.forcedGrade = grade;
-  decision.missionGameResolved = true;
-  decision.missionGameSummary = {
-    type: game.type,
-    grade,
-    status: game.status,
-    turns: game.result.turns,
-    performance: game.result.performance,
-    rewardModifier: game.result.rewardModifier,
-    metrics: clone(game.result.metrics),
-    log: clone(game.result.log || []),
-  };
-  const outcomeText =
-    game.status === 'won'
-      ? 'The company controls the decisive phase.'
-      : game.status === 'partial'
-        ? 'The company secures only part of what it came for.'
-        : 'The decisive phase goes against the company.';
-  decision.prompt = `${outcomeText} ${decision.prompt}`;
-  state.pendingDecisions.push(decision);
-  state.activeMissionGame = null;
-  addChronicle(state, {
-    type: game.status === 'won' ? 'mission-game-victory' : game.status === 'partial' ? 'mission-game-mixed' : 'mission-game-defeat',
-    importance: mission.risk >= 4 ? 4 : 2,
-    title: `${grade}: ${mission.title}`,
-    text: `${game.type} play determined the mission after ${game.result.turns} turns. The company now faces the aftermath decision.`,
-    heroIds: mission.assignments.map((assignment) => assignment.heroId),
-    tags: [game.type, mission.family, grade],
-  });
-  return true;
-}
-
-export function performActiveMissionGameAction(state, actionId, leadHeroId = null) {
-  if (!state.activeMissionGame) return { state, error: 'There is no active mission challenge.' };
-  if (state.activeMissionGame.status !== 'active') return { state, error: 'This mission challenge is already resolved.' };
-  const next = clone(state);
-  const result = performMissionGameAction(next.activeMissionGame, actionId, leadHeroId);
-  if (result.error) return { state, error: result.error };
-  next.activeMissionGame = result.game;
-  concludeMissionGameInPlace(next);
-  evaluateStateInPlace(next);
-  return { state: finalize(next), error: null };
-}
-
-export function autoResolveActiveMissionGame(state, mutate = false) {
-  if (!state.activeMissionGame) return { state, error: 'There is no active mission challenge.' };
-  const next = mutate ? state : clone(state);
-  next.activeMissionGame = autoResolveMissionGame(next.activeMissionGame);
-  concludeMissionGameInPlace(next);
-  evaluateStateInPlace(next);
-  return { state: finalize(next), error: null };
-}
 
 /** Plays one battle round. commands: { [partyUnitId]: { action, skillId?, itemId?, targetId? } }. */
 export function performActiveCombatAction(state, commands = {}) {
@@ -278,39 +213,11 @@ function concludeCombatInner(state, mutate) {
     return { state: finalize(next), error: null, result: { kind: 'wild-combat', combat: combatResult } };
   }
 
-  if (encounter.sourceType === 'mission') {
-    const mission = next.activeMissions.find((item) => item.id === encounter.sourceId);
-    if (!mission) return { state, error: 'The mission behind this combat can no longer be found.' };
-    mission.combatResolved = true;
-    const grade = missionGradeFromCombat(encounter);
-    const decision = missionDecision(mission);
-    decision.forcedGrade = grade;
-    decision.combatResolved = true;
-    decision.combatSummary = {
-      grade,
-      playerWon: combatResult.playerWon,
-      turns: combatResult.turns,
-      method: combatResult.method,
-      playerHpPct: combatResult.playerHpPct,
-      enemyHpPct: combatResult.enemyHpPct,
-      playerDamage: combatResult.playerDamage,
-      enemyDamage: combatResult.enemyDamage,
-      knockedOut: combatResult.knockedOut || [],
-      log: encounter.log.slice(-12),
-    };
-    decision.prompt = `${combatResult.playerWon ? 'The hostile force breaks.' : 'The company is forced back.'} ${decision.prompt}`;
-    next.pendingDecisions.push(decision);
+  if (encounter.sourceType === 'site') {
+    siteFightConcludedInPlace(next, encounter, combatResult);
     next.activeEncounter = null;
-    addChronicle(next, {
-      type: combatResult.playerWon ? 'combat-victory' : 'combat-defeat',
-      importance: mission.risk >= 4 ? 4 : 2,
-      title: `${combatResult.playerWon ? 'Victory' : 'Defeat'} in ${mission.title}`,
-      text: `${mission.title} was decided after ${combatResult.turns} tactical turns. The expedition now faces its aftermath decision.`,
-      heroIds: mission.assignments.map((assignment) => assignment.heroId),
-      tags: ['combat', mission.family, grade],
-    });
     evaluateStateInPlace(next);
-    return { state: finalize(next), error: null, result: { kind: 'mission-combat', grade, combat: combatResult } };
+    return { state: finalize(next), error: null, result: { kind: 'site-combat', combat: combatResult } };
   }
 
   if (encounter.sourceType === 'hero-tournament') {

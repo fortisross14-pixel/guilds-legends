@@ -327,7 +327,7 @@ export function enterWildArea(state, areaId, fromPosition = null) {
   if (state.world?.activeTravel) return { state, error: 'The guild is on the road.' };
   if (state.world?.currentLocationId !== area.hub) return { state, error: `${area.name} is reached from ${TOWNS[area.hub]?.name || area.hub}.` };
   if (!checkCondition(state, area.unlock)) return { state, error: area.lockedText || `${area.name} is closed for now.` };
-  if (state.activeEncounter || state.pendingDecisions.length) return { state, error: 'Finish what is in front of you first.' };
+  if (state.activeEncounter) return { state, error: 'Finish what is in front of you first.' };
   const next = clone(state);
   const wild = wildStateInPlace(next, areaId);
   const exploration = explorationInPlace(next);
@@ -481,7 +481,10 @@ export function retryWildBattle(state) {
 
 /** After a party wipe in the wild: accept the defeat (the party wakes in the infirmary at home). */
 export function acceptDefeat(state) {
-  if (!wipedInTheWild(state)) return { state, error: 'There is no lost battle here.' };
+  // A wipe in a wild area or on a contract site (missions-in-world).
+  const encounter = state.activeEncounter;
+  const wiped = encounter && ['wild', 'site'].includes(encounter.sourceType) && encounter.status === 'lost' && encounter.result?.method !== 'withdrew';
+  if (!wiped) return { state, error: 'There is no lost battle here.' };
   return concludeActiveCombat(state);
 }
 

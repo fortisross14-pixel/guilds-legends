@@ -47,8 +47,6 @@ export function startTravel(state, destinationId) {
   const next = clone(state);
   if (next.world?.activeTravel) return { state, error: 'The guild is already traveling.' };
   if (next.activeEncounter) return { state, error: 'Conclude the active combat before leaving.' };
-  if (next.activeMissionGame) return { state, error: 'Conclude the active mission challenge before leaving.' };
-  if (next.pendingDecisions.length) return { state, error: 'Resolve the critical decision before leaving.' };
   if ([...(next.tournaments || []), ...(next.guildTournaments || [])].some((tournament) => tournament.status === 'active'))
     return { state, error: 'Finish the active tournament before traveling.' };
   const quote = getTravelQuote(next, destinationId);

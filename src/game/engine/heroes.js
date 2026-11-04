@@ -296,7 +296,7 @@ function formationCompatibility(mission, formationType) {
 }
 
 export function partyEstimate(state, missionId, formationTypeOrAssignments, maybeAssignments) {
-  const mission = state.missions.find((item) => item.id === missionId) || state.activeMissions.find((item) => item.id === missionId);
+  const mission = state.missions.find((item) => item.id === missionId);
   const legacyCall = Array.isArray(formationTypeOrAssignments);
   const formationType = normalizedFormationType(mission, legacyCall ? mission?.formationType || mission?.approach : formationTypeOrAssignments);
   const assignments = legacyCall ? formationTypeOrAssignments : maybeAssignments || [];

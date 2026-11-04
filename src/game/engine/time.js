@@ -39,7 +39,7 @@ import { monthlyConnectionsInPlace } from './connections.js';
 import { adjustPatronInPlace, patronAtLeast } from './charter.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { createTournamentsInPlace, simulateScheduledCompetitionsInPlace } from './guildTournaments.js';
-import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
+import { contractDeadlinesInPlace } from './outcomes.js';
 import { startScheduledTournamentsInPlace } from './tournamentEntry.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
 import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings.js';
@@ -66,10 +66,6 @@ function resolveMonthlyHeroActivities(state, rng) {
 
   state.heroes.forEach((hero) => {
     if (['dead', 'retired'].includes(hero.status)) return;
-    if (hero.status === 'mission') {
-      results.push({ heroId: hero.id, name: hero.name, activity: 'Mission', icon: '⌖', summary: 'Deployed on an active mission.' });
-      return;
-    }
     if (hero.status === 'sidejob') {
       results.push({ heroId: hero.id, name: hero.name, activity: 'Side job', icon: '✎', summary: 'Out on a side job.' });
       return;
@@ -315,8 +311,6 @@ function archiveOldHeroesInPlace(state) {
 
 function pauseReason(state) {
   if (state.activeEncounter) return 'Conclude the active combat before advancing time.';
-  if (state.activeMissionGame) return 'Conclude the active mission challenge before advancing time.';
-  if (state.pendingDecisions.length) return 'Resolve the critical decision before advancing time.';
   if (state.pendingRoadEvent) return 'Deal with the event on the road before advancing time.';
   if (state.story?.scene) return 'Someone wants a word with you first.';
   if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
@@ -415,19 +409,10 @@ function runWeekInPlace(next, rng, summary) {
   }
 }
 
-/** Deployed companies count down to the day they are due. */
-function updateMissionClocksInPlace(state) {
-  const today = campaignDaySerial(state);
-  state.activeMissions.forEach((mission) => {
-    if (!Number.isFinite(mission.dueDay)) mission.dueDay = today + Math.max(0, mission.remaining) * DAYS_PER_WEEK;
-    mission.remaining = Math.max(0, Math.ceil((mission.dueDay - today) / DAYS_PER_WEEK));
-  });
-}
-
 /**
  * Advances time day by day. Weekly systems run when a new week starts and
  * monthly ones when a new month starts. Stops early when a decision, battle,
- * mission game, road event or tournament needs the player, or when `until`
+ * road event or tournament needs the player, or when `until`
  * returns true. A council report summarizes the advance when it crossed a month.
  * Time only moves through player actions (travel, rest, camps, contracts).
  */
@@ -461,9 +446,8 @@ export function advanceDays(state, count = 1, mutate = false, until = null) {
       next.date.day = 0;
       runWeekInPlace(next, rng, summary);
     }
-    updateMissionClocksInPlace(next);
-    queueDueCombatMissionInPlace(next);
-    queueDueMissionGameInPlace(next);
+    // Contracts have no clock of their own; only a deadline can pass.
+    contractDeadlinesInPlace(next);
     startScheduledTournamentsInPlace(next);
     summary.days += 1;
     commitRng(next, rng);
@@ -505,13 +489,4 @@ export function advanceToDate(state, date) {
   const days = dateDaySerial({ ...date, day: 0 }) - campaignDaySerial(state);
   if (!Number.isFinite(days) || days <= 0) return { state, error: 'Pick a date in the future.' };
   return advanceDays(state, days);
-}
-
-/** Lets time pass until a deployed company is back (or something needs the player). */
-export function advanceUntilMissionReturns(state, missionId, mutate = false) {
-  const mission = state.activeMissions.find((item) => item.id === missionId);
-  if (!mission) return { state, error: null };
-  const today = campaignDaySerial(state);
-  const days = Math.max(1, (Number.isFinite(mission.dueDay) ? mission.dueDay - today : mission.remaining * DAYS_PER_WEEK) + 1);
-  return advanceDays(state, days, mutate, (next) => !next.activeMissions.some((item) => item.id === missionId));
 }

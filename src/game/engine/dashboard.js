@@ -26,6 +26,7 @@ import { FAMILY_PERKS, getReputationSummary, specializationTitle } from './reput
 import { nemesisIds } from './rivalry.js';
 import { festivalFor } from './townLife.js';
 import { getStoryView } from './story.js';
+import { activeContracts } from './missions.js';
 
 /** Read model for fog-of-war presentation; it does not restrict strategic travel. */
 export function getWorldKnowledge(state) {
@@ -136,15 +137,6 @@ export function getNextAction(state) {
       action: 'combat',
     };
   }
-  if (state.activeMissionGame) {
-    return {
-      kind: 'critical',
-      title: `${state.activeMissionGame.type}: ${state.activeMissionGame.title}`,
-      body: `Turn ${state.activeMissionGame.turn}. Choose a lead hero and play the decisive mission challenge.`,
-      screen: 'missions',
-      action: 'mission-game',
-    };
-  }
   if (state.pendingRoadEvent) {
     return { kind: 'critical', title: 'Something happens on the road', body: 'Choose how the travellers respond.', screen: 'map', action: 'road-event' };
   }
@@ -162,9 +154,6 @@ export function getNextAction(state) {
   if (story.tutorial === 'active' && story.active?.act === 1 && story.active.current) {
     const step = story.active.current;
     return { kind: 'tutorial', title: `${story.active.number}. ${story.active.title}`, body: `${step.text} ${step.hint || ''}`.trim(), screen: step.screen || 'town', step: story.active.number, total: 4, missionId: story.active.id, canTalk: step.canTalk };
-  }
-  if (state.pendingDecisions.length) {
-    return { kind: 'critical', title: 'A critical decision is waiting', body: state.pendingDecisions[0].prompt, screen: 'hall', action: 'resolve' };
   }
   if (state.pendingReports?.length) {
     const report = getReport(state, state.pendingReports[0]);
@@ -240,11 +229,9 @@ export function getDashboardSummary(state) {
     unpaidMonths: state.guild.unpaidMonths || 0,
     activeHeroes: activeHeroCount(state),
     capacity: bedCount(state),
-    activeMissions: state.activeMissions.length,
+    activeContracts: activeContracts(state).length,
     partyCapacity: partyCapacity(state),
-    decisions: state.pendingDecisions.length,
     combatActive: Boolean(state.activeEncounter),
-    missionGameActive: Boolean(state.activeMissionGame),
     location: getCurrentLocation(state).name,
     locationId: getCurrentLocation(state).id,
     locationPrimal: getCurrentLocation(state).primal,
@@ -320,16 +307,19 @@ export function getCalendarEntries(state, months = 12) {
     const pool = year === state.date.year ? [...(state.tournaments || []), ...(state.guildTournaments || [])] : projectedTournaments(year);
     pool.filter((tournament) => tournament.status !== 'completed' && knowsTournament(state, tournament)).forEach((tournament) => add(tournamentEntry(state, tournament, now)));
   });
-  (state.activeMissions || []).forEach((mission) => {
-    add({
-      kind: 'mission',
-      id: mission.id,
-      title: `${mission.title} returns`,
-      date: dateFromWeekSerial(now + Math.max(0, mission.remaining)),
-      locationId: mission.locationId,
-      detail: `${mission.locationName || ''} · ${mission.assignments.length} heroes`,
+  // Contracts have no clock; only a deadline goes on the calendar.
+  activeContracts(state)
+    .filter((mission) => mission.site?.deadlineDay)
+    .forEach((mission) => {
+      add({
+        kind: 'mission',
+        id: mission.id,
+        title: `Deadline: ${mission.title}`,
+        date: dateFromDaySerial(mission.site.deadlineDay),
+        locationId: mission.locationId,
+        detail: mission.locationName || '',
+      });
     });
-  });
   const travel = state.world?.activeTravel;
   if (travel)
     add({

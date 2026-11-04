@@ -1141,21 +1141,6 @@ export function autoResolveEncounter(encounterInput) {
   return encounter;
 }
 
-export function missionGradeFromCombat(encounter) {
-  const result = encounter?.result;
-  if (!result) return 'Defeat';
-  const performance = result.performance ?? 50;
-  if (!result.playerWon) {
-    if (result.method === 'withdrew') return 'Defeat';
-    if (performance <= 18 || result.playerHpPct <= 10) return 'Catastrophic';
-    return 'Defeat';
-  }
-  if (performance >= 88) return 'Legendary';
-  if (performance >= 72) return 'Great Success';
-  if (performance >= 45) return 'Success';
-  return 'Partial';
-}
-
 /** Battle stats a hero would bring into combat (for the status screen). */
 export function heroBattleStats(hero) {
   const unit = makeCombatant(hero, 'party');

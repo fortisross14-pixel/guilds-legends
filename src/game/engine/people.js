@@ -19,7 +19,7 @@ import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, f
 import { makeCandidate, recruitObjection } from './candidates.js';
 import { baseSalaryFor, candidateRanges, contractSalary } from './contracts.js';
 import { battleItems } from './inventory.js';
-import { declineContract } from './missions.js';
+import { acceptContractInPlace, contractPlace, declineContract, firstStep } from './missions.js';
 
 const MAX_PEOPLE = 7; // a room fits one screen
 const HIRE_YEARS = 2;
@@ -246,7 +246,7 @@ function hubChoices(state, person) {
   if (chat && visitorKind(person) !== 'mission') choices.push(choice('chat', chat, Boolean(asked.chat)));
   choices.push(...serviceChoices(person, state, asked));
   person.offers.forEach((offer) => {
-    if (offer.type === 'mission') choices.push(choice('mission', 'Need anything done?', Boolean(asked.mission)));
+    if (offer.type === 'mission') choices.push(nextMission(state, person).ready ? choice('mission', 'It’s done.') : choice('mission', 'Need anything done?', Boolean(asked.mission)));
     if (offer.type === 'hire') choices.push(choice('hire', 'Looking for work?', Boolean(asked.hire)));
     if (offer.type === 'challenge') choices.push(choice('challenge', 'Fancy a friendly bout?', Boolean(asked.challenge)));
   });
@@ -356,11 +356,20 @@ export function hireTerms(state, candidate) {
   return { fee: candidate.signingFee, salary, years: HIRE_YEARS, bed: true, blockers };
 }
 
-/** The contract a petitioner talks about next: the first one the guild has not taken yet. */
+/**
+ * A petitioner's contracts: the next one to offer, one the guild is working on,
+ * one finished and waiting to be reported, and one that ran past its deadline.
+ */
 function nextMission(state, person) {
   const offer = person.offers.find((item) => item.type === 'mission');
   const missions = (offer?.missionIds || []).map((id) => state.missions.find((mission) => mission.id === id)).filter(Boolean);
-  return { open: missions.find((mission) => !mission.unlocked) || null, taken: missions.some((mission) => mission.unlocked) };
+  const status = (mission) => mission.site?.status;
+  return {
+    open: missions.find((mission) => !mission.unlocked) || null,
+    working: missions.find((mission) => status(mission) === 'active') || null,
+    ready: missions.find((mission) => status(mission) === 'ready') || null,
+    failed: missions.find((mission) => status(mission) === 'failed') || null,
+  };
 }
 
 /** A contract brief, as the petitioner would say it: its first sentence. */
@@ -398,8 +407,17 @@ export function talkToPerson(state, personId, choiceId) {
   } else if (action === 'chat') {
     lines = chatLines(next, person);
   } else if (action === 'mission') {
-    const { open, taken } = nextMission(next, person);
-    if (!open) lines = [taken ? 'You already have my contract. It’s on your notice board.' : 'Nothing right now. Ask me next month.'];
+    const { open, working, ready, failed } = nextMission(next, person);
+    if (failed) {
+      // A missed deadline: they say so once, and the contract is gone.
+      lines = [`You never came back about “${failed.title}”. I found someone else.`];
+      next.missions = next.missions.filter((item) => item.id !== failed.id);
+      memory.relationship = clamp(memory.relationship - 2, -10, 10);
+    } else if (ready) {
+      lines = ['You’re back. Well?'];
+      choices = [choice(`mission.report:${ready.id}`, 'It’s done.'), choice('back', BACK)];
+    } else if (working) lines = [`“${working.title}”: ${firstStep(next, working)?.text || 'you know what to do'}.`];
+    else if (!open) lines = ['Nothing right now. Ask me next month.'];
     else {
       lines = [briefLine(open), `It pays ${open.reward} gold. ${RISK_LINES[clamp(open.risk || 1, 1, 5) - 1]}`];
       choices = [choice(`mission.accept:${open.id}`, 'We’ll take it.'), choice(`mission.decline:${open.id}`, 'Not this one.'), choice('back', BACK)];
@@ -407,12 +425,14 @@ export function talkToPerson(state, personId, choiceId) {
   } else if (action === 'mission.accept') {
     const mission = next.missions.find((item) => item.id === argument);
     if (!mission) return { state, error: 'That contract is gone.' };
-    mission.unlocked = true;
-    mission.accepted = true;
-    mission.giverId = person.id;
+    acceptContractInPlace(next, mission, { id: person.id, name: person.name });
     memory.relationship = clamp(memory.relationship + 1, -10, 10);
-    lines = ['Thank you. I’ll put it on your notice board in the square.', 'Pick your party there.'];
-    ui = { notice: `“${mission.title}” added to the notice board.` };
+    lines = ['Thank you.', `${contractPlace(mission).name}. ${firstStep(next, mission)?.text || ''}. Come back to me when it’s done.`];
+    ui = { notice: `“${mission.title}” is in your Journal.` };
+  } else if (action === 'mission.report') {
+    // The reward comes through one moment (outcomes.js reportContract, called by the screen).
+    lines = ['Let me see.'];
+    ui = { close: true, report: argument };
   } else if (action === 'mission.decline') {
     const result = declineContract(next, argument);
     if (result.error) return { state, error: result.error };

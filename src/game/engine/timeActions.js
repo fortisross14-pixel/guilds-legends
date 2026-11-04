@@ -1,7 +1,7 @@
 // @ts-check
 // Player actions that move time (the only way time moves): travel with road
-// events, continuing a journey, resting at the Guild Hall or an inn, and
-// sending companies out (time passes for the player only if the founder goes).
+// events, continuing a journey, and resting at the Guild Hall or an inn.
+// Contracts have no clock of their own (missions-in-world spec).
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { INJURY } from '../../data/rooms.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
@@ -10,9 +10,8 @@ import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
-import { launchMission } from './missions.js';
 import { concludeActiveCombat } from './encounters.js';
-import { advanceDays, advanceUntilMissionReturns } from './time.js';
+import { advanceDays } from './time.js';
 import { charterEffect } from './charter.js';
 
 /**
@@ -37,7 +36,7 @@ export function planRoadEvents(rng, days) {
 
 function keepTravellingInPlace(next) {
   const travel = next.world?.activeTravel;
-  if (!travel || next.pendingDecisions.length || next.activeEncounter || next.activeMissionGame || next.pendingRoadEvent) return { state: finalize(next), error: null };
+  if (!travel || next.activeEncounter || next.pendingRoadEvent) return { state: finalize(next), error: null };
   return advanceDays(next, travel.daysRemaining, true);
 }
 
@@ -168,32 +167,9 @@ export function resolveRoadEvent(state, optionId) {
   commitRng(next, rng);
   addChronicle(next, { type: 'travel', importance: 1, title: definition.title, text: result, tags: ['travel', 'road-event', event.type] });
   next.notifications.push({ id: `road-${event.id}`, tone: 'blue', title: definition.title, text: result });
-  if (event.scripted) {
-    // The story march (mission 3): after the road event, time runs until the wolves.
-    const mission = next.activeMissions.find((item) => item.locationId === event.toId) || next.activeMissions[0];
-    return mission ? advanceUntilMissionReturns(next, mission.id, true) : { state: finalize(next), error: null };
-  }
+  // The opening peddler (taking story mission 3's contract) is not a journey: nothing to continue.
+  if (event.scripted) return { state: finalize(next), error: null };
   return keepTravellingInPlace(next);
-}
-
-/**
- * Launches a mission. The company is away for the contract's listed time. If
- * the founder goes, time passes for the player too until they are back;
- * otherwise the player keeps exploring.
- */
-export function launchExpedition(state, missionId, formationType, assignments) {
-  const mission = state.missions.find((item) => item.id === missionId);
-  const launched = launchMission(state, missionId, formationType, assignments);
-  if (launched.error) return launched;
-  // Story mission 3: a guaranteed easy road event on the way to the first contract.
-  if (mission?.story === 'm3.contract' && !launched.state.flags.openingPeddler) {
-    launched.state.flags.openingPeddler = true;
-    launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', day: 0, scripted: true, toId: mission.locationId, where: 'Setting out: ' + mission.title };
-    return launched;
-  }
-  const founderGoes = (assignments || []).some((assignment) => assignment.heroId === launched.state.guild.founderHeroId);
-  if (!founderGoes) return launched;
-  return advanceUntilMissionReturns(launched.state, missionId);
 }
 
 /** Conclude a finished battle; if it interrupted a journey, keep travelling. */

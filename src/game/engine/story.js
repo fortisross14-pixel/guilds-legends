@@ -267,7 +267,7 @@ function stepVariant(state, mission, step) {
 /** Posts the step's story contract on its notice board (once; again after a failure). */
 function postStoryContractInPlace(state, mission, step, variant) {
   const key = `${mission.id}.${step.id}`;
-  if ([...state.missions, ...state.activeMissions].some((item) => item.story === key)) return false;
+  if (state.missions.some((item) => item.story === key)) return false;
   const record = missionState(storyInPlace(state), mission.id);
   if (record.retryDay && campaignDaySerial(state) < record.retryDay) return false;
   const rng = rngFor(state, `story-${key}-${record.attempts || 0}`);
@@ -390,7 +390,7 @@ function stepPlaceHere(state, step) {
 /** Queues the scene of a step that plays on arrival (no NPC, or a town without streets). */
 function triggerSceneInPlace(state) {
   const story = storyInPlace(state);
-  if (story.scene || state.activeEncounter || state.activeMissionGame || state.pendingRoadEvent || state.pendingDecisions?.length || state.pendingEvent) return;
+  if (story.scene || state.activeEncounter || state.pendingRoadEvent || state.pendingEvent) return;
   const today = campaignDaySerial(state);
   const found = activeStepWhere(
     state,

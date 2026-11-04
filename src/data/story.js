@@ -156,8 +156,8 @@ export const STORY_MISSIONS = [
       {
         id: 'contract',
         kind: 'contract',
-        text: 'Take “Wolves on the Old Road” at the Notice Board and win the fight.',
-        hint: 'Open the Notice Board, put yourself and Nessa in the party and send it. You go too, so time passes until the fight.',
+        text: 'Take “Wolves on the Old Road” at the Notice Board.',
+        hint: 'Accept it at the Notice Board, then walk out onto the Old Road: find the tracks, beat the pack and the one driving it.',
         screen: 'missions',
         contracts: { default: { templateId: 'wolves-old-road', locationId: 'dunmere' } },
       },

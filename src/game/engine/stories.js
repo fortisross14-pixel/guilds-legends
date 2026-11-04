@@ -117,7 +117,7 @@ export function checkBossesInPlace(state, rng) {
   const reachable = unlockedLocations(state.guild.tierIndex);
   Object.entries(BOSSES).forEach(([region, boss]) => {
     if (defeated.has(boss.id) || regionLevel(state, region) < 1) return;
-    if (state.missions.some((mission) => mission.bossId === boss.id) || state.activeMissions.some((mission) => mission.bossId === boss.id)) return;
+    if (state.missions.some((mission) => mission.bossId === boss.id)) return;
     const location = reachable.find((item) => item.region === region) || null;
     if (!location) return;
     const mission = instantiateMission(templateFor('Combat'), state, rng, location);
