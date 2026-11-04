@@ -7,3 +7,4 @@ Feature specs written in planning sessions and not yet implemented. The full Cha
 | [clarity-navigation.md](clarity-navigation.md): leftover objectives, Skip, toasts, orb/section restructure, Journal, text cuts | **done** (Phase 8A, session 1; see docs/PLAYTEST_CH1.md) |
 | [battle-hiring.md](battle-hiring.md): heroes on the battlefield, drag from the body, HP between battles, recruit ID card | not built |
 | [guild-hall-rooms.md](guild-hall-rooms.md): 7D Part 2, room types, training equipment tiers, infirmary and the defeat rule, lot diorama | not built |
+| [missions-in-world.md](missions-in-world.md): contracts as places to walk to, explore, fight and talk; no pop-ups or simulated mission time; road event card fix | not built |
