@@ -27,7 +27,8 @@ import {
   storySceneChoiceInPlace,
   unlockCodexInPlace,
 } from './story.js';
-import { leaseHallInPlace } from './hall.js';
+import { rentLotInPlace } from './hall.js';
+import { HOME_LOT_ID } from '../../data/lots.js';
 import { advanceDays } from './time.js';
 import { introduceInPlace } from './people.js';
 
@@ -120,7 +121,7 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     if (effect.codex) (Array.isArray(effect.codex) ? effect.codex : [effect.codex]).forEach((id) => unlockCodexInPlace(state, id));
     if (effect.evidence) addEvidenceInPlace(state, effect.evidence);
     if (effect.storyRecruit) storyRecruitInPlace(state, effect.storyRecruit);
-    if (typeof effect.leaseHall === 'number') leaseHallInPlace(state, effect.leaseHall);
+    if (typeof effect.rentLot === 'number') rentLotInPlace(state, HOME_LOT_ID, effect.rentLot);
     if (typeof effect.fame === 'number') state.guild.fame = Math.max(0, state.guild.fame + effect.fame);
     if (typeof effect.legacy === 'number') state.guild.legacy += effect.legacy;
     if (effect.heroLoyalty) {

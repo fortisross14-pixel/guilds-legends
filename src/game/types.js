@@ -93,7 +93,10 @@
  * @property {boolean} fallen
  * @property {PatronLoan | null} loan
  * @property {number} unpaidMonths
- * @property {{ owned: boolean, lease: boolean, houseBeds: number, rooms: Record<string, number>, construction: { roomId: string, level: number, weeksLeft: number, totalWeeks: number } | null }} hall  the guild's home (src/data/rooms.js)
+ * @property {number} houseBeds  beds in the founder's house (1)
+ * @property {Record<string, { lotId: string, status: 'rented' | 'owned', slots: number, rooms: Record<string, number>, construction: { roomId: string, level: number, weeksLeft: number, totalWeeks: number } | null, expansion: { step: number, toSlots: number, land: string, weeksLeft: number, totalWeeks: number } | null, expansions: number }>} lots  the guild's lots (src/data/lots.js)
+ * @property {string | null} hqLotId  the lot headquarters stands on (null before story mission 1)
+ * @property {number[]} goldHistory  the treasury at each month's start (savings rate)
  * @property {Record<string, string>} appointments
  * @property {Record<string, any[]>} formations
  * @property {any[]} branches

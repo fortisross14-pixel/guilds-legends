@@ -5,7 +5,7 @@ import { TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID, travelDays } from '../../data/world.js';
 import { ROOM_BY_ID } from '../../data/rooms.js';
 import { tournamentRequirements } from './tournaments.js';
-import { WEEKS_PER_MONTH, campaignDaySerial, campaignWeekSerial, dateFromDaySerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
+import { WEEKS_PER_MONTH, hqLot, campaignDaySerial, campaignWeekSerial, dateFromDaySerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
   activeHeroCount,
   clone,
@@ -512,7 +512,7 @@ export function getCalendarEntries(state, months = 12) {
     });
     if (date.month % 3 === 0) add({ kind: 'season', id: `season-${serial}`, title: 'Season ends', date, detail: 'Rankings update' });
   }
-  const work = state.guild.hall?.construction;
+  const work = hqLot(state)?.construction;
   if (work) {
     add({
       kind: 'construction',

@@ -15,7 +15,7 @@ import { TOWNS } from '../../data/towns/index.js';
 import { CLASSES, normalizeClassId } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createDuelEncounter } from '../combat.js';
-import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, freeBeds, hashString, rngFor } from './core.js';
+import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, freeBeds, hasHall, hashString, rngFor } from './core.js';
 import { makeCandidate, recruitObjection } from './candidates.js';
 import { baseSalaryFor, candidateRanges, contractSalary } from './contracts.js';
 import { battleItems } from './inventory.js';
@@ -270,7 +270,8 @@ export function hireTerms(state, candidate) {
   const blockers = [];
   if (candidate.boutFirst && !candidate.boutWon) blockers.push('Beat me in a bout first. Then we talk.');
   if (objection) blockers.push(objection);
-  if (freeBeds(state) <= 0) blockers.push('Where would I sleep? You have no free bed.');
+  if (!hasHall(state)) blockers.push('Where would I sleep? Come back when you have a hall.');
+  else if (freeBeds(state) <= 0) blockers.push('Where would I sleep? Every bed in your hall is taken.');
   if (state.guild.crowns < candidate.signingFee) blockers.push(`My fee is ${candidate.signingFee} gold. Come back when you have it.`);
   if (state.world?.activeTravel) blockers.push('Find me again when you are not on the road.');
   return { fee: candidate.signingFee, salary, years: HIRE_YEARS, bed: true, blockers };

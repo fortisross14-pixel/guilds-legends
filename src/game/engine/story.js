@@ -25,6 +25,7 @@ import {
   earnGoldInPlace,
   finalize,
   freeBeds,
+  hasHall,
   hashString,
   onFinalize,
   pushMoment,
@@ -38,7 +39,7 @@ import { addItemsInPlace, battleItems } from './inventory.js';
 import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
 import { instantiateMission } from './universe.js';
 import { makeContract } from './contracts.js';
-import { leaseHallInPlace } from './hall.js';
+import { rentLotInPlace } from './hall.js';
 
 // ---------------------------------------------------------------- state
 
@@ -178,7 +179,7 @@ export function checkCondition(state, condition, context = {}) {
       case 'atHome':
         return atHome(state) === value;
       case 'hallLeased':
-        return Boolean(state.guild?.hall?.owned) === value;
+        return hasHall(state) === value;
       default:
         return false;
     }
@@ -211,6 +212,8 @@ export function addEvidenceInPlace(state, id) {
 export function storyRecruitInPlace(state, id) {
   const base = STORY_HEROES[id];
   if (!base || state.heroes.some((hero) => hero.id === base.id)) return null;
+  // No exceptions for story heroes: no hall or no free bed, no hire (the scenes offer to wait).
+  if (!hasHall(state) || freeBeds(state) <= 0) return null;
   const rng = rngFor(state, `story-recruit-${id}`);
   const hero = createHeroFromBase({ ...base, homeLocationId: state.world?.currentLocationId || 'dunmere' }, state, rng, {});
   hero.storyId = id;
@@ -606,7 +609,7 @@ export function completePrologue(state, { choice, guildName } = {}) {
 
 /**
  * "Skip tutorial" at new game: the same end state without the guidance. The
- * prologue is seen (the banner inspected), the stable is rented, Nessa is
+ * prologue is seen (the banner inspected), the stable yard is rented, Nessa is
  * hired and the Old Road is clear (missions 1–3 done); the Melee is next.
  */
 export function skipTutorialInPlace(state, guildName) {
@@ -619,7 +622,7 @@ export function skipTutorialInPlace(state, guildName) {
   state.flags.oldRoadIntroduced = true;
   state.flags.openingPeddler = true;
   foundGuildInPlace(state, guildName);
-  leaseHallInPlace(state, 0);
+  rentLotInPlace(state, undefined, 0);
   storyRecruitInPlace(state, 'nessa');
   ['m1', 'm2', 'm3'].forEach((id) => {
     const record = missionState(story, id);

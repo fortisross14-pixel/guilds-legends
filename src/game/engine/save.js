@@ -27,7 +27,7 @@ import { candidateDemandFor, refreshCandidatesForLocationInPlace } from './candi
 import { createTitleRecords, createUniverseInPlace, createWorldArtifactsInPlace, refreshMissionsInPlace } from './universe.js';
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
-import { initialStats, startingHall } from './state.js';
+import { initialStats, startingHome } from './state.js';
 import { createMissionCombatEncounterInPlace } from './missions.js';
 
 export function compactForSave(state, aggressive = false) {
@@ -299,7 +299,11 @@ export function migrateGame(raw) {
   next.settings = { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', ...(next.settings || {}) };
   next.flags ||= {};
   next.flags.firstTravelCompleted ||= false;
-  next.guild.hall = { ...startingHall(), ...(next.guild.hall || {}) };
+  // Early prototype: no migration of the old single hall (Phase 7D lots); new defaults only.
+  Object.entries(startingHome()).forEach(([key, value]) => {
+    if (next.guild[key] === undefined) next.guild[key] = value;
+  });
+  delete next.guild.hall;
   delete next.guild.facilities;
   next.guild.appointments ||= {};
   next.guild.obligations ||= [];
@@ -475,7 +479,12 @@ export function validateGame(state) {
   if (!Array.isArray(state.heroes) || state.heroes.length < 1) errors.push('No heroes exist.');
   if (!Array.isArray(state.rivals) || state.rivals.length < 25) errors.push('Too few rival guilds.');
   if (!Number.isFinite(state.guild?.crowns)) errors.push('Treasury is invalid.');
-  if (!state.guild?.hall || typeof state.guild.hall.rooms !== 'object') errors.push('Guild home state is missing.');
+  if (!state.guild?.lots || typeof state.guild.lots !== 'object') errors.push('Guild lots are missing.');
+  if (state.guild?.hqLotId && !state.guild.lots?.[state.guild.hqLotId]) errors.push('The headquarters lot is missing.');
+  Object.values(state.guild?.lots || {}).forEach((lot) => {
+    const built = Object.values(lot.rooms || {}).filter((level) => level > 0).length;
+    if (built > lot.slots) errors.push(`Lot ${lot.lotId} has more rooms than slots.`);
+  });
   if (!Number.isFinite(state.rngState)) errors.push('RNG state is invalid.');
   if (!state.world || !LOCATION_BY_ID[state.world.currentLocationId]) errors.push('Current guild location is invalid.');
   if (!Array.isArray(state.guild?.branches)) errors.push('Guild branches are invalid.');

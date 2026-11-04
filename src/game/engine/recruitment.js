@@ -15,6 +15,7 @@ import {
   activityAvailable,
   availableDrills,
   freeBeds,
+  hasHall,
   roomLevel,
   isGuildDefunct,
   operationalLocationIds,
@@ -153,7 +154,8 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
     !(next.guild.branches || []).some((branch) => branch.active !== false && branch.locationId === (candidate.locationId || 'dunmere'))
   )
     return { state, error: 'Headquarters is traveling; recruitment can continue only through established branches.' };
-  if (freeBeds(next) <= 0) return { state, error: 'No free bed. Rent another bed or build a Bunk room first.' };
+  if (!hasHall(next)) return { state, error: 'Where would I sleep? Come back when you have a hall.' };
+  if (freeBeds(next) <= 0) return { state, error: 'No free bed. Build a Bedroom (or its next level) first.' };
   const objection = recruitObjection(next, candidate);
   if (objection) return { state, error: `${candidate.name} refuses: “${objection}”` };
   const acceptingPromise = negotiation !== 'buyout' || !candidate.demand;
@@ -387,7 +389,8 @@ export function makeOffer(state, heroId) {
   const terms = offerTerms(state, heroId);
   if (!terms.fee && !terms.available) return { state, error: terms.reason };
   if (!terms.available) return { state, error: terms.reason };
-  if (freeBeds(state) <= 0) return { state, error: 'No free bed. Rent another bed or build a Bunk room first.' };
+  if (!hasHall(state)) return { state, error: 'No hall yet: nobody joins a guild without one.' };
+  if (freeBeds(state) <= 0) return { state, error: 'No free bed. Build a Bedroom (or its next level) first.' };
   if (state.guild.crowns < terms.fee) return { state, error: `The offer costs ${terms.fee} gold.` };
   const next = clone(state);
   const rng = rngFor(next, `offer-${heroId}`);

@@ -37,7 +37,7 @@
 //   { event: { id, note } }                 records a known event
 //   { open: buildingId }                    UI: opens that building
 //   Story (src/data/story.js): { codex: id | [ids] }, { evidence: id }, { choice: { name: value } },
-//   { route: name } (the mission's contract route), { storyRecruit: heroId }, { leaseHall: deposit },
+//   { route: name } (the mission's contract route), { storyRecruit: heroId }, { rentLot: deposit } (rents the Dunmere lot, src/data/lots.js),
 //   { passDays: n }, { fame: n }, { legacy: n }, { heroLoyalty: { id, amount } } (a story hero),
 //   { wait: true } (keep a story scene open)
 //   { recruit: true }                       a keeper's introduction: the tavern's recruits become known, the tavern opens

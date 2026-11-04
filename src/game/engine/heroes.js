@@ -213,7 +213,7 @@ export function createHeroFromBase(base, state, rng, options = {}) {
 export function generateHero(state, rng, quality = 'normal', options = {}) {
   const locationId = options.homeLocationId || state.world?.currentLocationId || 'dunmere';
   const location = LOCATION_BY_ID[locationId];
-  const scoutBonus = (state.guild?.hall?.rooms?.scouts || 0) * 0.025;
+  const scoutBonus = roomLevel(state, 'scouts') * 0.025;
   const qualityBonus = quality === 'elite' ? 0.24 : quality === 'veteran' ? 0.12 : 0;
   const rarity = options.rarity || rarityFromRoll(rng, scoutBonus + qualityBonus);
   const level = options.level || levelBandForRarity(rarity, rng, quality === 'veteran');

@@ -4,7 +4,7 @@ import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { resolveRoadEvent } from './timeActions.js';
 import { FORMATION_TYPES, formationForMission } from '../../data/formations.js';
 import { WEEKS_PER_MONTH, activeHeroCount, campaignWeekSerial, clone } from './core.js';
-import { buildRoom, getHallView, leaseHallInPlace } from './hall.js';
+import { buildRoom, getHallView, rentLotInPlace } from './hall.js';
 import { roleRating } from './heroes.js';
 import { launchMission } from './missions.js';
 import { resolveDecision } from './outcomes.js';
@@ -86,10 +86,10 @@ export function simulateAutoplay(initialState, months = 240) {
 
     const localCandidates = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === (state.world?.currentLocationId || 'dunmere'));
     // Grow the home like a careful player: rent the stable (story mission 1), then build what is affordable.
-    if (!state.guild.hall.owned) leaseHallInPlace(state, 0);
+    if (!state.guild.hqLotId) rentLotInPlace(state, undefined, 0);
     const hall = getHallView(state);
     if (hall.owned && !hall.construction) {
-      const plan = hall.rooms.find((room) => room.next?.met && (room.built || hall.wings.free > 0) && state.guild.crowns > room.next.cost + 300);
+      const plan = hall.rooms.find((room) => room.next?.met && (room.built || hall.slots.free > 0) && state.guild.crowns > room.next.cost + 300);
       if (plan) state = buildRoom(state, plan.id).state;
     }
     if (activeHeroCount(state) < 2 && localCandidates.length) {

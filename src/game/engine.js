@@ -11,6 +11,8 @@ export {
   getHeroGuildName,
   activeHeroCount,
   roomLevel,
+  hqLot,
+  hasHall,
   bedCount,
   freeBeds,
   chestCapacity,
@@ -31,8 +33,8 @@ export { xpForNextLevel, calculatePower, generateHero, roleRating, partyEstimate
 export { getGuildRankings, getGuildRankSummary, getHeroRankings } from './engine/rankings.js';
 export { designateSuccessor, assignMentor, foundBranch, assignBranchCommander, upgradeBranch, assignArtifact, inheritAmbition } from './engine/institution.js';
 export { getGoalMetric, getPromotionRequirement } from './engine/goals.js';
-export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep } from './engine/economy.js';
-export { getHallView, requirementStatus, nextUpgrade, buyHall, buildRoom } from './engine/hall.js';
+export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep, savingsRate, propertyGoal } from './engine/economy.js';
+export { getHallView, requirementStatus, nextUpgrade, buyLot, expandLot, nextExpansion, buildRoom } from './engine/hall.js';
 export { charterOf, charterEffect, patronLevel, patronAtLeast, patronPoints } from './engine/charter.js';
 export { getConnectionsView, getPathScores, giftPatron } from './engine/connections.js';
 export {

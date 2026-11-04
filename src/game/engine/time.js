@@ -382,6 +382,8 @@ function weeklyInjuriesInPlace(state) {
 
 /** Everything that happens once a month (on week 1). */
 function runMonthInPlace(next, rng) {
+  // The treasury at each month's start: the savings rate (economy.js) reads it.
+  next.guild.goldHistory = [...(next.guild.goldHistory || []), next.guild.crowns].slice(-12);
   const upkeep = monthlyUpkeep(next);
   const costs = upkeepBreakdown(next);
   next.guild.crowns -= upkeep;

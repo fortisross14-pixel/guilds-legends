@@ -1,6 +1,7 @@
 // @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
-import { HALL_PURCHASE, ROOM_BY_ID } from '../../data/rooms.js';
+import { ROOM_BY_ID } from '../../data/rooms.js';
+import { LOT_BY_ID } from '../../data/lots.js';
 import { charterEffect } from './charter.js';
 import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
 import {
@@ -132,11 +133,11 @@ export function progressTravelInPlace(state, rng) {
   });
 }
 
-/** What the guild's home costs each month: the stable's rent while leased, and each room's upkeep. */
+/** What the guild's lots cost each month: rent on every rented lot, and each headquarters room's upkeep. */
 export function hallUpkeep(state) {
-  const hall = state.guild.hall || {};
-  const lease = hall.owned && hall.lease ? HALL_PURCHASE.lease.rent : 0;
-  const rooms = Object.entries(hall.rooms || {})
+  const lots = Object.values(state.guild.lots || {});
+  const lease = lots.filter((lot) => lot.status === 'rented').reduce((sum, lot) => sum + (LOT_BY_ID[lot.lotId]?.rent || 0), 0);
+  const rooms = Object.entries(state.guild.lots?.[state.guild.hqLotId]?.rooms || {})
     .filter(([, level]) => level > 0)
     .map(([id, level]) => ({ id, name: ROOM_BY_ID[id]?.name || id, level, upkeep: ROOM_BY_ID[id]?.levels[level - 1]?.upkeep || 0 }));
   const roomTotal = rooms.reduce((sum, room) => sum + room.upkeep, 0);
@@ -257,3 +258,39 @@ export function applyDebtInPlace(state) {
   return { loanPayment, walkouts };
 }
 
+
+/**
+ * How much the guild saves a month, from the treasury at the start of the last
+ * months (state.guild.goldHistory, recorded on each month's rollover). null until
+ * two months are known (nothing measured yet).
+ */
+export function savingsRate(state) {
+  const history = [...(state.guild.goldHistory || []), state.guild.crowns];
+  if (history.length < 3) return null;
+  const recent = history.slice(-7);
+  return Math.round((recent[recent.length - 1] - recent[0]) / (recent.length - 1));
+}
+
+/**
+ * The long-term goal for the headquarters lot: buy it while rented, then the next
+ * expansion once owned. { kind: 'buy' | 'expand', name, price, savings, missing,
+ * rate, months (null when not saving) } or null (no lot, or nothing left to buy).
+ */
+export function propertyGoal(state) {
+  const lot = state.guild.lots?.[state.guild.hqLotId];
+  const data = lot && LOT_BY_ID[lot.lotId];
+  if (!lot || !data) return null;
+  let goal = null;
+  const lower = (text) => text[0].toLowerCase() + text.slice(1);
+  if (lot.status === 'rented') goal = { kind: 'buy', name: `Buy ${lower(data.name)}`, detail: `No more rent (${data.rent} a month); then the lot can grow.`, price: data.price };
+  else if (!lot.expansion && data.expansions[lot.expansions || 0]) {
+    const step = data.expansions[lot.expansions || 0];
+    goal = { kind: 'expand', name: `Buy ${step.land}`, detail: `${lot.slots} → ${step.slots} slots · ${step.weeks} weeks of work.`, price: step.cost };
+  }
+  if (!goal) return null;
+  const savings = Math.max(0, state.guild.crowns);
+  const missing = Math.max(0, goal.price - savings);
+  const rate = savingsRate(state);
+  // months: null while nothing is measured yet or the treasury is not growing.
+  return { ...goal, savings, missing, rate, measured: rate !== null, months: missing === 0 ? 0 : rate > 0 ? Math.ceil(missing / rate) : null };
+}
