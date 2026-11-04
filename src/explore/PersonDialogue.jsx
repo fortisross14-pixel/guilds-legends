@@ -3,6 +3,8 @@ import { getPersonTalk } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
 import { toast } from '../components/UI.jsx';
+import { prefersInstantText, useTypewriter } from './useTypewriter.js';
+import TypedLine from './TypedLine.jsx';
 
 /**
  * Talking to someone in a building (engine: people.js; style: docs/DIALOGUE.md).
@@ -29,12 +31,25 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
     actions.meetPerson(personId);
   }, [actions, personId, talk]);
 
+  // After Skip, the last line shows whole, so the topics come up at once.
+  const [skipped, setSkipped] = useState(false);
+  const typing = useTypewriter(lines[index] || '', skipped || prefersInstantText(state.settings));
   if (!talk) return null;
   const { person } = talk;
-  const reading = index < lines.length - 1;
+  const reading = index < lines.length - 1 || !typing.done;
+  // A tap finishes the line, then moves on; Skip finishes it, then jumps to the topics (or closes).
   const advance = () => {
-    if (reading) setIndex((value) => value + 1);
+    if (!typing.done) typing.finish();
+    else if (index < lines.length - 1) setIndex((value) => value + 1);
     else if (closing) onClose();
+  };
+  const skip = () => {
+    if (!typing.done) typing.finish();
+    else if (closing) onClose();
+    else {
+      setSkipped(true);
+      setIndex(lines.length - 1);
+    }
   };
 
   const choose = (choice) => {
@@ -57,6 +72,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
       return;
     }
     setClosing(Boolean(ui.close));
+    setSkipped(false);
     setLines(result.lines?.length ? result.lines : ['…']);
     setChoices(ui.close ? [] : result.choices || []);
     setIndex(0);
@@ -74,10 +90,13 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
             {person.name}
             <small> · {person.role}</small>
           </span>
-          <p className="dialogue__text">{lines[index]}</p>
+          <TypedLine text={lines[index]} shown={typing.shown} />
           {waiting ? (
-            <div className="dialogue__controls">
-              <span className="dialogue__hint">Tap to continue</span>
+            <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
+              <span className="dialogue__hint">{closing && index >= lines.length - 1 ? 'Tap to close' : 'Tap to continue'}</span>
+              <button type="button" onClick={skip}>
+                Skip
+              </button>
             </div>
           ) : (
             <div className="dialogue__choices dialogue__choices--hub">

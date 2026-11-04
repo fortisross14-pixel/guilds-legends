@@ -14,7 +14,6 @@
 
 /* The prologue (Phase 6b) and story scenes shown over any screen. */
 .prologue-dialogue { position: absolute; z-index: 7; }
-.dialogue__text.is-narration { font-style: italic; }
 .opening-identity__banner { display: block; width: 120px; height: 160px; margin: 0 auto 12px; object-fit: contain; }
 .opening-identity__field { display: grid; gap: 6px; margin-top: 12px; text-align: left; font-weight: 600; }
 .opening-identity__field input { min-height: 48px; font-size: var(--fs-4); }

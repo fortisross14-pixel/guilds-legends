@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getDialogueReply, getDialogueView, getTopicReply } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
+import { prefersInstantText, useTypewriter } from './useTypewriter.js';
+import TypedLine from './TypedLine.jsx';
 
 const AUTO_MS = 2600;
 
@@ -10,7 +12,8 @@ const AUTO_MS = 2600;
  * once when it opens, so lines do not change under the player while effects
  * land in state. The shape: the NPC's opener → small talk (or, in a story
  * scene, the decision) → the hub of topics (asked ones are checked) → goodbye.
- * Tap to advance; hold to speed up; swipe up for the log; Skip jumps ahead.
+ * A tap finishes the line, then moves on; hold to speed up; swipe up for the log.
+ * Skip finishes the line, then jumps to the next choice (never past one) or the end.
  *
  * `visit` ({ sceneId, targetId, position }) is recorded with the conversation.
  */
@@ -65,20 +68,23 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   };
 
   const atLastLine = index >= lines.length - 1;
+  const current = lines[index] || null;
+  const typing = useTypewriter(phase === 'lines' ? current?.text : '', prefersInstantText(state.settings));
   const advance = () => {
     if (phase !== 'lines') return;
-    if (!atLastLine) setIndex((value) => value + 1);
+    if (!typing.done) typing.finish();
+    else if (!atLastLine) setIndex((value) => value + 1);
     else endLines();
   };
   const skip = () => {
     if (phase !== 'lines') return;
-    setIndex(Math.max(0, lines.length - 1));
-    if (after.current !== 'close') setPhase(after.current);
+    if (!typing.done) typing.finish();
+    else endLines();
   };
 
   useEffect(() => {
     if ((!auto && !holding) || phase !== 'lines') return undefined;
-    const timer = window.setTimeout(advance, holding ? 260 : AUTO_MS);
+    const timer = window.setTimeout(advance, holding ? 120 : typing.done ? AUTO_MS : 200);
     return () => window.clearTimeout(timer);
   });
 
@@ -176,8 +182,8 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
           <Asset id={line.portrait || 'portrait.poi'} alt="" />
         </div>
         <div className="dialogue__body">
-          <span className="dialogue__speaker">{line.speaker}</span>
-          <p className="dialogue__text">{line.text}</p>
+          {line.speaker ? <span className="dialogue__speaker">{line.speaker}</span> : null}
+          <TypedLine className={`dialogue__text${line.speaker ? '' : ' is-narration'}`} text={line.text} shown={phase === 'lines' ? typing.shown : line.text} />
           {phase === 'choices' ? (
             <div className="dialogue__choices">
               {view.decide && view.hub

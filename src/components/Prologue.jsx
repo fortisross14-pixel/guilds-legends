@@ -6,6 +6,8 @@ import WalkableScene, { useCoarsePointer } from '../explore/WalkableScene.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
 import Asset from './Asset.jsx';
 import { Button } from './UI.jsx';
+import { prefersInstantText, useTypewriter } from '../explore/useTypewriter.js';
+import TypedLine from '../explore/TypedLine.jsx';
 
 // The prologue, "The knock at the door" (docs/STORY.md, Scene 01). The house
 // is walkable; the scene's lines play in a dialogue box over it. Phases:
@@ -34,16 +36,25 @@ export default function Prologue({ state, onComplete }) {
           ? [{ speaker: 'Narration', text: picked?.result || '' }, ...PROLOGUE.after]
           : [];
   const line = script[index] || null;
+  const typing = useTypewriter(line?.text || '', prefersInstantText(state.settings));
 
-  const advance = () => {
-    if (index < script.length - 1) {
-      setIndex(index + 1);
-      return;
-    }
+  // The end of this part of the scene: walk to the door, the choice, or the founding.
+  const endScript = () => {
     setIndex(0);
     if (phase === 'knock') setPhase('door');
     else if (phase === 'rook') setPhase('choice');
     else if (phase === 'after') setPhase('name');
+  };
+  // A tap finishes the line, then moves on.
+  const advance = () => {
+    if (!typing.done) typing.finish();
+    else if (index < script.length - 1) setIndex(index + 1);
+    else endScript();
+  };
+  // Skip finishes the line, then jumps to the next choice or the end (never past the choice).
+  const skip = () => {
+    if (!typing.done) typing.finish();
+    else endScript();
   };
   const interact = (target) => {
     if (phase === 'door' && target.id === 'door') {
@@ -57,8 +68,7 @@ export default function Prologue({ state, onComplete }) {
     setPhase('after');
   };
 
-  const objective = phase === 'door' ? 'Someone is knocking. Open the door.' : 'Dunmere, Year 1187. Night.';
-  const hint = coarse ? 'Tap to walk. Tap the door to open it.' : 'Click to walk, or use the arrow keys.';
+  const objective = coarse ? 'Someone is knocking. Tap the door.' : 'Someone is knocking. Click the door.';
   return (
     <WalkableScene
       map={PLAYER_HOUSE_MAP}
@@ -69,7 +79,7 @@ export default function Prologue({ state, onComplete }) {
       className="opening-exploration"
       label="Prologue: the knock at the door"
     >
-      <PlaceTag title={PROLOGUE.title} sub={PROLOGUE.place} goal={phase === 'door' ? <p className="goal-line goal-line--status">{objective} {hint}</p> : null} />
+      <PlaceTag title={PROLOGUE.title} sub={PROLOGUE.place} goal={phase === 'door' ? <p className="goal-line goal-line--status">{objective}</p> : null} />
       {line ? (
         <section className="dialogue prologue-dialogue" aria-live="polite" onClick={advance}>
           <div className="dialogue__box">
@@ -79,15 +89,15 @@ export default function Prologue({ state, onComplete }) {
               </div>
             ) : null}
             <div className="dialogue__body">
-              <span className="dialogue__speaker">{line.speaker === 'Narration' ? '' : line.speaker}</span>
-              <p className={`dialogue__text ${line.speaker === 'Narration' ? 'is-narration' : ''}`}>{line.text}</p>
+              {line.speaker && line.speaker !== 'Narration' ? <span className="dialogue__speaker">{line.speaker}</span> : null}
+              <TypedLine className={`dialogue__text${line.speaker === 'Narration' ? ' is-narration' : ''}`} text={line.text} shown={typing.shown} />
               <div className="dialogue__controls">
                 <span className="dialogue__hint">Tap to continue</span>
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setIndex(script.length - 1);
+                    skip();
                   }}
                 >
                   Skip
@@ -101,8 +111,7 @@ export default function Prologue({ state, onComplete }) {
         <section className="dialogue prologue-dialogue" aria-live="polite">
           <div className="dialogue__box">
             <div className="dialogue__body">
-              <span className="dialogue__speaker">The footsteps stop. Someone tries the door.</span>
-              <p className="dialogue__text is-narration">What do you do?</p>
+              <p className="dialogue__text is-narration">The footsteps stop. Someone tries the door. What do you do?</p>
               <div className="dialogue__choices">
                 {PROLOGUE.choices.map((item) => (
                   <button key={item.id} type="button" onClick={() => pick(item.id)}>
