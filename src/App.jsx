@@ -18,6 +18,7 @@ import {
   meetPerson,
   talkToPerson,
   chooseDialogueOption,
+  askDialogueTopic,
   saveScenePosition,
   recordSceneVisit,
   enterWildArea,
@@ -971,6 +972,11 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         const result = talkToPerson(state, id, choiceId);
         applyResult(result);
         return result.error ? null : result;
+      },
+      askTopic: (id, topicId) => {
+        const result = askDialogueTopic(state, id, topicId);
+        applyResult(result);
+        return result.error ? null : result.ui || {};
       },
       chooseDialogue: (id, variantIndex, choiceIndex) => {
         const result = chooseDialogueOption(state, id, variantIndex, choiceIndex);

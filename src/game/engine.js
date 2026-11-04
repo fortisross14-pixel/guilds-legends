@@ -98,6 +98,8 @@ export {
   checkCondition,
   getDialogueView,
   getDialogueReply,
+  getTopicReply,
+  askDialogueTopic,
   talkTo,
   chooseDialogueOption,
   saveScenePosition,

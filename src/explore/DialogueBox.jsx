@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { getDialogueReply, getDialogueView } from '../game/engine.js';
+import { getDialogueReply, getDialogueView, getTopicReply } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
 
 const AUTO_MS = 2600;
 
 /**
- * A conversation over a walkable scene. The view is taken once when it opens
- * (so lines do not change under the player while effects land in state).
- * Tap anywhere to advance; Skip jumps to the choices; Auto advances on a timer.
+ * A conversation over a walkable scene (docs/DIALOGUE.md). The view is taken
+ * once when it opens, so lines do not change under the player while effects
+ * land in state. The shape: the NPC's opener → small talk (or, in a story
+ * scene, the decision) → the hub of topics (asked ones are checked) → goodbye.
+ * Tap to advance; hold to speed up; swipe up for the log; Skip jumps ahead.
  *
  * `visit` ({ sceneId, targetId, position }) is recorded with the conversation.
  */
@@ -18,7 +20,12 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   const id = view?.id || conversationId;
   const [lines, setLines] = useState(() => view?.lines || []);
   const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState('lines'); // lines → choices → (reply lines) → done
+  const [phase, setPhase] = useState('lines'); // lines | choices | hub
+  // What comes when the current lines end: the small talk, the hub, or the end.
+  const after = useRef(view?.choices.length ? 'choices' : view?.hub ? 'hub' : 'close');
+  // In a decision scene, questions return to the decision.
+  const back = view?.decide ? 'choices' : 'hub';
+  const [asked, setAsked] = useState(() => new Set((view?.hub || []).filter((topic) => topic.asked).map((topic) => topic.id)));
   const [auto, setAuto] = useState(false);
   // Hold anywhere to fast-forward the lines; swipe up for the conversation so far.
   const [holding, setHolding] = useState(false);
@@ -41,19 +48,32 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
     onClose();
     if (next.open) onOpenBuilding?.(next.open);
   };
+  const say = (reply, then) => {
+    after.current = then;
+    if (!reply.length) {
+      if (then === 'close') finish();
+      else setPhase(then);
+      return;
+    }
+    setLines(reply);
+    setIndex(0);
+    setPhase('lines');
+  };
+  const endLines = () => {
+    if (after.current === 'close') finish();
+    else setPhase(after.current);
+  };
 
   const atLastLine = index >= lines.length - 1;
   const advance = () => {
-    if (phase === 'lines') {
-      if (!atLastLine) setIndex((value) => value + 1);
-      else if (phase === 'lines' && view.choices.length && !followUp.current.replied) setPhase('choices');
-      else finish();
-    }
+    if (phase !== 'lines') return;
+    if (!atLastLine) setIndex((value) => value + 1);
+    else endLines();
   };
   const skip = () => {
     if (phase !== 'lines') return;
     setIndex(Math.max(0, lines.length - 1));
-    if (view.choices.length && !followUp.current.replied) setPhase('choices');
+    if (after.current !== 'close') setPhase(after.current);
   };
 
   useEffect(() => {
@@ -62,17 +82,24 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
     return () => window.clearTimeout(timer);
   });
 
+  // Small talk or a story decision.
   const choose = (choice) => {
     const reply = getDialogueReply(state, id, view.variantIndex, choice.index);
     const ui = actions.chooseDialogue(id, view.variantIndex, choice.index);
     if (!ui) return;
-    followUp.current = { ...followUp.current, ...ui, replied: true };
-    if (reply.length) {
-      setLines(reply);
-      setIndex(0);
-      setPhase('lines');
-    } else finish();
+    followUp.current = { ...followUp.current, ...ui };
+    say(reply, view.hub && !view.decide && !ui.open ? 'hub' : 'close');
   };
+  // A topic from the hub: its answer, then back to the hub.
+  const ask = (topic) => {
+    const reply = getTopicReply(state, id, topic.id);
+    const ui = actions.askTopic(id, topic.id);
+    if (!ui) return;
+    followUp.current = { ...followUp.current, ...ui };
+    setAsked((current) => new Set(current).add(topic.id));
+    say(reply, ui.open ? 'close' : back);
+  };
+  const goodbye = () => say(view.bye?.lines || [], 'close');
 
   if (!view) return null;
   const line = lines[index] || { speaker: view.speaker, portrait: view.portrait, text: '' };
@@ -153,19 +180,42 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
           <p className="dialogue__text">{line.text}</p>
           {phase === 'choices' ? (
             <div className="dialogue__choices">
+              {view.decide && view.hub
+                ? view.hub.map((topic) => (
+                    <button key={topic.id} type="button" className={`dialogue__ask ${asked.has(topic.id) ? 'is-asked' : ''}`} onClick={() => ask(topic)}>
+                      {asked.has(topic.id) ? <Icon name="check" size={14} tone="plain" /> : null}
+                      {topic.text}
+                    </button>
+                  ))
+                : null}
               {view.choices.map((choice) => (
                 <button key={choice.index} type="button" onClick={() => choose(choice)}>
                   {choice.text}
                 </button>
               ))}
-              <button type="button" onClick={finish}>
-                Leave
+              {(!view.hub || view.decide) && view.leave ? (
+                <button type="button" onClick={finish}>
+                  {view.leave}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          {phase === 'hub' ? (
+            <div className="dialogue__choices dialogue__choices--hub">
+              {view.hub.map((topic) => (
+                <button key={topic.id} type="button" className={asked.has(topic.id) ? 'is-asked' : ''} onClick={() => ask(topic)}>
+                  {asked.has(topic.id) ? <Icon name="check" size={14} tone="plain" /> : null}
+                  {topic.text}
+                </button>
+              ))}
+              <button type="button" className="dialogue__bye" onClick={goodbye}>
+                {view.bye?.text || 'Goodbye.'}
               </button>
             </div>
           ) : null}
           {phase === 'lines' ? (
             <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
-              <span className="dialogue__hint">{atLastLine && !(view.choices.length && !followUp.current.replied) ? 'Tap to close' : 'Tap · hold = faster · swipe up = log'}</span>
+              <span className="dialogue__hint">{atLastLine && after.current === 'close' ? 'Tap to close' : 'Tap · hold = faster · swipe up = log'}</span>
               <button type="button" className={auto ? 'is-on' : ''} onClick={() => setAuto((value) => !value)} aria-pressed={auto}>
                 Auto
               </button>

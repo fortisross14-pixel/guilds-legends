@@ -91,17 +91,60 @@ export function getDialogueView(state, requestedId) {
   const variantIndex = conversation.variants.findIndex((variant) => checkCondition(state, variant.if, context));
   if (variantIndex < 0) return null;
   const variant = conversation.variants[variantIndex];
+  const asked = explorationOf(state).asked?.[conversationId] || {};
+  // The hub: topics the player can ask about, in any order. Several entries can
+  // share an id (versions for different situations): the first one that holds is used.
+  const seen = new Set();
+  const topics = (conversation.topics || [])
+    .filter((topic) => checkCondition(state, topic.if, context))
+    .filter((topic) => (seen.has(topic.id) ? false : seen.add(topic.id)))
+    .map((topic) => ({ id: topic.id, text: fillText(state, topic.text), asked: Boolean(asked[topic.id]) }));
   return {
     id: conversationId,
     variantIndex,
     speaker: conversation.speaker,
     portrait: conversation.portrait,
     lines: resolveLines(state, conversation, variant.lines),
+    // Small talk (or, in a story scene, the decision) after the opener.
     choices: (variant.choices || [])
       .map((choice, index) => ({ index, text: fillText(state, choice.text), if: choice.if }))
       .filter((choice) => checkCondition(state, choice.if, context))
       .map(({ index, text }) => ({ index, text })),
+    hub: conversation.topics ? topics : null,
+    // A decision scene: the topics sit beside the choices (ask, then decide), not after them.
+    decide: Boolean(conversation.decide),
+    bye: conversation.bye ? { text: fillText(state, conversation.bye.text), lines: resolveLines(state, conversation, conversation.bye.lines || []) } : null,
+    // Story scenes and objects: what the way out says (false: no way out but the choices).
+    leave: conversation.leave === undefined ? 'Leave' : conversation.leave,
   };
+}
+
+function explorationOf(state) {
+  return state.world?.exploration || {};
+}
+
+function topicOf(state, conversationId, topicId) {
+  const conversation = DIALOGUES[conversationId];
+  return (conversation?.topics || []).find((topic) => topic.id === topicId && checkCondition(state, topic.if, { conversationId })) || null;
+}
+
+/** A hub topic's answer, filled in. */
+export function getTopicReply(state, conversationId, topicId) {
+  const topic = topicOf(state, conversationId, topicId);
+  return topic ? resolveLines(state, DIALOGUES[conversationId], topic.lines || []) : [];
+}
+
+/** Asks a hub topic: applies its effects and remembers it was asked. Returns UI follow-ups ({ open, recruit }). */
+export function askDialogueTopic(state, conversationId, topicId) {
+  const conversation = DIALOGUES[conversationId];
+  const topic = topicOf(state, conversationId, topicId);
+  if (!topic) return { state, error: 'They have nothing to say about that.' };
+  const next = clone(state);
+  const ui = applyEffectsInPlace(next, topic.effects, { conversationId, speaker: conversation.speaker });
+  const exploration = explorationInPlace(next);
+  exploration.asked ||= {};
+  exploration.asked[conversationId] = { ...(exploration.asked[conversationId] || {}), [topicId]: true };
+  return { state: finalize(next), error: null, ui };
 }
 
 /** The reply lines of a choice, filled in. */

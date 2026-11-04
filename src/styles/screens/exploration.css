@@ -94,3 +94,9 @@
 .walk__offer--lock { color: var(--text-dim); }
 .interior-scene .walk__stage { background: radial-gradient(ellipse at center, #1a1520, #08080c 75%); }
 .dialogue__speaker small { color: rgba(246, 220, 154, .7); font: 600 var(--fs-1) var(--font-ui); }
+/* The topic hub: asked topics stay, dimmed and checked; goodbye sits apart. */
+.dialogue__choices--hub button { display: flex; align-items: center; gap: 8px; }
+.dialogue__choices--hub button.is-asked { color: #6b5a44; background: rgba(255, 252, 240, .35); }
+.dialogue__choices--hub .dialogue__bye { margin-top: 4px; background: transparent; }
+.dialogue__choices .dialogue__ask { display: flex; align-items: center; gap: 8px; background: rgba(255, 252, 240, .45); }
+.dialogue__choices .dialogue__ask.is-asked { color: #6b5a44; }

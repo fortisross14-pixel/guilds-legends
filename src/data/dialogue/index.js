@@ -1,13 +1,25 @@
 // Data-driven dialogue. The engine (src/game/engine/exploration.js) picks the
 // variant, checks conditions and applies effects; DialogueBox.jsx shows it.
+// How conversations should read (rules, shape, voices): docs/DIALOGUE.md.
 //
 // Conversation:
-//   { speaker, portrait, variants: [Variant, …] }      first variant whose `if` passes is used
+//   { speaker, portrait, variants: [Variant, …], topics?, bye?, decide?, leave? }
+//   variants: the NPC's opener. The first variant whose `if` passes is used, so put
+//     reactions first (story progress, rank, season, charter), then the return-visit
+//     opener (`talked: true`), then the first meeting (with names) last.
+//   topics: the hub, asked in any order: [{ id, text, if?, lines, effects? }]. `text` is
+//     what the player says; `lines` the answer. Entries sharing an id are versions
+//     (the first whose `if` holds is shown). Asked topics are remembered and checked.
+//   bye: { text, lines? }: the player's goodbye and the NPC's farewell.
+//   decide: true: a decision scene (story). The topics sit beside the variant's choices:
+//     ask first, then decide. Without it, choices are small talk and lead into the hub.
+//   leave: the label of the way out of a scene or object without a hub ('Move on',
+//     'Not now.'), or false when the only way out is a choice. Default 'Leave'.
 // Variant:
 //   { if?, effects?, lines: [Line, …], choices?: [Choice, …] }
 //   `effects` apply once each time the variant is shown (talking to someone).
 // Line:    'text'  or  { speaker, portrait, text }       {guild} and {founder} are filled in
-// Choice:  { text, if?, effects?, reply?: [Line, …] }    a "Leave" choice is always added
+// Choice:  { text, if?, effects?, reply?: [Line, …] }     `text` is what the player says
 //
 // Conditions (all keys must hold):
 //   talked: bool             this conversation happened before
