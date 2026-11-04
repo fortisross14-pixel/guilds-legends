@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { getWildAreaView } from '../game/engine.js';
-import { TOWNS } from '../data/towns/index.js';
 import { wildMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
@@ -22,7 +21,6 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
   const view = getWildAreaView(state, area.id);
   const saved = state.world?.exploration?.positions?.[area.id];
   const start = saved && Number.isFinite(saved.x) ? saved : map.spawn;
-  const hub = TOWNS[area.hub];
   const fit = state.heroes.filter((hero) => hero.status === 'available').length;
   const hurt = state.heroes.filter((hero) => hero.status === 'injured').length;
 
@@ -53,7 +51,7 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
         sub={dateLine(state.date)}
         goal={
           <p className="goal-line goal-line--status">
-            {fit} fit{hurt ? ` · ${hurt} injured` : ''} · {remaining ? `${remaining} group${remaining === 1 ? '' : 's'} here` : 'quiet'} · the signpost leads back to {hub?.name}
+            {fit} fit{hurt ? ` · ${hurt} hurt` : ''} · {remaining ? `${remaining} group${remaining === 1 ? '' : 's'}` : 'quiet'}
           </p>
         }
       />

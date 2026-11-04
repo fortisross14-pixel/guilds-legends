@@ -35,39 +35,39 @@ Navigation used to live in four places (a sidebar, an 8-item top bar, a stack of
 │                         the walkable world
 │
 │  Party ○                                        ○ Map
-│   Items ○                                     ○ Calendar
+│   Items ○                                     ○ Journal
 │    Guild Hall ○                             ○ Records
-│      Quests ○                             ○ System
+│      Guild ○                              ○ System
 │        Contacts ○
 ( Guild orb )                                    ( World orb )
 ```
 
-- **Place tag (top left, passive):** location and date, small; fades after about 4 seconds, tap to show it again. The **goal line** under it stays: tap it and the founder walks to the next story step (or the scene plays when nobody needs to be walked to, or the map opens on the right town).
-- **Guild orb (bottom left), people and things:** Party, Items, Guild Hall, Quests, Contacts.
-- **World orb (bottom right), places and time:** Map, Calendar, Records, System.
+- **Place tag (top left, passive):** location and date, small; fades after about 4 seconds, tap to show it again. The **goal line** under it stays, on one line: tap it and the founder walks to the next story step (or the scene plays when nobody needs to be walked to, or the map opens on the right town). Place tag, goal line and notices together never take more than the top ~15% of the screen.
+- **Guild orb (bottom left), the guild itself:** Party, Items, Guild Hall, Guild, Contacts.
+- **World orb (bottom right), places, time and history:** Map, Journal, Records, System.
 - **Orb behaviour:** tap an orb and its items fan out in a quarter circle toward the screen centre, each with its label. Or press, slide onto an item and release (one gesture, like the combat radial). Tap outside or swipe to close. Badges sit on the orb and on the item (an injured hero, a story scene to play, unread news, a decision waiting in the hall). The orbs' names show under them for the first four uses, then only the item labels when open. Items are 48 px, the orb 56–60 px, and the arc (80°→2°, radius 156 px) never leaves a 390 px screen.
-- **Ledger (top right):** collapsed, the crest, gold and a book. Tap it: gold, fame, the Strength/Legacy/Official ranks with ▲▼, the status title and what the guild is known for; each row opens its detail (Treasury, Records → Rankings, Reputation, Path). **It reacts on its own:** when gold, fame or a rank changes, it shows just that row with the change ("+120", "▲2") for 2.6 seconds and folds away.
-- **Desktop:** the same HUD, plus keyboard shortcuts: **P** party, **I** items, **Q** quests, **M** map (again to return), **R** records, **Esc** system (or closes what is open).
+- **Ledger (top right), a short summary:** collapsed, the crest, gold and a book. Tap it: gold, fame, the Strength/Legacy/Official ranks with ▲▼, the status title and what the guild is known for, one line each (under ~40 words); each line opens its screen (Guild → Finances, Guild → Reputation, Records → Rankings, Guild → Charter). **It reacts on its own:** when gold, fame or a rank changes, it shows just that row with the change ("+120", "▲2") for 2.6 seconds and folds away.
+- **Desktop:** the same HUD, plus keyboard shortcuts: **P** party, **I** items, **G** guild, **J** journal, **Q** quests, **M** map (again to return), **R** records, **Esc** system (or closes what is open).
 
 ### What each item opens
 
 | Orb | Item | Opens |
 |---|---|---|
-| Guild | Party | heroes (status, equipment and skills on each hero's page), main party (a lead and up to three companions; the War room adds saved formations), retired and fallen |
+| Guild | Party | heroes (one row each: portrait, name, level, class, health, status; the filter icon appears at 6+ heroes), main party (a lead and up to three companions; the War room adds saved formations), retired and fallen (only once someone is in it) |
 | Guild | Items | the inventory; drag an item onto a hero to equip or use it |
 | Guild | Guild Hall | the hall and its rooms (kept as it is; 7D rebuilds it) |
-| Guild | Quests | main, side and guild quests, evidence, "Show on map" |
+| Guild | Guild | Charter (charter, status, known for, promotion, paths), Reputation, Patrons, Rivals, Finances (costs, property, debt) |
 | Guild | Contacts | everyone you have met: where they are, what they offer, how they feel; "moved on" for visitors who left |
 | World | Map | the world map; travel |
-| World | Calendar | the calendar and the news; its primary button rests at the Guild Hall (at home) or the inn (away) |
-| World | Records | Rankings (guild and hero ladders, path, rivals, reputation, connections, directory), Seasons, Record book, Hall of fame, Mission log, Almanac (the old Chronicle), Lore, Bestiary, Goals |
-| World | System | save, return to the title (to load another slot), settings, sound, credits |
+| World | Journal | what is happening and what is next: **Now** (heroes away and when they return, injured heroes, construction, the tournament, news), **Quests** (the main mission as title, goal, current step, Go and Show on map; other steps and how it opened behind a tap; evidence; side quests; guild tasks; done), **Contracts** (in the field, and the same list as the notice board), **Calendar** (its main button rests at the Guild Hall at home or the inn away) |
+| World | Records | rankings and history: **Rankings** (the guild's status and three ranks, a Guilds/Heroes toggle and the ladder picker; long-press a ladder for what it measures), Seasons (reviews and season-by-season ranks), Record book, Hall of fame, Mission log, **Codex** (Lore, Almanac, Bestiary, Guilds) |
+| World | System | Game (save, load or quit to title), Settings (short labelled rows, including the main quest marker), Credits |
 
 ### One screen template
 
 Every section and building screen (`src/hud/Section.jsx`) has the same parts in the same places:
 
-1. **Title and tabs** at the top; swipe the content sideways to change tab.
+1. **Title and tabs** at the top; swipe the content sideways to change tab. **Two levels at most:** a section has tabs, and a tab has no row of buttons of its own (a small toggle such as Guilds/Heroes is fine).
 2. **A list or grid** in the middle.
 3. **A details area:** a side column on wide screens, a bottom panel on phones (swipe its grip down to close).
 4. **A portrait** at the top of the details where it helps.
@@ -77,7 +77,9 @@ Every section and building screen (`src/hud/Section.jsx`) has the same parts in 
 
 ### The bottom of the screen has one owner
 
-In priority order: **dialogue**, then **battle commands**, then **bottom panels** (sections, modals, peek cards), then **the orbs**. While any of the first three is on screen, the orbs fade out (`shell.css`, the `:has()` rule). Notices (toasts) appear under the place tag for 6 seconds and then step aside; with a section open they sit at the bottom.
+In priority order: **dialogue**, then **battle commands**, then **bottom panels** (sections, modals, peek cards), then **the orbs**. While any of the first three is on screen, the orbs fade out (`shell.css`, the `:has()` rule).
+
+**Notices** (the engine's notifications and the UI's short messages) go through one queue (`NoticeQueue` in `App.jsx`): one at a time, at most two lines, in the goal line's slot under the place tag (the goal line steps aside meanwhile), or in the section header's free right side when a section is open. Never over the scene's centre or a panel's content. Each steps aside after 4.5 seconds (errors 7); a tap dismisses it. They wait while an interruption is showing.
 
 ### Screen inventory
 
@@ -85,22 +87,23 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 |---|---|
 | Walkable town or wild area | the scene with the HUD; doors, people and things to tap; long-press peeks; dialogue at the bottom |
 | World map | the map (pan, pinch) with the place tag and the location card |
-| Sections | Party, Items, Guild Hall, Quests, Contacts, Calendar, Records, System |
+| Sections | Party, Items, Guild Hall, Guild, Contacts, Journal, Records, System |
 | Building interiors | Tavern / Inn, Arena, Shop, Herald: walkable rooms with people; their panels (shop, inn, sign-up desk, history board) open in the template |
 | Notice board | the contracts people gave you, in the template |
 | Overlays | battle (full screen), story scenes and ceremonies (full screen), everything else as a bottom panel |
 
 ### Rules
 
-- **Max 3 taps** to common destinations: a hero's page (2: Guild orb → Party, then the hero), Quests (2, or **Q**), rankings (2: World orb → Records, or the ledger), calendar (2), the Guild Hall (2), settings (3), the current goal (1: the goal line).
+- **Max 3 taps** to common destinations: a hero's page (2: Guild orb → Party, then the hero), quests (2: World orb → Journal, or **Q**), what is happening now (2: Journal), rankings (2: World orb → Records, or the ledger), money (2: the ledger → Gold), the calendar (3), the Guild Hall (2), settings (3), the current goal (1: the goal line).
 - **One interruption at a time**, in this order: battle, mission game, decision, road event, report, story scene, reward moment, town event, council report. The HUD hides while one is showing.
-- **Minimal text:** icons and numbers first, one-line labels, details on long-press.
+- **Minimal text:** icons and numbers first, one-line labels, details on tap or long-press. No explanatory paragraphs on menus; one line per list item; about 80 words at most on any screen's first view (dialogue and story scenes excepted).
+- **Dialogue:** every dialogue box types its line out; the first tap finishes the line, the next moves on. **Skip** finishes the line, then jumps to the next choice (never past one) or the end of that part of the scene. Narration has no name tag.
 - **Safe areas:** nothing under the notch or the home bar (`viewport-fit=cover` plus `env(safe-area-inset-*)`); the game fills `100dvh` and can be added to the home screen.
 - **World labels never collide with the HUD:** a name that would sit under the place tag, the ledger or an orb fades until the camera moves.
 
 ### The guild's home (7D)
 
-- **No hall, no hires.** Until story mission 1 rents the Dunmere lot, recruits can be met and interviewed, but "What would it take to sign you?" ends with "Where would I sleep? Come back when you have a hall." The tavern's goal line, Contacts and the quest log's Guild tab say so.
+- **No hall, no hires.** Until story mission 1 rents the Dunmere lot, recruits can be met and interviewed, but "What would it take to sign you?" ends with "Where would I sleep? Come back when you have a hall." The tavern's goal line, Contacts and Journal → Quests say so.
 - **The lot:** rented, 6 slots, a cabin (Bedroom, 2 beds) already built. Each room takes a slot; an empty slot tile opens the build list. A rented lot cannot grow.
 - **Long-term goals** (Guild Hall and Treasury, and the ledger): "Buy the property" (price, savings, "at this rate: about N months"), then "Expand the lot" one step at a time. Buying is a ceremony and a Chronicle entry.
 - **Before renting** the hall door, the Guild orb item and the section all say **Empty lot**: the yard for rent, a button to talk to Gideon Rusk, and the house you live in until then.
@@ -161,7 +164,7 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **gold** | crowns, coin | money (the state field is still `guild.crowns`) |
 | **contract** | job, quest, mission | paid work from a notice board |
 | **story mission** | quest, chapter | one of the 12 missions of The Last Banner |
-| **quest** | task, objective | any Quest Log entry: main (story), side, guild |
+| **quest** | task, objective | any entry in Journal → Quests: main (story), side, guild |
 | **tournament** | competition, event | an individual tournament (one hero per guild) |
 | **championship** | guild tournament | a team tournament (outside Chapter 1) |
 | **party** | company, squad | the heroes sent on a contract or a fight |

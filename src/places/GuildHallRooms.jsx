@@ -270,12 +270,11 @@ export function PropertyGoal({ hall, actions, compact = false }) {
   }
   if (!goal) return hall.bought && !compact ? <p className="muted property-goal">The lot is yours and as big as it gets for now.</p> : null;
   const ready = goal.missing === 0;
-  const when = ready ? 'You have enough.' : !goal.measured ? 'Savings are measured from the next month on.' : goal.months === null ? 'At this rate: never; the treasury is not growing.' : `At this rate: about ${goal.months} month${goal.months === 1 ? '' : 's'}.`;
+  const when = ready ? 'Ready to buy.' : !goal.measured ? '' : goal.months === null ? 'Not growing.' : `About ${goal.months} month${goal.months === 1 ? '' : 's'} at this rate.`;
   return (
     <section className="property-goal">
       <span className="property-goal__head">
         <strong>{goal.kind === 'buy' ? 'Buy the property' : 'Expand the lot'}</strong>
-        <small>{goal.name}. {goal.detail}</small>
       </span>
       <ProgressBar value={Math.min(goal.savings, goal.price)} max={goal.price} label="Savings" tone="gold" compact />
       <span className="property-goal__foot">
@@ -355,7 +354,7 @@ export function WarRoom({ state, actions }) {
   );
 }
 
-function Treasury({ state, actions }) {
+export function Treasury({ state, actions }) {
   const upkeep = upkeepBreakdown(state);
   const hall = getHallView(state);
   const report = state.council?.lastReport;
@@ -364,7 +363,7 @@ function Treasury({ state, actions }) {
   const income = report ? net + report.upkeep + (report.loanPayment || 0) : null;
   return (
     <>
-      <Panel title="Income vs costs" eyebrow={report?.label || 'Last month'}>
+      <Panel title="Last month" eyebrow={report?.label || null}>
         {report ? (
           <div className="treasury-bars">
             <p>
@@ -383,10 +382,10 @@ function Treasury({ state, actions }) {
             </p>
           </div>
         ) : (
-          <p className="muted">Rest at the hall into a new month to receive the first report.</p>
+          <p className="muted">No report yet.</p>
         )}
       </Panel>
-      <Panel title="Monthly costs" eyebrow="Paid on week 1 of every month">
+      <Panel title="Costs a month">
         <dl className="treasury-table">
           <dt>Wages</dt>
           <dd>{upkeep.wages}</dd>
@@ -418,16 +417,16 @@ function Treasury({ state, actions }) {
           </dd>
         </dl>
       </Panel>
-      <Panel title="The property" eyebrow={hall.owned ? (hall.bought ? 'The deed is the guild’s' : `Rented from ${hall.lot.owner}`) : 'No hall yet'}>
-        {hall.owned ? <PropertyGoal state={state} hall={hall} actions={actions} /> : <p className="muted">Rent the old stable yard on Banner Plaza first (story mission 1).</p>}
+      <Panel title="Property" eyebrow={hall.owned ? (hall.bought ? 'Owned' : `Rented from ${hall.lot.owner}`) : null}>
+        {hall.owned ? <PropertyGoal state={state} hall={hall} actions={actions} /> : <p className="muted">No hall yet.</p>}
       </Panel>
-      <Panel title="Loans and debt" eyebrow={state.guild.unpaidMonths ? `Wages unpaid for ${state.guild.unpaidMonths} month(s)` : 'Wages are paid'}>
+      <Panel title="Debt" eyebrow={state.guild.unpaidMonths ? `Wages unpaid: ${state.guild.unpaidMonths} month${state.guild.unpaidMonths === 1 ? '' : 's'}` : null}>
         {state.guild.loan ? (
           <p>
-            You owe {state.guild.loan.remaining} gold, repaid at {state.guild.loan.installment} per month.
+            Owed: {state.guild.loan.remaining} gold · {state.guild.loan.installment} a month
           </p>
         ) : (
-          <p className="muted">No loans.</p>
+          <p className="muted">None.</p>
         )}
         {offer.available ? (
           <Button onClick={actions.takePatronLoan}>

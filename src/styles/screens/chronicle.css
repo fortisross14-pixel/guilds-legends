@@ -56,29 +56,8 @@ button.chronicle-event__content:hover, button.chronicle-event__content:focus-vis
 .calendar + .panel, .calendar + .muted { margin-top: 0; }
 
 /* Quest log. */
-.quest-log { display: grid; gap: var(--s4); }
-.quest-row { display: grid; gap: 2px; width: 100%; margin: 0; padding: 8px 0; border-bottom: 1px solid var(--line-soft); color: var(--text); font-family: var(--font-ui); text-align: left; }
-button.quest-row { padding-left: 28px; padding-right: 8px; }
-.quest-row strong { font-family: var(--font-display); font-size: var(--fs-4); font-weight: 700; }
-.quest-row small { color: var(--text-dim); }
-.quest-row--green strong { color: var(--hp); }
-.quest-row--red strong { color: var(--dmg); }
-.quest-row--gold strong { color: var(--gold); }
-.quest-row--purple strong { color: var(--xp); }
-.quest-row__map { color: var(--mp); font-size: var(--fs-1); }
-.quest-row .progress { margin-top: 4px; }
 
 /* News. */
-.news-feed { display: grid; margin: 0; padding: 0; list-style: none; }
-.news-item { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 0 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-family: var(--font-ui); }
-.news-item::before { content: ''; grid-row: 1 / span 3; width: 10px; height: 10px; margin-top: 5px; background: var(--text-faint); outline: 1px solid #000; }
-.news-item--green::before { background: var(--hp); }
-.news-item--red::before { background: var(--dmg); }
-.news-item--gold::before { background: var(--gold); }
-.news-item--purple::before { background: var(--xp); }
-.news-item time { color: var(--text-faint); font-size: var(--fs-1); }
-.news-item strong { font-family: var(--font-display); font-size: var(--fs-4); font-weight: 700; }
-.news-item p { margin: 2px 0 0; }
 
 /* Bestiary. */
 .bestiary { display: grid; gap: var(--s4); }

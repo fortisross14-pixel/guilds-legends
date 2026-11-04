@@ -83,6 +83,7 @@ function metadata(slot, state) {
     slot,
     id: state.id,
     guildName: state.guild.name,
+    charter: state.guild.charter,
     tier: state.guild.tier,
     year: state.date.year,
     month: state.date.month,

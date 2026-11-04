@@ -4,7 +4,7 @@
 
 /* Let clicks reach the map through the transparent parts of the page. */
 .game-main:has(.screen--world), .game-main:has(.screen--world) .screen-container, .screen--world, .screen--world .world-layout { pointer-events: none; }
-.game-main:has(.screen--world) :is(.topbar, .journal, .message-bar), .screen--world :is(.map-header > *, .region-dossier, .travel-banner, .location-mobile-list, .dashboard-grid, .panel) { pointer-events: auto; }
+.screen--world :is(.map-header > *, .region-dossier, .travel-banner, .location-mobile-list, .dashboard-grid, .panel) { pointer-events: auto; }
 
 
 .world-layout { display: block; }
@@ -82,11 +82,6 @@
 .map-pin { color: var(--gold-bright); transform: translate(-50%, -150%); filter: drop-shadow(0 0 8px rgba(246, 210, 140, .9)); animation: bob 1.6s ease-in-out infinite; }
 .map-blackwood { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 6px; border: 1px solid rgba(173, 143, 217, .55); border-radius: var(--r-1); background: rgba(14, 10, 20, .85); color: var(--text); font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; white-space: nowrap; transform: translate(-50%, -50%); box-shadow: 0 0 18px rgba(173, 143, 217, .35); }
 .map-blackwood .icon { width: 16px; height: 16px; color: var(--xp); image-rendering: auto; }
-.map-legend { position: absolute; left: calc(var(--dock-w) + 32px); bottom: calc(var(--party-h) + 22px); z-index: 4; display: flex; gap: 14px; padding: 6px 12px; border-radius: var(--r-2); background: rgba(8, 8, 12, .7); color: var(--text-dim); font-size: var(--fs-1); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
-.map-legend span { display: flex; align-items: center; gap: 6px; }
-.legend-dot { width: 16px; height: 2px; background: var(--gold-bright); box-shadow: 0 0 6px rgba(246, 210, 140, .8); }
-.legend-dot.is-rumor { background: rgba(236, 228, 210, .4); box-shadow: none; }
-.legend-dot.is-current { width: 8px; height: 8px; border-radius: 50%; }
 
 /* Location panel: slides in from the right. */
 .region-dossier { min-width: 0; }
@@ -98,8 +93,6 @@
 .region-dossier__banner h2 { order: -1; margin: 0; font-size: var(--fs-5); font-weight: 700; }
 .region-dossier__banner small { color: var(--text-faint); font-family: var(--font-label); font-size: var(--fs-1); letter-spacing: .1em; text-transform: uppercase; }
 .region-dossier > *:not(.region-dossier__banner) { margin-left: 20px; margin-right: 20px; }
-.location-affinity { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 10px; margin-top: 4px; }
-.location-affinity p { margin: 0; font-size: var(--fs-2); }
 .region-dossier__identity { margin: 12px 0 0; color: var(--text); font-family: var(--font-display); font-size: var(--fs-4); font-style: italic; line-height: 1.4; }
 .location-economy-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; margin-top: 14px; border-top: 1px solid var(--line-soft); }
 .location-economy-grid > div { display: grid; gap: 0; padding: 10px 0; border-block: 0; border-bottom: 1px solid var(--line-soft); background: none; }
@@ -117,6 +110,7 @@
 .current-location-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
 .region-missions { display: grid; margin-top: 12px; }
 .region-missions button { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
+.map-quote { display: inline-flex; align-items: center; gap: 4px; color: var(--text-dim); font-size: var(--fs-2); }
 .region-missions button > div { display: grid; min-width: 0; }
 .region-missions strong { font-size: var(--fs-2); font-weight: 600; }
 .locked-dossier { display: grid; justify-items: center; gap: 8px; margin-top: 12px; padding: 22px 14px; text-align: center; }
@@ -174,13 +168,11 @@
   .location-node.is-locked .location-node__icon { width: 18px; height: 18px; }
   .location-node.is-locked .location-node__icon .icon { width: 10px; height: 10px; }
   .location-node__here { font-size: var(--fs-1); }
-  .map-legend { display: none; }
   .map-blackwood { font-size: var(--fs-1); }
   .map-boss { width: 20px; height: 20px; transform: translate(8px, -22px); }
   .world-spacer { height: 34vh; min-height: 200px; }
   .region-dossier--location { position: relative; top: auto; right: auto; width: auto; max-height: none; margin: 0 -12px var(--s4); border-radius: var(--r-2) var(--r-2) 0 0; animation: sheet-up var(--med) var(--ease) both; }
   .screen--world { display: flex; flex-direction: column; }
-  .screen--world > .map-known { order: 0; }
   .screen--world > .travel-banner { order: 1; }
   .screen--world > .world-spacer { order: 2; }
   .screen--world > .world-layout { order: 3; }
@@ -198,4 +190,3 @@
   .travel-banner__time { grid-column: 1 / -1; justify-items: start; }
   .primal-wheel-list { grid-template-columns: 1fr; }
 }
-.map-known { position: relative; margin: 0 0 var(--s3); color: var(--text-dim); font-size: var(--fs-2); text-shadow: 0 1px 8px #000; }

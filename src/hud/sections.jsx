@@ -5,14 +5,11 @@ import PartyRail from '../components/PartyRail.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
 import GuildHallRooms, { WarRoom } from '../places/GuildHallRooms.jsx';
-import QuestLogScreen, { QUEST_TABS } from '../places/QuestLogScreen.jsx';
-import CalendarScreen from '../places/CalendarScreen.jsx';
-import { BestiaryScreen, NewsScreen } from '../places/NewsScreen.jsx';
-import RankingsScreen from '../screens/RankingsScreen.jsx';
+import JournalScreen, { JOURNAL_TABS } from '../places/JournalScreen.jsx';
+import RankingsScreen, { HallOfFameTab, RecordBookTab } from '../screens/RankingsScreen.jsx';
 import { MissionLog, SeasonReviewsPage } from '../screens/HistoryScreens.jsx';
-import ChronicleScreen from '../screens/ChronicleScreen.jsx';
-import LoreCodex from '../screens/LoreCodex.jsx';
-import GoalsScreen from '../screens/GoalsScreen.jsx';
+import CodexScreen from '../screens/CodexScreen.jsx';
+import GuildScreen, { GUILD_TABS } from './GuildScreen.jsx';
 import SettingsScreen from '../screens/SettingsScreen.jsx';
 import CreditsScreen from './CreditsScreen.jsx';
 import ContactsScreen from './ContactsScreen.jsx';
@@ -26,35 +23,33 @@ import { HOME_LOCATION_ID, atHome, hallStage, hasHall, roomLevel } from '../game
 
 const tabs = (...items) => items.map(([id, label, icon]) => ({ id, label, icon }));
 
+/** The tabs of each section. Party's "Retired & fallen" appears once someone is in it. */
+export function sectionTabs(state, id) {
+  if (id === 'party') {
+    const gone = state.heroes.some((hero) => ['dead', 'retired'].includes(hero.status)) || state.historicHeroes?.length;
+    return tabs(['roster', 'Heroes', 'party'], ['main', 'Main party', 'flag'], ...(gone ? [['legends', 'Retired & fallen', 'scroll']] : []));
+  }
+  return SECTION_TABS[id] || null;
+}
+
 export const SECTION_TABS = {
-  party: tabs(['roster', 'Heroes', 'party'], ['main', 'Main party', 'flag'], ['legends', 'Retired & fallen', 'scroll']),
-  quests: QUEST_TABS,
-  calendar: tabs(['calendar', 'Calendar', 'calendar'], ['news', 'News', 'letter']),
-  records: tabs(
-    ['rankings', 'Rankings', 'trophy'],
-    ['seasons', 'Seasons', 'hourglass'],
-    ['book', 'Record book', 'star'],
-    ['fame', 'Hall of fame', 'crown'],
-    ['log', 'Mission log', 'scroll'],
-    ['almanac', 'Almanac', 'book'],
-    ['lore', 'Lore', 'quill'],
-    ['bestiary', 'Bestiary', 'skull'],
-    ['goals', 'Goals', 'check'],
-  ),
+  guild: GUILD_TABS,
+  journal: JOURNAL_TABS,
+  records: tabs(['rankings', 'Rankings', 'trophy'], ['seasons', 'Seasons', 'hourglass'], ['book', 'Record book', 'star'], ['fame', 'Hall of fame', 'crown'], ['log', 'Mission log', 'scroll'], ['codex', 'Codex', 'book']),
   system: tabs(['game', 'Game', 'save'], ['settings', 'Settings', 'gear'], ['credits', 'Credits', 'info']),
 };
 
+// One short help line per section (docs/UX.md): a gesture or where things are, never a rule.
 const HELP = {
-  party: 'Main party: a lead and up to three companions. Drag heroes in and out, or tap to toggle.',
-  items: 'Drag an item onto a hero to equip or use it. Tap an item, then a hero, to do the same.',
-  hall: 'Drag heroes from the bar onto a room to give them a task.',
-  quests: 'Show on map marks where a quest happens.',
-  contacts: 'Everyone you have talked to. Tap a person to see where they are.',
-  calendar: 'Time passes only when you act. Rest at the Guild Hall or an inn.',
-  records: 'Swipe sideways to change tab.',
-  system: 'The game saves itself after every action.',
-  inn: 'Resting heals the travelling party; the heroes at home keep to their tasks.',
-  noticeBoard: 'Contracts people gave you. Pick one here, then drag heroes into the slots.',
+  party: 'Tap a hero for their page.',
+  items: 'Drag an item onto a hero, or tap the item, then the hero.',
+  hall: 'Drag a hero from the bar onto a room.',
+  journal: 'Swipe sideways to change tab.',
+  contacts: 'Tap a person to see where they are.',
+  records: 'Long-press a ladder to see what it measures.',
+  system: 'The game saves after every action.',
+  inn: 'Rest heals the party travelling with you.',
+  noticeBoard: 'Pick a contract, then drag heroes into the slots.',
   arena: 'Sign up at the desk; be here on the start day.',
   shop: 'Drag an item onto a hero to compare.',
 };
@@ -69,7 +64,7 @@ function buildingArt(state, id) {
 
 export function sectionTitle(state, section) {
   const id = section.id;
-  const titles = { party: 'Party', items: 'Items', quests: 'Quests', contacts: 'Contacts', calendar: 'Calendar', records: 'Records', system: 'System' };
+  const titles = { party: 'Party', items: 'Items', guild: 'Guild', journal: 'Journal', contacts: 'Contacts', records: 'Records', system: 'System' };
   if (titles[id]) return titles[id];
   if (id === 'hall') {
     const room = section.tab;
@@ -89,9 +84,10 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
   const setTab = (tab) => setSection({ ...section, tab });
   const props = { state, actions, navigate, slot };
   const id = section.id;
-  const tabList = SECTION_TABS[id] || null;
+  const tabList = sectionTabs(state, id);
   const tab = tabList ? (tabList.some((item) => item.id === section.tab) ? section.tab : tabList[0].id) : section.tab;
-  const common = { id, title: sectionTitle(state, section), tabs: tabList, tab, onTab: setTab, onBack: close, help: HELP[id] || null };
+  const help = id === 'records' && tab !== 'rankings' ? null : HELP[id] || null;
+  const common = { id, title: sectionTitle(state, section), tabs: tabList, tab, onTab: setTab, onBack: close, help };
   const rail = <PartyRail state={state} actions={actions} onOpenHero={actions.openHero} />;
 
   if (id === 'party') {
@@ -124,10 +120,10 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
       </>
     );
   }
-  if (id === 'quests') {
+  if (id === 'guild') {
     return (
       <Section {...common}>
-        <QuestLogScreen {...props} tab={tab} />
+        <GuildScreen {...props} tab={tab} />
       </Section>
     );
   }
@@ -138,7 +134,8 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
       </Section>
     );
   }
-  if (id === 'calendar') {
+  if (id === 'journal') {
+    // The calendar's main button rests: at the Guild Hall at home, at the inn away.
     const home = atHome(state);
     const rest = home ? (
       <Button variant="primary" onClick={() => navigate('rest')}>
@@ -150,23 +147,20 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
       </Button>
     ) : null;
     return (
-      <Section {...common} primary={tab === 'calendar' ? rest : null} help={home || extras?.innHere ? HELP.calendar : 'Time passes only when you act. Away from home, rest at an inn.'}>
-        {tab === 'calendar' ? <CalendarScreen {...props} /> : <NewsScreen {...props} />}
+      <Section {...common} primary={tab === 'calendar' ? rest : null}>
+        <JournalScreen {...props} tab={tab} />
       </Section>
     );
   }
   if (id === 'records') {
     return (
       <Section {...common}>
-        {tab === 'rankings' ? <RankingsScreen key="rankings" {...props} initialTab={section.view} views={['guilds', 'heroLadders', 'path', 'rivals', 'reputation', 'connections', 'directory']} /> : null}
+        {tab === 'rankings' ? <RankingsScreen {...props} /> : null}
         {tab === 'seasons' ? <SeasonReviewsPage {...props} /> : null}
-        {tab === 'book' ? <RankingsScreen key="book" {...props} views={['records', 'artifacts']} /> : null}
-        {tab === 'fame' ? <RankingsScreen key="fame" {...props} views={['hall', 'heroes', 'tournaments']} /> : null}
+        {tab === 'book' ? <RecordBookTab {...props} /> : null}
+        {tab === 'fame' ? <HallOfFameTab {...props} /> : null}
         {tab === 'log' ? <MissionLog {...props} /> : null}
-        {tab === 'almanac' ? <ChronicleScreen {...props} /> : null}
-        {tab === 'lore' ? <LoreCodex {...props} /> : null}
-        {tab === 'bestiary' ? <BestiaryScreen {...props} /> : null}
-        {tab === 'goals' ? <GoalsScreen {...props} /> : null}
+        {tab === 'codex' ? <CodexScreen {...props} page={section.view} /> : null}
       </Section>
     );
   }
@@ -192,21 +186,27 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
   );
 }
 
-/** System → Game: save, load another slot, return to the title. */
+/** System → Game: short labelled rows. Loading another slot is on the title screen. */
 function GameMenu({ state, actions, slot, saveStatus }) {
-  const saved = { saving: 'Saving…', unsaved: 'Not saved yet', error: 'Save failed' }[saveStatus] || 'Saved';
+  const saved = { saving: 'Saving…', unsaved: 'Not saved', error: 'Save failed' }[saveStatus] || 'Saved';
   return (
     <div className="game-menu">
-      <p>
-        <strong>{state.guild.name}</strong> · slot {slot} · year {state.date.year} · <span className={`save-state save-state--${saveStatus}`}>{saved}</span>
-      </p>
+      <div className="guild-line">
+        <span>{state.guild.name}</span>
+        <strong className="num">
+          Slot {slot} · {state.date.year}
+        </strong>
+      </div>
+      <div className="guild-line">
+        <span>Status</span>
+        <strong className={`save-state save-state--${saveStatus}`}>{saved}</strong>
+      </div>
       <div className="game-menu__actions">
         <Button variant="primary" onClick={actions.saveNow}>
           Save now
         </Button>
-        <Button onClick={actions.returnHome}>Return to title</Button>
+        <Button onClick={actions.returnHome}>Load or quit to title</Button>
       </div>
-      <p className="muted">The title screen lists your three save slots: continue another campaign or start a new one there.</p>
     </div>
   );
 }

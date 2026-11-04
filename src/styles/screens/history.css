@@ -123,23 +123,3 @@
 .lore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
 .lore-grid .panel p { margin: 0; }
 .lore-grid__relic { float: right; width: 56px; height: 72px; margin: 0 0 6px 10px; object-fit: contain; }
-.quest-log__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-.quest-log__marker { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: var(--fs-2); cursor: pointer; }
-.quest-log__marker input { width: 20px; height: 20px; }
-.quest-steps { display: grid; gap: 6px; margin: 10px 0; padding: 0; list-style: none; }
-.quest-steps li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; color: var(--text-dim); }
-.quest-steps li.is-current { color: var(--text); }
-.quest-steps li.is-done { opacity: .7; }
-.quest-steps li > span { color: var(--gold-bright); font-weight: 700; text-align: center; }
-.quest-steps p { margin: 0; }
-.quest-steps small { display: block; color: var(--text-dim); }
-.quest-steps__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
-.quest-steps__actions .button { min-height: 44px; }
-.quest-gate summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--text-dim); }
-.quest-gates { display: grid; gap: 4px; margin: 6px 0; padding-left: 18px; }
-.quest-gates .is-locked { color: var(--text-faint); }
-.quest-evidence { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.quest-evidence li { display: grid; gap: 2px; color: var(--text-faint); }
-.quest-evidence li.is-found { color: var(--text); }
-.quest-evidence small { color: var(--text-dim); }
-.quest-row__map { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--gold-bright); font: inherit; font-size: var(--fs-2); cursor: pointer; justify-self: start; }

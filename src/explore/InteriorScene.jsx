@@ -40,7 +40,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
     else if (target.poi?.shelf) onOpen({ open: 'shop', kind: target.poi.shelf });
     else if (target.poi?.board === 'history') onOpen({ open: 'arena', tab: 'board' });
     else if (target.poi?.board === 'rankings') onOpen({ open: 'records', tab: 'rankings' });
-    else if (target.poi?.board === 'records') onOpen({ open: 'records', tab: 'almanac' });
+    else if (target.poi?.board === 'records') onOpen({ open: 'records', tab: 'codex', view: 'almanac' });
   };
 
   return (
@@ -56,7 +56,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
       className={`interior-scene interior-scene--${building}`}
       label={`Inside ${label}`}
     >
-      <PlaceTag title={label} sub={dateLine(state.date)} goal={building === 'tavern' && !hasHall(state) ? <p className="goal-line goal-line--status">No hall, no hires: talk all you like, but nobody signs until you rent a hall.</p> : null} />
+      <PlaceTag title={label} sub={dateLine(state.date)} goal={building === 'tavern' && !hasHall(state) ? <p className="goal-line goal-line--status">No hall, no hires.</p> : null} />
       {talk?.dialogue ? (
         <DialogueBox
           key={talk.person}

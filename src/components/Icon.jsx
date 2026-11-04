@@ -105,3 +105,5 @@ export const EVENT_ICONS = {
   construction: 'hammer',
   reputation: 'shield',
 };
+export const CLASS_ICONS = { Guardian: 'shield', Duelist: 'sword', Ranger: 'tree', Rogue: 'eye', Cleric: 'cross', Mage: 'star', Scholar: 'book', Artificer: 'anvil' };
+export const STATUS_ICONS = { available: 'check', mission: 'flag', tournament: 'crown', injured: 'bandage', sidejob: 'hammer', dead: 'skull', retired: 'moon' };

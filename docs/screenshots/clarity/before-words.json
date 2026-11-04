@@ -1,0 +1,54 @@
+{
+  "slots": {
+    "view": 89,
+    "all": 89
+  },
+  "newgame": {
+    "view": 76,
+    "all": 84
+  },
+  "prologue": {
+    "view": 33,
+    "all": 33
+  },
+  "prologue-skip": {
+    "view": 16,
+    "all": 16
+  },
+  "field": {
+    "view": 21,
+    "all": 48
+  },
+  "ledger": {
+    "view": 38,
+    "all": 38
+  },
+  "party": {
+    "view": 97,
+    "all": 233
+  },
+  "quests": {
+    "view": 130,
+    "all": 165
+  },
+  "map": {
+    "view": 103,
+    "all": 235
+  },
+  "records": {
+    "view": 88,
+    "all": 302
+  },
+  "system": {
+    "view": 42,
+    "all": 42
+  },
+  "calendar": {
+    "view": 80,
+    "all": 80
+  },
+  "records-goals": {
+    "view": 87,
+    "all": 362
+  }
+}

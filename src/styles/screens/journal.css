@@ -1,0 +1,86 @@
+/* The Journal, the Guild section, Settings and the Rankings controls:
+   one line per item, details on tap (details/summary). */
+
+/* Rows */
+.journal, .guild-screen, .settings, .codex { display: grid; gap: 12px; }
+.journal__quiet { margin: 0; color: var(--text-dim); }
+.journal-block { display: grid; gap: 4px; }
+.journal-block h3, .guild-heading, .settings-group h3 { display: flex; align-items: baseline; gap: 8px; margin: 4px 0 2px; color: var(--text-dim); font: 600 var(--fs-1) var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
+.journal-block h3 small { color: var(--gold-bright); letter-spacing: 0; }
+.journal-row { width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(12, 11, 16, .6); color: var(--text); text-align: left; }
+button.journal-row:hover, button.journal-row:focus-visible { border-color: var(--brass); background: var(--glow); outline: none; }
+.journal-row__text { flex: 1; display: grid; min-width: 0; }
+.journal-row__text strong, .journal-row__text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-row__text strong { font-size: var(--fs-2); font-weight: 700; }
+.journal-row__text small { color: var(--text-dim); font-size: var(--fs-1); }
+.journal-row__count { color: var(--gold-bright); font-size: var(--fs-1); }
+.icon-button--sm { width: 36px; height: 36px; min-height: 36px; }
+
+/* Tap-to-open details */
+.journal-details { border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(12, 11, 16, .45); }
+.journal-details > summary { min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; cursor: pointer; list-style: none; color: var(--text); font-size: var(--fs-2); }
+.journal-details > summary::-webkit-details-marker { display: none; }
+.journal-details > summary::after { content: '›'; margin-left: auto; color: var(--text-faint); transition: transform var(--fast) var(--ease); }
+.journal-details[open] > summary::after { transform: rotate(90deg); }
+.journal-details > summary > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-details > summary small { color: var(--text-dim); font-size: var(--fs-1); }
+.journal-details > summary b { margin-left: auto; color: var(--gold-bright); }
+.journal-details > summary b + * { margin-left: 0; }
+.journal-details > :not(summary) { margin: 0 10px 10px; }
+.journal-details p { color: var(--text-dim); font-size: var(--fs-2); }
+
+/* Quest card */
+.quest-card { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--brass); border-radius: var(--r-2); background: rgba(14, 12, 18, .7); }
+.quest-card header { display: grid; gap: 2px; }
+.quest-card h3 { margin: 0; font: 700 var(--fs-4)/1.15 var(--font-display); }
+.quest-card header p { margin: 0; color: var(--text-dim); font-size: var(--fs-2); }
+.quest-card__step { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--gold-bright); font-weight: 600; }
+.quest-card__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.quest-card__actions .button { min-height: 44px; }
+.quest-steps { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.quest-steps li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; color: var(--text-dim); }
+.quest-steps li.is-current { color: var(--text); }
+.quest-steps li.is-done { opacity: .7; }
+.quest-steps li > span { color: var(--gold-bright); font-weight: 700; text-align: center; }
+.quest-steps p { margin: 0; }
+
+/* Guild section */
+.guild-charter { display: flex; align-items: center; gap: 12px; }
+.guild-charter__crest { width: 52px; height: 52px; flex: none; object-fit: cover; border-radius: var(--r-1); }
+.guild-charter > div { display: grid; min-width: 0; }
+.guild-charter strong { font: 700 var(--fs-4)/1.15 var(--font-display); }
+.guild-charter small { color: var(--text-dim); }
+.guild-charter em { color: var(--text-dim); font-size: var(--fs-1); }
+.guild-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.guild-chips li { padding: 4px 10px; border: 1px solid var(--line-soft); border-radius: 999px; color: var(--text-dim); font-size: var(--fs-1); }
+.guild-line { min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 4px 2px; border-bottom: 1px solid var(--line-soft); }
+.guild-line > span { flex: 1; color: var(--text-dim); }
+.guild-line > strong { color: var(--text); }
+.patron-line__crest { width: 28px; height: 28px; flex: none; object-fit: cover; border-radius: 4px; }
+.patron-line__unlocks { display: grid; gap: 4px; padding: 0; list-style: none; color: var(--text-dim); font-size: var(--fs-2); }
+.patron-line__unlocks .is-open { color: var(--text); }
+.patron-line--rival { border-color: rgba(220, 95, 79, .6); }
+
+/* Settings */
+.settings-group { display: grid; gap: 2px; }
+.settings-row { min-height: 48px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line-soft); font-size: var(--fs-3); }
+.settings-row > span { flex: 1; }
+.settings-row input[type='checkbox'] { width: 22px; height: 22px; flex: none; }
+.settings-row input[type='range'] { flex: 1; max-width: 200px; }
+.settings-row input:not([type]) { flex: 1; min-width: 0; }
+.settings textarea { width: 100%; }
+
+/* Rankings */
+.status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: 10px; }
+.status-line > strong { flex-basis: 100%; color: var(--gold); font: 700 var(--fs-4)/1.1 var(--font-display); }
+.status-line > span { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-3); font-weight: 700; }
+.status-line small { color: var(--text-faint); font-weight: 500; }
+.rank-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ladder-row--hero { grid-template-columns: 3ch auto minmax(0, 1fr) auto; }
+.ladder-row--guild { grid-template-columns: 3ch minmax(0, 1fr) auto; }
+.codex > .segmented { justify-self: start; }
+
+/* Bestiary rows */
+.bestiary-row summary img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
+.bestiary-row.is-defeated summary { opacity: .7; }
+.ladder-row--own { margin-bottom: 8px; border: 1px solid var(--brass); border-radius: var(--r-1); }

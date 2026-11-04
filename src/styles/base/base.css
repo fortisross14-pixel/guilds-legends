@@ -49,12 +49,9 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .win,
 .panel,
 .modal,
-.toast,
 .home-error,
 .loading-layer__box,
 .sidebar,
-.message-bar,
-.journal,
 .party-rail__member,
 .region-dossier,
 .travel-banner,
@@ -62,12 +59,10 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .building-grid,
 .hall-summary,
 .filter-bar,
-.status-banner,
 .calendar,
 .chronicle-timeline,
 .mission-board,
 .mission-planner,
-.hero-card,
 .event-ticket,
 .championship-selector > button,
 .arena-hero,
@@ -76,8 +71,6 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .hq-blueprint__hall,
 .facility-room,
 .title-archive > article,
-.goal-summary,
-.goat-summary,
 .save-menu,
 .shop-list,
 .shop-detail,
@@ -120,7 +113,6 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .primal-rule-callout,
 .expectation-note,
 .candidate-demand,
-.hero-card__promise,
 .mission-game__header,
 .mission-game__lead,
 .mission-game__footer,
@@ -139,7 +131,6 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .points-to-pass,
 .locked-dossier,
 .candidate-card__ratings,
-.hero-card__ratings,
 .mission-game-metric,
 .location-economy-grid > div,
 .travel-quote > div {
@@ -172,7 +163,6 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .primal-wheel-list article,
 .qualification-checks > div,
 .promotion-checklist > div,
-.switch-row,
 .current-appointee,
 .appointment-dossier,
 .versus-card > button,
@@ -237,14 +227,14 @@ button.ranking-star,
   text-align: left;
   transition: background-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, button.quest-row, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .universe-hero-ranking > button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .versus-card > button) {
+:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .versus-card > button) {
   border: 0;
   background: transparent;
 }
-:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, button.quest-row, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .universe-hero-ranking > button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .alignment-grid button, .founder-portraits button, .versus-card > button):is(:hover, :focus-visible, .is-selected, .is-active, [aria-selected='true'], [aria-checked='true'], [aria-current='page'], [aria-pressed='true']):not(:disabled) {
+:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .alignment-grid button, .founder-portraits button, .versus-card > button):is(:hover, :focus-visible, .is-selected, .is-active, [aria-selected='true'], [aria-checked='true'], [aria-current='page'], [aria-pressed='true']):not(:disabled) {
   background-image: linear-gradient(90deg, var(--glow-strong) 0%, var(--glow) 45%, transparent 100%);
 }
-:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, button.quest-row, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .universe-hero-ranking > button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .alignment-grid button, .founder-portraits button, .versus-card > button, .championship-selector > button, .event-ticket)::before {
+:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .alignment-grid button, .founder-portraits button, .versus-card > button, .championship-selector > button, .event-ticket)::before {
   content: '';
   position: absolute;
   left: 10px;
@@ -259,7 +249,7 @@ button.ranking-star,
   transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
   pointer-events: none;
 }
-:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, button.quest-row, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .universe-hero-ranking > button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .alignment-grid button, .founder-portraits button, .versus-card > button, .championship-selector > button, .event-ticket):is(:hover, :focus-visible, .is-selected, .is-active, [aria-selected='true'], [aria-checked='true'], [aria-current='page'], [aria-pressed='true']):not(:disabled)::before {
+:is(.cmd, .building-tile, .decision-options > button, .mission-game__actions > button, .region-missions button, .location-mobile-list > button, .calendar-entry, .live-field > button, .entrant-card, .directory-roster button, .guild-directory > aside button, .report-archive > button, .hall-of-fame > button, .title-winners button, .appointment-list button, .mission-card, .formation-tabs button, .mission-game__roster button, .leader-list button, button.ladder-row, .report-team > button, .council-report__activity-list > button, .room-hero__who, .nemesis-chip, .sidebar nav button, .mobile-nav button, .save-menu__main, .shop-item, .record-holder, button.ranking-star, .compact-formation-builder article > button, .alignment-grid button, .founder-portraits button, .versus-card > button, .championship-selector > button, .event-ticket):is(:hover, :focus-visible, .is-selected, .is-active, [aria-selected='true'], [aria-checked='true'], [aria-current='page'], [aria-pressed='true']):not(:disabled)::before {
   opacity: 1;
   transform: none;
 }
@@ -451,7 +441,7 @@ input[type='range'] { accent-color: var(--gold); }
 label { display: grid; gap: 6px; color: var(--text-dim); font-size: var(--fs-2); }
 
 /* -------------------------------------------------------------------- tabs */
-.tabs, .ladder-picker, .scope-picker, .filter-pills {
+.tabs, .filter-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 0 var(--s2);
@@ -460,7 +450,7 @@ label { display: grid; gap: 6px; color: var(--text-dim); font-size: var(--fs-2);
   border-bottom: 1px solid var(--line-soft);
   overflow-x: auto;
 }
-.tabs button, .ladder-picker button, .scope-picker button, .filter-pills button {
+.tabs button, .filter-pills button {
   position: relative;
   flex: none;
   display: inline-flex;
@@ -479,10 +469,10 @@ label { display: grid; gap: 6px; color: var(--text-dim); font-size: var(--fs-2);
   white-space: nowrap;
   transition: color var(--fast) var(--ease);
 }
-.tabs button::after, .ladder-picker button::after, .scope-picker button::after, .filter-pills button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 2px; border-radius: var(--r-1); background: var(--gold); box-shadow: 0 0 10px rgba(246, 210, 140, .7); opacity: 0; transform: scaleX(.4); transition: opacity var(--med) var(--ease), transform var(--med) var(--ease); }
-.tabs button:hover, .ladder-picker button:hover, .scope-picker button:hover, .filter-pills button:hover { color: var(--text); }
-.tabs button.is-active, .ladder-picker button.is-selected, .scope-picker button.is-selected, .filter-pills button.is-selected, .tabs button[aria-selected='true'] { color: var(--gold-bright); }
-:is(.tabs button.is-active, .ladder-picker button.is-selected, .scope-picker button.is-selected, .filter-pills button.is-selected, .tabs button[aria-selected='true'])::after { opacity: 1; transform: none; }
+.tabs button::after, .filter-pills button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 2px; border-radius: var(--r-1); background: var(--gold); box-shadow: 0 0 10px rgba(246, 210, 140, .7); opacity: 0; transform: scaleX(.4); transition: opacity var(--med) var(--ease), transform var(--med) var(--ease); }
+.tabs button:hover, .filter-pills button:hover { color: var(--text); }
+.tabs button.is-active, .filter-pills button.is-selected, .tabs button[aria-selected='true'] { color: var(--gold-bright); }
+:is(.tabs button.is-active, .filter-pills button.is-selected, .tabs button[aria-selected='true'])::after { opacity: 1; transform: none; }
 .tabs button span { color: var(--brass); }
 
 /* ------------------------------------------------------------------ panels */
@@ -565,7 +555,7 @@ label { display: grid; gap: 6px; color: var(--text-dim); font-size: var(--fs-2);
 }
 
 /* Over bright art, tab strips get a translucent backing and headings a stronger scrim. */
-.tabs, .ladder-picker, .scope-picker, .filter-pills { padding: 0 8px; border-radius: var(--r-1) var(--r-1) 0 0; background: linear-gradient(180deg, rgba(10, 9, 14, .62), rgba(10, 9, 14, .42)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.tabs, .filter-pills { padding: 0 8px; border-radius: var(--r-1) var(--r-1) 0 0; background: linear-gradient(180deg, rgba(10, 9, 14, .62), rgba(10, 9, 14, .42)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .screen-heading .eyebrow, .place-title__name .eyebrow { color: var(--text-dim); text-shadow: 0 1px 6px rgba(0, 0, 0, 1), 0 0 2px #000; }
 .screen-heading p { text-shadow: 0 1px 8px rgba(0, 0, 0, 1), 0 0 2px #000; }
 

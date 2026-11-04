@@ -316,14 +316,8 @@ export function SeasonReviewList({ state }) {
 export function SeasonReviewsPage({ state }) {
   return (
     <div className="screen screen--history">
-      <header className="screen-heading">
-        <div>
-          <span className="eyebrow">One card sequence per year</span>
-          <h1>Season reviews</h1>
-          <p>Record, money, awards, best and worst moments, ladder movement and broken records for every finished year.</p>
-        </div>
-      </header>
       <SeasonReviewList state={state} />
+      <LadderHistoryPanel state={state} />
     </div>
   );
 }
@@ -593,7 +587,7 @@ export function LadderHistoryPanel({ state }) {
   const years = [...new Set(ladders.flatMap((ladder) => ladder.seasons.map((row) => row.year)))].sort((a, b) => a - b);
   const keyOf = { strength: 's', legacy: 'l', official: 'o' };
   return (
-    <Panel title="Season by season" eyebrow="Rank at the end of each year (this year so far)">
+    <Panel title="Season by season">
       <ul className="ladder-history">
         {ladders.map((ladder) => (
           <li key={ladder.ladder}>
@@ -618,7 +612,7 @@ export function LadderHistoryPanel({ state }) {
           }))}
         />
       ) : (
-        <p className="muted">The chart fills in as seasons pass.</p>
+        null
       )}
     </Panel>
   );

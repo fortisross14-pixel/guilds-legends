@@ -12,7 +12,7 @@ export default function HireGate({ state, className = '' }) {
   return (
     <p className={`hire-gate ${className}`} role="note">
       <Icon name="lock" size={16} tone="plain" />
-      <span>No hall, no hires. Recruits will talk to you, but nobody signs until you rent a hall (story mission 1, “A Banner Without a Hall”).</span>
+      <span>No hall, no hires: rent a hall first.</span>
     </p>
   );
 }

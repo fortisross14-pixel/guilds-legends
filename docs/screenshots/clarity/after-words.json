@@ -1,0 +1,78 @@
+{
+  "slots": {
+    "view": 9,
+    "all": 9
+  },
+  "newgame": {
+    "view": 19,
+    "all": 27
+  },
+  "prologue": {
+    "view": 33,
+    "all": 33
+  },
+  "prologue-skip": {
+    "view": 18,
+    "all": 18
+  },
+  "field": {
+    "view": 23,
+    "all": 48
+  },
+  "ledger": {
+    "view": 15,
+    "all": 15
+  },
+  "party": {
+    "view": 19,
+    "all": 19
+  },
+  "guild": {
+    "view": 60,
+    "all": 61
+  },
+  "map": {
+    "view": 42,
+    "all": 42
+  },
+  "journal": {
+    "view": 69,
+    "all": 74
+  },
+  "records": {
+    "view": 94,
+    "all": 113
+  },
+  "system": {
+    "view": 26,
+    "all": 26
+  },
+  "journal-now": {
+    "view": 17,
+    "all": 18
+  },
+  "journal-contracts": {
+    "view": 20,
+    "all": 21
+  },
+  "journal-calendar": {
+    "view": 27,
+    "all": 28
+  },
+  "records-codex": {
+    "view": 48,
+    "all": 52
+  },
+  "guild-finances": {
+    "view": 41,
+    "all": 42
+  },
+  "guild-patrons": {
+    "view": 15,
+    "all": 17
+  },
+  "system-settings": {
+    "view": 36,
+    "all": 63
+  }
+}

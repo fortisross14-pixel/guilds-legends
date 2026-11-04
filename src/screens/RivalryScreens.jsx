@@ -1,59 +1,10 @@
 import React, { useState } from 'react';
-import { getNemesisView, getReputationSummary, nemesisIds, rivalRecord } from '../game/engine.js';
-import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
+import { getNemesisView, nemesisIds, rivalRecord } from '../game/engine.js';
+import { Badge, Button, HeroPortrait, Panel } from '../components/UI.jsx';
 import { HeadToHeadPanel } from './HistoryScreens.jsx';
 import Icon from '../components/Icon.jsx';
 
-// Herald → Reputation: families (with perks) and regions.
-export function ReputationView({ state }) {
-  const summary = getReputationSummary(state);
-  return (
-    <div className="reputation-view">
-      <p className="reputation-view__title">
-        Specialization: <strong>{summary.title || 'none yet (reach Known in a family)'}</strong>
-      </p>
-      <Panel title="Mission families" eyebrow="Completed contracts raise reputation; failures lower it a little">
-        {summary.families.map((item) => (
-          <article key={item.family} className="reputation-row">
-            <div>
-              <strong>
-                {item.family} · {item.name}
-              </strong>
-              <small>{item.perk}</small>
-            </div>
-            <ProgressBar
-              value={item.next ? item.points : 1}
-              max={item.next || 1}
-              compact
-              tone="gold"
-              label={item.next ? `${item.points}/${item.next} to ${item.nextName}` : `${item.points} · maximum`}
-            />
-          </article>
-        ))}
-      </Panel>
-      <Panel title="Regions" eyebrow="Regional standing: +5% pay and −5% signing fees per level in that region">
-        {summary.regions.map((item) => (
-          <article key={item.region} className="reputation-row">
-            <div>
-              <strong>
-                {item.label} · {item.name}
-              </strong>
-            </div>
-            <ProgressBar
-              value={item.next ? item.points : 1}
-              max={item.next || 1}
-              compact
-              tone="blue"
-              label={item.next ? `${item.points}/${item.next}` : `${item.points}`}
-            />
-          </article>
-        ))}
-      </Panel>
-    </div>
-  );
-}
-
-// Herald → Rivals: rivalry scores, nemesis pages and challenges.
+// Guild → Rivals: rivalries, nemeses, challenges and head-to-head records.
 export function NemesisView({ state, actions, initialRivalId = null }) {
   const nemeses = nemesisIds(state);
   const ranked = Object.keys(state.rivalries || {})
@@ -95,7 +46,7 @@ export function NemesisView({ state, actions, initialRivalId = null }) {
             );
           })
         ) : (
-          <p className="muted">No rivalries yet. Meet guilds in tournaments, let them take your contracts, or trade heroes with them.</p>
+          <p className="muted">No rivals yet.</p>
         )}
       </div>
       {view ? (

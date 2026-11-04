@@ -1,235 +1,140 @@
 import React, { useMemo, useState } from 'react';
 import { TIERS } from '../data/content.js';
-import {
-  LADDERS,
-  LADDER_LABELS,
-  getGuildLadder,
-  getGuildStar,
-  getHeroLadder,
-  getHeroRankings,
-  getPlayerRanks,
-  getPointsToPass,
-  getRankMovement,
-  getStatusTitle,
-  specializationTitle,
-} from '../game/engine.js';
-import { NemesisView, ReputationView } from './RivalryScreens.jsx';
-import { Badge, Button, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline } from '../components/UI.jsx';
-import { ConnectionsPage, IdentityStrip, PathPanel } from './IdentityScreens.jsx';
-import { HallOfFame, LadderHistoryPanel, RecordBook } from './HistoryScreens.jsx';
-import Icon from '../components/Icon.jsx';
+import { LADDERS, LADDER_LABELS, getGuildLadder, getHeroLadder, getHeroRankings, getPlayerRanks, getPointsToPass, getRankMovement, getStatusTitle } from '../game/engine.js';
+import { Button, HeroPortrait, Panel, PrimalBadge, RankChange, toast } from '../components/UI.jsx';
+import { HallOfFame, RecordBook } from './HistoryScreens.jsx';
+import Icon, { LADDER_ICONS } from '../components/Icon.jsx';
+import { useLongPress } from '../components/gestures.js';
 
 const LADDER_COPY = {
-  strength: 'Current power: the average of each guild’s top five heroes. Moves fast.',
-  legacy: 'All-time points from completed missions (difficulty × grade) and titles. Never decays.',
-  official: 'Tournament points from the last 12 months. Decides status titles and promotion.',
+  strength: 'Strength: the power of each guild’s top five heroes.',
+  legacy: 'Legacy: all-time points from missions and titles.',
+  official: 'Official: tournament points from the last 12 months.',
 };
+
+// One ladder button: tap to show it, long-press for what it measures.
+function LadderButton({ id, selected, onSelect }) {
+  const press = useLongPress(() => toast(LADDER_COPY[id]), () => onSelect(id));
+  return (
+    <button role="tab" aria-selected={selected} className={selected ? 'is-selected' : ''} title={LADDER_COPY[id]} {...press}>
+      <Icon name={LADDER_ICONS[id]} size={16} tone="plain" /> {LADDER_LABELS[id]}
+    </button>
+  );
+}
 
 function LadderPicker({ ladder, setLadder }) {
   return (
-    <div className="ladder-picker" role="tablist">
+    <div className="segmented" role="tablist" aria-label="Ladder">
       {LADDERS.map((id) => (
-        <button key={id} role="tab" aria-selected={ladder === id} className={ladder === id ? 'is-selected' : ''} onClick={() => setLadder(id)}>
-          {LADDER_LABELS[id]}
+        <LadderButton key={id} id={id} selected={ladder === id} onSelect={setLadder} />
+      ))}
+    </div>
+  );
+}
+
+/** The guild's three ranks and status, one line. */
+function StatusLine({ state, scope }) {
+  const ranks = getPlayerRanks(state, scope);
+  const movement = getRankMovement(state);
+  return (
+    <div className="status-line">
+      <strong>{getStatusTitle(state)}</strong>
+      {LADDERS.map((id) => (
+        <span key={id} className="num">
+          <Icon name={LADDER_ICONS[id]} size={14} label={LADDER_LABELS[id]} /> #{ranks[id].rank}
+          <small>/{ranks[id].total}</small> <RankChange change={movement[id]} />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function GuildLadders({ state, actions, ladder, scope }) {
+  const rows = useMemo(() => getGuildLadder(state, ladder, scope), [state, ladder, scope]);
+  const toPass = useMemo(() => getPointsToPass(state, ladder, scope), [state, ladder, scope]);
+  const unit = ladder === 'strength' ? 'power' : 'pts';
+  // The guild's own row is the focus: pinned on top when it ranks below fifth.
+  const own = rows.find((guild) => guild.player);
+  return (
+    <>
+      <p className="points-to-pass">{toPass ? `${toPass.gap} ${unit} to pass ${toPass.name} (#${toPass.rank})` : 'You lead this ladder.'}</p>
+      {own && own.rank > 5 ? (
+        <div className="ladder-row ladder-row--guild is-player ladder-row--own">
+          <span className="ranking-position">{own.rank}</span>
+          <span className="ladder-row__name">
+            <strong>{own.name}</strong>
+          </span>
+          <strong className="ladder-row__value num">{own.value.toLocaleString()}</strong>
+        </div>
+      ) : null}
+      <div className="ladder-table">
+        {rows.map((guild) => (
+          <button key={guild.id} type="button" className={`ladder-row ladder-row--guild ${guild.player ? "is-player" : ""}`} onClick={() => (!guild.player && guild.star ? actions.openHero(guild.star.id) : null)}>
+            <span className="ranking-position">{guild.rank}</span>
+            <span className="ladder-row__name">
+              <strong>{guild.name}</strong>
+            </span>
+            <strong className="ladder-row__value num">
+              {guild.value.toLocaleString()} <small>{unit}</small>
+            </strong>
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function HeroLadders({ state, actions, ladder }) {
+  const rows = useMemo(() => getHeroLadder(state, ladder).slice(0, 60), [state, ladder]);
+  const unit = ladder === 'strength' ? 'power' : 'pts';
+  return (
+    <div className="ladder-table" data-menu>
+      {rows.map((hero) => (
+        <button key={hero.id} className={`ladder-row ladder-row--hero ${hero.player ? 'is-player' : ''}`} onClick={() => actions.openHero(hero.id)}>
+          <span className="ranking-position">{hero.rank}</span>
+          <HeroPortrait hero={hero} size="xs" />
+          <span className="ladder-row__name">
+            <strong>{hero.name}</strong>
+            <small>{hero.guildName}</small>
+          </span>
+          <strong className="ladder-row__value num">
+            {hero.value.toLocaleString()} <small>{unit}</small>
+          </strong>
         </button>
       ))}
     </div>
   );
 }
 
-function GuildLadders({ state, actions }) {
+/** Records → Rankings: the guild's ranks first, then one ladder (Guilds or Heroes). */
+export default function RankingsScreen({ state, actions }) {
+  const [who, setWho] = useState('guilds');
+  const [ladder, setLadder] = useState('official');
   const [scope, setScope] = useState(TIERS[state.guild.tierIndex]?.id || 'Regional');
-  const [ladder, setLadder] = useState('official');
-  const rows = useMemo(() => getGuildLadder(state, ladder, scope), [state, ladder, scope]);
-  const ranks = useMemo(() => getPlayerRanks(state, scope), [state, scope]);
-  const movement = useMemo(() => getRankMovement(state), [state]);
-  const toPass = useMemo(() => getPointsToPass(state, ladder, scope), [state, ladder, scope]);
-  const playerStar = getGuildStar(state);
-  const history = (state.rankHistory || []).map((entry) => -entry[ladder]);
-  const unit = ladder === 'strength' ? 'power' : 'pts';
   return (
-    <div className="ladder-view">
-      <div className="status-banner">
-        <span className="eyebrow">Status</span>
-        <strong className="status-banner__title">{getStatusTitle(state)}</strong>
-        {specializationTitle(state) ? <Badge tone="purple">{specializationTitle(state)}</Badge> : null}
-        <div className="status-banner__ranks">
-          {LADDERS.map((id) => (
-            <span key={id}>
-              {LADDER_LABELS[id]} <b>#{ranks[id].rank}</b>
-              <small>/{ranks[id].total}</small> <RankChange change={movement[id]} />
-            </span>
-          ))}
-        </div>
-      </div>
-      <LadderHistoryPanel state={state} />
-      <LadderPicker ladder={ladder} setLadder={setLadder} />
-      <div className="scope-picker">
-        {['Regional', 'National', 'Global'].map((item) => (
-          <button key={item} className={scope === item ? 'is-selected' : ''} onClick={() => setScope(item)}>
-            {item}
-          </button>
-        ))}
-      </div>
-      <Panel
-        title={`${scope} · ${LADDER_LABELS[ladder]} ladder`}
-        eyebrow={LADDER_COPY[ladder]}
-        action={history.length > 1 ? <Sparkline values={history} label="Your rank history" /> : null}
-      >
-        {toPass ? (
-          <p className="points-to-pass">
-            {toPass.gap} {unit} to pass {toPass.name} (#{toPass.rank})
-          </p>
-        ) : (
-          <p className="points-to-pass">You lead this ladder.</p>
-        )}
-        <div className="ladder-table">
-          <div className="ladder-row ladder-row--head" aria-hidden="true">
-            <span>#</span>
-            <span>Guild</span>
-            <span>Star</span>
-            <span>{unit === 'power' ? 'Power' : 'Points'}</span>
-          </div>
-          {rows.map((guild) => (
-            <article key={guild.id} className={`ladder-row ${guild.player ? 'is-player' : ''}`}>
-              <span className="ranking-position">{guild.rank}</span>
-              <div className="ladder-row__name">
-                <strong>{guild.name}</strong>
-                <small>
-                  {TIERS[guild.tierIndex]?.id} · {guild.rosterSize} heroes · {guild.titles} titles
-                </small>
-              </div>
-              {guild.player ? (
-                <div className="ranking-star">
-                  {playerStar ? <HeroPortrait hero={playerStar} size="xs" /> : null}
-                  <span>{playerStar?.name || 'No active hero'}</span>
-                </div>
-              ) : guild.star ? (
-                <button className="ranking-star" onClick={() => actions.openHero(guild.star.id)}>
-                  <HeroPortrait hero={guild.star} size="xs" />
-                  <span>{guild.star.name}</span>
-                </button>
-              ) : (
-                <span />
-              )}
-              <strong className="ladder-row__value">
-                {guild.value.toLocaleString()} <small>{unit}</small>
-              </strong>
-            </article>
-          ))}
-        </div>
-      </Panel>
-    </div>
-  );
-}
-
-function HeroLadders({ state, actions }) {
-  const [ladder, setLadder] = useState('official');
-  const rows = useMemo(() => getHeroLadder(state, ladder).slice(0, 60), [state, ladder]);
-  const unit = ladder === 'strength' ? 'power' : 'pts';
-  return (
-    <div className="ladder-view">
-      <LadderPicker ladder={ladder} setLadder={setLadder} />
-      <Panel title={`Hero ${LADDER_LABELS[ladder]} ladder`} eyebrow={LADDER_COPY[ladder].replace('each guild’s top five heroes', 'hero power')}>
-        <div className="ladder-table" data-menu>
-          {rows.map((hero) => (
-            <button key={hero.id} className={`ladder-row ${hero.player ? 'is-player' : ''}`} onClick={() => actions.openHero(hero.id)}>
-              <span className="ranking-position">{hero.rank}</span>
-              <HeroPortrait hero={hero} size="xs" />
-              <div className="ladder-row__name">
-                <strong>{hero.name}</strong>
-                <small>
-                  Lv {hero.level} {hero.classId} · {hero.guildName}
-                </small>
-              </div>
-              <strong className="ladder-row__value">
-                {hero.value.toLocaleString()} <small>{unit}</small>
-              </strong>
+    <div className="screen screen--rankings">
+      <StatusLine state={state} scope={scope} />
+      <div className="rank-controls">
+        <div className="segmented" role="tablist" aria-label="Show">
+          {[
+            ['guilds', 'Guilds'],
+            ['heroes', 'Heroes'],
+          ].map(([id, label]) => (
+            <button key={id} role="tab" aria-selected={who === id} className={who === id ? 'is-selected' : ''} onClick={() => setWho(id)}>
+              {label}
             </button>
           ))}
         </div>
-      </Panel>
-    </div>
-  );
-}
-
-function HeroGoat({ state, actions }) {
-  const [filter, setFilter] = useState('All');
-  const heroes = useMemo(() => getHeroRankings(state), [state]);
-  const visible = heroes.filter(
-    (hero) =>
-      filter === 'All' ||
-      (filter === 'Active' && !['retired', 'dead'].includes(hero.status)) ||
-      (filter === 'Legends' && (hero.career?.titles || 0) >= 3) ||
-      (filter === 'My Guild' && hero.player),
-  );
-  const playerBest = heroes.find((hero) => hero.player);
-  return (
-    <div className="goat-view">
-      <div className="goat-summary">
-        <div>
-          <small>Your highest-ranked hero</small>
-          <strong>#{playerBest?.historicalRank || '—'}</strong>
-          <span>{playerBest?.name || 'No ranked career yet'}</span>
-        </div>
-        <div>
-          <small>Universe careers</small>
-          <strong>{heroes.length}</strong>
-          <span>Active, retired and historical</span>
-        </div>
-        <div>
-          <small>Highest score</small>
-          <strong>{heroes[0]?.historicalScore || 0}</strong>
-          <span>{heroes[0]?.name}</span>
-        </div>
+        <LadderPicker ladder={ladder} setLadder={setLadder} />
+        {who === 'guilds' && state.guild.tierIndex > 0 ? (
+          <select aria-label="Scope" value={scope} onChange={(event) => setScope(event.target.value)}>
+            {['Regional', 'National', 'Global'].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+        ) : null}
       </div>
-      <div className="filter-pills">
-        {['All', 'Active', 'Legends', 'My Guild'].map((item) => (
-          <button key={item} className={filter === item ? 'is-selected' : ''} onClick={() => setFilter(item)}>
-            {item}
-          </button>
-        ))}
-      </div>
-      <Panel
-        title="Greatest hero careers"
-        eyebrow="Major deeds 25% · tournaments 20% · quests 15% · peak 15% · longevity 10% · leadership 10% · cultural influence 5%"
-      >
-        <div className="universe-hero-ranking">
-          {visible.slice(0, 180).map((hero) => (
-            <button key={hero.id} className={hero.player ? 'is-player' : ''} onClick={() => actions.openHero(hero.id)}>
-              <span className="ranking-position">{hero.historicalRank}</span>
-              <HeroPortrait hero={hero} size="xs" />
-              <div className="universe-hero-ranking__identity">
-                <strong>{hero.name}</strong>
-                <small>
-                  {hero.guildName} · {hero.classId} · {hero.status}
-                </small>
-                <span>
-                  <RarityBadge rarity={hero.rarity} />
-                  <PrimalBadge primal={hero.primal} compact />
-                </span>
-              </div>
-              <span>
-                <small>Titles</small>
-                <b>{hero.career?.titles || 0}</b>
-              </span>
-              <span>
-                <small>Bout wins</small>
-                <b>{hero.career?.tournamentBoutWins || 0}</b>
-              </span>
-              <span>
-                <small>Prize</small>
-                <b>{(hero.career?.prizeMoney || 0).toLocaleString()}</b>
-              </span>
-              <span>
-                <small>Peak</small>
-                <b>{hero.career?.peakPower || hero.power}</b>
-              </span>
-              <strong className="historical-score">{hero.historicalScore}</strong>
-            </button>
-          ))}
-        </div>
-      </Panel>
+      {who === 'guilds' ? <GuildLadders state={state} actions={actions} ladder={ladder} scope={scope} /> : <HeroLadders state={state} actions={actions} ladder={ladder} />}
     </div>
   );
 }
@@ -333,7 +238,7 @@ function ArtifactAlmanac({ state, actions }) {
   );
 }
 
-function GuildDirectory({ state, actions, onOpenRival }) {
+export function GuildDirectory({ state, actions, onOpenRival }) {
   const [guildId, setGuildId] = useState(state.rivals[0]?.id || '');
   const guild = state.rivals.find((item) => item.id === guildId) || state.rivals[0];
   if (!guild) return null;
@@ -401,54 +306,23 @@ function GuildDirectory({ state, actions, onOpenRival }) {
   );
 }
 
-const VIEW_ITEMS = [
-  { id: 'guilds', label: 'Guild ladders', icon: 'flag' },
-  { id: 'heroLadders', label: 'Hero ladders', icon: 'party' },
-  { id: 'path', label: 'Path', icon: 'star' },
-  { id: 'rivals', label: 'Rivals', icon: 'swords' },
-  { id: 'reputation', label: 'Reputation', icon: 'shield' },
-  { id: 'connections', label: 'Connections', icon: 'letter' },
-  { id: 'directory', label: 'Directory', icon: 'scroll' },
-  { id: 'records', label: 'Record book', icon: 'star' },
-  { id: 'hall', label: 'Hall of fame', icon: 'crown' },
-  { id: 'heroes', label: 'All-time greats', icon: 'laurel' },
-  { id: 'tournaments', label: 'Tournament legends', icon: 'trophy' },
-  { id: 'artifacts', label: 'Artifacts', icon: 'gem' },
-];
 
-/** The Herald's records. `views` limits which views show (Records tabs pass a few). */
-export default function RankingsScreen({ state, actions, initialTab = null, views = null }) {
-  const items = VIEW_ITEMS.filter((item) => !views || views.includes(item.id));
-  const [tab, setTab] = useState(initialTab && items.some((item) => item.id === initialTab) ? initialTab : state.challenge?.status === 'pending' && items.some((item) => item.id === 'rivals') ? 'rivals' : items[0].id);
-  const [rivalFocus, setRivalFocus] = useState(null);
-  const openRival = (id) => {
-    setRivalFocus(id);
-    setTab('rivals');
-  };
+/** Records → Record book: the records, then the artifacts of the world. */
+export function RecordBookTab({ state, actions }) {
   return (
-    <div className="screen screen--rankings">
-      {items.some((item) => item.id === 'guilds') ? <IdentityStrip state={state} /> : null}
-      {items.length > 1 ? (
-        <div className="view-picker" role="group" aria-label="Show">
-          {items.map((item) => (
-            <button key={item.id} type="button" className={tab === item.id ? 'is-active' : ''} aria-pressed={tab === item.id} onClick={() => setTab(item.id)}>
-              {item.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {tab === 'path' ? <PathPanel state={state} /> : null}
-      {tab === 'connections' ? <ConnectionsPage state={state} actions={actions} /> : null}
-      {tab === 'guilds' ? <GuildLadders state={state} actions={actions} /> : null}
-      {tab === 'heroLadders' ? <HeroLadders state={state} actions={actions} /> : null}
-      {tab === 'records' ? <RecordBook state={state} actions={actions} /> : null}
-      {tab === 'hall' ? <HallOfFame state={state} actions={actions} /> : null}
-      {tab === 'reputation' ? <ReputationView state={state} /> : null}
-      {tab === 'rivals' ? <NemesisView state={state} actions={actions} initialRivalId={rivalFocus} /> : null}
-      {tab === 'heroes' ? <HeroGoat state={state} actions={actions} /> : null}
-      {tab === 'tournaments' ? <TournamentLegends state={state} actions={actions} /> : null}
-      {tab === 'directory' ? <GuildDirectory state={state} actions={actions} onOpenRival={openRival} /> : null}
-      {tab === 'artifacts' ? <ArtifactAlmanac state={state} actions={actions} /> : null}
-    </div>
+    <>
+      <RecordBook state={state} actions={actions} />
+      <ArtifactAlmanac state={state} actions={actions} />
+    </>
+  );
+}
+
+/** Records → Hall of fame: the guild's greats, then the tournament legends. */
+export function HallOfFameTab({ state, actions }) {
+  return (
+    <>
+      <HallOfFame state={state} actions={actions} />
+      <TournamentLegends state={state} actions={actions} />
+    </>
   );
 }

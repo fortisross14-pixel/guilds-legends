@@ -56,10 +56,10 @@ npm run build       # production build to dist/ (not committed)
 
 ```text
 src/App.jsx               Shell: save slots, the place (walkable scene or world map), the open section, the HUD, modals, the `actions` object (UI → engine)
-src/hud/                  The HUD and the one screen template: Hud.jsx (Orb, Ledger, PlaceTag), Section.jsx (the template), sections.jsx (which tabs each section has and what they show), ContactsScreen, CreditsScreen, dateLine.js
-src/places/               MapScreen (world map, wild-area cards), RestDial (the hall's rest timeline), GuildHallRooms, CalendarScreen, QuestLogScreen, NewsScreen, routes.js (route ids → a place or a section)
+src/hud/                  The HUD and the one screen template: Hud.jsx (Orb, Ledger, PlaceTag), Section.jsx (the template), sections.jsx (which tabs each section has and what they show), GuildScreen (Charter, Reputation, Patrons, Rivals, Finances), ContactsScreen, CreditsScreen, HireGate, dateLine.js
+src/places/               MapScreen (world map, wild-area cards), RestDial (the hall's rest timeline), GuildHallRooms (and the Treasury, shown in Guild → Finances), JournalScreen (Now, Quests, Contracts, Calendar), CalendarScreen, routes.js (route ids → a place or a section)
 src/components/           UI primitives and scene backdrop (UI.jsx), the icon set (Icon.jsx + iconPaths.js: game-icons.net and Phosphor), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door), ChapterEnd; touch: gestures.js (long-press, swipe, vibration), useDraggable.js (drag and drop onto data-drop targets), usePanZoom.js, DraggableHero.jsx
-src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, ArenaScreen + GuildChampionships, LoreCodex, …)
+src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, CodexScreen (Lore, Almanac, Bestiary, Guilds), ArenaScreen + GuildChampionships, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
   dialogue/               Data-driven conversations (opener variants, hub topics, goodbyes; choices with effects); format in dialogue/index.js, style and voices in docs/DIALOGUE.md; story.js and storyAct2.js hold the story scenes
@@ -86,7 +86,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   townLife.js             weekly town events and news, festivals, side jobs, friendly challenges and wagers
   institution.js          succession, mentors, branches, artifacts, ambitions, retirement, release
   contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
-  goals.js                goals, achievements, promotion, evaluateStateInPlace
+  goals.js                promotion, evaluateStateInPlace (the old chapter goals and achievements are gone)
   economy.js              upkeep (wages, rent, lease, rooms), patron loans and debt, travel
   hall.js                 the guild's home: renting a lot, buying it, expanding it (owned only), building rooms in its slots, weekly construction and expansions, next-upgrade suggestion
   connections.js          patron rewards and exclusive contracts, the Connections read model, run path scores
@@ -139,7 +139,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `activeEncounter` (combat in progress), `activeMissionGame` (non-combat challenge in progress), `pendingDecisions[]`, `pendingReports[]`: while any of these is set, time is paused
 - `tournaments[]` (a `signup: { heroId, fee, day }` until the start day), `guildTournaments[]`, `tournamentHistory[]`, `titleRecords`
 - `world: { currentLocationId, visitedLocationIds, activeTravel ({ fromId, toId, daysRemaining, totalDays, cost }), wildAreaId, exploration }`: `wildAreaId` is the wild area the guild is walking (null in town); `exploration` holds `positions[sceneId]`, `discovered[sceneId]`, `talked[conversationId]`, `npcs` (relationship), `wild[areaId] = { cleared, gathered, visited, bosses }` (cleared/gathered hold the week serial they return)
-- `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `goals[]`, `achievements[]`, `stats`, `legacy`
+- `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `stats`, `legacy`
 - `inventory` (itemId → count), each hero's `gear` (weapon/armor/accessory item ids; `artifact:<id>` for a worn artifact)
 - `moments[]`: reward screens queued for the UI (victory, levelUp, recruit); presentation only
 - `world.roadEvents`, `pendingRoadEvent`: planned and current road events
@@ -149,10 +149,10 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `officialLedger[]` entries can also come from contracts and challenges (`source`)
 - `pendingEvent` (a town event, festival or story card waiting for a choice), `news[]` + `newsUnread`
 - `sideJobs[]` (board), `activeSideJobs[]` (running; heroes have status `sidejob`), `wager`
-- `people: { [personId]: { met, talks, relationship, interview, bouts, movedOn, name, role, portrait, locationId, building, offers } }`: memory only (who is where comes from `people.js`); candidates carry `postedSerial`, `venue` (tavern | arena), `boutFirst`/`boutWon`; contracts carry `unlocked`/`accepted`/`giverId` (only `unlocked`, story and boss contracts show on the notice board)
+- `people: { [personId]: { met, talks, relationship, interview, asked, bouts, movedOn, name, role, portrait, locationId, building, offers } }`: memory only (who is where comes from `people.js`); candidates carry `postedSerial`, `venue` (tavern | arena), `boutFirst`/`boutWon`; contracts carry `unlocked`/`accepted`/`giverId` (only `unlocked`, story and boss contracts show on the notice board)
 - `story: { prologue ('house'|'done'), tutorial ('active'|'done'|'skipped'), missions: { m1: { status, step, route } }, evidence, codex, choices, scene (a queued story scene), chapter, chapterDone }`, `defeatedBosses[]`; story contracts carry `story` ('m3.contract'), boss contracts `bossId`; story heroes carry `storyId`
 - `seasons[year]`: per-year totals (`g` guild, `fam` per family, `spent` by category, `h[heroId]` per hero), ranks (`ranksStart`, `ranksEnd`, `best`, monthly `series`, every guild's end rank in `ladder`), `big`/`worst`, `broken[]` and the `review`; `records: { guild, hero }`, `streak`, `bossLog[]`; heroes carry `awards[]`, `signedFee` and `career.goldForGuild`
 - `settings.sound`, `settings.volume`
-- `tutorial`, `council` (last monthly report), `notifications[]`, `settings` (incl. `joystick`), `flags` (`flags.dialogue` holds flags set by conversations)
+- `tutorial`, `council` (last monthly report), `notifications[]`, `settings` (incl. `joystick`, `questMarker`), `flags` (`flags.dialogue` holds flags set by conversations)
 
 `validateGame(state)` returns a list of invariant violations; the UI runs it after every action. Keep it in sync with state shape changes.

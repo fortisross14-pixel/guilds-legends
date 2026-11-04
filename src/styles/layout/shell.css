@@ -15,9 +15,9 @@
 /* ------------------------------------------------------------- the HUD */
 .hud { display: contents; }
 
-.place-tag { position: fixed; z-index: var(--z-hud); top: var(--hud-top); left: calc(var(--safe-l) + var(--gutter)); display: grid; justify-items: start; gap: 6px; max-width: min(320px, calc(100vw - 200px)); pointer-events: none; }
+.place-tag { position: fixed; z-index: var(--z-hud); top: var(--hud-top); left: calc(var(--safe-l) + var(--gutter)); display: grid; justify-items: start; gap: 6px; max-width: calc(100vw - 2 * var(--gutter) - var(--safe-l) - var(--safe-r)); pointer-events: none; }
 .place-tag > * { pointer-events: auto; }
-.place-tag__name { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 4px 12px 4px 8px; border: 0; border-radius: var(--r-1); background: linear-gradient(90deg, rgba(8, 8, 12, .72), rgba(8, 8, 12, 0)); color: var(--text); text-align: left; transition: opacity var(--slow) var(--ease), background var(--slow) var(--ease); }
+.place-tag__name { max-width: min(320px, calc(100vw - 200px)); display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 4px 12px 4px 8px; border: 0; border-radius: var(--r-1); background: linear-gradient(90deg, rgba(8, 8, 12, .72), rgba(8, 8, 12, 0)); color: var(--text); text-align: left; transition: opacity var(--slow) var(--ease), background var(--slow) var(--ease); }
 .place-tag__name > span { display: grid; min-width: 0; }
 .place-tag__name strong { overflow: hidden; font: 700 var(--fs-4)/1.1 var(--font-display); text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 2px 10px #000; }
 .place-tag__name small { color: var(--text-dim); font-size: var(--fs-1); font-weight: 600; letter-spacing: .02em; white-space: nowrap; text-shadow: 0 1px 6px #000; }
@@ -25,7 +25,7 @@
 .place-tag__name.is-faded > span { opacity: 0; transition: opacity var(--slow) var(--ease); }
 .place-tag__name.is-faded .icon { opacity: .7; }
 .goal-line { display: flex; align-items: center; gap: 8px; max-width: 100%; min-height: 36px; margin: 0; padding: 6px 12px; border: 1px solid rgba(230, 191, 110, .45); border-radius: var(--r-1); background: rgba(10, 9, 14, .78); color: var(--gold-bright); font-size: var(--fs-2); font-weight: 600; text-align: left; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
-.goal-line span { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.goal-line, .goal-line span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .goal-line:hover, .goal-line:focus-visible { border-color: var(--gold-bright); outline: none; }
 .goal-line--status { border-color: var(--line-soft); color: var(--text-dim); font-weight: 500; }
 
@@ -107,7 +107,7 @@
 .section-empty { display: grid; justify-items: start; gap: 12px; max-width: 52ch; padding: 12px 0; color: var(--text-dim); }
 
 /* No boxes inside boxes: inside a section, older panels and cards become hairline bands. */
-.section .section__list :is(.win, .panel, .calendar, .chronicle-timeline, .mission-board, .mission-planner, .hall-summary, .filter-bar, .status-banner, .shop-list, .shop-detail, .goal-summary, .goat-summary, .facility-room, .hero-card, .event-ticket, .arena-hero, .tournament-record-strip, .title-archive > article, .nemesis-view__list, .guild-directory > aside, .building-grid, .town-notice, .travel-banner) { border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.section .section__list :is(.win, .panel, .calendar, .chronicle-timeline, .mission-board, .mission-planner, .hall-summary, .filter-bar, .shop-list, .shop-detail, .facility-room, .event-ticket, .arena-hero, .tournament-record-strip, .title-archive > article, .nemesis-view__list, .guild-directory > aside, .building-grid, .town-notice, .travel-banner) { border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .section .section__list .panel__header, .section .section__list .panel__body { padding-left: 0; padding-right: 0; }
 .section .screen-heading, .section .town-header, .section .menu-page__back { display: none; }
 .section .screen { animation: none; }
@@ -134,28 +134,19 @@
 .contact-row strong { font: 700 var(--fs-4)/1.15 var(--font-display); }
 .contact-row small { color: var(--text-dim); font-size: var(--fs-2); }
 
-/* -------------------------------------------------------- messages */
-.message-bar { position: fixed; z-index: var(--z-toast); top: calc(var(--hud-top) + 54px); left: 50%; width: min(560px, calc(100vw - 2 * var(--gutter))); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-1); background: var(--panel-bg); color: var(--text); text-align: left; transform: translateX(-50%); box-shadow: var(--shadow); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); animation: toast-in var(--med) var(--ease) both; }
-@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translateX(-50%); } }
-.message-bar p { margin: 0; font-size: var(--fs-2); }
-.message-bar--red { border-color: rgba(220, 95, 79, .6); }
-.message-bar--red > .icon:first-child { color: var(--bad); }
-.message-bar--green > .icon:first-child { color: var(--heal); }
-.message-bar--gold > .icon:first-child { color: var(--gold-bright); }
-
-.toast-stack { position: fixed; z-index: var(--z-toast); top: calc(var(--hud-top) + 54px); right: calc(var(--safe-r) + var(--gutter)); width: min(340px, calc(100vw - 2 * var(--gutter))); display: grid; gap: 8px; }
-.toast { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 12px; padding: 12px 14px; text-align: left; animation: slide-in-right var(--med) var(--ease) both; }
-.toast > span { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-size: var(--fs-1); font-weight: 700; background: rgba(255, 240, 210, .08); }
-.toast > div { display: grid; gap: 2px; }
-.toast strong { font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; }
-.toast p { margin: 0; font-size: var(--fs-2); }
-.toast > i { color: var(--text-faint); font-style: normal; }
-.toast--green > span { color: var(--heal); }
-.toast--red > span { color: var(--bad); }
-.toast--gold > span { color: var(--gold-bright); }
-.toast--purple > span { color: var(--xp); }
-.has-section .toast-stack { top: auto; bottom: calc(var(--safe-b) + 72px); }
-.toast-clear { min-height: 36px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(12, 11, 16, .85); color: var(--text-dim); font-size: var(--fs-1); }
+/* -------------------------------------------------------- notices */
+/* One notice at a time, one line, in the goal line's slot under the place tag
+   (the goal line steps aside while it shows). With a section open, it sits in the
+   header's free right side. Never over the scene's centre or a panel's content. */
+.notice { position: fixed; z-index: var(--z-toast); top: calc(var(--hud-top) + 50px); left: calc(var(--safe-l) + var(--gutter)); max-width: min(560px, calc(100vw - 2 * var(--gutter) - var(--safe-l) - var(--safe-r))); display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .9); color: var(--text); font-size: var(--fs-2); font-weight: 600; text-align: left; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); animation: notice-in var(--med) var(--ease) both; }
+.notice > span { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+@keyframes notice-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.notice--red { border-color: rgba(220, 95, 79, .6); }
+.notice--red > .icon { color: var(--bad); }
+.notice--green > .icon { color: var(--heal); }
+.notice--gold > .icon, .notice--purple > .icon { color: var(--gold-bright); }
+.has-notice .goal-line { visibility: hidden; }
+.has-section .notice { top: calc(var(--hud-top) + 4px); left: auto; right: calc(var(--safe-r) + var(--gutter)); max-width: min(360px, calc(100vw - 190px)); }
 
 /* Party plates (inside sections that take dropped heroes). */
 .party-rail { display: flex; align-items: flex-end; gap: 10px; }

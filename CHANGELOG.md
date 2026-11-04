@@ -2,6 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 8A, part 1: clarity and navigation
+
+- No more free gold at the start: the old chapter goals and achievements are gone (the story and guild tasks replaced them).
+- Skip works the same in every conversation: the first tap finishes the line, Skip then jumps to the next choice or the end. Lines type out. Narration has no empty name tag.
+- Notices show one at a time, in one place under the place tag, and go away on their own.
+- The World orb has a **Journal**: what is happening now (who is away, who is hurt, what is being built, the tournament, news), quests, contracts and the calendar.
+- The Guild orb has a **Guild** page: charter, status and promotion, paths, reputation, patrons, rivals and money.
+- Records is just rankings and history: Rankings (your ranks first; Guilds or Heroes; long-press a ladder to see what it measures), Seasons, Record book, Hall of fame, Mission log and a Codex (lore, almanac, bestiary, guilds).
+- Much less text everywhere: one row per hero in Party, a short ledger, a lean map card, short settings, a one-line new game screen and simple save slots. Keyboard: G guild, J journal.
+
 ## Unreleased — Dialogue pass
 
 - Conversations now feel like conversations. People speak first, say their name when you meet, and greet you like someone they know when you come back.

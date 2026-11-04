@@ -41,7 +41,7 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 
 /* Two-way choice (settings) */
 .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r-1); overflow: hidden; }
-.segmented button { min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: var(--text-dim); font: 600 var(--fs-2) var(--font-ui); cursor: pointer; }
+.segmented button { min-height: 44px; display: inline-flex; align-items: center; gap: 4px; padding: 0 12px; border: 0; background: transparent; color: var(--text-dim); font: 600 var(--fs-2) var(--font-ui); cursor: pointer; }
 .segmented button.is-selected { background: rgba(246, 210, 140, .16); color: var(--gold-bright); }
 
 /* Bottom panels: a grab handle; swipe the header down to close. */
@@ -123,7 +123,6 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 /* A disabled button still answers: tap or long-press says why */
 .why-wrap { display: inline-flex; cursor: help; }
 .why-wrap > .button:disabled { pointer-events: none; }
-.toast { touch-action: pan-y; }
 .gesture-tip { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border: 1px dashed var(--gold); border-radius: var(--r-1); color: var(--gold-bright); font-size: var(--fs-2); }
 .gesture-tip__hand { display: inline-block; font-size: var(--fs-4); animation: tip-nudge 1.6s ease-in-out infinite; }
 @keyframes tip-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }

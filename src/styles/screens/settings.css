@@ -1,15 +1,6 @@
 /* Campaign settings. */
 
-.settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s4); align-items: start; }
-.settings-form, .policy-stack { display: grid; gap: 12px; }
-.identity-settings { align-items: end; }
-.identity-settings .button { width: max-content; }
-.switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 8px 10px; color: var(--text); font-size: var(--fs-3); }
-.switch-row > span { display: grid; gap: 2px; }
-.switch-row input { flex: none; width: 22px; height: 22px; }
-.sound-setting { display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 4px 0; color: var(--text); font-size: var(--fs-3); }
-.sound-setting input[type='range'] { flex: 1; }
+.policy-stack { display: grid; gap: 12px; }
 
 @media (max-width: 899px) {
-  .settings-grid { grid-template-columns: 1fr; }
 }

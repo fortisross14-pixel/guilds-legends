@@ -50,10 +50,6 @@ export default function CalendarScreen({ state, actions, canAdvance = false }) {
           Next ›
         </Button>
       </header>
-      <p className="calendar__knowledge">
-        Today is week {today.week + 1}, day {(state.date.day || 0) + 1}. This calendar records what the guild has learned; ask around to uncover more.
-        {canAdvance ? '' : ' Time passes when you travel, rest or send the founder out; you can wait for a date from the Guild Hall.'}
-      </p>
       <div className="calendar__grid">
         {[0, 1, 2, 3].map((week) => {
           const date = { year: view.year, month: view.month, week };
@@ -107,9 +103,7 @@ export default function CalendarScreen({ state, actions, canAdvance = false }) {
             </Button>
           ) : null}
         </Panel>
-      ) : (
-        <p className="muted">Tap an entry for details.{canAdvance ? ' Time stops early if a battle, decision or tournament needs you.' : ''}</p>
-      )}
+      ) : null}
     </div>
   );
 }

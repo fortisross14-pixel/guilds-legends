@@ -7,7 +7,6 @@ import {
   assignArtifact,
   assignBranchCommander,
   assignMentor,
-  clearNotifications,
   clone,
   completePrologue,
   finishStoryScene,
@@ -43,15 +42,11 @@ import {
   getReport,
   getStoryView,
   hasHall,
-  upkeepBreakdown,
-  savingsRate,
-  propertyGoal,
   HOME_LOCATION_ID,
   INN_NIGHT_COST,
   travellingPartyIds,
   hashString,
   inheritAmbition,
-  inspectGoals,
   inspectHero,
   inspectMission,
   isGuildDefunct,
@@ -174,15 +169,6 @@ class ErrorBoundary extends Component {
   }
 }
 
-function formatPlayed(value) {
-  if (!value) return 'Never played';
-  try {
-    return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
-  } catch {
-    return 'Saved campaign';
-  }
-}
-
 // Title screen: the logo window and a Continue / New Game menu, one row per save slot.
 function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
   useMenuKeys();
@@ -195,7 +181,6 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
           <h1>
             Guilds <span className="title-logo__small">of</span> Legend
           </h1>
-          <p>Discover imperfect heroes. Give them a banner. Survive their failures. Preserve their names after they are gone.</p>
         </header>
         <nav className="save-menu" aria-label="Save slots">
           <ul className="cmd-menu" data-menu>
@@ -203,21 +188,17 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
               const meta = slots.find((item) => item.slot === slot);
               return (
                 <li className={`save-slot ${meta ? 'save-slot--filled' : 'save-slot--empty'}`} key={slot}>
-                  <button className="save-menu__main" onClick={() => (meta ? onLoad(slot) : onCreate(slot))} disabled={busy}>
-                    <span className="save-menu__verb">{meta ? 'Continue' : 'New Game'}</span>
-                    <span className="save-menu__slot">Slot {slot}</span>
+                  <button className="save-menu__main" onClick={() => (meta ? onLoad(slot) : onCreate(slot))} disabled={busy} aria-label={meta ? `Continue ${meta.guildName}, slot ${slot}` : `New game in slot ${slot}`}>
                     {meta ? (
-                      <span className="save-menu__meta">
-                        <strong>{meta.guildName}</strong>
-                        <span className="num">
-                          Year {meta.year} · {meta.tier} · Rank #{meta.rank} · {meta.activeHeroes} heroes · Fame <b>{meta.fame}</b> · Legacy {meta.legacy}
+                      <>
+                        <Asset id={CHARTERS[meta.charter]?.crest || 'crest.charter.free'} className="save-menu__crest" />
+                        <span className="save-menu__meta">
+                          <strong>{meta.guildName}</strong>
+                          <span className="num">{meta.year}</span>
                         </span>
-                        <small>Last played {formatPlayed(meta.lastPlayedAt)}</small>
-                      </span>
+                      </>
                     ) : (
-                      <span className="save-menu__meta">
-                        <small>Empty chronicle. Begin in Year 1187 as a founder looking for a first companion.</small>
-                      </span>
+                      <span className="save-menu__verb">New game</span>
                     )}
                   </button>
                   {meta ? (
@@ -230,11 +211,6 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
             })}
           </ul>
         </nav>
-        <footer className="home-footer">
-          <span>Saves stay in this browser</span>
-          <span>Made for 5–15 minute sessions</span>
-          <span>A campaign can span centuries</span>
-        </footer>
       </div>
     </div>
   );
@@ -242,7 +218,7 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
 
 // New game: only who you are (name and class). The guild itself is founded later,
 // when Cassian Rook's banner is in your hands (Prologue.jsx).
-function CreateCampaignModal({ open, slot, onClose, onCreate }) {
+function CreateCampaignModal({ open, onClose, onCreate }) {
   const [founderName, setFounderName] = useState('Rowan Vale');
   const [founderClass, setFounderClass] = useState('Guardian');
   const [skipTutorial, setSkipTutorial] = useState(false);
@@ -255,19 +231,9 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
     }
   }, [open]);
 
-  const classInfo = CLASSES[founderClass];
   return (
-    <Modal open={open} title="Who are you?" eyebrow={`Slot ${slot} · Dunmere, 1187`} onClose={onClose} width="medium">
+    <Modal open={open} title="Who are you?" onClose={onClose} width="medium">
       <div className="new-campaign new-campaign--founder">
-        <div className="founder-preview">
-          <HeroPortrait hero={{ name: founderName || 'Founder', classId: founderClass, primal: 'Fire', rarity: 'Common' }} size="md" showStatus={false} />
-          <div>
-            <h3>{founderName || 'Unnamed'}</h3>
-            <p>
-              Level 1 {founderClass} · {classInfo?.description}
-            </p>
-          </div>
-        </div>
         <div className="new-campaign__fields">
           <label>
             Your name
@@ -282,15 +248,10 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
             </select>
           </label>
         </div>
-        <p className="new-campaign__premise">
-          You are nobody yet: a small house in Dunmere, one bed, no guild. Tonight someone knocks on your door. You will found your guild before the night is over.
-        </p>
+        <p className="new-campaign__premise">Dunmere, 1187. Tonight someone knocks on your door.</p>
         <label className="new-campaign__skip">
           <input type="checkbox" checked={skipTutorial} onChange={(event) => setSkipTutorial(event.target.checked)} />
-          <span>
-            <strong>Skip the tutorial</strong>
-            <small>You still found the guild (name, motto, charter); then you start with the stable yard rented, Nessa hired and the Old Road cleared.</small>
-          </span>
+          <span>Skip the tutorial</span>
         </label>
         <Button variant="primary" size="lg" disabled={!founderName.trim()} onClick={() => onCreate({ founderName: founderName.trim(), founderClass, skipTutorial })}>
           Begin
@@ -775,55 +736,29 @@ function ReportModal({ report, onClose, openHero }) {
   );
 }
 
-// Notices show for a few seconds and then step aside (they stay in the list until dismissed),
-// so they never sit over the world the player is tapping.
-const NOTICE_MS = 6000;
-function Toasts({ notifications, onDismiss, onClear }) {
-  const [faded, setFaded] = useState(() => new Set());
-  const timers = useRef({});
+// Notices (docs/UX.md, "One interruption at a time"): one at a time, one line, in one
+// place: under the place tag, in the goal line's slot (or the section header's free
+// side). Messages from the UI come first, then the engine's notifications in order.
+// Each steps aside on its own; a tap dismisses it. They wait while an interruption shows.
+const NOTICE_MS = 4500;
+const NOTICE_ICON = { green: 'check', red: 'alert', gold: 'star', purple: 'star' };
+function NoticeQueue({ notifications, message, paused, onDismiss, onMessageDone }) {
+  const current = message
+    ? { id: `message-${message.at}`, tone: message.tone, title: message.text, message: true }
+    : (notifications || [])[0] || null;
+  const done = () => (current?.message ? onMessageDone() : onDismiss(current.id));
   useEffect(() => {
-    notifications.forEach((notification) => {
-      if (timers.current[notification.id]) return;
-      timers.current[notification.id] = window.setTimeout(() => setFaded((current) => new Set(current).add(notification.id)), NOTICE_MS);
-    });
-  }, [notifications]);
-  useEffect(() => () => Object.values(timers.current).forEach((timer) => window.clearTimeout(timer)), []);
-  const shown = notifications.filter((notification) => !faded.has(notification.id));
-  if (!shown.length) return null;
+    if (!current || paused) return undefined;
+    const timer = window.setTimeout(done, current.tone === 'red' ? 7000 : NOTICE_MS);
+    return () => window.clearTimeout(timer);
+  });
+  if (!current || paused) return null;
+  const text = current.message ? current.title : [current.title, current.text].filter(Boolean).join(' · ');
   return (
-    <div className="toast-stack" aria-live="polite">
-      {shown.slice(-3).map((notification) => (
-        <button
-          key={notification.id}
-          className={`toast toast--${notification.tone}`}
-          onClick={() => onDismiss(notification.id)}
-          // Swipe a notice sideways to dismiss it.
-          onPointerDown={(event) => (event.currentTarget.dataset.x = event.clientX)}
-          onPointerMove={(event) => {
-            const from = Number(event.currentTarget.dataset.x);
-            if (Number.isFinite(from) && event.buttons) event.currentTarget.style.transform = `translateX(${event.clientX - from}px)`;
-          }}
-          onPointerUp={(event) => {
-            const from = Number(event.currentTarget.dataset.x);
-            event.currentTarget.style.transform = '';
-            delete event.currentTarget.dataset.x;
-            if (Number.isFinite(from) && Math.abs(event.clientX - from) > 70) onDismiss(notification.id);
-          }}
-        >
-          <span>{notification.tone === 'green' ? '✓' : notification.tone === 'red' ? '!' : notification.tone === 'purple' ? '✦' : '◆'}</span>
-          <div>
-            <strong>{notification.title}</strong>
-            <p>{notification.text}</p>
-          </div>
-          <i>×</i>
-        </button>
-      ))}
-      {shown.length > 3 ? (
-        <button className="toast-clear" onClick={onClear}>
-          Clear {shown.length} notices
-        </button>
-      ) : null}
-    </div>
+    <button key={current.id} type="button" className={`notice notice--${current.tone || 'blue'}`} onClick={done} aria-live="polite" title={text}>
+      <Icon name={NOTICE_ICON[current.tone] || 'info'} size={16} tone="plain" />
+      <span>{text}</span>
+    </button>
   );
 }
 
@@ -855,16 +790,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [message, setMessage] = useState(null);
   // Short messages from anywhere (a disabled button saying why, src/components/UI.jsx toast).
   useEffect(() => {
-    const show = (event) => setMessage({ text: event.detail.text, tone: event.detail.tone || 'blue' });
+    const show = (event) => setMessage({ text: event.detail.text, tone: event.detail.tone || 'blue', at: Date.now() });
     window.addEventListener('gol:toast', show);
     return () => window.removeEventListener('gol:toast', show);
   }, []);
-  // Messages step aside after a few seconds (errors stay a little longer).
-  useEffect(() => {
-    if (!message) return undefined;
-    const timer = window.setTimeout(() => setMessage(null), message.tone === 'red' ? 7000 : 4500);
-    return () => window.clearTimeout(timer);
-  }, [message]);
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
@@ -875,7 +804,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       const errors = validateGame(nextState);
       if (errors.length) {
         console.error('State validation failed:', errors);
-        setMessage({ tone: 'red', text: `The action was blocked because state validation failed: ${errors[0]}` });
+        setMessage({ at: Date.now(), tone: 'red', text: `The action was blocked because state validation failed: ${errors[0]}` });
         return;
       }
       setState(nextState);
@@ -889,7 +818,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     (result, successText) => {
       if (!result) return;
       if (result.error) {
-        setMessage({ tone: 'red', text: result.error });
+        setMessage({ at: Date.now(), tone: 'red', text: result.error });
         return;
       }
       commitState(result.state, successText ? { tone: 'green', text: successText } : null);
@@ -906,12 +835,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         onSlotsChanged?.();
         if (!quiet)
           setMessage({
+            at: Date.now(),
             tone: result.compacted ? 'gold' : 'green',
             text: result.compacted ? 'Campaign saved with older history compacted.' : 'Campaign saved.',
           });
       } else {
         setSaveStatus('error');
-        setMessage({ tone: 'red', text: result.error });
+        setMessage({ at: Date.now(), tone: 'red', text: result.error });
       }
       return result;
     },
@@ -1113,7 +1043,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         commitState(next);
       },
       updateSettings: (patch) => commitState(updateSettings(state, patch)),
-      inspectGoals: () => commitState(inspectGoals(state)),
       saveNow: () => saveNow(false),
       returnHome: async () => {
         await saveNow(true);
@@ -1136,7 +1065,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
           const errors = validateGame(imported);
           if (errors.length) throw new Error(errors[0]);
         } catch (error) {
-          setMessage({ tone: 'red', text: `Import failed: ${error.message}` });
+          setMessage({ at: Date.now(), tone: 'red', text: `Import failed: ${error.message}` });
           return;
         }
         const confirmed = window.confirm(`Import "${imported.guild.name}" (Year ${imported.date.year})?
@@ -1150,16 +1079,15 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         if (result.ok) {
           setSaveStatus('saved');
           onSlotsChanged?.();
-          setMessage({ tone: 'green', text: `Backup imported into slot ${slot}.` });
+          setMessage({ at: Date.now(), tone: 'green', text: `Backup imported into slot ${slot}.` });
         } else {
           setSaveStatus('error');
-          setMessage({ tone: 'red', text: `Backup loaded, but saving to slot ${slot} failed: ${result.error}` });
+          setMessage({ at: Date.now(), tone: 'red', text: `Backup loaded, but saving to slot ${slot} failed: ${result.error}` });
         }
       },
       // Cancel any pending autosave first so it cannot write the slot back mid-delete.
       deleteCurrent: () => onDeleteCurrent(() => window.clearTimeout(autosaveTimer.current)),
       dismissNotification: (id) => commitState(dismissNotification(state, id)),
-      clearNotifications: () => commitState(clearNotifications(state)),
     }),
     [state, setState, slot, commitState, applyResult, saveNow, onReturnHome, onDeleteCurrent, onSlotsChanged],
   );
@@ -1185,12 +1113,11 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     setLedgerOpen(false);
     if (route.section) {
       setSectionState({ id: route.section, tab: route.tab ?? null, view: route.view || null });
-      if (route.section === 'records' && route.tab === 'goals' && !state.flags.goalsInspected) actions.inspectGoals();
       return;
     }
     if (route.view === 'interior') {
       if (!INTERIORS[route.building] || !townFor(locationId)?.buildings.some((item) => item.building === route.building)) {
-        setMessage({ tone: 'blue', text: `There is no ${BUILDINGS[route.building]?.name.toLowerCase() || 'such place'} in ${LOCATION_BY_ID[locationId]?.name || 'this town'}.` });
+        setMessage({ at: Date.now(), tone: 'blue', text: `There is no ${BUILDINGS[route.building]?.name.toLowerCase() || 'such place'} in ${LOCATION_BY_ID[locationId]?.name || 'this town'}.` });
         return;
       }
       if (view === 'scene') keepPosition();
@@ -1207,7 +1134,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     if (ui.open === 'shop') setSection({ id: 'shop', tab: ui.kind || null });
     else if (ui.open === 'inn') setSection({ id: 'inn', tab: null });
     else if (ui.open === 'arena') setSection({ id: 'arena', tab: ui.tab || null });
-    else if (ui.open === 'records') navigate({ section: 'records', tab: ui.tab || 'rankings' });
+    else if (ui.open === 'records') navigate({ section: 'records', tab: ui.tab || 'rankings', view: ui.view || null });
     else if (ui.open === 'news') navigate('news');
     else if (ui.open === 'noticeBoard') navigate('missions');
     else if (ui.open) navigate(ui.open);
@@ -1238,24 +1165,18 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     { id: 'party', label: 'Party', icon: 'party', badge: injured || null, onSelect: () => navigate('heroes') },
     { id: 'items', label: 'Items', icon: 'bag', onSelect: () => navigate('items') },
     { id: 'hall', label: hasHall(state) ? 'Guild Hall' : 'Empty lot', icon: 'castle', badge: state.pendingDecisions.length || hallDone || null, onSelect: () => navigate('hall') },
-    { id: 'quests', label: 'Quests', icon: 'quill', badge: story.active?.current?.canTalk ? true : null, onSelect: () => navigate('quests') },
+    { id: 'guild', label: 'Guild', icon: 'banner', onSelect: () => navigate('guild') },
     { id: 'contacts', label: 'Contacts', icon: 'contacts', onSelect: () => navigate('contacts') },
   ];
   const worldItems = [
     { id: 'map', label: 'Map', icon: 'map', onSelect: () => navigate('map') },
-    { id: 'calendar', label: 'Calendar', icon: 'calendar', badge: state.newsUnread || null, onSelect: () => navigate('calendar') },
+    { id: 'journal', label: 'Journal', icon: 'quill', badge: story.active?.current?.canTalk || state.newsUnread ? true : null, onSelect: () => navigate(story.active?.current?.canTalk ? 'quests' : 'journal') },
     { id: 'records', label: 'Records', icon: 'trophy', onSelect: () => navigate('rankings') },
     { id: 'system', label: 'System', icon: 'gear', onSelect: () => navigate('menu') },
   ];
-  const costs = upkeepBreakdown(state);
-  const saving = savingsRate(state);
-  const goal = propertyGoal(state);
+  // The ledger: a short summary; each line opens its screen (docs/UX.md).
   const ledgerRows = [
-    { id: 'gold', icon: 'coin', label: 'Gold', value: summary.crowns.toLocaleString(), num: summary.crowns, onOpen: () => navigate('treasury') },
-    // Money: what the month costs (rent, rooms, wages), what the guild saves, and the property goal.
-    { id: 'costs', icon: 'scroll', label: 'Costs a month', sub: [costs.hall.lease ? `rent ${costs.hall.lease}` : null, costs.hall.roomTotal ? `rooms ${costs.hall.roomTotal}` : null, `wages ${costs.wages}`].filter(Boolean).join(' · '), value: `−${(costs.total + costs.loan).toLocaleString()}`, num: costs.total + costs.loan, quiet: true, onOpen: () => navigate('treasury') },
-    { id: 'saving', icon: 'chest', label: 'Saving', sub: saving === null ? 'measured from next month' : 'average of the last months', value: saving === null ? '—' : `${saving >= 0 ? '+' : '−'}${Math.abs(saving).toLocaleString()}/mo`, quiet: true, onOpen: () => navigate('treasury') },
-    ...(goal ? [{ id: 'goal', icon: goal.kind === 'buy' ? 'castle' : 'map', label: goal.kind === 'buy' ? 'Toward the deed' : 'Toward more land', sub: !goal.missing ? 'ready to buy' : goal.months ? `about ${goal.months} months at this rate` : goal.measured ? 'the treasury is not growing' : `${goal.price.toLocaleString()} gold`, value: `${Math.floor((Math.min(goal.savings, goal.price) / goal.price) * 100)}%`, quiet: true, onOpen: () => navigate('treasury') }] : []),
+    { id: 'gold', icon: 'coin', label: 'Gold', value: summary.crowns.toLocaleString(), num: summary.crowns, onOpen: () => navigate('finances') },
     { id: 'fame', icon: 'laurel', label: 'Fame', value: summary.fame.toLocaleString(), num: summary.fame, onOpen: () => navigate('reputation') },
     ...LADDERS.map((ladder) => ({
       id: ladder,
@@ -1265,20 +1186,20 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       num: summary.ranks[ladder].rank,
       rank: true,
       change: summary.movement[ladder] || 0,
-      onOpen: () => navigate({ section: 'records', tab: 'rankings', view: 'guilds' }),
+      onOpen: () => navigate('rankings'),
     })),
-    { id: 'title', icon: 'banner', label: 'Status', value: summary.statusTitle, onOpen: () => navigate({ section: 'records', tab: 'rankings', view: 'path' }) },
-    { id: 'known', icon: 'star', label: 'Known for', value: specializationTitle(state) || 'Nothing yet', onOpen: () => navigate('reputation') },
+    { id: 'title', icon: 'banner', label: 'Status', value: summary.statusTitle, onOpen: () => navigate('guild') },
+    { id: 'known', icon: 'star', label: 'Known for', value: specializationTitle(state) || '—', onOpen: () => navigate('reputation') },
   ];
 
-  // Keyboard shortcuts on desktop: P party, I items, Q quests, M map, R records, Esc system.
+  // Keyboard shortcuts on desktop: P party, I items, G guild, J journal, Q quests, M map, R records, Esc system.
   useEffect(() => {
     const onKey = (event) => {
       if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
       if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName || '')) return;
       if (document.querySelector('.modal-layer, .dialogue, .story-scene')) return;
       const key = event.key.toLowerCase();
-      const routes = { p: 'heroes', i: 'items', q: 'quests', m: 'map', r: 'rankings' };
+      const routes = { p: 'heroes', i: 'items', g: 'guild', j: 'journal', q: 'quests', m: 'map', r: 'rankings' };
       if (routes[key]) {
         event.preventDefault();
         if (key === 'm' && view === 'map' && !section) goBack();
@@ -1362,7 +1283,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
   return (
     <div
-      className={`game game--${view}${section ? ' has-section' : ''}${interruption ? ' has-interruption' : ''}`}
+      className={`game game--${view}${section ? ' has-section' : ''}${interruption ? ' has-interruption' : ''}${!interruption && (message || state.notifications?.length) ? ' has-notice' : ''}`}
       onPointerDown={(event) => {
         edge.current = event.clientX < 24 ? { x: event.clientX, y: event.clientY } : null;
       }}
@@ -1403,13 +1324,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         </div>
       ) : null}
 
-      {message ? (
-        <button className={`message-bar message-bar--${message.tone}`} onClick={() => setMessage(null)}>
-          <Icon name={message.tone === 'red' ? 'alert' : message.tone === 'green' ? 'check' : 'info'} size={16} tone="plain" />
-          <p>{message.text}</p>
-          <Icon name="close" size={16} tone="plain" />
-        </button>
-      ) : null}
+      <NoticeQueue notifications={state.notifications} message={message} paused={Boolean(interruption)} onDismiss={actions.dismissNotification} onMessageDone={() => setMessage(null)} />
 
       {/* One interruption at a time, in priority order (docs/UX.md). */}
       {interruption === 'combat' ? <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} /> : null}
@@ -1437,7 +1352,6 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <CouncilReportModal state={state} open={interruption === 'council'} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
       <RefoundModal state={state} open={defunct && !interruption} onRefound={actions.refoundGuild} onReturnHome={actions.returnHome} />
       <HeroStatusScreen state={state} heroId={heroModalId} onClose={() => setHeroModalId(null)} onSelect={setHeroModalId} actions={actions} />
-      <Toasts notifications={state.notifications} onDismiss={actions.dismissNotification} onClear={actions.clearNotifications} />
     </div>
   );
 }
@@ -1555,7 +1469,7 @@ export default function App() {
             <i>×</i>
           </button>
         ) : null}
-        <CreateCampaignModal open={Boolean(creatingSlot)} slot={creatingSlot} onClose={() => setCreatingSlot(null)} onCreate={createCampaign} />
+        <CreateCampaignModal open={Boolean(creatingSlot)} onClose={() => setCreatingSlot(null)} onCreate={createCampaign} />
       </>
     );
   }
