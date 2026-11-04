@@ -1,12 +1,15 @@
-// Choices every patron representative offers: how the patron sees you (by
-// standing) and a monthly gift. `voice` holds the lines for each standing.
+// Topics every patron representative offers in their hub: how the patron sees
+// the guild (one answer per standing) and a monthly gift. `voice` holds each
+// answer as lines in the representative's own voice. `name` is how the player
+// says it ("the Trade House").
 
-export function patronChoices(patronId, name, voice) {
+export function patronTopics(patronId, name, voice) {
+  const ask = `Where do we stand with ${name}?`;
   return [
-    { text: `How does the ${name} see us?`, if: { patronAtLeast: { [patronId]: 'ally' } }, reply: [voice.ally] },
-    { text: `How does the ${name} see us?`, if: { patronAtLeast: { [patronId]: 'partner' }, patronBelow: { [patronId]: 'ally' } }, reply: [voice.partner] },
-    { text: `How does the ${name} see us?`, if: { patronAtLeast: { [patronId]: 'contact' }, patronBelow: { [patronId]: 'partner' } }, reply: [voice.contact] },
-    { text: `How does the ${name} see us?`, if: { patronBelow: { [patronId]: 'contact' } }, reply: [voice.stranger] },
-    { text: `A gift for the ${name} (50 G)`, if: { patronGiftReady: patronId }, effects: [{ patronGift: patronId }], reply: [voice.gift] },
+    { id: 'standing', text: ask, if: { patronAtLeast: { [patronId]: 'ally' } }, lines: voice.ally },
+    { id: 'standing', text: ask, if: { patronAtLeast: { [patronId]: 'partner' }, patronBelow: { [patronId]: 'ally' } }, lines: voice.partner },
+    { id: 'standing', text: ask, if: { patronAtLeast: { [patronId]: 'contact' }, patronBelow: { [patronId]: 'partner' } }, lines: voice.contact },
+    { id: 'standing', text: ask, if: { patronBelow: { [patronId]: 'contact' } }, lines: voice.stranger },
+    { id: 'gift', text: `Please accept a gift for ${name}. (50 gold)`, if: { patronGiftReady: patronId }, effects: [{ patronGift: patronId }], lines: voice.gift },
   ];
 }

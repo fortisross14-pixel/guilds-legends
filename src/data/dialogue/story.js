@@ -1,108 +1,133 @@
 // Story scenes for The Last Banner (docs/STORY.md; missions in src/data/story.js).
-// Format: src/data/dialogue/index.js. A scene step completes when a choice is
-// picked (unless the choice has { wait: true }). Dialogue stays short: the
-// history lives in the Lore codex (src/data/lore.js).
-import { OFFICIAL_STORY } from '../lore.js';
+// Format: src/data/dialogue/index.js; style and voices: docs/DIALOGUE.md.
+// A scene step completes when a decision is picked (unless it has { wait: true }).
+// Decision scenes (`decide: true`) let the player ask questions first; the
+// answers never come before the question. Lines authored in docs/STORY.md
+// (the prologue, the Act I ending, Wren's banner scene) are kept as written.
+// History lives in the Lore codex (src/data/lore.js).
 
 const S = (id) => `portrait.story.${id}`;
 const NARRATION = { speaker: '', portrait: 'portrait.poi' };
 const narrate = (text) => ({ ...NARRATION, text });
 const you = (text) => ({ speaker: 'You', portrait: 'portrait.story.founder', text });
 
-// Mara noticed what you did with the body (the prologue's 'hide' choice).
-const maraLines = (noticed) => [
-  'So you’re the one who opened the door to a dying man. Dunmere talks, love. I’m Mara. I run the Wayfarer.',
-  ...(noticed ? ['You kept your head that night, and your mouth shut. I noticed. That’s worth something in this town.'] : []),
-  'Every guild starts in a tavern. Heroes drink here, brag here, and look for work here.',
-  you('What do people say about the Broken Lantern?'),
-  `The official story? ${OFFICIAL_STORY} That’s what the heralds say, anyway.`,
-  'I was married to an adventurer once. He never came back either. So I listen when people tell stories about the woods.',
-  'Want a first companion? There’s a girl by the door. Hunter, good with a bow. No guild will touch her.',
-];
-const MARA_CHOICES = [{ text: 'Introduce me', effects: [{ codex: ['official-story', 'mara-fen'] }], reply: ['“Nessa! Somebody wants to meet you.” She waves you toward the door.'] }];
-
 export default {
   // ---------------------------------------------------------------- Act I: A Guild of Nobodies
+  // Gideon Rusk: gruff landlord, money-minded, secretly decent.
   'story.m1.stable': {
     speaker: 'Gideon Rusk',
     portrait: S('stablemaster'),
+    decide: true,
+    leave: 'I need to think about it.',
     variants: [
       {
-        lines: [
-          'You’re the one with the banner. Half the plaza saw the mark on your door.',
-          'This was a stable, then a guild office, then nothing. The stable came down years ago; what is left is the yard. A cabin in the middle with two bunks, a leaky roof, and room for five more buildings if you ever have the coin.',
-          you('I need a hall. A real one.'),
-          'Everybody needs something. A season up front and it’s yours to build on. Rent after that is monthly, like honest people. Save long enough and I might even sell.',
-        ],
+        lines: ['You’re the one with the banner. Half the plaza saw the mark on your door.', 'And now you’re staring at my yard. Thinking of renting it?'],
         choices: [
-          { text: 'Pay a season up front (160 gold)', if: { goldAtLeast: 160 }, effects: [{ rentLot: 160 }], reply: ['He counts it twice. “Keys. Don’t burn it down.”'] },
+          { text: 'I’ll pay the season up front. (160 gold)', if: { goldAtLeast: 160 }, effects: [{ rentLot: 160 }], reply: ['He counts it twice. “Keys. Don’t burn it down.”'] },
           {
-            text: 'Haggle: 100 gold, and the Trade House hears you were fair',
+            text: 'Make it 100, and the Trade House hears you were fair.',
             if: { charter: 'merchant', goldAtLeast: 100 },
             effects: [{ rentLot: 100 }, { patron: { id: 'trade', amount: 3 } }],
-            reply: ['“A Merchant House man. Fine. Fair’s fair, and the Trade House pays its friends.”'],
+            reply: ['“A Merchant House type. Fine. Fair’s fair, and the Trade House pays its friends.”'],
           },
           {
-            text: 'Run off the squatters in the cellar (1 day)',
+            text: 'You’ve got squatters in the cellar. Let us clear them out. (1 day)',
             if: { charter: 'free' },
             effects: [{ rentLot: 0 }, { passDays: 1 }],
-            reply: ['By evening the cellar is empty and Gideon is impressed despite himself. “Keep it, then. Rent starts next month.”'],
+            reply: ['By evening the cellar is empty, and Gideon is impressed despite himself.', '“Keep it, then. Rent starts next month.”'],
           },
           {
-            text: 'Ask the neighbours to help fix the roof (1 day)',
+            text: 'The neighbours will help us fix your roof. (1 day)',
             if: { charter: 'shield' },
             effects: [{ rentLot: 0 }, { passDays: 1 }, { reputation: { region: 'Crownlands', amount: 4 } }],
-            reply: ['Half of Kiln Row turns up with ladders. Gideon watches, shaking his head. “Yours. Somehow.”'],
+            reply: ['Half of Kiln Row turns up with ladders. Gideon watches, shaking his head.', '“Yours. Somehow.”'],
           },
           {
-            text: 'Show him the council deed: he owes back taxes',
+            text: 'This council deed says you owe back taxes. Shall we talk price?',
             if: { charter: 'scholars', goldAtLeast: 80 },
             effects: [{ rentLot: 80 }],
             reply: ['He reads it twice and sighs. “Eighty, then, and you never saw that deed.”'],
           },
-          { text: 'Work it off: clear the loft and patch the roof (2 days)', effects: [{ rentLot: 0 }, { passDays: 2 }], reply: ['Two days of hauling and hammering. “Fair’s fair,” Gideon says. “It’s yours.”'] },
+          { text: 'I can’t pay yet. Let me work it off: the loft, the roof. (2 days)', effects: [{ rentLot: 0 }, { passDays: 2 }], reply: ['Two days of hauling and hammering.', '“Fair’s fair,” Gideon says. “It’s yours.”'] },
         ],
       },
     ],
+    topics: [
+      { id: 'place', text: 'What is this place?', lines: ['A stable, then a guild office, then nothing. The stable came down; the cabin didn’t.', 'Two bunks in there, a leaky roof, and room for five more buildings if you ever have the coin.'] },
+      { id: 'terms', text: 'What would it cost me?', lines: ['A season up front and it’s yours to build on.', 'Rent after that is monthly, like honest people.'] },
+      { id: 'sell', text: 'Would you ever sell it?', lines: ['Save long enough and I might. Long enough is a long time.'] },
+    ],
   },
+
+  // Mara Fen: practical, skeptical, dry humor; calls people "love".
   'story.m2.mara': {
     speaker: 'Mara Fen',
     portrait: S('mara'),
+    decide: true,
+    leave: 'Maybe later.',
     variants: [
-      { if: { flag: 'maraTrust' }, lines: maraLines(true), choices: MARA_CHOICES },
-      { lines: maraLines(false), choices: MARA_CHOICES },
+      {
+        if: { flag: 'maraTrust' },
+        lines: [
+          'So you’re the one who opened the door to a dying man. Dunmere talks, love. I’m Mara; I run the Wayfarer.',
+          'You kept your head that night, and your mouth shut. I noticed. That’s worth something in this town.',
+          'Looking for a first companion? There’s a girl by the door. Good with a bow. No guild will touch her.',
+        ],
+        choices: [{ text: 'Introduce me.', effects: [{ codex: ['official-story', 'mara-fen'] }], reply: ['“Nessa! Somebody wants to meet you.” She waves you toward the door.'] }],
+      },
+      {
+        lines: [
+          'So you’re the one who opened the door to a dying man. Dunmere talks, love. I’m Mara; I run the Wayfarer.',
+          'Looking for a first companion? There’s a girl by the door. Good with a bow. No guild will touch her.',
+        ],
+        choices: [{ text: 'Introduce me.', effects: [{ codex: ['official-story', 'mara-fen'] }], reply: ['“Nessa! Somebody wants to meet you.” She waves you toward the door.'] }],
+      },
+    ],
+    topics: [
+      { id: 'lantern', text: 'What do people say about the Broken Lantern?', effects: [{ codex: 'official-story' }], lines: ['The official story? Their captain sold his luck to the Hollow Warden for one great victory.', 'Then the Warden came to collect. That’s what the heralds say, anyway.'] },
+      { id: 'doubt', text: 'You don’t sound like you believe it.', lines: ['I was married to an adventurer once. He never came back either.', 'So I listen when people tell stories about the woods. Most of them are wrong.'] },
+      { id: 'tavern', text: 'Why does every guild start in a tavern?', lines: ['Heroes drink here, brag here, and look for work here. Mostly the first two.'] },
     ],
   },
+
+  // Nessa Thornfield: eager, guarded about her brother.
   'story.m2.nessa': {
     speaker: 'Nessa Thornfield',
     portrait: S('nessa'),
+    decide: true,
+    leave: 'Let me think about it.',
     variants: [
       {
-        lines: [
-          'Mara says you’ve got a banner and no guild. I’ve got a bow and no guild. Maybe we can fix both.',
-          you('Why won’t the guilds hire you?'),
-          'Too young, too local, too stubborn. Pick one. I’ve guided caravans through the Thornwood since I was twelve.',
-          'I want to see the world past the Old Road. And there’s someone I’m looking for. That can wait.',
-        ],
+        lines: ['Mara says you’ve got a banner and no guild. I’ve got a bow and no guild.', 'Maybe we can fix both?'],
         choices: [
           { text: 'Join us. There’s a bed in the hall for you.', if: { freeBed: true }, effects: [{ storyRecruit: 'nessa' }, { codex: 'nessa-thornfield' }], reply: ['“No fee. Pay me when we win something.”'] },
           { text: 'I’ll make room for you first.', if: { freeBed: false }, effects: [{ wait: true }], reply: ['“I’ll be here. Don’t take too long.”'] },
         ],
       },
     ],
+    topics: [
+      { id: 'why', text: 'Why won’t the guilds hire you?', lines: ['Too young, too local, too stubborn. Pick one.', 'I’ve guided caravans through the Thornwood since I was twelve.'] },
+      { id: 'want', text: 'What do you want out of this?', lines: ['To see the world past the Old Road.', 'And there’s someone I’m looking for. That can wait.'] },
+      { id: 'who', text: 'Who are you looking for?', lines: ['…I said it can wait.'] },
+    ],
   },
+
+  // Corwin Pell: brisk merchant; counts everything.
   'story.m3.corwin': {
     speaker: 'Corwin Pell',
     portrait: 'portrait.dunmere.merchant',
+    decide: true,
+    leave: 'Not today.',
     variants: [
       {
-        lines: [
-          'You’re the new banner. Good. I need someone with nothing to lose and a sword to lose it with.',
-          'Wolves on the Old Road. Bold ones. They take a mule in daylight, and somebody is driving them toward my wagons.',
-          'The contract is on the Notice Board. Clear the road and the Trade House will remember your name.',
-        ],
-        choices: [{ text: 'We’ll take it.', effects: [{ flag: 'oldRoadIntroduced' }, { open: 'noticeBoard' }] }],
+        lines: ['You’re the new banner. Good. I need someone with nothing to lose and a sword to lose it with.'],
+        choices: [{ text: 'We’ll take it.', effects: [{ flag: 'oldRoadIntroduced' }, { open: 'noticeBoard' }], reply: ['“The contract’s on the Notice Board. My seal’s on it. Don’t make me regret the wax.”'] }],
       },
+    ],
+    topics: [
+      { id: 'job', text: 'What’s the job?', lines: ['Wolves on the Old Road. Bold ones. They take a mule in daylight.', 'And somebody is driving them toward my wagons.'] },
+      { id: 'pay', text: 'What’s in it for us?', lines: ['Coin, and the Trade House’s memory. The second is worth more.'] },
+      { id: 'who', text: 'Who would drive wolves at wagons?', lines: ['Someone who wants the road closed. I’d love to know who. Find out and I’ll pay extra.'] },
     ],
   },
   'story.m3.thanks': {
@@ -110,20 +135,22 @@ export default {
     portrait: 'portrait.dunmere.merchant',
     variants: [
       {
-        lines: ['You cleared the Old Road. My wagons made the run at dawn, and every driver knew whose work made it possible.', 'Here. And my name on your door, if anyone asks.'],
+        lines: ['There they are! My wagons made the run at dawn, and every driver knew whose work made it possible.', 'Here. And my name on your door, if anyone asks.'],
         choices: [{ text: 'Business is welcome.', effects: [{ gold: 40 }], reply: ['“The Trade House will hear about this. So will Dunmere.”'] }],
       },
     ],
+    leave: false,
   },
+
+  // Bram Calder: cocky, competitive.
   'story.m4.bram': {
     speaker: 'Bram Calder',
     portrait: S('bram'),
+    decide: true,
+    leave: 'I’ll think about it.',
     variants: [
       {
-        lines: [
-          'So you’re the guild everybody’s whispering about. A banner, a hunter and a house. Terrifying.',
-          'The Harvest Melee is coming. Real fighters, real guilds. Sign up at the arena and I’ll show you what a Duelist looks like.',
-        ],
+        lines: ['So you’re the guild everybody’s whispering about. A banner, a hunter and a house. Terrifying.', 'The Harvest Melee is coming. Sign up, and I’ll show you what a Duelist looks like.'],
         choices: [
           {
             text: 'See you in the ring.',
@@ -144,10 +171,17 @@ export default {
         ],
       },
     ],
+    topics: [
+      { id: 'melee', text: 'What’s the Harvest Melee?', lines: ['Real fighters, real guilds, one crowd. The first proving ground of the west.'] },
+      { id: 'why', text: 'Why do you care about us?', lines: ['I don’t. I care about beating someone everybody’s talking about.'] },
+    ],
   },
+
+  // The Act I ending (docs/STORY.md): authored; kept as written.
   'story.m4.warning': {
     speaker: 'The representative',
     portrait: S('representative'),
+    leave: false,
     variants: [
       {
         if: { flag: 'sawEnforcer' },
@@ -163,7 +197,7 @@ export default {
         ],
         choices: [
           { text: '(Say nothing.)', effects: [{ choice: { warning: 'silent' } }] },
-          { text: '“Tell Lord Thorne the banner stays.”', effects: [{ choice: { warning: 'defiant' } }, { fame: 2 }] },
+          { text: 'Tell Lord Thorne the banner stays.', effects: [{ choice: { warning: 'defiant' } }, { fame: 2 }] },
         ],
       },
       {
@@ -178,7 +212,7 @@ export default {
         ],
         choices: [
           { text: '(Say nothing.)', effects: [{ choice: { warning: 'silent' } }] },
-          { text: '“Tell Lord Thorne the banner stays.”', effects: [{ choice: { warning: 'defiant' } }, { fame: 2 }] },
+          { text: 'Tell Lord Thorne the banner stays.', effects: [{ choice: { warning: 'defiant' } }, { fame: 2 }] },
         ],
       },
     ],
