@@ -33,7 +33,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - **Time moves when you act** (travel, missions, training, resting), not through "+1 month / +1 year" buttons. A calendar shows upcoming events.
 - **Combat is per-hero, turn-based:** each hero picks a command (Attack, Skill, Item, Defend) and a target, the enemies are visible on screen, and auto-battle is available for routine fights.
 - **Rewards are moments:** victory screens, level-up screens, loot, rank-change fanfares and recruit introductions.
-- **Rankings are the hook:** three clear ladders (Strength, Legacy, Official tournament points) with movement arrows and a status title from "Unknown" to "Global Power".
+- **Rankings are the hook:** three clear ladders (Strength, Legacy, Official tournament points) with movement arrows and a status title from "Unknown" to "Elite Power" (status tiers renamed by tournaments-circuits: Initiation, Champion, Elite).
 - **The first 10 minutes are scripted** to teach the game, not the menus.
 
 ## How to work
@@ -144,7 +144,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
    - **Official:** tennis-style points from tournaments, counting only the last 12 months. The points table scales with tier and round reached (e.g. Regional winner 250, National 1000, Global 2000, World Conclave 4000).
 
    Replace the old composite score, and update rival guilds and rival heroes with the same rules.
-2. **Status titles** from the Official rank: Unknown → Contender → Regional Power → National Power → Global Power. Tier promotion uses the Official ladder (plus the existing contract/fame requirements where they still make sense).
+2. **Status titles** from the Official rank: Unknown → Contender → Initiation Power → Champion Power → Elite Power. Tier promotion uses the Official ladder (plus the existing contract/fame requirements where they still make sense).
 3. **Make it visible:**
    - Store a monthly snapshot of rank numbers (small).
    - Show movement arrows (▲3 / ▼1), a small rank-history sparkline, and "312 points to pass <guild> (#7)".
@@ -167,7 +167,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 
 - Official points: the winner's points by circuit (Regional 250, National 1000, Global 2000, World Conclave 4000) × a finish share (champion 100%, runner-up 60%, semifinal 36%, quarterfinal 18%, round of 16 9%). Finishes come from bracket wins. Guild championships use the same table. A guild's Official total is its heroes' points plus its championship points from the last 12 months.
 - Legacy: mission difficulty × grade weight (Legendary 2, Great 1.5, Success 1, Partial 0.4) goes to the guild, and half of that to each participant. Titles add 150 (guild), 150 (hero individual title) and 60 (hero guild title). Rivals earn mission Legacy from their own simulated missions, seeded from their earlier career points.
-- Status titles: Unknown with 0 Official points, then Contender. Regional, National and Global Power mean the guild is in the top 5 of that tier's Official ladder and has reached that tier.
+- Status titles: Unknown with 0 Official points, then Contender. Initiation, Champion and Elite Power mean the guild is in the top 5 of that tier's Official ladder and has reached that tier.
 - Promotion: the old composite-rank requirement is now an Official-ladder rank (the same thresholds: top 8 Regional, top 4 National) plus at least some Official points. Fame, contracts, feats and years still apply.
 - The top bar and the Herald show ranks in the guild's current tier. The Herald can switch scope.
 - Rankings moments: one every season (each 3 months, compared with 3 months earlier) and one after every tournament the player entered. A fanfare moment plays when the status title changes.

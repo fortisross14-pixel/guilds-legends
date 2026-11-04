@@ -188,7 +188,7 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **Assign 2 heroes and rest a month** | 9 (room tile, 2 × pick from a list, back, Rest, 1 month…) | **5** (2 drags onto room tiles, Rest, drag the dial, Rest) | rooms take dropped heroes; the rest dial snaps to events |
 | **Hire a recruit** | 3 (Tavern, scroll, Hire) | **3** (Tavern, swipe, Hire) | swipe cards; disabled Hire says why |
 | **Contract → battle → result** (2 heroes, 2 rounds) | 1 board + 1 contract + 4 slot picks + Launch + 12 battle taps + 3 result = **22** | talk (2) + walk to the group (1) + 4 battle drags + Continue (1) = **8** | no party builder: the party travels with you; one gesture per battle action |
-| **Tournament sign-up** | 4 (Arena, desk, hero, Sign up) | **4** | long-press the Arena door peeks at the next tournament without walking |
+| **Tournament sign-up** | 4 (Arena, desk, team, Sign up) | **4** | long-press the Arena door peeks at the next tournament without walking |
 | **Build a room** | 3 (Hall, empty wing, Build) | **3** | Build says why when blocked |
 | **Travel** | 3 (Map, location, Travel) | **3** | the map pans and zooms; Travel says why when blocked |
 | **Follow the story** (talk to the next person) | 4–6 (Quest log via the menu, read, walk taps, tap the NPC) | **1** (the goal chip walks there and talks) + the choice | quest markers, ! labels, goal chip |
@@ -205,8 +205,10 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **objective** | task, goal | one thing to do at a site (fight, talk, inspect, collect, escort); an **extra** is optional |
 | **story mission** | quest, chapter | one of the 12 missions of The Last Banner |
 | **quest** | task, objective | any entry in Journal → Quests: main (story), side, guild |
-| **tournament** | competition, event | an individual tournament (one hero per guild) |
-| **championship** | guild tournament | a team tournament (outside Chapter 1) |
+| **tournament** | competition, championship | a guild event: teams of up to 2, 4 or 5 heroes by circuit |
+| **circuit** | division, league | Initiation, Champion or Elite tournaments; a guild enters its status tier or lower |
+| **status** | tier (for guilds), rank | the guild's standing: Initiation, Champion, Elite (internal ids Regional, National, Global) |
+| **special title** | achievement, badge | a title earned by a collection of tournament wins (Triple Crowned, Dynasty, Giant Killer …) |
 | **party** | company, squad | the heroes with the founder: they fight, talk and travel together |
 | **main party** | team, lineup | a lead and up to three companions (Party → Main party); no room needed |
 | **party lead** | captain, leader | the main party's first hero; takes the lead role in every arrangement |
