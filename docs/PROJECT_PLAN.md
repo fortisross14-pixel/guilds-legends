@@ -308,6 +308,15 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - Placeholder fallback stays, so art can arrive in batches.
 
 ### Phase 7C — Game HUD, menus and walk-in buildings
+**Part 1 ✅ Done (2026-11-03).** Notes (details in [`docs/UX.md`](UX.md) §2 and [`DESIGN.md`](../DESIGN.md)):
+- **Removed:** the sidebar, the top bar and its journal, the mobile bottom bar, the town-scene button stack (SceneHud), the Town directory (TownScreen) and the Chronicle menu (MenuScreen), PixelIcon and UpcomingStrip. Windmere got a small walkable layout so every slice town is walkable.
+- **HUD** (`src/hud/Hud.jsx`): place tag + goal line, ledger (reacts to gold, fame and rank changes), Guild and World orbs (tap or press-slide-release, badges, labels for the first four uses), keyboard shortcuts.
+- **One screen template** (`src/hud/Section.jsx`, `sections.jsx`): every section and building screen; Records merges the old Chronicle and the Herald's tabs; System holds save, settings and credits.
+- **Layout:** zone, layer, radius and type tokens (`tokens.css`); a rewritten `shell.css`; safe areas and `100dvh`; a web app manifest and crest icons (`scripts/app-icons.mjs`).
+- **Visual language:** one icon set through `<Icon>` (game-icons.net + Phosphor, CREDITS.md); two fonts (Cinzel dropped) and five sizes; intentional placeholders with a "Show asset ids" developer setting.
+- **Battle:** heroes stand on the battlefield; the drag starts from the sprite with a ghost under the finger; name plates tap. **Dialogue:** a full-width parchment box at the bottom, large choice rows, a name plate and portrait, the log as a bottom panel.
+- **Choices to review:** older screens inside sections are flattened but not yet rebuilt as list + details; notices fade after 6 s; the orb arc (80°→2°, 156 px).
+
 A visual phase (screenshots allowed, see `CLAUDE.md`). Two parts:
 - **Part 1 — HUD, orbs, ledger and visual language.** One HUD instead of four navigations: a fading place-and-date tag (top left), the Guild orb (Party, Items, Guild Hall, Quests, Contacts; bottom left), the World orb (Map, Calendar, Records, System; bottom right) that fan out like the combat radial, and a ledger (gold, fame, ranks, title, specialization; top right) that opens itself when a value changes. One screen template for every section, defined screen zones, one z-index scale, safe areas, a web app manifest, one icon set (game-icons.net + Phosphor through `<Icon>`), two fonts and five sizes, intentional placeholders, battle drag from the sprite, a full-width dialogue box.
 - **Part 2 — Walk-in buildings and people.** One people model (name, role, place, look, memory, offers: mission, hire, challenge) replacing the recruit, contract-giver and challenger lists; every building is a small walkable room that fits one screen; you discover offers by talking; hiring is an interview; the notice board lists the contracts people gave you; Contacts in the Guild orb. The Guild Hall interior is left for 7D.

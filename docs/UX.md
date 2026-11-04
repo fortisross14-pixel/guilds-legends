@@ -1,6 +1,6 @@
 # Guilds of Legend: touch-first UX
 
-Phase 7A. The game is designed for fingers first; mouse and keyboard are extras. This file is the reference for anyone changing the UI.
+Phases 7A and 7C. The game is designed for fingers first; mouse and keyboard are extras. This file is the reference for anyone changing the UI.
 
 ## 1. Gesture language
 
@@ -9,9 +9,9 @@ One set of rules for the whole game (`src/components/gestures.js`):
 | Gesture | Means | Examples |
 |---|---|---|
 | **Tap** | select, go, confirm | walk to a spot, open a door, pick a radial action, hire |
-| **Drag and drop** | do something *to* something | hero → enemy, hero → room, hero → party slot, item → hero |
+| **Drag and drop** | do something *to* something | hero → enemy (from the hero on the battlefield), hero → room, hero → party slot, item → hero |
 | **Long-press** (~400 ms) | inspect | unit card in battle, peek at a door or person, stat or skill details, why a button is disabled |
-| **Swipe** | next / previous, dismiss, close | hero pages, recruit cards, notices, a bottom panel (swipe its header down), dialogue log (swipe up), back (from the left edge) |
+| **Swipe** | next / previous, dismiss, close | section tabs (sideways), hero pages, recruit cards, notices, a bottom panel (swipe its header down), dialogue log (swipe up), back (from the left edge) |
 | **Hold** during animations | fast-forward | a battle round, dialogue lines |
 
 - **No double-tap actions** anywhere (`touch-action: manipulation` removes the double-tap zoom delay).
@@ -20,43 +20,82 @@ One set of rules for the whole game (`src/components/gestures.js`):
 - **Vibration** on hit, crit, KO and drops where the device supports it; Settings can switch it off.
 - **Feedback:** every press scales and brightens at once; drop targets light up under the finger; disabled buttons say why when tapped or long-pressed (`Button why=`).
 
-## 2. Screens and navigation
+## 2. Screens and navigation (Phase 7C)
 
-### Navigation map
+Navigation used to live in four places (a sidebar, an 8-item top bar, a stack of buttons over towns and a bottom bar). Since 7C there is one HUD and one screen template.
+
+### The HUD (while exploring)
 
 ```
-Top bar ─ ◀ back · date (→ calendar) · location (→ map) · gold · ranks chip (→ Herald)
-Places ─┬─ World map ── location card → Travel; wild-area card → Enter/Travel
-        ├─ Town (walkable) ── doors: Guild Hall · Tavern/Inn · Notice Board · Arena · Shop · Herald
-        │                  └─ people (talk), objects (inspect), exits → wild areas
-        └─ Chronicle menu ── Calendar · News · Quest log · Lore codex · Settings · Chronicle · Mission log · Season reviews · Codex
-Party bar ─ hero cards (tap = hero page, drag = assign) · Quest log button
-Overlays (one at a time) ─ battle · mission game · decision · road event · report · story scene · reward moment · town event · council report
+┌ place tag ─────────────┐                       ┌──────── ledger ┐
+│ ⌖ Dunmere              │                       │ ⛨  ◎ 980  ▤    │  ← tap: gold, fame, 3 ranks ▲▼,
+│   June 1187 · week 2…  │  (fades after ~4 s)   └────────────────┘     status title, known for
+│ ! Answer Bram's challenge  ← the goal line (stays; tap = go there)
+│
+│                         the walkable world
+│
+│  Party ○                                        ○ Map
+│   Items ○                                     ○ Calendar
+│    Guild Hall ○                             ○ Records
+│      Quests ○                             ○ System
+│        Contacts ○
+( Guild orb )                                    ( World orb )
 ```
+
+- **Place tag (top left, passive):** location and date, small; fades after about 4 seconds, tap to show it again. The **goal line** under it stays: tap it and the founder walks to the next story step (or the scene plays when nobody needs to be walked to, or the map opens on the right town).
+- **Guild orb (bottom left), people and things:** Party, Items, Guild Hall, Quests, Contacts.
+- **World orb (bottom right), places and time:** Map, Calendar, Records, System.
+- **Orb behaviour:** tap an orb and its items fan out in a quarter circle toward the screen centre, each with its label. Or press, slide onto an item and release (one gesture, like the combat radial). Tap outside or swipe to close. Badges sit on the orb and on the item (an injured hero, a story scene to play, unread news, a decision waiting in the hall). The orbs' names show under them for the first four uses, then only the item labels when open. Items are 48 px, the orb 56–60 px, and the arc (80°→2°, radius 156 px) never leaves a 390 px screen.
+- **Ledger (top right):** collapsed, the crest, gold and a book. Tap it: gold, fame, the Strength/Legacy/Official ranks with ▲▼, the status title and what the guild is known for; each row opens its detail (Treasury, Records → Rankings, Reputation, Path). **It reacts on its own:** when gold, fame or a rank changes, it shows just that row with the change ("+120", "▲2") for 2.6 seconds and folds away.
+- **Desktop:** the same HUD, plus keyboard shortcuts: **P** party, **I** items, **Q** quests, **M** map (again to return), **R** records, **Esc** system (or closes what is open).
+
+### What each item opens
+
+| Orb | Item | Opens |
+|---|---|---|
+| Guild | Party | heroes (status, equipment and skills on each hero's page), main party (the War room's party zones), retired and fallen |
+| Guild | Items | the inventory; drag an item onto a hero to equip or use it |
+| Guild | Guild Hall | the hall and its rooms (kept as it is; 7D rebuilds it) |
+| Guild | Quests | main, side and guild quests, evidence, "Show on map" |
+| Guild | Contacts | everyone you have talked to (Part 2: where they are, what they offer, your relationship) |
+| World | Map | the world map; travel |
+| World | Calendar | the calendar and the news; its primary button rests at the Guild Hall (at home) or the inn (away) |
+| World | Records | Rankings (guild and hero ladders, path, rivals, reputation, connections, directory), Seasons, Record book, Hall of fame, Mission log, Almanac (the old Chronicle), Lore, Bestiary, Goals |
+| World | System | save, return to the title (to load another slot), settings, sound, credits |
+
+### One screen template
+
+Every section and building screen (`src/hud/Section.jsx`) has the same parts in the same places:
+
+1. **Title and tabs** at the top; swipe the content sideways to change tab.
+2. **A list or grid** in the middle.
+3. **A details area:** a side column on wide screens, a bottom panel on phones (swipe its grip down to close).
+4. **A portrait** at the top of the details where it helps.
+5. **One help line** at the bottom.
+
+**Back** is always at the top left (also a swipe from the left edge, or Esc); the **primary action** is always at the bottom right.
+
+### The bottom of the screen has one owner
+
+In priority order: **dialogue**, then **battle commands**, then **bottom panels** (sections, modals, peek cards), then **the orbs**. While any of the first three is on screen, the orbs fade out (`shell.css`, the `:has()` rule). Notices (toasts) appear under the place tag for 6 seconds and then step aside; with a section open they sit at the bottom.
 
 ### Screen inventory
 
 | Place | Screens |
 |---|---|
-| World map | map (pan, pinch), location card, wild-area card |
-| Town | walkable town or wild area, Town directory (fallback), building interiors |
-| Guild Hall | floor plan (room tiles take dropped heroes), each room, Build list, Rest (task list + rest dial + calendar), War room (party zones), Armory (drag items), Treasury, Trophy hall, Office |
-| Tavern / Inn | recruit cards (swipe), inn rest (away from home) |
-| Notice Board | contract list, party builder (slots take dropped heroes) |
-| Arena | fighting ground, sign-up desk, history board |
-| Shop | buy / sell list, comparison (drag an item onto a hero row) |
-| Herald | Path, Connections, ladders, record book, hall of fame, rivals, directory, tournaments |
-| Chronicle menu | calendar (read-only), news, Quest log (Main / Side / Guild / Done), Lore codex, settings, chronicle, mission log, season reviews, codex |
+| Walkable town or wild area | the scene with the HUD; doors, people and things to tap; long-press peeks; dialogue at the bottom |
+| World map | the map (pan, pinch) with the place tag and the location card |
+| Sections | Party, Items, Guild Hall, Quests, Contacts, Calendar, Records, System |
+| Buildings (Part 1) | Tavern / Inn, Notice Board, Arena, Shop, Herald, each in the template over its interior art |
 | Overlays | battle (full screen), story scenes and ceremonies (full screen), everything else as a bottom panel |
 
 ### Rules
 
-- **Back** is the same everywhere: the top-bar ◀ or a swipe from the left edge. It closes the open room, then the building or menu page, then returns to town.
-- **Max 3 taps** to common destinations: hero page (1, party bar), Quest log (1, party bar), rankings (1, top bar chip), calendar (1, date), Guild Hall (2: Town, door), shop (2), settings (2: Chronicle, Settings), current goal (1: the goal chip).
-- **Bottom panels** instead of pop-up windows on phones: they slide up, can be swiped down by the header, and size to their content. Full-screen layers only for battles, story scenes and ceremonies.
-- **Thumb zone:** the goal chip, the battle actions, the rest button and the party bar sit in the bottom third on phones; the top bar is slim.
-- **One interruption at a time**, in this order: battle, mission game, decision, road event, report, story scene, reward moment, town event, council report. Every ceremony can be skipped or continued with one tap.
-- **Minimal text:** icons and numbers first, one-line labels, details on long-press, no paragraphs on menus, descriptions over 12 words cut or moved behind long-press.
+- **Max 3 taps** to common destinations: a hero's page (2: Guild orb → Party, then the hero), Quests (2, or **Q**), rankings (2: World orb → Records, or the ledger), calendar (2), the Guild Hall (2), settings (3), the current goal (1: the goal line).
+- **One interruption at a time**, in this order: battle, mission game, decision, road event, report, story scene, reward moment, town event, council report. The HUD hides while one is showing.
+- **Minimal text:** icons and numbers first, one-line labels, details on long-press.
+- **Safe areas:** nothing under the notch or the home bar (`viewport-fit=cover` plus `env(safe-area-inset-*)`); the game fills `100dvh` and can be added to the home screen.
+- **World labels never collide with the HUD:** a name that would sit under the place tag, the ledger or an orb fades until the camera moves.
 
 ## 3. Core flows: taps and gestures, before → after
 
@@ -96,12 +135,18 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **season** | year (in the review) | one calendar year of results |
 | **evidence** | clues, proof | the five pieces against Garrick Thorne |
 | **Lore codex** | wiki, encyclopedia | the world's history entries |
-| **notice** | notification, toast | a short message in the corner |
+| **notice** | notification, toast | a short message under the place tag |
+| **orb** | menu button, wheel | the Guild orb (bottom left) and the World orb (bottom right) |
+| **ledger** | status bar, top bar | the gold-and-ranks book at the top right |
+| **section** | page, menu screen | a screen in the one template (Party, Records…) |
+| **Records** | Chronicle (menu), Herald (as a menu) | rankings, seasons, record book, hall of fame, mission log, almanac, lore |
 
 ## 5. Remaining issues for Phase 8
 
 - **No device testing yet.** Drag thresholds (10 px), the long-press time (400 ms), radial size and the 24 px edge-swipe zone need checking on real phones; the edge swipe may fight iOS/Android system back gestures.
 - **Long-press on the Phaser canvas** works on the floating labels, not on the sprites themselves.
+- **The orbs’ press-and-slide** and the left-edge back swipe both start from screen edges; check on real phones that the system gestures do not win.
+- **Sections wrap older screens** (heroes, rankings, history, shop…): their inner layouts were flattened to hairline bands but not yet rebuilt as list + details. Phase 8 can finish that per screen.
 - **Radial menus with many options** (casters with 6+ skills and several items) get crowded; consider paging or grouping.
 - **Hold to fast-forward vs long-press to inspect** during a replaying round: both start with a press; inspect only fires on units.
 - **Keyboard and gamepad:** the radial options and drop targets are buttons (tap fallback works with Enter), but there is no focus order for the drag flow and no gamepad navigation.

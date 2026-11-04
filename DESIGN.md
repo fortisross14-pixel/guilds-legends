@@ -8,6 +8,7 @@
 
 - **Art first.** Scenes, the overworld and character art fill the viewport edge to edge. The interface floats over them; it never boxes the art in.
 - **One panel level.** Overlays are dark translucent panels with a thin brass edge. Inside a panel, grouping comes from spacing, hairlines and type, never from another box.
+- **One HUD.** Two orbs, a ledger and a fading place tag replace every navigation bar (Phase 7C).
 - **Light and depth.** Backdrops get a vignette, a soft top-and-bottom depth-of-field blur, a warm bloom and drifting dust. Selections glow; they are never solid blocks.
 - **No pixel font in the interface.** Pixel style lives in the art.
 
@@ -45,47 +46,63 @@ Rarity (frames, glows, rarity tags): common `#b9b3a6`, uncommon `#7cc48b`, rare 
 
 ## Type
 
-- **Cormorant Garamond** (600/700): titles, place names, character names, ceremonies, big numbers in ceremonies.
-- **Cinzel** (500/600): small-caps labels, section labels, tab and nav labels, with 0.08–0.14em tracking. Never below 11px.
-- **Manrope** (400–700): text, menus, data, buttons; `tabular-nums` for stats, gold and ranks.
-- Scale: labels 11–12 Cinzel · body 14–15 Manrope · menu 15–16 Manrope · names 20–26 Cormorant · screen titles 34–44 Cormorant · logo 64–92 Cormorant.
+Two faces, five sizes (tokens `--fs-1`…`--fs-5` in `tokens.css`). Nothing else.
 
-## Panels
+- **Cormorant Garamond** (600/700): titles, place and character names, the dialogue line, ceremonies.
+- **Manrope** (400–800): everything else: menus, data, buttons, help lines; `tabular-nums` for stats, gold and ranks.
+- **Sizes:** 12 (`--fs-1`, tiny labels and meta) · 14 (`--fs-2`, secondary text and lists) · 16 (`--fs-3`, body, menus, buttons) · 21 (`--fs-4`, names and panel titles) · 28–38 (`--fs-5`, screen titles and ceremonies). The title-screen logo (`--fs-logo`) is art, not a sixth text size.
+- **Small caps** (uppercase + 0.08–0.12em tracking) only for tiny labels at `--fs-1`: tab labels, orb names, stat captions.
+- **Contrast:** every text meets WCAG AA. Dialogue is dark ink on parchment; panels are ivory on dark ink; never pale on pale.
 
-- `.panel` recipe (shared by every overlay: panels, modals, dock, status bar, party plates, battle plates, shop and map panels): vertical ink gradient at 84–90% opacity, `backdrop-filter: blur(14px) saturate(1.15)`, 1px brass edge at ~32% opacity, 4px radius, soft drop shadow, an inner top highlight, and four small brass corner flourishes (inline SVG background layers, `--orn-*`).
-- Groups inside a panel: hairline rules (`--line-soft`) and spacing only. Former inset boxes become hairline-bounded bands with a faint horizontal light.
-- Dialogue: parchment panel (`--parchment`) with ink text, a brass name plate and the speaker portrait.
+## Icons
 
-## Menus and buttons
+- **One set, one look.** Game concepts come from **game-icons.net** (CC BY 3.0; Lorc, Delapouite, Sbed), system icons from **Phosphor** (MIT, bold weight). Credits in `CREDITS.md` and System → Credits.
+- **One component:** every icon is `<Icon name>` (`src/components/Icon.jsx`); the shapes live in `src/components/iconPaths.js`, so custom art can replace a shape without touching screens.
+- **Tones:** `brass` (default: a gold gradient with a dark cut below and a faint highlight above, like the panel edges), `ink` (on parchment), `plain` (`currentColor`, for states such as damage red or heal green).
+- **No emoji and no Unicode symbols as icons.** Arrows in prose (→), minus signs and the ▲▼ rank marks are typography, not icons. Old data that still names an icon with a symbol resolves to a drawn shape.
+- Sizes: 14 inline with text, 16–18 in rows, 24 in orb items and tiles, 28 on orbs.
 
-- Menus (`data-menu` lists): generous rows, hairline dividers, and one **glowing gem cursor** per menu that glides (220ms ease) to the hovered, focused or selected row (`useMenuKeys` in `UI.jsx`). The active row gets a soft horizontal light sweep, never a solid block. Arrow keys move, Enter activates.
-- Buttons: Manrope text with a fine brass frame; glow on hover and focus. Primary actions are warm gold (gold text, gold edge, gold glow). Danger actions use the damage red edge.
-- Tabs: Cinzel small-caps labels on a hairline; the active tab gets a gold underline and glow.
+## Surfaces
+
+- **One panel style** (the `.panel` recipe, shared by every overlay: sections, modals, ledger, orb labels, plates): vertical ink gradient at 84–90% opacity, `backdrop-filter: blur(14px) saturate(1.15)`, 1px brass edge at ~32% opacity, soft drop shadow, inner top highlight, four brass corner flourishes (`--orn-*`).
+- **No boxes inside boxes.** Inside a section, older panels and cards become hairline-bounded bands (`shell.css`).
+- **One button style** in three weights: **primary** (gold text, gold edge, gold glow), **secondary** (brass hairline frame), **quiet** (text only, for back and close). Danger uses the damage red edge.
+- **One radius set:** `--r-1` 3px (controls, panels, chips), `--r-2` 10px (sections, bottom panels, sheets), round (orbs, portraits, badges). No pills.
+- Dialogue: a parchment box (`--parchment`) with dark ink, a brass name plate and a portrait slot.
+
+## Menus and tabs
+
+- Menus (`data-menu` lists): generous rows, hairline dividers, and one **glowing gem cursor** per menu that glides to the hovered, focused or selected row (`useMenuKeys`). Arrow keys move, Enter activates.
+- Tabs: small-caps labels with an icon on a hairline; the active tab gets a gold underline. A section's tabs also change by swiping the content sideways.
+- View pickers (a few views inside one tab, such as Records → Rankings): hairline-framed toggles, the active one gold.
 
 ## Art and atmosphere
 
-- `SceneBackdrop` (in `UI.jsx`): fixed full-viewport scene behind town, Guild Hall, Chronicle and building screens; layers: the scene (`cover`, slow drift), top and bottom depth-of-field blur (masked `backdrop-filter`), warm bloom, vignette, a scrim for text contrast, and drifting dust motes.
-- World map: the pixel overworld fills the viewport with a slow drift and edge fog; locked towns sit under fog; reachable routes glow.
-- Portraits: class medallion on the primal ground, a thin rarity-colour frame and glow; Epic and Legend frames shimmer.
-- Sprites and enemies: `object-fit: contain`, soft elliptical ground shadow, gentle idle bob.
-- Effects: hits flash `effect_14` (slash), heals `effect_08`, rewards `effect_12`.
-- Icons: the 12×12 pixel icon set (`PixelIcon`) is drawn in brass with a soft glow, as engraved glyphs.
+- `SceneBackdrop` (in `UI.jsx`): the scene behind sections and buildings, with depth-of-field blur, warm bloom, vignette, a text scrim and drifting dust.
+- World map: the pixel overworld with drift and edge fog; locked towns under fog; reachable routes glow.
+- Portraits: class medallion on the primal ground, thin rarity frame and glow; Epic and Legend frames shimmer.
+- Sprites and enemies: `object-fit: contain`, soft elliptical ground shadow, gentle idle bob. In battle the party stands on the field, above the command HUD.
+- **Placeholders look intentional** (`assetLoader.js`): people are silhouettes in their role or class colour, enemies are beast silhouettes, props are soft shapes, buildings are houses with a lit door, crests are shields, backdrops are mood gradients. Asset ids appear only with Settings → Developer → **Show asset ids** (off by default).
 
 ## Motion
 
-- Panels fade and rise in (260ms, `cubic-bezier(.2,.8,.2,1)`); the cursor glides (220ms); hover glows 160ms.
-- HP and MP bars ease down (300ms) with a lagging damage ghost (700ms after a 250ms delay).
-- Numbers count up in ceremonies; dialogue types out (skippable with a click or key).
-- Ceremonies (victory, level up, rank up, title change, story beats): a light burst, a slow title reveal and rising sparks, 600–1200ms.
-- Ambient: dust motes, backdrop drift, sprite idle bob, rarity shimmer.
-- `prefers-reduced-motion` and the in-game setting stop ambient motion, make transitions instant and show typed text at once.
+- Quick and consistent: hover 160ms, panels and fans 260ms, all on `cubic-bezier(.2,.8,.2,1)`.
+- The orb fan staggers its items (28ms apart); the ledger drops a row, shows the change ("+120", "▲2") and folds away after 2.6s; the place tag fades after about 4s.
+- HP and MP bars ease down with a lagging damage ghost. Ceremonies get a light burst and a slow title reveal (600–1200ms).
+- `prefers-reduced-motion` and the in-game setting stop ambient motion and make transitions instant.
 
 ## Layout
 
-- **Desktop (≥ 1100px):** a slim translucent dock floats on the left; one slim status bar on top (date, time, location, gold, ranks, title, and a Journal toggle that opens upcoming events and the next step); content panels float over the backdrop; the party bar is a row of slim plates at the bottom, collapsible.
-- **Tablet (760–1099px):** icon dock, same overlays.
-- **Phone (< 760px):** art stays visible at the top of each place; detail panels become bottom sheets (rounded top, full width); bottom dock; party plates shrink to portrait + HP.
+Screen zones are defined once (`shell.css`, and the zone tokens in `tokens.css`):
+
+- **The place** fills the screen: the walkable scene or the world map (`--z-scene`).
+- **The HUD** sits in the corners, inside the safe areas (`env(safe-area-inset-*)`, `100dvh`): place tag top left, ledger top right, the Guild orb bottom left, the World orb bottom right (`--z-hud`).
+- **Sections** (the one screen template) cover the place (`--z-panel`): a large floating panel with a detail column on wide screens; the full screen with a bottom detail panel on phones.
+- **The bottom has one owner at a time:** dialogue, then battle commands, then bottom panels, then the orbs. The orbs fade out whenever one of the others is on screen.
+- **One layer scale:** scene 0 · world labels 10 · HUD 20 · panels 30 · dialogue 40 · overlays 50 · messages 60 · drag layers 70 · system 80. Components use 0–9 only for local stacking.
+- World labels fade where they would sit under the HUD.
+- A web app manifest (`public/manifest.webmanifest`, crest icons from `scripts/app-icons.mjs`) and the iOS/Android meta tags let the game run from the home screen without the browser bar.
 
 ## Accessibility
 
-44px targets, visible focus (gem cursor + gold outline), `aria-label` on icon buttons, text over art always on a panel or a scrim that keeps 4.5:1, and every ambient effect removed under reduced motion.
+44px targets, visible focus (gem cursor + gold outline), labels on icon buttons and orb items, keyboard shortcuts (P, I, Q, M, R, Esc), text over art always on a panel or scrim at 4.5:1, and every ambient effect removed under reduced motion.

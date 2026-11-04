@@ -2,7 +2,7 @@
 
 Every visual asset the game asks for, registered by id in [src/data/assets.js](../src/data/assets.js). Paths are relative to `public/`. This file is generated: run `node scripts/assets-doc.mjs` after changing the registry.
 
-How it works: the loader uses the file at **Path** if it exists; otherwise **Borrows** (older shared art standing in); otherwise it draws a labelled, color-coded placeholder showing the id. Drop a file at the path and it is picked up with no code change. Status: *placeholder* = no file yet, *borrowed* = using older shared art, *ready* = dedicated file exists.
+How it works: the loader uses the file at **Path** if it exists; otherwise **Borrows** (older shared art standing in); otherwise it draws a placeholder that looks intentional: a silhouette for people and enemies, a soft shape for props and buildings, a shield for crests, a mood gradient for backdrops (Settings → Developer → Show asset ids writes the id on it). Drop a file at the path and it is picked up with no code change. Status: *placeholder* = no file yet, *borrowed* = using older shared art, *ready* = dedicated file exists.
 
 Walkable art (towns, wild areas) is generated from the place data in `src/data/towns/` and `src/data/wilds/`: every building, person, portrait, prop and enemy group placed there gets an entry. Building fronts are 5×5 tiles (160×160) with the door at the bottom centre; props are drawn one tile taller than their footprint. The ground tileset is one row of 32 px tiles in the order of `src/data/tiles.js`.
 
@@ -33,12 +33,12 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 1 (Your house) |
+| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | ready | Dunmere: the Guild Hall building, stage 1 (Your house) |
 | `town.dunmere.guildhall.stage2` | `art/walk/buildings/dunmere-guildhall-stage2.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 2 (Empty hall) |
 | `town.dunmere.guildhall.stage3` | `art/walk/buildings/dunmere-guildhall-stage3.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 3 (Working hall) |
 | `town.dunmere.guildhall.stage4` | `art/walk/buildings/dunmere-guildhall-stage4.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 4 (Renowned hall) |
 | `town.dunmere.herald` | `art/walk/buildings/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Herald’s Office (front with door) |
-| `town.dunmere.tavern` | `art/walk/buildings/dunmere-tavern.png` | 160×160 | — | placeholder | Dunmere: The Wayfarer (front with door) |
+| `town.dunmere.tavern` | `art/walk/buildings/dunmere-tavern.png` | 160×160 | — | ready | Dunmere: The Wayfarer (front with door) |
 | `town.dunmere.shop` | `art/walk/buildings/dunmere-shop.png` | 160×160 | — | placeholder | Dunmere: Mira’s Supply (front with door) |
 | `town.dunmere.arena` | `art/walk/buildings/dunmere-arena.png` | 160×160 | — | placeholder | Dunmere: Dunmere Arena (front with door) |
 | `town.greenhollow.lodge` | `art/walk/buildings/greenhollow-lodge.png` | 160×160 | — | placeholder | Greenhollow: Guild lodge (front with door) |
@@ -50,6 +50,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `town.ironford.shop` | `art/walk/buildings/ironford-shop.png` | 160×160 | — | placeholder | Ironford: Forge-Mart (front with door) |
 | `town.ironford.tavern` | `art/walk/buildings/ironford-tavern.png` | 160×160 | — | placeholder | Ironford: The Quenched Anvil (front with door) |
 | `town.ironford.arena` | `art/walk/buildings/ironford-arena.png` | 160×160 | — | placeholder | Ironford: The Hammer Yard (front with door) |
+| `town.windmere.inn` | `art/walk/buildings/windmere-inn.png` | 160×160 | — | placeholder | Windmere: The Gull’s Rest (front with door) |
+| `town.windmere.shop` | `art/walk/buildings/windmere-shop.png` | 160×160 | — | placeholder | Windmere: Courier Supply (front with door) |
+| `town.windmere.arena` | `art/walk/buildings/windmere-arena.png` | 160×160 | — | placeholder | Windmere: The Cliff Ring (front with door) |
 
 ## Interior (`interior`, placeholder #6b4a24)
 
@@ -137,6 +140,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `prop.statue` | `art/walk/props/statue.png` | 32×96 | — | placeholder | Ironford: Statue of the First Smith |
 | `prop.anvil` | `art/walk/props/anvil.png` | 32×64 | — | placeholder | Ironford: anvil |
 | `prop.crates` | `art/walk/props/crates.png` | 64×64 | — | placeholder | Ironford: crates-1 |
+| `prop.windbell` | `art/walk/props/windbell.png` | 64×96 | — | placeholder | Windmere: The wind bell |
 | `prop.milestone` | `art/walk/props/milestone.png` | 32×64 | — | placeholder | The Old Road: Old milestone |
 | `prop.hollowwarden` | `art/walk/props/hollowwarden.png` | 32×64 | — | placeholder | The Blackwood: The Hollow Warden |
 | `prop.brokenlantern` | `art/walk/props/brokenlantern.png` | 32×64 | — | placeholder | The Blackwood: Broken lantern |
@@ -146,11 +150,11 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `npc.house.rook` | `art/walk/house/rook.png` | 44×28 | — | placeholder | Player’s house: Cassian Rook, wounded, on the floor |
-| `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | placeholder | Dunmere: Mara Fen, Innkeeper (walk sprite) |
+| `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | ready | Dunmere: Mara Fen, Innkeeper (walk sprite) |
 | `npc.dunmere.merchant` | `art/walk/npcs/dunmere-merchant.png` | 26×36 | — | placeholder | Dunmere: Corwin Pell, Road merchant (walk sprite) |
 | `npc.dunmere.fighter` | `art/walk/npcs/dunmere-fighter.png` | 26×36 | — | placeholder | Dunmere: Bram Calder, Duelist (walk sprite) |
 | `npc.dunmere.stablemaster` | `art/walk/npcs/dunmere-stablemaster.png` | 26×36 | — | placeholder | Dunmere: Gideon Rusk, Stable owner (walk sprite) |
-| `npc.dunmere.nessa` | `art/walk/npcs/dunmere-nessa.png` | 26×36 | — | placeholder | Dunmere: Nessa Thornfield, Hunter (walk sprite) |
+| `npc.dunmere.nessa` | `art/walk/npcs/dunmere-nessa.png` | 26×36 | — | ready | Dunmere: Nessa Thornfield, Hunter (walk sprite) |
 | `npc.dunmere.traveler` | `art/walk/npcs/dunmere-traveler.png` | 26×36 | — | placeholder | Dunmere: Iven Quill, Traveler (walk sprite) |
 | `npc.dunmere.herald` | `art/walk/npcs/dunmere-herald.png` | 26×36 | — | placeholder | Dunmere: Orren Pike, Herald (walk sprite) |
 | `npc.dunmere.kilnmaster` | `art/walk/npcs/dunmere-kilnmaster.png` | 26×36 | — | placeholder | Dunmere: Hesta Coal, Kiln-master (walk sprite) |
@@ -168,6 +172,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.ironford.scholar` | `art/walk/npcs/ironford-scholar.png` | 26×36 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (walk sprite) |
 | `npc.ironford.barkeep` | `art/walk/npcs/ironford-barkeep.png` | 26×36 | — | placeholder | Ironford: Mags, Barkeep (walk sprite) |
 | `npc.ironford.archivist` | `art/walk/npcs/ironford-archivist.png` | 26×36 | — | placeholder | Ironford: Oswin Tull, Archive keeper (walk sprite) |
+| `npc.windmere.courier` | `art/walk/npcs/windmere-courier.png` | 26×36 | — | placeholder | Windmere: Sela Wick, Courier (walk sprite) |
+| `npc.windmere.monk` | `art/walk/npcs/windmere-monk.png` | 26×36 | — | placeholder | Windmere: Brother Hale, Monastery keeper (walk sprite) |
 
 ## Tileset (`tileset`, placeholder #3a3a3a)
 
@@ -179,7 +185,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `char.founder` | `art/walk/chars/founder.png` | 26×36 | — | placeholder | Player founder, walking (4-direction sheet later) |
+| `char.founder` | `art/walk/chars/founder.png` | 26×36 | — | ready | Player founder, walking (4-direction sheet later) |
 
 ## Portrait (`portrait`, placeholder #6a4a5e)
 
@@ -222,6 +228,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
 | `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | — | placeholder | Ironford: Mags, Barkeep (dialogue portrait) |
 | `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | — | placeholder | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
+| `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | — | placeholder | Windmere: Sela Wick, Courier (dialogue portrait) |
+| `portrait.windmere.monk` | `art/portraits/npcs/windmere-monk.png` | 160×160 | — | placeholder | Windmere: Brother Hale, Monastery keeper (dialogue portrait) |
 
 ## Battle effect (`fx`, placeholder #5a2a6a)
 

@@ -2,6 +2,18 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 7C, Part 1: the HUD and a new look
+
+- One HUD instead of four menus: where you are and the next goal at the top left, a ledger with gold and ranks at the top right, and two orbs at the bottom. The Guild orb holds Party, Items, Guild Hall, Quests and Contacts; the World orb holds Map, Calendar, Records and System. Tap an orb, or press and slide onto an item.
+- The ledger opens by itself for a moment when gold, fame or a rank changes.
+- Every menu screen has the same layout: title and tabs, the list, details, one help line, back at the top left and the main button at the bottom right. Swipe sideways to change tab.
+- Records gathers the rankings, season reviews, record book, hall of fame, mission log, almanac and lore.
+- New icons everywhere (game-icons.net and Phosphor), two fonts, cleaner panels. Placeholders now look like silhouettes and shapes.
+- In battle, your heroes stand on the field: drag one onto an enemy.
+- Conversations use a full-width box at the bottom with big answer buttons.
+- Add the game to your phone's home screen to play without the browser bar.
+- Windmere can now be walked like the other towns.
+
 ## Unreleased — Phase 7A: touch-first UI/UX
 
 - Battles by drag: drag a hero onto a target and pick from a radial menu under your thumb, with damage, hit chance and a ☠ when a blow would finish. Long-press anyone to inspect; hold to fast-forward; the phone buzzes on big hits. Tapping still works.
