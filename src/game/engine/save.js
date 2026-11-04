@@ -1,6 +1,6 @@
 // @ts-check
 // Save compaction, migration between schema versions, and validation.
-import { APPOINTMENTS, CHAPTER_GOALS, CLASSES, normalizeClassId, REGIONS, SAGA_DEFINITIONS, TIERS } from '../../data/content.js';
+import { APPOINTMENTS, CLASSES, normalizeClassId, REGIONS, SAGA_DEFINITIONS, TIERS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, emptyFormations, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, LOCATIONS, PRIMALS, PRIMAL_IDS, RARITIES } from '../../data/world.js';
 import { GUILD_BLUEPRINTS } from '../../data/universe.js';
@@ -289,11 +289,6 @@ export function migrateGame(raw) {
       completed: Boolean(previous?.completed),
       discovered: previous?.discovered ?? saga.tier === 'Regional',
     };
-  });
-  const oldGoals = next.goals || [];
-  next.goals = CHAPTER_GOALS.map((goal) => {
-    const previous = oldGoals.find((item) => item.id === goal.id);
-    return { ...goal, completed: Boolean(previous?.completed), claimed: Boolean(previous?.claimed) };
   });
   next.stats = { ...initialStats(), ...(next.stats || {}) };
   next.settings = { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', ...(next.settings || {}) };

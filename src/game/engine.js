@@ -32,7 +32,7 @@ export {
 export { xpForNextLevel, calculatePower, generateHero, roleRating, partyEstimate } from './engine/heroes.js';
 export { getGuildRankings, getGuildRankSummary, getHeroRankings } from './engine/rankings.js';
 export { designateSuccessor, assignMentor, foundBranch, assignBranchCommander, upgradeBranch, assignArtifact, inheritAmbition } from './engine/institution.js';
-export { getGoalMetric, getPromotionRequirement } from './engine/goals.js';
+export { getPromotionRequirement } from './engine/goals.js';
 export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep, savingsRate, propertyGoal } from './engine/economy.js';
 export { getHallView, requirementStatus, nextUpgrade, buyLot, expandLot, nextExpansion, buildRoom } from './engine/hall.js';
 export { charterOf, charterEffect, patronLevel, patronAtLeast, patronPoints } from './engine/charter.js';
@@ -77,9 +77,7 @@ export {
 } from './engine/recruitment.js';
 export {
   acknowledgeCouncilReport,
-  inspectGoals,
   dismissNotification,
-  clearNotifications,
   updateSettings,
   getNextAction,
   getDashboardSummary,

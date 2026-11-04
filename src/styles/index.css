@@ -21,7 +21,6 @@
 @import './screens/tournaments.css';
 @import './screens/rankings.css';
 @import './screens/chronicle.css';
-@import './screens/goals.css';
 @import './screens/settings.css';
 @import './screens/legacy.css';
 @import './screens/headquarters.css';
@@ -29,5 +28,6 @@
 @import './screens/identity.css';
 @import './screens/history.css';
 @import './screens/arena.css';
+@import './screens/journal.css';
 @import './components/touch.css';
 @import './layout/responsive.css';

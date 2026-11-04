@@ -1,105 +1,11 @@
 // @ts-check
-// Chapter goals, achievements, promotion, and evaluateStateInPlace (run after every action).
+// Promotion and evaluateStateInPlace (run after every action). The old chapter goals
+// and achievements are gone: the story and the guild tasks replaced them.
 import { REGIONS, TIERS } from '../../data/content.js';
-import { addChronicle, commitRng, dateLabel, hallStage, rngFor, tierIndexByName } from './core.js';
+import { addChronicle, commitRng, rngFor, tierIndexByName } from './core.js';
 import { refreshMissionsInPlace } from './universe.js';
 import { getPlayerRanks, updateStatusTitleInPlace } from './rankings.js';
 import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace } from './institution.js';
-
-export function getGoalMetric(state, metric) {
-  switch (metric) {
-    case 'missionsWon':
-      return state.stats.missionsWon;
-    case 'missionsCompleted':
-      return state.stats.missionsCompleted;
-    case 'tournamentBest':
-      return state.stats.tournamentBest;
-    case 'fame':
-      return state.guild.fame;
-    case 'tierIndex':
-      return state.guild.tierIndex;
-    case 'hallStage':
-      return hallStage(state).id;
-    case 'legendHero':
-      return state.heroes.some((hero) => hero.power >= 80 || hero.legacy >= 150) ? 1 : 0;
-    case 'highestLevel':
-      return Math.max(1, ...state.heroes.map((hero) => hero.level || 1), ...state.historicHeroes.map((hero) => hero.level || 1));
-    case 'primalDiversity':
-      return new Set(
-        state.heroes
-          .filter((hero) => !['dead', 'retired'].includes(hero.status))
-          .map((hero) => hero.primal)
-          .filter(Boolean),
-      ).size;
-    case 'professionalTournamentWins':
-      return state.stats.professionalTournamentWins || 0;
-    case 'artifacts':
-      return state.artifacts.length;
-    case 'years':
-      return state.stats.yearsPlayed;
-    case 'perfectHardMission':
-      return state.stats.perfectHardMission;
-    case 'upsets':
-      return state.stats.upsets;
-    case 'tournamentsWon':
-      return state.stats.tournamentsWon;
-    case 'longService':
-      return Math.max(0, ...state.heroes.map((hero) => hero.career.serviceYears || 0), ...state.historicHeroes.map((hero) => hero.career?.serviceYears || 0));
-    case 'inheritedWill':
-      return state.stats.inheritedWill;
-    case 'rivalries':
-      return state.stats.rivalries;
-    case 'mythicFeats':
-      return state.stats.mythicFeats;
-    default:
-      return 0;
-  }
-}
-
-function evaluateGoalsInPlace(state) {
-  state.goals.forEach((goal) => {
-    if (goal.completed) return;
-    const value = getGoalMetric(state, goal.metric);
-    const met = goal.comparator === 'lte' ? value <= goal.target : value >= goal.target;
-    if (met) {
-      goal.completed = true;
-      goal.claimed = true;
-      state.guild.crowns += goal.reward.crowns;
-      state.guild.fame += goal.reward.fame;
-      state.notifications.push({
-        id: `goal-${goal.id}`,
-        tone: 'gold',
-        title: `Objective complete: ${goal.title}`,
-        text: `Reward: ${goal.reward.crowns} gold${goal.reward.fame ? ` and ${goal.reward.fame} fame` : ''}.`,
-      });
-      addChronicle(state, {
-        type: 'goal',
-        importance: 3,
-        title: goal.title,
-        text: `${goal.description} The guild receives ${goal.reward.crowns} gold.`,
-        tags: ['goal'],
-      });
-    }
-  });
-}
-
-function evaluateAchievementsInPlace(state) {
-  state.achievements.forEach((achievement) => {
-    if (achievement.unlocked) return;
-    const value = getGoalMetric(state, achievement.metric);
-    if (value >= achievement.target) {
-      achievement.unlocked = true;
-      achievement.unlockedDate = dateLabel(state);
-      state.guild.legacy += 5;
-      state.notifications.push({
-        id: `achievement-${achievement.id}`,
-        tone: 'purple',
-        title: `Achievement: ${achievement.name}`,
-        text: achievement.description,
-      });
-    }
-  });
-}
 
 export function promotionRequirement(state) {
   const current = state.guild.tierIndex;
@@ -160,8 +66,6 @@ export function evaluateStateInPlace(state) {
   const official = getPlayerRanks(state).official;
   state.guild.rank = official.rank;
   state.guild.officialPoints = official.value;
-  evaluateGoalsInPlace(state);
-  evaluateAchievementsInPlace(state);
   evaluatePromotionInPlace(state);
   updateStatusTitleInPlace(state);
   ensureGuildmasterInPlace(state);

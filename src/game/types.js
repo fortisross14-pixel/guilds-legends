@@ -178,8 +178,6 @@
  * @property {any[]} artifacts
  * @property {any[]} worldArtifacts
  * @property {any[]} sagas
- * @property {any[]} goals
- * @property {any[]} achievements
  * @property {Record<string, number>} stats
  * @property {any} legacy
  * @property {any} tutorial

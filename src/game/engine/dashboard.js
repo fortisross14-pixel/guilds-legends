@@ -16,10 +16,9 @@ import {
   bedCount,
   isGuildDefunct,
   partyCapacity,
-  tierIndexByName,
 } from './core.js';
 import { getGuildRankSummary } from './rankings.js';
-import { getGoalMetric, promotionRequirement } from './goals.js';
+import { promotionRequirement } from './goals.js';
 import { getPatronLoanOffer, monthlyUpkeep } from './economy.js';
 import { getPlayerRanks, getRankMovement, getStatusTitle } from './rankings.js';
 import { getTournamentAccess } from './tournaments.js';
@@ -112,21 +111,9 @@ export function acknowledgeCouncilReport(state) {
   return finalize(next);
 }
 
-export function inspectGoals(state) {
-  const next = clone(state);
-  next.flags.goalsInspected = true;
-  return finalize(next);
-}
-
 export function dismissNotification(state, notificationId) {
   const next = clone(state);
   next.notifications = next.notifications.filter((notification) => notification.id !== notificationId);
-  return finalize(next);
-}
-
-export function clearNotifications(state) {
-  const next = clone(state);
-  next.notifications = [];
   return finalize(next);
 }
 
@@ -207,45 +194,6 @@ export function getNextAction(state) {
       screen: 'missions',
     };
   }
-  const activeGoal = state.goals.find((goal) => !goal.completed && tierIndexByName(goal.tier) <= state.guild.tierIndex);
-  if (activeGoal) {
-    const current = getGoalMetric(state, activeGoal.metric);
-    const screenByMetric = {
-      missionsWon: 'missions',
-      missionsCompleted: 'missions',
-      tournamentBest: 'tournaments',
-      fame: 'missions',
-      tierIndex: 'goals',
-      hallStage: 'hall',
-      legendHero: 'heroes',
-      highestLevel: 'heroes',
-      primalDiversity: 'world',
-      professionalTournamentWins: 'tournaments',
-      artifacts: 'chronicle',
-      years: 'hall',
-    };
-    const actionByMetric = {
-      missionsWon: 'Choose a contract you can cover with the recommended roles.',
-      tournamentBest: 'Build a Combat Company, qualify for the next circuit and enter this year’s tournament.',
-      fame: 'Favor high-fame contracts, saga choices and public victories.',
-      tierIndex: 'Review the promotion checklist and complete its next missing condition.',
-      hallStage: 'Buy the old hall, then build rooms in its empty wings.',
-      legendHero: 'Give a high-potential hero missions, training and meaningful roles.',
-      highestLevel: 'Missions grant much more experience than monthly training. Keep the hero active without exhausting them.',
-      primalDiversity: 'Travel to a differently aligned settlement and inspect its local recruitment market.',
-      professionalTournamentWins: 'Meet the fame and combat-win thresholds, travel to Tidecross and win the professional circuit.',
-      artifacts: 'Pursue missions that display an artifact possibility.',
-      years: 'Keep the institution solvent and advance the chronicle.',
-    };
-    return {
-      kind: 'goal',
-      title: activeGoal.title,
-      body: `${activeGoal.description} ${actionByMetric[activeGoal.metric] || ''}`.trim(),
-      screen: screenByMetric[activeGoal.metric] || 'goals',
-      progress: current,
-      target: activeGoal.target,
-    };
-  }
   const requirement = promotionRequirement(state);
   if (requirement) {
     /** @type {[string, { current: any, target: any, met: boolean }][]} */
@@ -262,7 +210,7 @@ export function getNextAction(state) {
       kind: 'promotion',
       title: `Path to ${requirement.target.id}`,
       body: `Next threshold: ${display}. Open the full checklist to choose how to achieve it.`,
-      screen: 'goals',
+      screen: 'guild',
     };
   }
   return {

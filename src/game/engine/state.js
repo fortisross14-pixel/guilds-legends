@@ -1,6 +1,6 @@
 // @ts-check
 // New campaign creation and default state pieces.
-import { ACHIEVEMENTS, CHAPTER_GOALS, CLASSES, SAGA_DEFINITIONS } from '../../data/content.js';
+import { CLASSES, SAGA_DEFINITIONS } from '../../data/content.js';
 import { CHARTERS } from '../../data/charters.js';
 import { PATRON_LIST } from '../../data/patrons.js';
 import { emptyFormations } from '../../data/formations.js';
@@ -169,8 +169,6 @@ export function createNewGame(options = {}) {
     universeStats: {},
     sagas: SAGA_DEFINITIONS.map((saga) => ({ ...saga, progress: 0, completed: false, discovered: saga.tier === 'Regional' })),
     tournaments: [],
-    goals: CHAPTER_GOALS.map((goal) => ({ ...goal, completed: false, claimed: false })),
-    achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
     stats: initialStats(),
     notifications: [],
     settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6, joystick: false, battleSpeed: 1, gestures: 'drag', haptics: true, seenHints: {}, questMarker: true, showAssetIds: false },
@@ -182,7 +180,6 @@ export function createNewGame(options = {}) {
       dialogue: {},
       firstMissionInspected: false,
       firstHeroInspected: false,
-      goalsInspected: false,
       politicalChoiceOffered: false,
       firstCompanionHired: false,
       firstTravelCompleted: false,
