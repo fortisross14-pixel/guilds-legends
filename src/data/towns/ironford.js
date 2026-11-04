@@ -53,7 +53,7 @@ export default {
   ],
   props: [
     { id: 'forge', asset: 'prop.forge', at: [33, 2], size: [2, 2], poi: { name: 'The Great Forge', verb: 'Inspect', dialogue: 'ironford.forge' } },
-    { id: 'bridge-plaque', asset: 'prop.plaque', at: [22, 9], size: [1, 1], poi: { name: 'Bridge plaque', verb: 'Inspect', dialogue: 'ironford.plaque' } },
+    { id: 'bridge-plaque', asset: 'prop.plaque', at: [22, 8], size: [1, 1], poi: { name: 'Bridge plaque', verb: 'Inspect', dialogue: 'ironford.plaque' } },
     { id: 'noticeBoard', asset: 'prop.noticeboard', at: [22, 16], size: [2, 2], poi: { name: 'Notice Board', verb: 'Inspect', building: 'noticeBoard' } },
     { id: 'statue', asset: 'prop.statue', at: [5, 22], size: [1, 2], poi: { name: 'Statue of the First Smith', verb: 'Inspect', dialogue: 'ironford.statue' } },
     { id: 'anvil', asset: 'prop.anvil', at: [31, 8], size: [1, 1] },

@@ -71,6 +71,9 @@ export function nearestFree(grid, point) {
  * the walker heads straight for the furthest visible waypoint.
  * Returns a list of points ending at `to` (or the nearest free point to it), or [] if unreachable.
  */
+/** How far (in cells) a walk may stop short of a walled-off spot. */
+const REACH_FALLBACK_CELLS = 2;
+
 export function findPath(grid, from, to) {
   const goalPoint = nearestFree(grid, to);
   const startPoint = nearestFree(grid, from) || from;
@@ -123,10 +126,29 @@ export function findPath(grid, from, to) {
       }
     }
   }
-  if (came[goal] === -1 && goal !== start) return [];
+  let goalAt = goal;
+  let endPoint = goalPoint;
+  if (came[goal] === -1 && goal !== start) {
+    // The exact spot is walled off (e.g. it falls just inside an obstacle's padding):
+    // the search has visited every reachable cell, so stop at the closest one, if it is near.
+    let best = -1;
+    let bestDistance = REACH_FALLBACK_CELLS + 0.01;
+    for (let index = 0; index < total; index += 1) {
+      if (!closed[index]) continue;
+      const distance = Math.hypot((index % grid.cols) - goalCell.col, Math.floor(index / grid.cols) - goalCell.row);
+      if (distance < bestDistance) {
+        best = index;
+        bestDistance = distance;
+      }
+    }
+    if (best === -1) return [];
+    if (best === start) return [];
+    goalAt = best;
+    endPoint = centerOf(grid, best);
+  }
   const cells = [];
-  for (let at = goal; at !== -1 && at !== start; at = came[at]) cells.unshift(centerOf(grid, at));
-  const raw = [...cells.slice(0, -1), goalPoint];
+  for (let at = goalAt; at !== -1 && at !== start; at = came[at]) cells.unshift(centerOf(grid, at));
+  const raw = [...cells.slice(0, -1), endPoint];
   const path = [];
   let anchor = startPoint;
   let index = 0;
