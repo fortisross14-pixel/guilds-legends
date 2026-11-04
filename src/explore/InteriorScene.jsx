@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { peopleIn, storyNpcsHere } from '../game/engine.js';
+import { hasHall, peopleIn, storyNpcsHere } from '../game/engine.js';
 import { INTERIORS } from '../data/interiors.js';
 import { townFor } from '../data/towns/index.js';
 import { interiorMap } from './sceneMap.js';
@@ -56,7 +56,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
       className={`interior-scene interior-scene--${building}`}
       label={`Inside ${label}`}
     >
-      <PlaceTag title={label} sub={dateLine(state.date)} />
+      <PlaceTag title={label} sub={dateLine(state.date)} goal={building === 'tavern' && !hasHall(state) ? <p className="goal-line goal-line--status">No hall, no hires: talk all you like, but nobody signs until you rent a hall.</p> : null} />
       {talk?.dialogue ? (
         <DialogueBox
           key={talk.person}

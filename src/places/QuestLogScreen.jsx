@@ -4,6 +4,7 @@ import { ACTS, CHAPTERS, STORY_HEROES } from '../data/story.js';
 import { getConnectionsView, getHero, getPromotionRequirement, getStoryView, nextUpgrade } from '../game/engine.js';
 import { Badge, Button, EmptyState, Panel, ProgressBar } from '../components/UI.jsx';
 import Icon from '../components/Icon.jsx';
+import HireGate from '../hud/HireGate.jsx';
 
 // The Quest Log: Main (the story, with gates, routes and evidence), Side (story
 // recruits, patrons, promises, side jobs and leads), Guild (the tutorial, then
@@ -188,6 +189,7 @@ function GuildTab({ state, actions, navigate, story }) {
   const upgrade = nextUpgrade(state);
   return (
     <>
+      <HireGate state={state} />
       {story.tutorial === 'active' ? (
         <Panel title="The tutorial" eyebrow="Act I of the story">
           <ol className="quest-steps">

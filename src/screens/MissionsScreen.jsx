@@ -1,3 +1,4 @@
+import { roomLevel } from '../game/engine.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { FORMATION_TYPES, formationForMission } from '../data/formations.js';
@@ -400,7 +401,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
                 <Button size="sm" onClick={autoBuild}>
                   Build best available
                 </Button>
-                {state.guild.hall?.rooms?.war ? (
+                {roomLevel(state, 'war') ? (
                   <Button size="sm" onClick={() => actions.saveFormation(formationType, assignments)} disabled={!assignments.length}>
                     Save as default
                   </Button>

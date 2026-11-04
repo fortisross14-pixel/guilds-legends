@@ -98,7 +98,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
     return (
       <Section {...common}>
         {tab === 'roster' ? <HeroesScreen {...props} tabs={['roster']} /> : null}
-        {tab === 'main' ? (state.guild.hall?.rooms?.war ? <WarRoom state={state} actions={actions} /> : <NoWarRoom navigate={navigate} />) : null}
+        {tab === 'main' ? (roomLevel(state, 'war') ? <WarRoom state={state} actions={actions} /> : <NoWarRoom navigate={navigate} />) : null}
         {tab === 'legends' ? <HeroesScreen {...props} tabs={['legends']} /> : null}
       </Section>
     );

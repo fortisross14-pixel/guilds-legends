@@ -1,4 +1,4 @@
-import { travellingPartyIds } from '../game/engine.js';
+import { roomLevel, travellingPartyIds } from '../game/engine.js';
 
 const ACTIVITY_STATUS = {
   Training: { key: 'training', label: 'Training', icon: '⚔' },
@@ -20,14 +20,14 @@ export function heroStatus(state, hero) {
     return { key: 'injured', label: hero.monthlyActivity === 'Infirmary' ? 'Injured · Infirmary' : 'Injured', icon: '✚', away: false };
   // An activity whose room is not built yet means the hero simply rests.
   const room = { Training: 'training', Infirmary: 'infirmary', Scouting: 'scouts' }[hero.monthlyActivity];
-  const built = room ? Boolean(state.guild.hall?.rooms?.[room]) : hero.monthlyActivity !== 'Guild Duty' || Boolean(state.guild.hall?.owned);
+  const built = room ? Boolean(roomLevel(state, room)) : hero.monthlyActivity !== 'Guild Duty' || Boolean(state.guild.hall?.owned);
   return { ...((built && ACTIVITY_STATUS[hero.monthlyActivity]) || ACTIVITY_STATUS.Rest), away: false };
 }
 
 /** Reasons a hero needs attention (shown as a warning dot). */
 export function heroWarnings(state, hero) {
   const warnings = [];
-  if (hero.status === 'injured' && hero.monthlyActivity !== 'Infirmary' && state.guild.hall?.rooms?.infirmary) warnings.push('Injured but not in the Infirmary');
+  if (hero.status === 'injured' && hero.monthlyActivity !== 'Infirmary' && roomLevel(state, 'infirmary')) warnings.push('Injured but not in the Infirmary');
   if ((hero.fatigue || 0) >= 70) warnings.push('Very tired');
   if ((hero.loyalty ?? 100) < 35) warnings.push('Loyalty is low');
   const nowMonth = state.date.year * 12 + state.date.month;

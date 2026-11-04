@@ -41,6 +41,9 @@ import {
   getHero,
   getReport,
   getStoryView,
+  upkeepBreakdown,
+  savingsRate,
+  propertyGoal,
   hallStage,
   HOME_LOCATION_ID,
   INN_NIGHT_COST,
@@ -94,7 +97,8 @@ import {
   updateSettings,
   upgradeBranch,
   giftPatron,
-  buyHall,
+  buyLot,
+  expandLot,
   buildRoom,
   upgradeGear,
   validateGame,
@@ -1115,7 +1119,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(assignArtifact(state, artifactId, heroId), heroId ? 'Artifact entrusted to a hero.' : 'Artifact returned to the guild vault.'),
       inheritAmbition: (legacyAmbitionId, heroId) =>
         applyResult(inheritAmbition(state, legacyAmbitionId, heroId), 'An unfinished ambition has found a new bearer.'),
-      buyHall: () => applyResult(buyHall(state), 'The stable is yours outright.'),
+      buyLot: () => applyResult(buyLot(state), 'The deed is yours.'),
+      expandLot: () => applyResult(expandLot(state), 'The land next door is yours. Work begins.'),
       buildRoom: (roomId) => applyResult(buildRoom(state, roomId), 'The builders arrive.'),
       upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
       giftPatron: (patronId) => applyResult(giftPatron(state, patronId), 'A gift is sent with your compliments.'),
@@ -1301,8 +1306,15 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     { id: 'records', label: 'Records', icon: 'trophy', onSelect: () => navigate('rankings') },
     { id: 'system', label: 'System', icon: 'gear', onSelect: () => navigate('menu') },
   ];
+  const costs = upkeepBreakdown(state);
+  const saving = savingsRate(state);
+  const goal = propertyGoal(state);
   const ledgerRows = [
     { id: 'gold', icon: 'coin', label: 'Gold', value: summary.crowns.toLocaleString(), num: summary.crowns, onOpen: () => navigate('treasury') },
+    // Money: what the month costs (rent, rooms, wages), what the guild saves, and the property goal.
+    { id: 'costs', icon: 'scroll', label: 'Costs a month', sub: [costs.hall.lease ? `rent ${costs.hall.lease}` : null, costs.hall.roomTotal ? `rooms ${costs.hall.roomTotal}` : null, `wages ${costs.wages}`].filter(Boolean).join(' · '), value: `−${(costs.total + costs.loan).toLocaleString()}`, num: costs.total + costs.loan, quiet: true, onOpen: () => navigate('treasury') },
+    { id: 'saving', icon: 'chest', label: 'Saving', sub: saving === null ? 'measured from next month' : 'average of the last months', value: saving === null ? '—' : `${saving >= 0 ? '+' : '−'}${Math.abs(saving).toLocaleString()}/mo`, quiet: true, onOpen: () => navigate('treasury') },
+    ...(goal ? [{ id: 'goal', icon: goal.kind === 'buy' ? 'castle' : 'map', label: goal.kind === 'buy' ? 'Toward the deed' : 'Toward more land', sub: !goal.missing ? 'ready to buy' : goal.months ? `about ${goal.months} months at this rate` : goal.measured ? 'the treasury is not growing' : `${goal.price.toLocaleString()} gold`, value: `${Math.floor((Math.min(goal.savings, goal.price) / goal.price) * 100)}%`, quiet: true, onOpen: () => navigate('treasury') }] : []),
     { id: 'fame', icon: 'laurel', label: 'Fame', value: summary.fame.toLocaleString(), num: summary.fame, onOpen: () => navigate('reputation') },
     ...LADDERS.map((ladder) => ({
       id: ladder,

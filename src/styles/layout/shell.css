@@ -190,3 +190,11 @@
 .board-elsewhere__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
 .board-elsewhere__row > span { display: grid; min-width: 0; }
 .board-elsewhere__row small { color: var(--text-dim); font-size: var(--fs-1); }
+.ledger__label { display: grid; }
+.ledger__label small { color: var(--text-faint); font-size: var(--fs-1); }
+.property-goal { display: grid; gap: 8px; padding: 4px 0 8px; }
+.property-goal__head { display: grid; gap: 2px; }
+.property-goal__head small, .property-goal__foot small { color: var(--text-dim); font-size: var(--fs-2); }
+.property-goal__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.hire-gate { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid rgba(227, 169, 87, .45); border-radius: var(--r-1); color: var(--text); font-size: var(--fs-2); }
+.hire-gate .icon { color: var(--warn); }

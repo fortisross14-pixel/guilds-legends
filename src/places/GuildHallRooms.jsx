@@ -27,9 +27,15 @@ function HallSummary({ state, hall }) {
     <header className="hall-summary">
       <strong>{state.guild.name}</strong>
       <Badge tone="gold">{hall.stage.name}</Badge>
+      {hall.owned ? <Badge tone={hall.bought ? 'green' : 'blue'}>{hall.bought ? 'Owned' : `Rented · ${hall.rent}/month`}</Badge> : null}
       <span className={hall.free <= 0 ? 'is-full' : ''}>
         {hall.used}/{hall.beds} beds
       </span>
+      {hall.owned ? (
+        <span>
+          {hall.slots.used}/{hall.slots.total} slots
+        </span>
+      ) : null}
       <span className="num">{state.guild.crowns.toLocaleString()} G</span>
       <span>−{upkeep.total}/month</span>
       <span>{state.guild.fame} fame</span>
@@ -179,7 +185,7 @@ function RoomStatus({ plan, hall, actions }) {
 function BuildOffer({ plan, hall, actions, compact = false }) {
   const next = plan.next;
   const busy = Boolean(hall.construction);
-  const noWing = !plan.built && hall.wings.free <= 0;
+  const noSlot = !plan.built && hall.slots.free <= 0;
   return (
     <article className={`build-offer ${next.met ? '' : 'is-locked'} ${compact ? 'build-offer--compact' : ''}`}>
       <header>
@@ -203,8 +209,8 @@ function BuildOffer({ plan, hall, actions, compact = false }) {
         <dt>Needs</dt>
         <dd>{next.met ? 'Ready' : next.missing.join(', ')}</dd>
       </dl>
-      <Button variant="primary" disabled={!next.met || busy || noWing} why={busy ? 'The builders are busy.' : noWing ? 'No empty wing left.' : `Needs: ${next.missing?.join(', ') || 'more gold'}.`} onClick={() => actions.buildRoom(plan.id)}>
-        {busy ? 'Builders are busy' : noWing ? 'No empty wing' : `Build (${next.cost} G)`}
+      <Button variant="primary" disabled={!next.met || busy || noSlot} why={busy ? 'The builders are busy.' : noSlot ? (hall.bought ? 'No empty slot left: expand the lot.' : 'No empty slot left: buy the lot, then expand it.') : `Needs: ${next.missing?.join(', ') || 'more gold'}.`} onClick={() => actions.buildRoom(plan.id)}>
+        {busy ? 'Builders are busy' : noSlot ? 'No empty slot' : `Build (${next.cost} G)`}
       </Button>
     </article>
   );
@@ -223,7 +229,7 @@ function BuildList({ hall, actions }) {
   );
 }
 
-/** Before the stable is rented: the founder's house, and where to go next (story mission 1). */
+/** Before a lot is rented: the founder's house, and where to go next (story mission 1). No hall, no hires. */
 function House({ state, hall, actions }) {
   return (
     <Panel title={HOUSE.name} eyebrow="Your home, not yet a guild hall">
@@ -238,7 +244,7 @@ function House({ state, hall, actions }) {
           <Icon name="bag" size={24} /> A small chest: {chestUsed(state)}/{chestCapacity(state)} items
         </li>
       </ul>
-      <p className="muted">The old stable on Banner Plaza stands empty. Gideon Rusk owns it; talk to him in the plaza (story mission 1).</p>
+      <p className="muted">No hall, no hires: recruits will talk to you, but nobody signs with a guild that has nowhere to sleep. The old stable yard on Banner Plaza stands empty; Gideon Rusk rents it out (story mission 1).</p>
       <Button variant="primary" onClick={() => actions.playStoryScene('m1')}>
         Talk to Gideon Rusk
       </Button>
@@ -246,16 +252,41 @@ function House({ state, hall, actions }) {
   );
 }
 
-/** The leased stable can be bought outright to end the rent. */
-function BuyHall({ state, hall, actions }) {
-  if (!hall.purchase) return null;
+/**
+ * The long-term goal for the lot: buy it outright while rented (ends the rent),
+ * then buy the land next door step by step. Price, savings and "at this rate".
+ */
+export function PropertyGoal({ hall, actions, compact = false }) {
+  const goal = hall.goal;
+  if (hall.expansion) {
+    return (
+      <section className="property-goal">
+        <strong>Clearing {hall.expansion.land}</strong>
+        <ProgressBar value={hall.expansion.totalWeeks - hall.expansion.weeksLeft} max={hall.expansion.totalWeeks} label={`${hall.expansion.weeksLeft} weeks left · ${hall.expansion.toSlots} slots when done`} tone="blue" compact />
+      </section>
+    );
+  }
+  if (!goal) return hall.bought && !compact ? <p className="muted property-goal">The lot is yours and as big as it gets for now.</p> : null;
+  const ready = goal.missing === 0;
+  const when = ready ? 'You have enough.' : !goal.measured ? 'Savings are measured from the next month on.' : goal.months === null ? 'At this rate: never; the treasury is not growing.' : `At this rate: about ${goal.months} month${goal.months === 1 ? '' : 's'}.`;
   return (
-    <Panel title="Buy the stable outright" eyebrow={`Rent now: ${hall.purchase.leaseRent} a month`}>
-      <p>Gideon would sell for {hall.purchase.buy} gold. No more rent, and nobody can take the hall away.</p>
-      <Button disabled={state.guild.crowns < hall.purchase.buy} onClick={actions.buyHall}>
-        Buy it ({hall.purchase.buy} G)
-      </Button>
-    </Panel>
+    <section className="property-goal">
+      <span className="property-goal__head">
+        <strong>{goal.kind === 'buy' ? 'Buy the property' : 'Expand the lot'}</strong>
+        <small>{goal.name}. {goal.detail}</small>
+      </span>
+      <ProgressBar value={Math.min(goal.savings, goal.price)} max={goal.price} label="Savings" tone="gold" compact />
+      <span className="property-goal__foot">
+        <small>
+          {when} {goal.measured ? `Saving ${goal.rate >= 0 ? '+' : '−'}${Math.abs(goal.rate)} a month.` : ''}
+        </small>
+        {!compact ? (
+          <Button size="sm" variant={ready ? 'primary' : 'secondary'} disabled={!ready} why={`You need ${goal.missing.toLocaleString()} more gold.`} onClick={goal.kind === 'buy' ? actions.buyLot : actions.expandLot}>
+            {goal.kind === 'buy' ? 'Buy the deed' : 'Buy the land'} ({goal.price.toLocaleString()} G)
+          </Button>
+        ) : null}
+      </span>
+    </section>
   );
 }
 
@@ -307,6 +338,7 @@ export function WarRoom({ state, actions }) {
 
 function Treasury({ state, actions }) {
   const upkeep = upkeepBreakdown(state);
+  const hall = getHallView(state);
   const report = state.council?.lastReport;
   const offer = getPatronLoanOffer(state);
   const net = report ? report.crownsAfter - report.crownsBefore : null;
@@ -341,7 +373,7 @@ function Treasury({ state, actions }) {
           <dd>{upkeep.wages}</dd>
           {upkeep.hall.lease ? (
             <>
-              <dt>Hall lease</dt>
+              <dt>Rent</dt>
               <dd>{upkeep.hall.lease}</dd>
             </>
           ) : null}
@@ -366,6 +398,9 @@ function Treasury({ state, actions }) {
             <strong>{upkeep.total + upkeep.loan}</strong>
           </dd>
         </dl>
+      </Panel>
+      <Panel title="The property" eyebrow={hall.owned ? (hall.bought ? 'The deed is the guild’s' : `Rented from ${hall.lot.owner}`) : 'No hall yet'}>
+        {hall.owned ? <PropertyGoal state={state} hall={hall} actions={actions} /> : <p className="muted">Rent the old stable yard on Banner Plaza first (story mission 1).</p>}
       </Panel>
       <Panel title="Loans and debt" eyebrow={state.guild.unpaidMonths ? `Wages unpaid for ${state.guild.unpaidMonths} month(s)` : 'Wages are paid'}>
         {state.guild.loan ? (
@@ -519,7 +554,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
 
   if (!plan && !basic && roomId !== 'build' && roomId !== 'rest') {
     const building = hall.construction && !hall.rooms.find((item) => item.id === hall.construction.roomId)?.built ? hall.construction : null;
-    const emptyWings = Math.max(0, hall.wings.free);
+    const emptySlots = Math.max(0, hall.slots.free);
     return (
       <div className="hall-rooms">
         <HallSummary state={state} hall={hall} />
@@ -529,7 +564,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
             <House state={state} hall={hall} actions={actions} />
           </div>
         ) : (
-          <BuyHall state={state} hall={hall} actions={actions} />
+          <PropertyGoal state={state} hall={hall} actions={actions} />
         )}
         <div className="room-actions">
           {atHome(state) ? (
@@ -574,8 +609,8 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
               onClick={() => setRoom('build')}
             />
           ) : null}
-          {Array.from({ length: emptyWings }, (_, index) => (
-            <Tile key={`wing-${index}`} id="wing" icon="hammer" name="Empty wing" text="Build here" className="room-tile--empty" onClick={() => setRoom('build')} />
+          {Array.from({ length: emptySlots }, (_, index) => (
+            <Tile key={`slot-${index}`} id="slot" icon="hammer" name="Empty slot" text="Tap to choose a room" className="room-tile--empty" onClick={() => setRoom('build')} />
           ))}
         </nav>
       </div>

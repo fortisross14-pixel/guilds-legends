@@ -1,3 +1,4 @@
+import { roomLevel } from '../game/engine.js';
 import React, { useEffect, useState } from 'react';
 import { FORMATION_TYPES } from '../data/formations.js';
 import { getHero, getTournamentAccess, roleRating } from '../game/engine.js';
@@ -132,7 +133,7 @@ export default function GuildChampionships({ state, actions, navigate }) {
               <Button size="sm" onClick={() => setAssignments(bestCombatTeam(state))}>
                 Build best company
               </Button>
-              {state.guild.hall?.rooms?.war ? (
+              {roomLevel(state, 'war') ? (
                 <Button size="sm" onClick={() => actions.saveFormation('Combat', assignments)}>
                   Save as Combat arrangement
                 </Button>

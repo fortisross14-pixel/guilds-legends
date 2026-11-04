@@ -170,7 +170,7 @@ const FLASH_MS = 2600;
  * The ledger. Collapsed: the book with the crest, and gold. Tapped: a column of
  * rows (each opens its detail). On its own: when a watched value changes, it
  * shows that row with the change ("+120", "▲2") and folds away again.
- * rows: [{ id, icon, label, value, num?, change?, text?, onOpen }]
+ * rows: [{ id, icon, label, sub?, value, num?, change?, quiet? (never flashes), onOpen }]
  */
 export function Ledger({ crest, gold, rows, open, onOpenChange }) {
   const memory = useRef(null);
@@ -184,6 +184,7 @@ export function Ledger({ crest, gold, rows, open, onOpenChange }) {
     if (!before) return;
     const deltas = {};
     rows.forEach((row) => {
+      if (row.quiet) return;
       const was = before[row.id];
       const is = now[row.id];
       if (was === undefined || was === is) return;
@@ -227,7 +228,10 @@ export function Ledger({ crest, gold, rows, open, onOpenChange }) {
                   className={delta ? 'is-changed' : ''}
                 >
                   <Icon name={row.icon} size={18} />
-                  <span className="ledger__label">{row.label}</span>
+                  <span className="ledger__label">
+                    {row.label}
+                    {row.sub ? <small>{row.sub}</small> : null}
+                  </span>
                   <strong className="num">{row.value}</strong>
                   {row.change ? <em className={`ledger__move ledger__move--${row.change > 0 ? 'up' : 'down'}`}>{row.change > 0 ? `▲${row.change}` : `▼${-row.change}`}</em> : null}
                   {delta && delta !== 'new' ? <i className={`ledger__delta ${/^[+▲]/.test(delta) ? 'is-up' : 'is-down'}`}>{delta}</i> : null}

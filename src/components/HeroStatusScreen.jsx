@@ -1,3 +1,4 @@
+import { roomLevel } from '../game/engine.js';
 import React, { useRef, useState } from 'react';
 import { LONG_PRESS_MS, useSwipe } from './gestures.js';
 import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, APPOINTMENTS, normalizeClassId } from '../data/content.js';
@@ -346,7 +347,7 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
 
             {own ? (
               <section className="hero-status__actions">
-                {state.guild.hall?.rooms?.war ? (
+                {roomLevel(state, 'war') ? (
                   <Button
                     variant={inMainParty ? 'secondary' : 'primary'}
                     disabled={!inMainParty && (state.guild.mainParty || []).length >= MAIN_PARTY_SIZE}
