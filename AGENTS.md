@@ -65,11 +65,12 @@ src/data/                 Static content: classes, missions, formations, world m
   dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js; story.js and storyAct2.js hold the story scenes
   story.js, lore.js       The Last Banner (docs/STORY.md): missions, steps, gates, evidence, story heroes, the prologue; the Broken Lantern's seven, the official story, the Lore codex
   tiles.js, playerHouse.js  Ground tiles for walkable layouts; the player's house (prologue)
+  interiors.js, people.js Building interiors (11×11 rooms: furniture, spots, the doorway); the regulars in each building and visitor name pools
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
   rooms.js                Rented room, hall purchase, buildable rooms (levels, cost, weeks, upkeep, requirements), hall stages
   charters.js, patrons.js Founding charters and run paths; the three patrons, their levels, unlocks and rivalries
-src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map), TownScene, WildScene, DialogueBox, SceneHud
+src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map, interiorMap), TownScene, WildScene, InteriorScene (a building's room), DialogueBox (scripted talk), PersonDialogue (people: offers and the interview)
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   charter.js              founding charter effects and patron standing (data-only imports, so it sits first)
@@ -95,6 +96,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
   tournamentEntry.js      arena sign-up, tournament start days and forfeits, the arena read model, starting tournament combat
   missions.js             contract inspection, party selection, launch, encounter queueing
+  people.js               people in buildings (Phase 7C): regulars and monthly visitors built on candidates and contracts, offers (mission, hire, challenge), talking and the interview, bouts, Contacts
   outcomes.js             mission resolution: grades, injuries, rewards, reports, sagas
   encounters.js           active combat / mission-game actions and conclusion
   rivals.js               rival seasons, AI transfer market, rival institutions
@@ -146,6 +148,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `officialLedger[]` entries can also come from contracts and challenges (`source`)
 - `pendingEvent` (a town event, festival or story card waiting for a choice), `news[]` + `newsUnread`
 - `sideJobs[]` (board), `activeSideJobs[]` (running; heroes have status `sidejob`), `wager`
+- `people: { [personId]: { met, talks, relationship, interview, bouts, movedOn, name, role, portrait, locationId, building, offers } }`: memory only (who is where comes from `people.js`); candidates carry `postedSerial`, `venue` (tavern | arena), `boutFirst`/`boutWon`; contracts carry `unlocked`/`accepted`/`giverId` (only `unlocked`, story and boss contracts show on the notice board)
 - `story: { prologue ('house'|'done'), tutorial ('active'|'done'|'skipped'), missions: { m1: { status, step, route } }, evidence, codex, choices, scene (a queued story scene), chapter, chapterDone }`, `defeatedBosses[]`; story contracts carry `story` ('m3.contract'), boss contracts `bossId`; story heroes carry `storyId`
 - `seasons[year]`: per-year totals (`g` guild, `fam` per family, `spent` by category, `h[heroId]` per hero), ranks (`ranksStart`, `ranksEnd`, `best`, monthly `series`, every guild's end rank in `ladder`), `big`/`worst`, `broken[]` and the `review`; `records: { guild, hero }`, `streak`, `bossLog[]`; heroes carry `awards[]`, `signedFee` and `career.goldForGuild`
 - `settings.sound`, `settings.volume`

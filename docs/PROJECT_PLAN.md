@@ -307,7 +307,7 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
   - **Effects:** hit, slash, fire, heal, buff, level-up.
 - Placeholder fallback stays, so art can arrive in batches.
 
-### Phase 7C — Game HUD, menus and walk-in buildings
+### Phase 7C — Game HUD, menus and walk-in buildings ✅ Done (2026-11-03)
 **Part 1 ✅ Done (2026-11-03).** Notes (details in [`docs/UX.md`](UX.md) §2 and [`DESIGN.md`](../DESIGN.md)):
 - **Removed:** the sidebar, the top bar and its journal, the mobile bottom bar, the town-scene button stack (SceneHud), the Town directory (TownScreen) and the Chronicle menu (MenuScreen), PixelIcon and UpcomingStrip. Windmere got a small walkable layout so every slice town is walkable.
 - **HUD** (`src/hud/Hud.jsx`): place tag + goal line, ledger (reacts to gold, fame and rank changes), Guild and World orbs (tap or press-slide-release, badges, labels for the first four uses), keyboard shortcuts.
@@ -316,6 +316,14 @@ One phase per agent session. Each phase ends with a playable build pushed to `ma
 - **Visual language:** one icon set through `<Icon>` (game-icons.net + Phosphor, CREDITS.md); two fonts (Cinzel dropped) and five sizes; intentional placeholders with a "Show asset ids" developer setting.
 - **Battle:** heroes stand on the battlefield; the drag starts from the sprite with a ghost under the finger; name plates tap. **Dialogue:** a full-width parchment box at the bottom, large choice rows, a name plate and portrait, the log as a bottom panel.
 - **Choices to review:** older screens inside sections are flattened but not yet rebuilt as list + details; notices fade after 6 s; the orb arc (80°→2°, 156 px).
+
+**Part 2 ✅ Done (2026-11-03).** Notes (details in [`docs/UX.md`](UX.md), "Buildings and people"):
+- **People model** (`src/game/engine/people.js`): regulars from `src/data/people.js`; visitors built on the existing data (recruits = candidates, petitioners = contracts grouped by issuer, challengers = candidates with `boutFirst`), rotating monthly; memory in `state.people`. Bouts use `createDuelEncounter` (`sourceType: 'person-bout'`).
+- **Interiors** (`src/data/interiors.js`, `InteriorScene.jsx`): tavern/inn, shop, arena and herald rooms that fit one screen; "?" over strangers, offer icons once met; services open their panels.
+- **Hiring is an interview** (about, skills → scout level 2, terms with reasons to refuse); **contracts come from people** (take → notice board, turn down → a rival); **Contacts** in the Guild orb.
+- **Moved inside:** Mara Fen (the Wayfarer's bar; her story hint updated), Rowe Fallow and Mags (now innkeepers with a service; their street conversations removed).
+- **Removed:** the tavern recruit list (HeroesScreen's recruit tab), the dialogue recruit picker, the Herald-as-a-screen building, the "first contract" callout, "Go inside" dialogue choices, the tavern/herald building sections.
+- **Choices to review:** a room holds at most 7 people; 3 recruits and 1 challenger per town each month; bout stakes (+3 / −1 fame); petitioners stand in the shop or the herald when their issuer fits, else the tavern. The arena panel still shows its three spots (also walkable in the room).
 
 A visual phase (screenshots allowed, see `CLAUDE.md`). Two parts:
 - **Part 1 — HUD, orbs, ledger and visual language.** One HUD instead of four navigations: a fading place-and-date tag (top left), the Guild orb (Party, Items, Guild Hall, Quests, Contacts; bottom left), the World orb (Map, Calendar, Records, System; bottom right) that fan out like the combat radial, and a ledger (gold, fame, ranks, title, specialization; top right) that opens itself when a value changes. One screen template for every section, defined screen zones, one z-index scale, safe areas, a web app manifest, one icon set (game-icons.net + Phosphor through `<Icon>`), two fonts and five sizes, intentional placeholders, battle drag from the sprite, a full-width dialogue box.

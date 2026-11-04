@@ -110,6 +110,10 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `room.house.floor` | `art/walk/house/floor.png` | 960×540 | — | placeholder | Player’s house: floor and walls, a hearth glow, rain on the windows (prologue) |
+| `room.tavern` | `art/walk/rooms/tavern.png` | 352×352 | — | placeholder | Interior (walkable): the tavern room, floor and walls, seen from above (11×11 tiles) |
+| `room.shop` | `art/walk/rooms/shop.png` | 352×352 | — | placeholder | Interior (walkable): the shop room, floor and walls, seen from above (11×11 tiles) |
+| `room.arena` | `art/walk/rooms/arena.png` | 352×352 | — | placeholder | Interior (walkable): the arena room, floor and walls, seen from above (11×11 tiles) |
+| `room.herald` | `art/walk/rooms/herald.png` | 352×352 | — | placeholder | Interior (walkable): the herald room, floor and walls, seen from above (11×11 tiles) |
 
 ## Prop (`prop`, placeholder #55602e)
 
@@ -125,6 +129,21 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `prop.gather.herb` | `art/walk/props/gather-herb.png` | 28×28 | — | placeholder | Gathering spot: herbs |
 | `prop.gather.ore` | `art/walk/props/gather-ore.png` | 28×28 | — | placeholder | Gathering spot: ore and shards |
 | `prop.gather.coin` | `art/walk/props/gather-coin.png` | 28×28 | — | placeholder | Gathering spot: coin pouches |
+| `furniture.wall` | `art/walk/furniture/wall.png` | 352×64 | — | placeholder | Interior furniture: back-wall (tavern) |
+| `furniture.bar` | `art/walk/furniture/bar.png` | 224×64 | — | placeholder | Interior furniture: bar (tavern) |
+| `furniture.table` | `art/walk/furniture/table.png` | 64×64 | — | placeholder | Interior furniture: table-1 (tavern) |
+| `furniture.hearth` | `art/walk/furniture/hearth.png` | 64×64 | — | placeholder | Interior furniture: hearth (tavern) |
+| `furniture.counter` | `art/walk/furniture/counter.png` | 160×64 | — | placeholder | Interior furniture: counter (shop) |
+| `furniture.shelf` | `art/walk/furniture/shelf.png` | 32×128 | — | placeholder | Interior furniture: Potions shelf (shop) |
+| `furniture.rack` | `art/walk/furniture/rack.png` | 32×128 | — | placeholder | Interior furniture: Weapon rack (shop) |
+| `furniture.stand` | `art/walk/furniture/stand.png` | 64×64 | — | placeholder | Interior furniture: Armor stand (shop) |
+| `furniture.case` | `art/walk/furniture/case.png` | 64×64 | — | placeholder | Interior furniture: Charm case (shop) |
+| `furniture.desk` | `art/walk/furniture/desk.png` | 96×64 | — | placeholder | Interior furniture: desk (arena) |
+| `furniture.historyboard` | `art/walk/furniture/historyboard.png` | 96×64 | — | placeholder | Interior furniture: History board (arena) |
+| `furniture.ring` | `art/walk/furniture/ring.png` | 128×128 | — | placeholder | Interior furniture: ring (arena) |
+| `furniture.bench` | `art/walk/furniture/bench.png` | 96×64 | — | placeholder | Interior furniture: bench (arena) |
+| `furniture.rankboard` | `art/walk/furniture/rankboard.png` | 32×128 | — | placeholder | Interior furniture: Ranking board (herald) |
+| `furniture.bookshelf` | `art/walk/furniture/bookshelf.png` | 32×128 | — | placeholder | Interior furniture: Records shelf (herald) |
 | `prop.fountain` | `art/walk/props/fountain.png` | 96×128 | — | placeholder | Dunmere: Banner Fountain |
 | `prop.noticeboard` | `art/walk/props/noticeboard.png` | 64×96 | — | placeholder | Dunmere: Notice Board |
 | `prop.well` | `art/walk/props/well.png` | 32×64 | — | placeholder | Dunmere: Old well |
@@ -150,7 +169,6 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `npc.house.rook` | `art/walk/house/rook.png` | 44×28 | — | placeholder | Player’s house: Cassian Rook, wounded, on the floor |
-| `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | ready | Dunmere: Mara Fen, Innkeeper (walk sprite) |
 | `npc.dunmere.merchant` | `art/walk/npcs/dunmere-merchant.png` | 26×36 | — | placeholder | Dunmere: Corwin Pell, Road merchant (walk sprite) |
 | `npc.dunmere.fighter` | `art/walk/npcs/dunmere-fighter.png` | 26×36 | — | placeholder | Dunmere: Bram Calder, Duelist (walk sprite) |
 | `npc.dunmere.stablemaster` | `art/walk/npcs/dunmere-stablemaster.png` | 26×36 | — | placeholder | Dunmere: Gideon Rusk, Stable owner (walk sprite) |
@@ -163,17 +181,33 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.greenhollow.warden` | `art/walk/npcs/greenhollow-warden.png` | 26×36 | — | placeholder | Greenhollow: Warden Tamsin, Forest warden (walk sprite) |
 | `npc.greenhollow.storyteller` | `art/walk/npcs/greenhollow-storyteller.png` | 26×36 | — | placeholder | Greenhollow: Old Fen, Storyteller (walk sprite) |
 | `npc.greenhollow.stablehand` | `art/walk/npcs/greenhollow-stablehand.png` | 26×36 | — | placeholder | Greenhollow: Kit, Stablehand (walk sprite) |
-| `npc.greenhollow.innkeeper` | `art/walk/npcs/greenhollow-innkeeper.png` | 26×36 | — | placeholder | Greenhollow: Rowe Fallow, Innkeeper (walk sprite) |
 | `npc.greenhollow.cleric` | `art/walk/npcs/greenhollow-cleric.png` | 26×36 | — | placeholder | Greenhollow: Brother Alder, Grove cleric (walk sprite) |
 | `npc.ironford.foreman` | `art/walk/npcs/ironford-foreman.png` | 26×36 | — | placeholder | Ironford: Dagna Hale, Foundry foreman (walk sprite) |
 | `npc.ironford.tollkeeper` | `art/walk/npcs/ironford-tollkeeper.png` | 26×36 | — | placeholder | Ironford: Ansel Brook, Bridge toll-keeper (walk sprite) |
 | `npc.ironford.smith` | `art/walk/npcs/ironford-smith.png` | 26×36 | — | placeholder | Ironford: Corr Anvilson, Smith (walk sprite) |
 | `npc.ironford.guard` | `art/walk/npcs/ironford-guard.png` | 26×36 | — | placeholder | Ironford: Ysolde Marr, Caravan guard (walk sprite) |
 | `npc.ironford.scholar` | `art/walk/npcs/ironford-scholar.png` | 26×36 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (walk sprite) |
-| `npc.ironford.barkeep` | `art/walk/npcs/ironford-barkeep.png` | 26×36 | — | placeholder | Ironford: Mags, Barkeep (walk sprite) |
 | `npc.ironford.archivist` | `art/walk/npcs/ironford-archivist.png` | 26×36 | — | placeholder | Ironford: Oswin Tull, Archive keeper (walk sprite) |
 | `npc.windmere.courier` | `art/walk/npcs/windmere-courier.png` | 26×36 | — | placeholder | Windmere: Sela Wick, Courier (walk sprite) |
 | `npc.windmere.monk` | `art/walk/npcs/windmere-monk.png` | 26×36 | — | placeholder | Windmere: Brother Hale, Monastery keeper (walk sprite) |
+| `npc.dunmere.innkeeper` | `art/walk/npcs/dunmere-innkeeper.png` | 26×36 | — | ready | Mara Fen, Innkeeper (dunmere, tavern) |
+| `npc.role.shopkeeper` | `art/walk/npcs/role-shopkeeper.png` | 26×36 | — | placeholder | Mira Holt, Shopkeeper (dunmere, shop) |
+| `npc.role.registrar` | `art/walk/npcs/role-registrar.png` | 26×36 | — | placeholder | Tamsin Reed, Registrar (dunmere, arena) |
+| `npc.role.referee` | `art/walk/npcs/role-referee.png` | 26×36 | — | placeholder | Holt Varga, Referee (dunmere, arena) |
+| `npc.role.herald-s-clerk` | `art/walk/npcs/role-herald-s-clerk.png` | 26×36 | — | placeholder | Ada Penn, Herald’s clerk (dunmere, herald) |
+| `npc.greenhollow.innkeeper` | `art/walk/npcs/greenhollow-innkeeper.png` | 26×36 | — | placeholder | Rowe Fallow, Innkeeper (greenhollow, tavern) |
+| `npc.role.herb-seller` | `art/walk/npcs/role-herb-seller.png` | 26×36 | — | placeholder | Wick Bramble, Herb seller (greenhollow, shop) |
+| `npc.ironford.barkeep` | `art/walk/npcs/ironford-barkeep.png` | 26×36 | — | placeholder | Mags, Barkeep (ironford, tavern) |
+| `npc.role.forge-trader` | `art/walk/npcs/role-forge-trader.png` | 26×36 | — | placeholder | Brannoc Pike, Forge trader (ironford, shop) |
+| `npc.role.assay-clerk` | `art/walk/npcs/role-assay-clerk.png` | 26×36 | — | placeholder | Petra Lund, Assay clerk (ironford, herald) |
+| `npc.role.innkeeper` | `art/walk/npcs/role-innkeeper.png` | 26×36 | — | placeholder | Gull Tamsen, Innkeeper (windmere, tavern) |
+| `npc.role.courier-supplier` | `art/walk/npcs/role-courier-supplier.png` | 26×36 | — | placeholder | Odo Finch, Courier supplier (windmere, shop) |
+| `npc.role.council-steward` | `art/walk/npcs/role-council-steward.png` | 26×36 | — | placeholder | Visitor silhouette by role: council steward (petitioners, travellers, messengers) |
+| `npc.role.watch-sergeant` | `art/walk/npcs/role-watch-sergeant.png` | 26×36 | — | placeholder | Visitor silhouette by role: watch sergeant (petitioners, travellers, messengers) |
+| `npc.role.temple-acolyte` | `art/walk/npcs/role-temple-acolyte.png` | 26×36 | — | placeholder | Visitor silhouette by role: temple acolyte (petitioners, travellers, messengers) |
+| `npc.role.trader` | `art/walk/npcs/role-trader.png` | 26×36 | — | placeholder | Visitor silhouette by role: trader (petitioners, travellers, messengers) |
+| `npc.role.traveller` | `art/walk/npcs/role-traveller.png` | 26×36 | — | placeholder | Visitor silhouette by role: traveller (petitioners, travellers, messengers) |
+| `npc.role.messenger` | `art/walk/npcs/role-messenger.png` | 26×36 | — | placeholder | Visitor silhouette by role: messenger (petitioners, travellers, messengers) |
 
 ## Tileset (`tileset`, placeholder #3a3a3a)
 
@@ -186,6 +220,14 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `char.founder` | `art/walk/chars/founder.png` | 26×36 | — | ready | Player founder, walking (4-direction sheet later) |
+| `char.class.guardian` | `art/walk/chars/class-guardian.png` | 30×40 | `art/sprites/guardian.png` | borrowed | Recruits and challengers in buildings: Guardian (walk sprite) |
+| `char.class.duelist` | `art/walk/chars/class-duelist.png` | 30×40 | `art/sprites/duelist.png` | borrowed | Recruits and challengers in buildings: Duelist (walk sprite) |
+| `char.class.ranger` | `art/walk/chars/class-ranger.png` | 30×40 | `art/sprites/ranger.png` | borrowed | Recruits and challengers in buildings: Ranger (walk sprite) |
+| `char.class.rogue` | `art/walk/chars/class-rogue.png` | 30×40 | `art/sprites/rogue.png` | borrowed | Recruits and challengers in buildings: Rogue (walk sprite) |
+| `char.class.cleric` | `art/walk/chars/class-cleric.png` | 30×40 | `art/sprites/cleric.png` | borrowed | Recruits and challengers in buildings: Cleric (walk sprite) |
+| `char.class.mage` | `art/walk/chars/class-mage.png` | 30×40 | `art/sprites/mage.png` | borrowed | Recruits and challengers in buildings: Mage (walk sprite) |
+| `char.class.scholar` | `art/walk/chars/class-scholar.png` | 30×40 | `art/sprites/scholar.png` | borrowed | Recruits and challengers in buildings: Scholar (walk sprite) |
+| `char.class.artificer` | `art/walk/chars/class-artificer.png` | 30×40 | `art/sprites/artificer.png` | borrowed | Recruits and challengers in buildings: Artificer (walk sprite) |
 
 ## Portrait (`portrait`, placeholder #6a4a5e)
 
@@ -206,7 +248,6 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.story.champion` | `art/portraits/story/champion.png` | 160×160 | — | placeholder | Halden Marsh: aging Windmere champion |
 | `portrait.story.representative` | `art/portraits/story/representative.png` | 160×160 | — | placeholder | The Argent Crown’s well-dressed representative |
 | `portrait.story.stablemaster` | `art/portraits/story/stablemaster.png` | 160×160 | — | placeholder | Gideon Rusk: owner of the old stable on Banner Plaza |
-| `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | — | placeholder | Dunmere: Mara Fen, Innkeeper (dialogue portrait) |
 | `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | — | placeholder | Dunmere: Corwin Pell, Road merchant (dialogue portrait) |
 | `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | — | placeholder | Dunmere: Bram Calder, Duelist (dialogue portrait) |
 | `portrait.dunmere.stablemaster` | `art/portraits/npcs/dunmere-stablemaster.png` | 160×160 | — | placeholder | Dunmere: Gideon Rusk, Stable owner (dialogue portrait) |
@@ -219,17 +260,38 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.greenhollow.warden` | `art/portraits/npcs/greenhollow-warden.png` | 160×160 | — | placeholder | Greenhollow: Warden Tamsin, Forest warden (dialogue portrait) |
 | `portrait.greenhollow.storyteller` | `art/portraits/npcs/greenhollow-storyteller.png` | 160×160 | — | placeholder | Greenhollow: Old Fen, Storyteller (dialogue portrait) |
 | `portrait.greenhollow.stablehand` | `art/portraits/npcs/greenhollow-stablehand.png` | 160×160 | — | placeholder | Greenhollow: Kit, Stablehand (dialogue portrait) |
-| `portrait.greenhollow.innkeeper` | `art/portraits/npcs/greenhollow-innkeeper.png` | 160×160 | — | placeholder | Greenhollow: Rowe Fallow, Innkeeper (dialogue portrait) |
 | `portrait.greenhollow.cleric` | `art/portraits/npcs/greenhollow-cleric.png` | 160×160 | — | placeholder | Greenhollow: Brother Alder, Grove cleric (dialogue portrait) |
 | `portrait.ironford.foreman` | `art/portraits/npcs/ironford-foreman.png` | 160×160 | — | placeholder | Ironford: Dagna Hale, Foundry foreman (dialogue portrait) |
 | `portrait.ironford.tollkeeper` | `art/portraits/npcs/ironford-tollkeeper.png` | 160×160 | — | placeholder | Ironford: Ansel Brook, Bridge toll-keeper (dialogue portrait) |
 | `portrait.ironford.smith` | `art/portraits/npcs/ironford-smith.png` | 160×160 | — | placeholder | Ironford: Corr Anvilson, Smith (dialogue portrait) |
 | `portrait.ironford.guard` | `art/portraits/npcs/ironford-guard.png` | 160×160 | — | placeholder | Ironford: Ysolde Marr, Caravan guard (dialogue portrait) |
 | `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | — | placeholder | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
-| `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | — | placeholder | Ironford: Mags, Barkeep (dialogue portrait) |
 | `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | — | placeholder | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
 | `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | — | placeholder | Windmere: Sela Wick, Courier (dialogue portrait) |
 | `portrait.windmere.monk` | `art/portraits/npcs/windmere-monk.png` | 160×160 | — | placeholder | Windmere: Brother Hale, Monastery keeper (dialogue portrait) |
+| `portrait.role.shopkeeper` | `art/portraits/roles/shopkeeper.png` | 160×160 | — | placeholder | Dialogue portrait: Shopkeeper |
+| `portrait.role.herald-s-clerk` | `art/portraits/roles/herald-s-clerk.png` | 160×160 | — | placeholder | Dialogue portrait: Herald’s clerk |
+| `portrait.greenhollow.innkeeper` | `art/portraits/npcs/greenhollow-innkeeper.png` | 160×160 | — | placeholder | Dialogue portrait: Innkeeper |
+| `portrait.role.herb-seller` | `art/portraits/roles/herb-seller.png` | 160×160 | — | placeholder | Dialogue portrait: Herb seller |
+| `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | — | placeholder | Dialogue portrait: Barkeep |
+| `portrait.role.forge-trader` | `art/portraits/roles/forge-trader.png` | 160×160 | — | placeholder | Dialogue portrait: Forge trader |
+| `portrait.role.assay-clerk` | `art/portraits/roles/assay-clerk.png` | 160×160 | — | placeholder | Dialogue portrait: Assay clerk |
+| `portrait.role.innkeeper` | `art/portraits/roles/innkeeper.png` | 160×160 | — | placeholder | Dialogue portrait: Innkeeper |
+| `portrait.role.courier-supplier` | `art/portraits/roles/courier-supplier.png` | 160×160 | — | placeholder | Dialogue portrait: Courier supplier |
+| `portrait.role.council-steward` | `art/portraits/roles/council-steward.png` | 160×160 | — | placeholder | Dialogue portrait by role: council steward |
+| `portrait.role.watch-sergeant` | `art/portraits/roles/watch-sergeant.png` | 160×160 | — | placeholder | Dialogue portrait by role: watch sergeant |
+| `portrait.role.temple-acolyte` | `art/portraits/roles/temple-acolyte.png` | 160×160 | — | placeholder | Dialogue portrait by role: temple acolyte |
+| `portrait.role.trader` | `art/portraits/roles/trader.png` | 160×160 | — | placeholder | Dialogue portrait by role: trader |
+| `portrait.role.traveller` | `art/portraits/roles/traveller.png` | 160×160 | — | placeholder | Dialogue portrait by role: traveller |
+| `portrait.role.messenger` | `art/portraits/roles/messenger.png` | 160×160 | — | placeholder | Dialogue portrait by role: messenger |
+| `portrait.class.guardian` | `art/portraits/classes/guardian.png` | 160×160 | `art/portraits/guardian.png` | borrowed | Dialogue portrait for a Guardian recruit |
+| `portrait.class.duelist` | `art/portraits/classes/duelist.png` | 160×160 | `art/portraits/duelist.png` | borrowed | Dialogue portrait for a Duelist recruit |
+| `portrait.class.ranger` | `art/portraits/classes/ranger.png` | 160×160 | `art/portraits/ranger.png` | borrowed | Dialogue portrait for a Ranger recruit |
+| `portrait.class.rogue` | `art/portraits/classes/rogue.png` | 160×160 | `art/portraits/rogue.png` | borrowed | Dialogue portrait for a Rogue recruit |
+| `portrait.class.cleric` | `art/portraits/classes/cleric.png` | 160×160 | `art/portraits/cleric.png` | borrowed | Dialogue portrait for a Cleric recruit |
+| `portrait.class.mage` | `art/portraits/classes/mage.png` | 160×160 | `art/portraits/mage.png` | borrowed | Dialogue portrait for a Mage recruit |
+| `portrait.class.scholar` | `art/portraits/classes/scholar.png` | 160×160 | `art/portraits/scholar.png` | borrowed | Dialogue portrait for a Scholar recruit |
+| `portrait.class.artificer` | `art/portraits/classes/artificer.png` | 160×160 | `art/portraits/artificer.png` | borrowed | Dialogue portrait for a Artificer recruit |
 
 ## Battle effect (`fx`, placeholder #5a2a6a)
 

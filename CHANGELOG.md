@@ -2,6 +2,15 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 7C, Part 2: walk-in buildings and people
+
+- Every building is now a small room you walk into: a tavern with people at the tables, a shop with shelves, an arena with a sign-up desk and a fighting ground, the herald's office with its ranking board.
+- People you have not met show a "?". Talk to them to find out what they offer: a contract, a place in your guild, or a friendly bout.
+- Hiring is an interview: ask about them, what they can do, and whether they would join. Some refuse, and say why. Some only join after you beat them in a bout.
+- Contracts come from people. Take one and it is pinned to the notice board in the square; turn it down and a rival guild gets it.
+- Contacts (Guild orb) lists everyone you have met, where they are now, and what they offer.
+- New faces arrive every month; the regulars stay.
+
 ## Unreleased — Phase 7C, Part 1: the HUD and a new look
 
 - One HUD instead of four menus: where you are and the next goal at the top left, a ledger with gold and ranks at the top right, and two orbs at the bottom. The Guild orb holds Party, Items, Guild Hall, Quests and Contacts; the World orb holds Map, Calendar, Records and System. Tap an orb, or press and slide onto an item.

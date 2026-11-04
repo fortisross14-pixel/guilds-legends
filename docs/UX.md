@@ -57,7 +57,7 @@ Navigation used to live in four places (a sidebar, an 8-item top bar, a stack of
 | Guild | Items | the inventory; drag an item onto a hero to equip or use it |
 | Guild | Guild Hall | the hall and its rooms (kept as it is; 7D rebuilds it) |
 | Guild | Quests | main, side and guild quests, evidence, "Show on map" |
-| Guild | Contacts | everyone you have talked to (Part 2: where they are, what they offer, your relationship) |
+| Guild | Contacts | everyone you have met: where they are, what they offer, how they feel; "moved on" for visitors who left |
 | World | Map | the world map; travel |
 | World | Calendar | the calendar and the news; its primary button rests at the Guild Hall (at home) or the inn (away) |
 | World | Records | Rankings (guild and hero ladders, path, rivals, reputation, connections, directory), Seasons, Record book, Hall of fame, Mission log, Almanac (the old Chronicle), Lore, Bestiary, Goals |
@@ -86,7 +86,8 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 | Walkable town or wild area | the scene with the HUD; doors, people and things to tap; long-press peeks; dialogue at the bottom |
 | World map | the map (pan, pinch) with the place tag and the location card |
 | Sections | Party, Items, Guild Hall, Quests, Contacts, Calendar, Records, System |
-| Buildings (Part 1) | Tavern / Inn, Notice Board, Arena, Shop, Herald, each in the template over its interior art |
+| Building interiors | Tavern / Inn, Arena, Shop, Herald: walkable rooms with people; their panels (shop, inn, sign-up desk, history board) open in the template |
+| Notice board | the contracts people gave you, in the template |
 | Overlays | battle (full screen), story scenes and ceremonies (full screen), everything else as a bottom panel |
 
 ### Rules
@@ -96,6 +97,37 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 - **Minimal text:** icons and numbers first, one-line labels, details on long-press.
 - **Safe areas:** nothing under the notch or the home bar (`viewport-fit=cover` plus `env(safe-area-inset-*)`); the game fills `100dvh` and can be added to the home screen.
 - **World labels never collide with the HUD:** a name that would sit under the place tag, the ledger or an orb fades until the camera moves.
+
+### Buildings and people (7C, Part 2)
+
+**Every building is a small walkable room** that fits one screen (`src/data/interiors.js`, `InteriorScene.jsx`): 3–7 people standing or sitting, a counter or desk, furniture. Tap a person to walk over and talk; tap furniture to use it; tap the doorway to go back out. The Guild Hall is the exception (Phase 7D rebuilds it).
+
+**One people model** (`src/game/engine/people.js`): each person has a name, a role, a place (town, building, spot), a look (a silhouette by role or class until art arrives), a memory (met, talks, relationship, interview) and **offers**: `mission`, `hire`, `challenge`. Regulars (keepers, clerks, registrars, referees, Mara Fen) stay; visitors rotate every month (recruits, petitioners, challengers, travellers, a messenger while there is news). Recruits *are* the candidates, petitioners hold the contracts, challengers are candidates who join only after a won bout: nothing is duplicated.
+
+**Discovery through conversation:**
+- Unknown people show **?** over their heads. Talking to them is 1–3 lines that reveal what they offer, then a short menu.
+- Once known, the label shows their offers: **!** (a contract), **coin** (looking for work; a padlock while they want a bout first), **crossed swords** (a bout).
+- People remember you: the second time there is no small talk.
+
+**The questions:**
+
+| Ask | Leads to |
+|---|---|
+| Need anything done? | the contract (title, reward, risk) → **Take** (it is pinned to the notice board) or **Turn down** (a rival takes it, a little regional reputation lost) |
+| Looking for work? | the interview: **Tell me about yourself** (personality, flaw, dream) · **What can you do?** (narrows their stat ranges, like scouting) · **Would you join us?** (fee, monthly wage, 2 years, a free bed; or why not: reputation, charter, no bed, gold, "beat me first") → **Agreed** hires them |
+| Fancy a bout? | a friendly one-on-one with the existing combat; win: +3 fame, more respect, and a challenger agrees to hear your offer; lose: −1 fame |
+| A keeper's service | Shop: the shop panel slides up (shelves open their category) · Inn: rest 1–3 nights · Registrar: the sign-up desk · Referee: starts the bout during a tournament ("No tournament in progress" otherwise) · Herald's clerk: Records → Rankings · Messenger: the news · Traveller: a rumour puts a new place on the map |
+
+**Each building:**
+- **Tavern** (Dunmere's Wayfarer): Mara Fen at the bar (her story scenes, introductions: "Introduce me to someone" makes every recruit at the tables known), recruits at the tables, a traveller or petitioner with a contract.
+- **Inn** (other towns): the innkeeper rents rooms; travellers with rumours; recruits and petitioners.
+- **Arena:** the registrar at the desk, the referee on the fighting ground, the history board on the wall (champions and records), and a sparring challenger.
+- **Herald's office** (Dunmere, Ironford): the clerk at the desk (rankings), the ranking board (rankings), the records shelf (almanac and lore), a messenger while there is unread news.
+- **Shop:** the shopkeeper opens the shop; each shelf opens its category (potions, weapons, armor, charms).
+
+**The notice board** (the one list): a physical board in each town square. It shows the contracts people gave you (plus story and boss contracts, which are posted), with status, reward and risk; contracts in other towns are listed with **Show on map**. Pick one here and drag heroes into its slots, as before.
+
+**Contacts** (Guild orb): everyone you have met, with portrait, where they are (town and building), what they offer and how they feel about you; people who rotated out are marked "Moved on · last seen in …". **Map** shows their town.
 
 ## 3. Core flows: taps and gestures, before → after
 
@@ -136,6 +168,9 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **evidence** | clues, proof | the five pieces against Garrick Thorne |
 | **Lore codex** | wiki, encyclopedia | the world's history entries |
 | **notice** | notification, toast | a short message under the place tag |
+| **person** | NPC, candidate, contract giver | anyone you can talk to inside a building |
+| **contact** | friend, acquaintance | a person you have met (Contacts) |
+| **bout** | duel, spar | a friendly one-on-one fight with a person |
 | **orb** | menu button, wheel | the Guild orb (bottom left) and the World orb (bottom right) |
 | **ledger** | status bar, top bar | the gold-and-ranks book at the top right |
 | **section** | page, menu screen | a screen in the one template (Party, Records…) |
@@ -146,6 +181,7 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 - **No device testing yet.** Drag thresholds (10 px), the long-press time (400 ms), radial size and the 24 px edge-swipe zone need checking on real phones; the edge swipe may fight iOS/Android system back gestures.
 - **Long-press on the Phaser canvas** works on the floating labels, not on the sprites themselves.
 - **The orbs’ press-and-slide** and the left-edge back swipe both start from screen edges; check on real phones that the system gestures do not win.
+- **People and rooms:** first names over heads keep a full room readable; a room shows at most 7 people (more visitors wait for a free spot). Interiors use placeholder floors and furniture until art arrives.
 - **Sections wrap older screens** (heroes, rankings, history, shop…): their inner layouts were flattened to hairline bands but not yet rebuilt as list + details. Phase 8 can finish that per screen.
 - **Radial menus with many options** (casters with 6+ skills and several items) get crowded; consider paging or grouping.
 - **Hold to fast-forward vs long-press to inspect** during a replaying round: both start with a press; inspect only fires on units.

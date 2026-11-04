@@ -82,6 +82,7 @@ Two faces, five sizes (tokens `--fs-1`…`--fs-5` in `tokens.css`). Nothing else
 - World map: the pixel overworld with drift and edge fog; locked towns under fog; reachable routes glow.
 - Portraits: class medallion on the primal ground, thin rarity frame and glow; Epic and Legend frames shimmer.
 - Sprites and enemies: `object-fit: contain`, soft elliptical ground shadow, gentle idle bob. In battle the party stands on the field, above the command HUD.
+- **People in rooms:** a gold **?** badge over strangers; once met, small offer icons (alert, coin, padlock, crossed swords) before their first name. Rooms are 11 × 11 tiles, centred and fitted to the screen, on a dark vignette.
 - **Placeholders look intentional** (`assetLoader.js`): people are silhouettes in their role or class colour, enemies are beast silhouettes, props are soft shapes, buildings are houses with a lit door, crests are shields, backdrops are mood gradients. Asset ids appear only with Settings → Developer → **Show asset ids** (off by default).
 
 ## Motion
