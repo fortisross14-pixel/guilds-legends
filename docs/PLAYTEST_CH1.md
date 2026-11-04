@@ -15,7 +15,7 @@ Screenshots: `docs/screenshots/8a/` (issues and verification) and `docs/screensh
 | Spec: playtest-1-feedback | **done** (session 4; proof in `docs/screenshots/8a/playtest-1-feedback/`) |
 | Spec: missions-in-world | **done** (session 4; proof in `docs/screenshots/8a/missions-in-world/`) |
 | Spec: tournaments-circuits | **done** (session 4; proof in `docs/screenshots/8a/tournaments-circuits/`) |
-| Autoplay update and balance | not started (owns P-16) |
+| Autoplay update and balance | autoplay plays contracts in person (missions-in-world); the economy is measured below, **tuning waits for targets** (owns P-16) |
 | Stage 2: fix the log | ongoing (fixes land as they are found) |
 | Stage 3: replay and verify | not started |
 
@@ -28,7 +28,7 @@ Screenshots: `docs/screenshots/8a/` (issues and verification) and `docs/screensh
 **Play driver** (scratch, not committed): Playwright scripts with helpers for a new game, the prologue, the goal line, dialogue (ask every topic, then decide), cards, fights (Auto) and the board. They read `window.gol_state_text()` (App.jsx, a test hook with the place, the open section, the interruption, the date, gold, heroes and the story step) and the scene's `window.render_game_to_text()`. Note: tapping the dialogue box needs a forced click (Playwright never sees the full-screen layer as stable).
 
 ### Session notes
-- **Session 4, tournaments-circuits (2026-11-04):** built and proven at both sizes from engine-built saves: the Dunmere arena, the registrar ("I’d like to sign up a team."), the sign-up desk picking a pair for the Harvest Melee (Initiation, teams of up to 2), signed up; on the start day the referee, the fighting ground (the Ember Company’s pair against Thornwake Wardens), a team bout won ("Victory", one screen), the semifinal next; Records → Record book with the seven special titles (Dynasty held); the Official ladder; the history board with the 1187 champion. Engine checks: all 15 events created each year (8/4/3), sign-up, start day, a first-round loss, a title run (three bouts, champion, the Amber Blade stored as a trophy), Dynasty after three wins in a row, the Argent Crown holding Dynasty from the start, a valid state after each step; autoplay over five seeds runs the full year (contracts 6–10 a year; the spread against the old code is random variation in the contract board and rewards, not a stall). **Next:** Phase 8A playthrough, balance and final replay.
+- **Session 4, tournaments-circuits (2026-11-04):** built and proven at both sizes from engine-built saves: the Dunmere arena, the registrar ("I’d like to sign up a team."), the sign-up desk picking a pair for the Harvest Melee (Initiation, teams of up to 2), signed up; on the start day the referee, the fighting ground (the Ember Company’s pair against Thornwake Wardens), a team bout won ("Victory", one screen), the semifinal next; Records → Record book with the seven special titles (Dynasty held); the Official ladder; the history board with the 1187 champion. Engine checks: all 15 events created each year (8/4/3), sign-up, start day, a first-round loss, a title run (three bouts, champion, the Amber Blade stored as a trophy), Dynasty after three wins in a row, the Argent Crown holding Dynasty from the start, a valid state after each step; autoplay over five seeds runs the full year (contracts 6–10 a year; the spread against the old code is random variation in the contract board and rewards, not a stall). **Next:** pick the balance targets (see Balance), then Stage 1 for what no spec replaced (every town, building and conversation at both sizes; the arena now has team sign-ups), then Stage 3 (replay both paths at both sizes, verify every entry, the final checklist).
 - **Session 4, missions-in-world (2026-11-04):** built and proven at both sizes from engine-built saves: a contract taken from a petitioner (the Journal's steps, the board's panel), a town contract's talk with a test ("Presence 46: even odds"), the Old Road with the wolf hunt's objectives marked, inspect, both fights ("Victory", one screen each), back to the giver in the Wayfarer ("It's done.") and the Mission complete screen (Great, 14 words); the Ironford archive as a painted site with tests on every choice; the road-event card. Engine checks: all 8 Regional templates in all 4 slice towns played end to end (31 of 32 finish; the Blackwood one at Ironford is a lost fight, see balance), a missed deadline (failed, the giver says so once, the contract leaves), and autoplay playing contracts in person (12 in a simulated year). **Next:** tournaments-circuits.
 - **Session 4 (2026-11-04):** built playtest-1-feedback. Proof at both sizes: Skip at the same pixel on lines of 15–83 characters (prologue and people); the painted house with the door bubble; "Enter The Wayfarer", the painted tavern (Mara behind the bar, recruits at the tables), the arena and the herald, "Leave to Dunmere" from inside, "Travel: The Old Road" at the town edge; a won fight ("Victory" over the field, then one 6-word victory screen with Details, nothing queued after it); a lost one (the defeat card with −90 gold and 1 month as icons). **Next:** missions-in-world.
 - **Session 3, open items (2026-11-04):** fixed P-1, P-2, P-12, P-13, P-15 (verb), P-18, P-23, P-27. Still open: P-9 (the notice board) and the rest of P-15 belong to missions-in-world, which replaces both; P-16 is balance, done after the specs. Proof in `docs/screenshots/8a/open-items/` and the engine checks named in each row.
@@ -155,9 +155,30 @@ Stage 1 (playthrough) entries, tutorial path on the phone (`8a/phone-s1-*`, `8a/
 
 Measured with engine scripts (scratch, not committed) and `npm run sim`. Before and after numbers go here.
 
+**Measured (2026-11-04, after the three specs; seed 31 unless noted):**
+
+| What | Number |
+|---|---|
+| Gold at the start (and after Skip tutorial) | 720 |
+| Monthly upkeep at the start | 58: wages 13 (Nessa), lease 35, one Basic bedroom 10 |
+| Regional contracts (pay, difficulty, risk) | Missing Apothecary 192 (43, 1) · Miller's Daughter 207 (40, 1) · Wolves on the Old Road 223 (53, 1) · Fog Ferry 284 (54, 2) · Harvest Melee prep 285 (55, 1) · Baron's Tithe 303 (52, 2) · Hollow Bell 374 (62, 2) · Blackwood Lanterns 450 (66, 3) |
+| Story contract, mission 3 (P-16) | 498 for about a week |
+| Rooms, Basic build / monthly upkeep | bedroom 260/10 · treasury 220/6 · training 300/12 · infirmary 340/14 · scout table 340/10 · armory 420/12 · Crown Room 480/10 (Advanced and State of the art about ×1.7 and ×2.8) |
+| Recruits on the market | signing fee 185 (level 1) to 1,091 (level 7); wages 21–80 a month |
+| Initiation tournaments | entry 35–55, purse 240–380 |
+| Autoplay, one year, five seeds (old code → now) | contracts won 9/12/10/9/9 → 9/6/10/10/6; gold at the end 694/1962/2070/1383/1789 → 75/407/2248/1019/735. Same heroes and spending pattern: the spread is the contract board and rewards drawn differently, not a stall |
+
+**What it says:** one Regional contract pays three to eight months of the starting upkeep, and a person can finish one in a few days of game time, so gold stops mattering after the first two or three contracts. Rooms and recruits are the only sinks; autoplay ends the year with 75 to 2,248 gold because it spends on rooms as soon as it can.
+
+**Not tuned yet, and why:** no target is written down (gold per hour, when the hall should be full, when the guild should afford its third hero, the slice's 2–3 hours), and CLAUDE.md defers tuning until after the final wave. Proposals to pick from, all data-only:
+1. Contract pay ×0.6 (Regional 115–270; mission 3 down to about 300), so a contract pays one to five months of upkeep.
+2. Or keep pay and raise the sinks: lease 35 → 60, room upkeep ×1.5, wages ×1.5.
+3. The Blackwood contract at Ironford (the one lost fight in 32 engine runs) and the slag pits: enemy strength from risk 3 is a step above the rest; lower its strength factor or its group size by one.
+4. Autoplay keeps a reserve (two months of upkeep plus a recruit fee) before building, so the year-end gold measures the economy and not the build order.
+
 ## Answers (sections A–E)
 
-To be filled in during Stage 1 and confirmed in Stage 3.
+To be filled in during Stage 1 and confirmed in Stage 3. **Open question:** the questions of sections A–E are not written in any doc in the repo (they came with an earlier prompt); add them here so Stage 3 can answer them.
 
 ## Final checklist
 
