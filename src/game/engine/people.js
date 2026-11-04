@@ -48,8 +48,32 @@ function petitionerFor(mission) {
   return { role, building };
 }
 
-function visitorName(seed) {
+function visitorName(seed, taken = null) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const salt = attempt ? `${seed}:${attempt}` : seed;
+    const name = `${pick(VISITOR_FIRST, `${salt}:first`)} ${pick(VISITOR_LAST, `${salt}:last`)}`;
+    const first = name.split(' ')[0];
+    if (!taken || !taken.has(first)) {
+      taken?.add(first);
+      return name;
+    }
+  }
   return `${pick(VISITOR_FIRST, `${seed}:first`)} ${pick(VISITOR_LAST, `${seed}:last`)}`;
+}
+
+/** A short label for a person: the first name, or first name and initial when two share it. */
+export function shortLabels(people) {
+  const count = {};
+  people.forEach((person) => {
+    const first = String(person.name).split(' ')[0];
+    count[first] = (count[first] || 0) + 1;
+  });
+  return Object.fromEntries(
+    people.map((person) => {
+      const [first, ...rest] = String(person.name).split(' ');
+      return [person.id, count[first] > 1 && rest.length ? `${first} ${rest[rest.length - 1][0]}.` : first];
+    }),
+  );
 }
 
 const classKey = (classId) => String(normalizeClassId(classId) || 'Guardian').toLowerCase();
@@ -88,6 +112,8 @@ export function townPeople(state, locationId) {
         offers,
       });
     });
+  // Generated visitors take first names nobody in town has yet.
+  const taken = new Set(people.map((person) => String(person.name).split(' ')[0]));
   // Petitioners: one per issuer, holding that issuer's contracts.
   const byIssuer = new Map();
   (state.missions || [])
@@ -98,7 +124,7 @@ export function townPeople(state, locationId) {
         const { role, building } = petitionerFor(mission);
         byIssuer.set(key, {
           id: key,
-          name: visitorName(key),
+          name: visitorName(key, taken),
           role: mission.patron ? `${role} · ${mission.issuer}` : role === 'Traveller' && mission.issuer !== 'Anonymous petitioner' ? mission.issuer : role,
           locationId,
           building: buildings.includes(building) ? building : 'tavern',
@@ -119,7 +145,7 @@ export function townPeople(state, locationId) {
   // A traveller with rumours at the inn, a new one each month.
   if (locationId !== 'dunmere' && buildings.includes('tavern')) {
     const key = `traveller-${locationId}-${campaignMonthSerial(state)}`;
-    people.push({ id: key, name: visitorName(key), role: 'Traveller', voice: 'Traveller', locationId, building: 'tavern', kind: 'visitor', sprite: 'npc.role.traveller', portrait: 'portrait.role.traveller', offers: [], service: 'rumor' });
+    people.push({ id: key, name: visitorName(key, taken), role: 'Traveller', voice: 'Traveller', locationId, building: 'tavern', kind: 'visitor', sprite: 'npc.role.traveller', portrait: 'portrait.role.traveller', offers: [], service: 'rumor' });
   }
   return people;
 }

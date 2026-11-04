@@ -81,7 +81,15 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
     onInteract: (target, position) => onInteract?.(target, position),
     onFrame: (project) => {
       const { width, height } = viewport.current;
-      initial.current.map.targets.forEach((target) => {
+      // Place labels by priority (quest beacons, then the near target, then the rest);
+      // one that would overlap a label already placed, or the HUD, fades out.
+      const placed = [];
+      const nearId = near?.id;
+      const order = [...initial.current.map.targets].sort((a, b) => rank(b) - rank(a));
+      function rank(target) {
+        return (beaconsRef.current.includes(target.id) ? 4 : 0) + (target.beacon ? 2 : 0) + (target.id === nearId ? 1 : 0);
+      }
+      order.forEach((target) => {
         const element = labelRefs.current[target.id];
         if (!element) return;
         const point = project(target.labelAt?.x ?? target.x, target.labelAt?.y ?? target.y + 6);
@@ -100,7 +108,9 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
         if (element.dataset.edge !== edge) element.dataset.edge = edge;
         const w = element.offsetWidth || 80;
         const h = element.offsetHeight || 28;
-        const under = !edge && hudRects.current.some((rect) => x + w / 2 > rect.left - 6 && x - w / 2 < rect.right + 6 && y + h > rect.top - 6 && y < rect.bottom + 6);
+        const hits = (rect) => x + w / 2 > rect.left - 4 && x - w / 2 < rect.right + 4 && y + h > rect.top - 2 && y < rect.bottom + 2;
+        const under = (!edge && hudRects.current.some(hits)) || placed.some(hits);
+        if (!under) placed.push({ left: x - w / 2, right: x + w / 2, top: y, bottom: y + h });
         if ((element.dataset.underHud === '1') !== under) element.dataset.underHud = under ? '1' : '';
         element.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translateX(-50%)`;
       });

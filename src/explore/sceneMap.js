@@ -5,6 +5,7 @@
 import { TILE_BY_CHAR, TILE_SIZE as T } from '../data/tiles.js';
 import { areaGroups } from '../data/wilds/index.js';
 import { EXIT, ROOM } from '../data/interiors.js';
+import { shortLabels } from '../game/engine.js';
 
 const BUILDING = { w: 5, h: 5 }; // tiles; the bottom row of the building sits just above its door tile
 
@@ -269,6 +270,7 @@ export function interiorMap(room, people, { id, exitName = 'Leave' } = {}) {
     }
   });
   const spots = Object.fromEntries(room.spots.map((spot) => [spot.id, spot]));
+  const labels = shortLabels(people);
   people.forEach((person) => {
     const spot = spots[person.spot];
     if (!spot) return;
@@ -279,7 +281,7 @@ export function interiorMap(room, people, { id, exitName = 'Leave' } = {}) {
       kind: 'npc',
       name: person.name,
       // First names over heads keep a full room readable; the dialogue shows the full name and role.
-      labelText: person.name.split(' ')[0],
+      labelText: labels[person.id],
       role: person.role,
       verb: 'Talk',
       person: person.id,

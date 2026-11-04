@@ -146,7 +146,8 @@
 .notice--green > .icon { color: var(--heal); }
 .notice--gold > .icon, .notice--purple > .icon { color: var(--gold-bright); }
 .has-notice .goal-line { visibility: hidden; }
-.has-section .notice { top: calc(var(--hud-top) + 4px); left: auto; right: calc(var(--safe-r) + var(--gutter)); max-width: min(360px, calc(100vw - 190px)); }
+.has-section .notice { top: auto; bottom: calc(var(--safe-b) + 10px); max-width: min(420px, calc(100vw - 2 * var(--gutter) - 150px)); }
+.has-notice .section__help { visibility: hidden; }
 
 /* Party plates (inside sections that take dropped heroes). */
 .party-rail { display: flex; align-items: flex-end; gap: 10px; }

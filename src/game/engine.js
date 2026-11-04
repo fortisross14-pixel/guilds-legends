@@ -54,7 +54,7 @@ export { recruitObjection } from './engine/candidates.js';
 export { getTournamentAccess } from './engine/tournaments.js';
 export { signUpForTournament, getArenaView, tournamentStartDay, beginHeroTournamentCombat, beginGuildTournamentCombat, enterGuildTournament, enterTournament } from './engine/tournamentEntry.js';
 export { inspectMission, saveFormation, launchMission } from './engine/missions.js';
-export { townPeople, peopleIn, findPerson, getPersonTalk, meetPerson, talkToPerson, hireTerms, getContacts, knownMissions, missionPosted } from './engine/people.js';
+export { townPeople, peopleIn, findPerson, getPersonTalk, meetPerson, talkToPerson, hireTerms, getContacts, knownMissions, missionPosted, shortLabels } from './engine/people.js';
 export { resolveDecision, acknowledgeReport } from './engine/outcomes.js';
 export {
   performActiveMissionGameAction,

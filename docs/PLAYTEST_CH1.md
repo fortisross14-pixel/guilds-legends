@@ -9,7 +9,7 @@ Screenshots: `docs/screenshots/8a/` (issues and verification) and `docs/screensh
 | Step | Status |
 |---|---|
 | Spec: clarity-navigation | **done** (session 1) |
-| Stage 1: play and log | not started |
+| Stage 1: play and log | in progress: tutorial path on the phone, up to mission 3 (see the P- entries) |
 | Spec: battle-hiring | not started |
 | Spec: guild-hall-rooms | not started |
 | Autoplay update and balance | not started |
@@ -55,6 +55,28 @@ Severity: **blocker** (can't continue), **major** (confusing or broken), **minor
 | C-13 | minor | Records | Rankings when the guild is low | The guild's own row is off screen → pinned above the ladder when below 5th | (after the last loop; check in Stage 1) | fixed |
 | C-14 | polish | Codex | Records → Codex → Lore | A third row of filter buttons and full paragraphs → one line per entry, grouped, tap to read | clarity/after-records-codex.png | fixed |
 | C-15 | polish | Code | — | Dead screens and CSS: Goals, LegacyScreen (unreachable), IdentityScreens, NewsScreen, QuestLogScreen, hero cards, goals.css, old toasts → removed | — | fixed |
+
+Stage 1 (playthrough) entries, tutorial path on the phone (`8a/phone-s1-*`, `8a/phone-s2-*`):
+
+| Id | Sev | Area | Steps | Wrong → should | Shot | Status |
+|---|---|---|---|---|---|---|
+| P-1 | minor | Prologue | Knock lines, then tap the front door | The door is off screen; the founder walks ~7.5 s to it, the first thing the player does → the door closer to the start, or a faster first walk | 8a/phone-s1-005-after-door-tap.png | open |
+| P-2 | minor | Founding card | Raise the banner | Four long charter cards (pitch, 3 modifiers, path) on one scroll; the banner relic is a placeholder → compact cards, details on tap | 8a/phone-s1-007-founding-card.png | open |
+| P-3 | major | Dunmere | Arrive in town | Edge labels overlap: Gideon Rusk's pointer label sits on Orren Pike's | 8a/phone-s1-009-town-arrival.png | open |
+| P-4 | major | Moments | Mission 1: pay the rent | The card said "Construction complete", repeated its title, showed the grand-hall art, read "now a empty hall", and its Continue button was cut off → its own heading, the cabin art, no stage badge, a smaller headline and art on phones | 8a/phone-s2-002-story-m2.png → phone-s2-003-interruption-moment.png | fixed |
+| P-5 | major | Interruptions | Any choice that queues a card while a conversation is open | The card opened over the open dialogue, hiding its reply → while a conversation is open, queued cards (moments, events, reports, story scenes) wait; fights and decisions can still interrupt | 8a/phone-s2-002-story-m2.png | fixed |
+| P-6 | major | Interiors | Mission 2: enter the Wayfarer | No goal line inside buildings (Mara has a "!", nothing says to talk to her) → the goal line shows inside too: tap to walk to the story person, or to head out when the step is elsewhere | 8a/phone-s2-004-stuck.png | fixed |
+| P-7 | minor | People | The Wayfarer, first visit | Two "Joren" and two "Ulric" in one room → generated visitors take unused first names; recruits who share one show an initial | 8a/phone-s2-004-stuck.png | fixed |
+| P-8 | blocker | Cards | Mission 2: Nessa joins (also every town event and road event) | The quote card reused the \`.dialogue\` class, which is now the full-screen conversation layer: dark ink on dark, the name plate over the badges, and an invisible layer over the Close button (it could not be tapped) → the card has its own \`quote-card\` classes | 8a/phone-s2-006-interruption-moment.png → phone-s2-010-interruption-road.png | fixed |
+| P-9 | major | Notice board | Mission 3: the board with one contract | A family filter for one contract, the contract twice (card and detail), "Hide intelligence", a difficulty grid, a formation picker and long help → a compact list; tap a contract for one panel with the party slots and Send | 8a/phone-s2-008-section-noticeBoard-.png | open |
+| P-10 | minor | Notices | Any notice while a section is open | It covered the section title → it sits over the help line at the bottom left (the help line steps aside) | 8a/phone-s2-008-section-noticeBoard-.png | fixed |
+| P-11 | minor | Party bar | Notice board → party bar | A "Quest log" button with no action (dead) → removed | 8a/phone-s2-008-section-noticeBoard-.png | fixed |
+| P-12 | minor | Road events | Send the Old Road contract | "On the road to Dunmere" while leaving Dunmere; "Use them in battle with the Item command" (no such command now) | 8a/phone-s2-010-interruption-road.png | open |
+| P-13 | major | Battle | Mission 3 fight | "Wolves on the Old Road" fields a boar called "Renegade Priest A" and a skeleton "Shield Thug B"; the hint says "Drag a hero onto a wolf" → wolves, named as wolves | 8a/phone-s2-012-battle-start.png | open |
+| P-14 | major | Battle | Any fight on the phone | The first-fight hint box covers the turn order and the tell; heroes are small at the bottom; instruction text in the command panel; big name cards → the battle-hiring spec | 8a/phone-s2-012-battle-start.png | open (spec) |
+| P-15 | minor | Reports | Mission 3 report | "Nessa Thornfield return wounded" (grammar); "Legendary" for a risk-1 job; a long report → fix the verb; shorter report | 8a/phone-s2-016-interruption-report.png | open |
+| P-16 | major | Balance | Mission 3 | The first contract pays 498 gold (560 → 1003) for one week → the balance pass | 8a/phone-s2-016-interruption-report.png | open (balance) |
+| P-17 | minor | Combat | Mission 3, won at 97% | Nessa ends the fight hurt and comes back injured after a 3-round win | 8a/phone-s2-013-battle-result.png | open (spec: HP between battles) |
 
 **Spec notes:**
 - The spec asks for "guild name" on the new game screen; the founding moved to the banner on purpose (earlier user decision), so the new game screen keeps name, class, Begin and the skip box. Not changed.

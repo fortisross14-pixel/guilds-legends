@@ -6,7 +6,7 @@ import Icon from './Icon.jsx';
 
 // The party bar: every active hero, always visible. Tap a card for the hero
 // status screen; drag it onto a Guild Hall room, the main party or a slot.
-export default function PartyRail({ state, actions, onOpenHero, onOpenQuests }) {
+export default function PartyRail({ state, actions, onOpenHero }) {
   const [collapsed, setCollapsed] = useState(false);
   const mainParty = state.guild.mainParty || [];
   const heroes = [...activeRoster(state)].sort((a, b) => Number(mainParty.includes(b.id)) - Number(mainParty.includes(a.id)));
@@ -18,7 +18,6 @@ export default function PartyRail({ state, actions, onOpenHero, onOpenQuests }) 
         <span>Your company</span>
         <small>{mainParty.length ? `${mainParty.length} in the main party` : 'Pick a lead and companions: Party → Main party'}</small>
         <div className="party-rail__tools">
-          <button onClick={onOpenQuests}>Quest log</button>
           <button className="party-rail__toggle" onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed}>
             {collapsed ? 'Show' : 'Hide'}
           </button>

@@ -79,7 +79,7 @@ Every section and building screen (`src/hud/Section.jsx`) has the same parts in 
 
 In priority order: **dialogue**, then **battle commands**, then **bottom panels** (sections, modals, peek cards), then **the orbs**. While any of the first three is on screen, the orbs fade out (`shell.css`, the `:has()` rule).
 
-**Notices** (the engine's notifications and the UI's short messages) go through one queue (`NoticeQueue` in `App.jsx`): one at a time, at most two lines, in the goal line's slot under the place tag (the goal line steps aside meanwhile), or in the section header's free right side when a section is open. Never over the scene's centre or a panel's content. Each steps aside after 4.5 seconds (errors 7); a tap dismisses it. They wait while an interruption is showing.
+**Notices** (the engine's notifications and the UI's short messages) go through one queue (`NoticeQueue` in `App.jsx`): one at a time, at most two lines, in the goal line's slot under the place tag (the goal line steps aside meanwhile), or over the help line at the bottom left when a section is open (the help line steps aside). Never over the scene's centre or a panel's content. Each steps aside after 4.5 seconds (errors 7); a tap dismisses it. They wait while an interruption is showing.
 
 ### Screen inventory
 
