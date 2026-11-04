@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getPersonTalk } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
+import Icon from '../components/Icon.jsx';
 import { toast } from '../components/UI.jsx';
 
 /**
- * Talking to someone in a building (engine: people.js). First meetings are a
- * line or two that reveal what they offer; then a menu of short questions:
- * "Need anything done?", "Looking for work?" (the interview), "Fancy a bout?",
- * or their service (shop, inn, sign-ups, rankings). Same box as the story
- * dialogue: dark ink on parchment, choices as full-width rows.
+ * Talking to someone in a building (engine: people.js; style: docs/DIALOGUE.md).
+ * They open, with their name on a first meeting; then the topics the player can
+ * ask in any order ("Need anything done?", "Looking for work?" for the
+ * interview, "Fancy a friendly bout?", their service). Each answer comes back
+ * to the topics, asked ones checked. Goodbye shows their farewell, then closes.
+ * Same box as the scripted dialogue: dark ink on parchment, choices as rows.
  *
  * `onOpen(ui)` opens a panel ({ open: 'shop' | 'inn' | 'arena' | 'records' | 'news', tab }).
  */
@@ -17,6 +19,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
   const [lines, setLines] = useState(() => talk?.lines || []);
   const [choices, setChoices] = useState(() => talk?.choices || []);
   const [index, setIndex] = useState(0);
+  const [closing, setClosing] = useState(false);
   const started = useRef(false);
 
   // Meeting someone is remembered once the conversation opens.
@@ -29,6 +32,10 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
   if (!talk) return null;
   const { person } = talk;
   const reading = index < lines.length - 1;
+  const advance = () => {
+    if (reading) setIndex((value) => value + 1);
+    else if (closing) onClose();
+  };
 
   const choose = (choice) => {
     const result = actions.talkPerson(personId, choice.id);
@@ -45,18 +52,20 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
       onOpen?.(ui);
       return;
     }
-    if (ui.close) {
+    if (ui.close && !result.lines?.length) {
       onClose();
       return;
     }
+    setClosing(Boolean(ui.close));
     setLines(result.lines?.length ? result.lines : ['…']);
-    setChoices(result.choices || []);
+    setChoices(ui.close ? [] : result.choices || []);
     setIndex(0);
   };
 
+  const waiting = reading || closing;
   return (
-    <section className="dialogue dialogue--person" aria-live="polite" onClick={reading ? () => setIndex((value) => value + 1) : undefined}>
-      <div className="dialogue__box" onClick={(event) => !reading && event.stopPropagation()}>
+    <section className="dialogue dialogue--person" aria-live="polite" onClick={waiting ? advance : undefined}>
+      <div className="dialogue__box" onClick={(event) => !waiting && event.stopPropagation()}>
         <div className="dialogue__portrait">
           <Asset id={person.portrait || 'portrait.poi'} alt="" />
         </div>
@@ -66,14 +75,15 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
             <small> · {person.role}</small>
           </span>
           <p className="dialogue__text">{lines[index]}</p>
-          {reading ? (
+          {waiting ? (
             <div className="dialogue__controls">
               <span className="dialogue__hint">Tap to continue</span>
             </div>
           ) : (
-            <div className="dialogue__choices">
+            <div className="dialogue__choices dialogue__choices--hub">
               {choices.map((choice) => (
-                <button key={choice.id} type="button" onClick={() => choose(choice)}>
+                <button key={choice.id} type="button" className={choice.asked ? 'is-asked' : ''} onClick={() => choose(choice)}>
+                  {choice.asked ? <Icon name="check" size={14} tone="plain" /> : null}
                   {choice.text}
                 </button>
               ))}

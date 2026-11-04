@@ -9,7 +9,7 @@
 // challenger is a candidate who only joins after you beat them in a bout.
 // Regulars come from src/data/people.js. Only memory is stored, in
 // state.people[id] (met, talks, relationship, interview, last seen).
-import { REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, OFFER_LINES } from '../../data/people.js';
+import { REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
 import { INTERIORS } from '../../data/interiors.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { CLASSES, normalizeClassId } from '../../data/content.js';
@@ -103,6 +103,7 @@ export function townPeople(state, locationId) {
           locationId,
           building: buildings.includes(building) ? building : 'tavern',
           kind: 'visitor',
+          voice: role,
           sprite: `npc.role.${slug(role)}`,
           portrait: `portrait.role.${slug(role)}`,
           offers: [{ type: 'mission', missionIds: [] }],
@@ -113,12 +114,12 @@ export function townPeople(state, locationId) {
   people.push(...byIssuer.values());
   // A messenger waits at the herald while there is unread news.
   if (buildings.includes('herald') && state.newsUnread) {
-    people.push({ id: `messenger-${locationId}`, name: 'A messenger', role: 'Messenger', locationId, building: 'herald', kind: 'visitor', sprite: 'npc.role.messenger', portrait: 'portrait.role.messenger', offers: [], service: 'news' });
+    people.push({ id: `messenger-${locationId}`, name: 'A messenger', role: 'Messenger', voice: 'Messenger', locationId, building: 'herald', kind: 'visitor', sprite: 'npc.role.messenger', portrait: 'portrait.role.messenger', offers: [], service: 'news' });
   }
   // A traveller with rumours at the inn, a new one each month.
   if (locationId !== 'dunmere' && buildings.includes('tavern')) {
     const key = `traveller-${locationId}-${campaignMonthSerial(state)}`;
-    people.push({ id: key, name: visitorName(key), role: 'Traveller', locationId, building: 'tavern', kind: 'visitor', sprite: 'npc.role.traveller', portrait: 'portrait.role.traveller', offers: [], service: 'rumor' });
+    people.push({ id: key, name: visitorName(key), role: 'Traveller', voice: 'Traveller', locationId, building: 'tavern', kind: 'visitor', sprite: 'npc.role.traveller', portrait: 'portrait.role.traveller', offers: [], service: 'rumor' });
   }
   return people;
 }
@@ -156,71 +157,108 @@ export function findPerson(state, personId) {
 }
 
 // ---------------------------------------------------------------- talking
+// Conversations follow docs/DIALOGUE.md: the person opens (with their name on
+// a first meeting), the player asks topics in any order, each answer comes
+// back to the topics with asked ones marked, and a goodbye fits the person.
 
-const choice = (id, text) => ({ id, text });
+const choice = (id, text, asked = false) => ({ id, text, asked });
+const BACK = 'Let’s talk about something else.';
 
-function serviceChoices(person, state) {
+function candidateOf(state, person) {
+  return person.candidateId ? (state.candidates || []).find((item) => item.id === person.candidateId) || null : null;
+}
+
+/** How someone speaks: regulars by their own lines, recruits by personality, the rest by role. */
+function voiceFor(state, person) {
+  const candidate = candidateOf(state, person);
+  const base = candidate ? PERSONALITY_VOICES[candidate.personality] : ROLE_VOICES[person.voice];
+  const fallback = { name: 'I’m {name}.', again: 'Back again?', more: 'What else?', ask: 'Ask what you like.', bye: 'Good day.' };
+  const voice = { ...fallback, ...(base || {}) };
+  if (person.kind === 'regular') {
+    voice.again = person.again?.[0] || voice.again;
+    voice.bye = person.bye || voice.bye;
+    voice.more = 'Anything else?';
+  }
+  const fill = (text) => String(text).replace(/\{name\}/g, person.name).replace(/\{guild\}/g, state.guild?.name || 'friend');
+  return Object.fromEntries(Object.entries(voice).map(([key, value]) => [key, fill(value)]));
+}
+
+/** What kind of visitor this is, for the first words and the small talk. */
+function visitorKind(person) {
+  return person.offers[0]?.type || person.service || null;
+}
+
+function serviceChoices(person, state, asked) {
   const here = person.locationId;
   switch (person.service) {
     case 'shop':
-      return [choice('service.shop', 'Show me your wares')];
+      return [choice('service.shop', 'Show me what you’ve got.')];
     case 'inn':
-      return [choice('service.inn', 'A room for the night')];
+      return [choice('service.inn', 'I need a room for the night.')];
     case 'registrar':
-      return [choice('service.registrar', 'Sign up for a tournament')];
+      return [choice('service.registrar', 'I’d like to sign someone up.')];
     case 'referee': {
       const running = (state.tournaments || []).some((tournament) => tournament.locationId === here && tournament.status === 'active');
-      return [choice('service.referee', running ? 'Start our bout' : 'Is there a bout today?')];
+      return [choice('service.referee', running ? 'We’re ready for our bout.' : 'Any bouts today?')];
     }
     case 'clerk':
-      return [choice('service.clerk', 'The rankings, please')];
+      return [choice('service.clerk', 'Where do we stand in the rankings?')];
     case 'news':
-      return [choice('service.news', 'What news?')];
+      return [choice('service.news', 'What’s the news?')];
     case 'rumor':
-      return [choice('service.rumor', 'Heard anything on the road?')];
+      return [choice('service.rumor', 'Heard anything on the road?', Boolean(asked['service.rumor']))];
     default:
       return [];
   }
 }
 
-function offerChoices(person) {
-  return person.offers.flatMap((offer) => {
-    if (offer.type === 'mission') return [choice('mission', 'Need anything done?')];
-    if (offer.type === 'hire') return [choice('hire', 'Looking for work?')];
-    if (offer.type === 'challenge') return [choice('challenge', 'Fancy a bout?')];
-    return [];
+/** The topics: small talk, the person's service, their offers, and goodbye. */
+function hubChoices(state, person) {
+  const asked = state.people?.[person.id]?.asked || {};
+  const choices = [];
+  const chat = person.kind === 'regular' ? person.chat?.[0] : CHAT_TEXT[visitorKind(person)];
+  if (chat && visitorKind(person) !== 'mission') choices.push(choice('chat', chat, Boolean(asked.chat)));
+  choices.push(...serviceChoices(person, state, asked));
+  person.offers.forEach((offer) => {
+    if (offer.type === 'mission') choices.push(choice('mission', 'Need anything done?', Boolean(asked.mission)));
+    if (offer.type === 'hire') choices.push(choice('hire', 'Looking for work?', Boolean(asked.hire)));
+    if (offer.type === 'challenge') choices.push(choice('challenge', 'Fancy a friendly bout?', Boolean(asked.challenge)));
   });
+  choices.push(choice('bye', 'Goodbye.'));
+  return choices;
+}
+
+function interviewChoices(memory) {
+  const done = memory?.interview || {};
+  return [
+    choice('hire.about', 'Tell me about yourself.', Boolean(done.about)),
+    choice('hire.skills', 'What can you do?', Boolean(done.skills)),
+    choice('hire.terms', 'What would it take to sign you?', Boolean(done.terms)),
+    choice('back', BACK),
+  ];
 }
 
 /**
- * What a person says when you walk up to them: first meetings are 1–3 lines
- * that reveal what they offer; people you know skip the small talk.
+ * What a person says when you walk up to them. A first meeting: their first
+ * words, then their name. A return visit: a familiar opener.
  */
 export function getPersonTalk(state, personId) {
   const person = findPerson(state, personId);
   if (!person) return null;
-  const lines = [];
-  if (!person.met) {
-    const main = person.offers[0]?.type || (person.service === 'rumor' ? 'rumor' : null);
-    if (main && FIRST_LINES[main]) lines.push(pick(FIRST_LINES[main], person.id));
-    else if (person.lines?.length) lines.push(person.lines[0]);
-    person.offers.forEach((offer) => {
-      if (offer.type !== person.offers[0]?.type || !FIRST_LINES[offer.type]) lines.push(OFFER_LINES[offer.type]);
-    });
-    if (!lines.length) lines.push('Good day.');
-  } else {
-    lines.push(person.relationship >= 3 ? `Good to see you again.` : person.lines?.[0] || 'Back again?');
+  const voice = voiceFor(state, person);
+  let lines;
+  if (person.kind === 'regular') lines = person.met ? [voice.again] : person.hello || [voice.name];
+  else if (person.met) lines = [voice.again];
+  else {
+    const kind = visitorKind(person);
+    lines = [FIRST_LINES[kind] ? pick(FIRST_LINES[kind], person.id) : null, voice.name].filter(Boolean);
   }
-  return {
-    person,
-    lines: lines.slice(0, 3),
-    choices: [...serviceChoices(person, state), ...offerChoices(person), choice('bye', 'Goodbye')],
-  };
+  return { person, lines: lines.slice(0, 3), choices: hubChoices(state, person) };
 }
 
 function rememberInPlace(state, person, patch = {}) {
   state.people ||= {};
-  const memory = state.people[person.id] || { id: person.id, met: false, talks: 0, relationship: 0, interview: {} };
+  const memory = state.people[person.id] || { id: person.id, met: false, talks: 0, relationship: 0, interview: {}, asked: {} };
   state.people[person.id] = {
     ...memory,
     name: person.name,
@@ -234,6 +272,7 @@ function rememberInPlace(state, person, patch = {}) {
     movedOn: false,
     ...patch,
     interview: { ...memory.interview, ...(patch.interview || {}) },
+    asked: { ...(memory.asked || {}) },
   };
   return state.people[person.id];
 }
@@ -248,22 +287,36 @@ export function meetPerson(state, personId) {
   return { state: finalize(next), error: null };
 }
 
-function heroLines(candidate) {
-  const dream = String(candidate.dream || 'make a name').toLowerCase();
-  return [
-    `People call me ${String(candidate.personality || 'steady').toLowerCase()}. My worst habit? ${candidate.flaw || 'None worth mentioning'}.`,
-    `One day I mean to ${dream.replace(/^become /, 'become ')}.`,
-  ];
+/** Small talk: where a recruit comes from, a regular's favourite subject, where a traveller is going. */
+function chatLines(state, person) {
+  if (person.kind === 'regular') return person.chat?.[1] || ['Not much to tell.'];
+  const candidate = candidateOf(state, person);
+  if (candidate) {
+    const [origin, place] = String(candidate.origin || '').split(' of ');
+    const line = ORIGIN_LINES[origin] || 'Here and there. Mostly there.';
+    return [line.replace('{place}', place || 'the road')];
+  }
+  if (visitorKind(person) === 'rumor') return ['Wherever the next warm bed is.', 'Ask me about the roads. That’s what I’m good for.'];
+  return ['Not much to tell.'];
+}
+
+function aboutLines(candidate) {
+  return [DREAM_LINES[candidate.dream] || 'I mean to make a name for myself.', FLAW_LINES[candidate.flaw] || 'No bad habits worth mentioning. Yet.'];
 }
 
 function skillLines(state, candidate) {
   const ranges = candidateRanges(state, candidate);
   const span = ([low, high]) => (low === high ? `${low}` : `${low} to ${high}`);
-  const description = CLASSES[normalizeClassId(candidate.classId)]?.description || '';
-  return [`A ${candidate.rarity.toLowerCase()} ${candidate.primal} ${candidate.classId}, level ${candidate.level}. ${description}`.trim(), `Call my power ${span(ranges.power)}, and there is more in me: ${span(ranges.potential)}.`];
+  const trade = (CLASSES[normalizeClassId(candidate.classId)]?.description || '').replace(/\.$/, '').toLowerCase();
+  const talent = candidate.rarity && candidate.rarity !== 'Common' ? ` ${candidate.rarity} talent, they tell me.` : '';
+  return [
+    `I’m a ${candidate.primal}-touched ${candidate.classId}, level ${candidate.level}.${talent}`,
+    trade ? `${trade.charAt(0).toUpperCase()}${trade.slice(1)}: that’s my trade.` : 'I fight. I’m good at it.',
+    `Call my power ${span(ranges.power)} today. Give me time and I’ll reach ${span(ranges.potential)}.`,
+  ];
 }
 
-/** Terms and any reason the candidate would say no right now. */
+/** Terms and any reason the candidate would say no right now (in their words). */
 export function hireTerms(state, candidate) {
   const salary = contractSalary(baseSalaryFor(candidate, state), HIRE_YEARS);
   const objection = recruitObjection(state, candidate);
@@ -277,41 +330,54 @@ export function hireTerms(state, candidate) {
   return { fee: candidate.signingFee, salary, years: HIRE_YEARS, bed: true, blockers };
 }
 
+/** The contract a petitioner talks about next: the first one the guild has not taken yet. */
+function nextMission(state, person) {
+  const offer = person.offers.find((item) => item.type === 'mission');
+  const missions = (offer?.missionIds || []).map((id) => state.missions.find((mission) => mission.id === id)).filter(Boolean);
+  return { open: missions.find((mission) => !mission.unlocked) || null, taken: missions.some((mission) => mission.unlocked) };
+}
+
+/** A contract brief, as the petitioner would say it: its first sentence. */
+function briefLine(mission) {
+  const text = String(mission.brief || '').split(' The contract originates')[0];
+  const first = text.match(/^[^.!?]*[.!?]/)?.[0] || text;
+  return first.trim() || mission.title;
+}
+
 /**
  * Picks a choice in a conversation. Returns the next lines and choices, and
- * `ui` for the screen (open a panel, sign a recruit, close). Choices:
- * mission, mission.accept:<id>, mission.decline:<id>, hire, hire.about,
- * hire.skills, hire.terms, challenge, challenge.fight, service.*, back, bye.
+ * `ui` for the screen (open a panel, sign a recruit, close after the last line).
+ * Choices: chat, mission, mission.accept:<id>, mission.decline:<id>, hire,
+ * hire.about, hire.skills, hire.terms, hire.think, hire.sign, challenge,
+ * challenge.fight, service.*, back, bye. Each choice comes with `asked`.
  */
 export function talkToPerson(state, personId, choiceId) {
   const person = findPerson(state, personId);
   if (!person) return { state, error: 'They have gone.' };
-  const next = clone(state);
+  let next = clone(state);
   const memory = rememberInPlace(next, person, { met: true });
-  const back = [choice('back', 'Something else'), choice('bye', 'Goodbye')];
-  const candidate = person.candidateId ? next.candidates.find((item) => item.id === person.candidateId) : null;
+  const voice = voiceFor(next, person);
+  const candidate = candidateOf(next, person);
   const [action, argument] = String(choiceId).split(':');
+  const hub = () => hubChoices(next, person);
   let lines = [];
-  let choices = back;
+  let choices = null;
   let ui = null;
+  if (['chat', 'mission', 'hire', 'challenge', 'service.rumor'].includes(action)) memory.asked[action] = true;
 
   if (action === 'bye') {
-    return { state: finalize(next), error: null, lines: [], choices: [], ui: { close: true } };
+    return { state: finalize(next), error: null, lines: [voice.bye], choices: [], ui: { close: true } };
   } else if (action === 'back') {
-    const talk = getPersonTalk(next, personId);
-    lines = ['What else?'];
-    choices = talk?.choices || back;
+    lines = [voice.more];
+  } else if (action === 'chat') {
+    lines = chatLines(next, person);
   } else if (action === 'mission') {
-    const offer = person.offers.find((item) => item.type === 'mission');
-    const missions = (offer?.missionIds || []).map((id) => next.missions.find((mission) => mission.id === id)).filter(Boolean);
-    if (!missions.length) lines = ['Nothing right now. Ask me next month.'];
-    missions.slice(0, 2).forEach((mission) => {
-      lines.push(`${mission.title}: ${mission.brief.split('.')[0]}. ${mission.reward} gold, risk ${mission.risk} of 5.${mission.unlocked ? ' It is already on your board.' : ''}`);
-    });
-    choices = [
-      ...missions.slice(0, 2).filter((mission) => !mission.unlocked).flatMap((mission) => [choice(`mission.accept:${mission.id}`, `Take “${mission.title}”`), choice(`mission.decline:${mission.id}`, `Turn down “${mission.title}”`)]),
-      ...back,
-    ];
+    const { open, taken } = nextMission(next, person);
+    if (!open) lines = [taken ? 'You already have my contract. It’s on your notice board.' : 'Nothing right now. Ask me next month.'];
+    else {
+      lines = [briefLine(open), `It pays ${open.reward} gold. ${RISK_LINES[clamp(open.risk || 1, 1, 5) - 1]}`];
+      choices = [choice(`mission.accept:${open.id}`, 'We’ll take it.'), choice(`mission.decline:${open.id}`, 'Not this one.'), choice('back', BACK)];
+    }
   } else if (action === 'mission.accept') {
     const mission = next.missions.find((item) => item.id === argument);
     if (!mission) return { state, error: 'That contract is gone.' };
@@ -319,38 +385,45 @@ export function talkToPerson(state, personId, choiceId) {
     mission.accepted = true;
     mission.giverId = person.id;
     memory.relationship = clamp(memory.relationship + 1, -10, 10);
-    lines = ['Good. It is on your notice board in the square. Pick your party there.'];
+    lines = ['Thank you. I’ll put it on your notice board in the square.', 'Pick your party there.'];
     ui = { notice: `“${mission.title}” added to the notice board.` };
   } else if (action === 'mission.decline') {
     const result = declineContract(next, argument);
     if (result.error) return { state, error: result.error };
-    return { state: result.state, error: null, lines: ['Then I will ask another guild.'], choices: back, ui: null };
+    next = result.state;
+    lines = ['Then I’ll ask another guild.'];
   } else if (action === 'hire') {
     if (!candidate) return { state, error: 'They have already signed elsewhere.' };
-    lines = ['Ask what you like.'];
-    choices = [choice('hire.about', 'Tell me about yourself'), choice('hire.skills', 'What can you do?'), choice('hire.terms', 'Would you join us?'), ...back];
+    lines = [voice.ask];
+    choices = interviewChoices(memory);
   } else if (action === 'hire.about' && candidate) {
     memory.interview.about = true;
-    lines = heroLines(candidate);
-    choices = [choice('hire.skills', 'What can you do?'), choice('hire.terms', 'Would you join us?'), ...back];
+    lines = aboutLines(candidate);
+    choices = interviewChoices(memory);
   } else if (action === 'hire.skills' && candidate) {
     // Asking narrows what the guild knows about them (part of scouting).
     candidate.scoutLevel = Math.max(candidate.scoutLevel || 0, 2);
     memory.interview.skills = true;
     lines = skillLines(next, candidate);
-    choices = [choice('hire.about', 'Tell me about yourself'), choice('hire.terms', 'Would you join us?'), ...back];
+    choices = interviewChoices(memory);
   } else if (action === 'hire.terms' && candidate) {
     memory.interview.terms = true;
     const terms = hireTerms(next, candidate);
-    lines = terms.blockers.length
-      ? [terms.blockers[0]]
-      : [`${terms.fee} gold to sign, then ${terms.salary} gold a month for ${terms.years} years. And a bed of my own.`];
-    choices = terms.blockers.length ? back : [choice('hire.sign', 'Agreed. Welcome to the guild.'), choice('back', 'Let me think about it'), choice('bye', 'Goodbye')];
+    if (terms.blockers.length) {
+      lines = [terms.blockers[0]];
+      choices = interviewChoices(memory);
+    } else {
+      lines = [`${terms.fee} gold to sign. Then ${terms.salary} gold a month for ${terms.years} years.`, 'And a bed of my own.'];
+      choices = [choice('hire.sign', `Deal. Welcome to ${next.guild.name}.`), choice('hire.think', 'Let me think about it.')];
+    }
+  } else if (action === 'hire.think' && candidate) {
+    lines = ['Don’t think too long. Other guilds are hiring.'];
   } else if (action === 'hire.sign' && candidate) {
     return { state: finalize(next), error: null, lines: [], choices: [], ui: { recruit: candidate.id, years: HIRE_YEARS } };
   } else if (action === 'challenge') {
-    lines = [`A friendly bout, one against one. Win and the town hears about it (+${BOUT_FAME} fame).${person.offers.some((offer) => offer.locked) ? ' Win, and I will hear your offer.' : ''}`];
-    choices = [choice('challenge.fight', 'Let’s fight'), ...back];
+    const locked = person.offers.some((offer) => offer.locked);
+    lines = ['One against one, friendly. First to yield loses.', locked ? 'Beat me and I’ll hear your offer.' : 'Win and the whole town hears about it.'];
+    choices = [choice('challenge.fight', `You’re on. (+${BOUT_FAME} fame if we win)`), choice('back', 'Maybe another time.')];
   } else if (action === 'challenge.fight') {
     const started = startPersonBoutInPlace(next, person, candidate);
     if (started) return { state, error: started };
@@ -364,17 +437,19 @@ export function talkToPerson(state, personId, choiceId) {
   } else if (action === 'service.referee') {
     const running = (next.tournaments || []).some((tournament) => tournament.locationId === person.locationId && tournament.status === 'active');
     if (running) ui = { open: 'arena', tab: 'ground' };
-    else lines = ['No tournament in progress. The registrar can tell you when the next one starts.'];
+    else lines = ['No bouts today.', 'Ask the registrar when the next tournament starts.'];
   } else if (action === 'service.clerk') {
     ui = { open: 'records', tab: 'rankings' };
   } else if (action === 'service.news') {
     ui = { open: 'news' };
   } else if (action === 'service.rumor') {
-    lines = [rumorInPlace(next, person)];
+    const rumor = rumorInPlace(next, person);
+    lines = rumor.lines;
+    if (rumor.notice) ui = { notice: rumor.notice };
   } else {
     return { state, error: 'They do not follow.' };
   }
-  return { state: finalize(next), error: null, lines, choices, ui };
+  return { state: finalize(next), error: null, lines, choices: choices || hub(), ui };
 }
 
 /** A traveller's rumour: a place the guild has not heard of yet becomes known. */
@@ -384,11 +459,11 @@ function rumorInPlace(state, person) {
   knowledge.locations ||= {};
   knowledge.sources ||= {};
   const unknown = Object.keys(TOWNS).filter((id) => !knowledge.locations[id] || knowledge.locations[id] === 'unknown');
-  if (!unknown.length) return 'Nothing you have not heard already. The roads are quiet.';
+  if (!unknown.length) return { lines: ['Nothing you haven’t heard already. The roads are quiet.'], notice: null };
   const place = LOCATION_BY_ID[pick(unknown, person.id)];
   knowledge.locations[place.id] = 'rumored';
   knowledge.sources[place.id] ||= { source: person.name, note: place.description };
-  return `They talk about ${place.name}: ${place.description.toLowerCase()} It is on your map now.`;
+  return { lines: [`Folk on the road keep talking about ${place.name}.`, place.description], notice: `${place.name} is on your map now.` };
 }
 
 // ---------------------------------------------------------------- bouts
