@@ -75,8 +75,6 @@ time, .num, .stat__value, .badge, .progress__label, .topbar__resources, .ranking
 .shop-list,
 .shop-detail,
 .battle-tell,
-.battle-hero,
-.battle-commands,
 .battle-result,
 .location-mobile-list,
 .nemesis-view__list,
@@ -568,3 +566,6 @@ label { display: grid; gap: 6px; color: var(--text-dim); font-size: var(--fs-2);
 .icon--ink { fill: var(--parchment-ink); }
 .icon--ink path { fill: url(#icon-ink) var(--parchment-ink); }
 .icon--plain path { fill: currentColor; }
+
+/* Images never start a native drag: every drag in the game is ours (docs/UX.md). */
+img { -webkit-user-drag: none; user-select: none; }

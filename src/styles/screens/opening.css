@@ -25,7 +25,6 @@
 .new-campaign__skip span { display: grid; gap: 2px; }
 .new-campaign__skip small { color: var(--text-dim); }
 .new-campaign__name { display: grid; gap: 6px; grid-column: 1 / -1; font-weight: 600; }
-.battle-hint { position: absolute; z-index: 6; top: 54px; left: 50%; transform: translateX(-50%); max-width: min(92%, 560px); margin: 0; padding: 8px 14px; border: 1px solid var(--gold); border-radius: var(--r-1); background: rgba(10, 9, 14, .88); color: var(--gold-bright); font-size: var(--fs-2); text-align: center; pointer-events: none; }
 /* The founding card (name, motto, charter) scrolls inside the screen on small phones. */
 .opening-identity { overflow: hidden; padding: calc(var(--safe-t) + 12px) calc(var(--safe-r) + 12px) calc(var(--safe-b) + 12px) calc(var(--safe-l) + 12px); }
 .opening-identity__card { width: min(100%, 860px); max-height: 100%; overflow: auto; overscroll-behavior: contain; }

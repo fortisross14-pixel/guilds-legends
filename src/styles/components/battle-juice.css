@@ -27,8 +27,6 @@
 .meter--hp.is-low .meter__fill { background: linear-gradient(180deg, #f0846f, #b2392b); }
 .meter--mp .meter__fill { background: linear-gradient(180deg, #8cc2f2, #3a6fb5); }
 .meter b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.battle-hero .meter { height: 10px; margin-bottom: 15px; overflow: visible; }
-.battle-hero .meter b { position: absolute; top: 11px; left: 0; width: auto; height: auto; clip: auto; color: var(--text-dim); font-size: var(--fs-1); font-weight: 600; white-space: nowrap; }
 .battle-enemy .meter { position: relative; z-index: 2; width: calc(70px * var(--k)); max-width: 150px; }
 
 /* Statuses: icon plus turns left. Tap a unit for details. */
@@ -54,8 +52,7 @@
 .target-preview__tag { font: 700 var(--fs-1) var(--font-label); font-style: normal; letter-spacing: .1em; }
 .target-preview__tag--weak { color: #ffb347; }
 .target-preview__tag--resist { color: #9fb3c8; }
-.battle-hero .target-preview { top: -52px; }
-.battle-enemy.is-selected::after, .battle-hero.is-selected { box-shadow: 0 0 0 2px var(--gold-bright), 0 0 26px rgba(246, 210, 140, .6); }
+.battle-enemy.is-selected::after, .battle-ally.is-selected .hero-sprite { box-shadow: 0 0 0 2px var(--gold-bright), 0 0 26px rgba(246, 210, 140, .6); }
 
 /* Banners: boss intro, phase change, charge, interrupt. */
 .battle-banner { position: absolute; z-index: 8; top: 34%; left: 50%; width: min(640px, calc(100% - 32px)); padding: 14px 24px; border-top: 1px solid rgba(246, 220, 154, .6); border-bottom: 1px solid rgba(246, 220, 154, .6); background: linear-gradient(90deg, transparent, rgba(8, 6, 12, .92) 15%, rgba(8, 6, 12, .92) 85%, transparent); color: var(--gold-bright); font: 700 var(--fs-4) / 1.3 var(--font-display); text-align: center; transform: translateX(-50%); animation: banner-in calc(260ms / var(--speed, 1)) var(--ease) both; cursor: pointer; }
@@ -64,7 +61,7 @@
 @keyframes banner-in { from { opacity: 0; transform: translate(-50%, 10px) scaleX(.9); } }
 
 /* Juice: lunge, hit flash and knockback, crit shake, KO tilt, victory hop. */
-.battle-enemy, .battle-hero { transition: transform var(--beat) var(--ease), opacity var(--beat), filter var(--beat), box-shadow var(--beat); }
+.battle-enemy, .battle-ally { transition: transform var(--beat) var(--ease), opacity var(--beat), filter var(--beat), box-shadow var(--beat); }
 .is-acting--party { animation: lunge-up var(--beat) var(--ease); }
 .is-acting--enemy { animation: lunge-down var(--beat) var(--ease); }
 @keyframes lunge-up { 40% { transform: translateY(-26px) scale(1.04); } }
@@ -79,11 +76,10 @@
 @keyframes charge-pulse { 0%, 100% { filter: drop-shadow(0 0 14px rgba(255, 210, 120, .8)); } 50% { filter: drop-shadow(0 0 32px rgba(255, 150, 80, 1)); } }
 .battle-enemy.is-ko { opacity: .25; transform: rotate(-12deg) translateY(10px); pointer-events: none; }
 .battle-enemy.is-fled { opacity: 0; transform: translateX(80px); }
-.battle-hero.is-ko { transform: rotate(-3deg); }
 .battle-enemy.is-hidden { display: none; }
 .battle-enemy.is-summoned { animation: summon-in calc(600ms / var(--speed, 1)) var(--ease) both; }
 @keyframes summon-in { from { opacity: 0; transform: translateY(-30px) scale(.7); } }
-.battle-hero.is-victory .hero-sprite img { animation: victory-hop 700ms ease-in-out 3; }
+.battle-ally.is-victory .hero-sprite img { animation: victory-hop 700ms ease-in-out 3; }
 @keyframes victory-hop { 30% { transform: translateY(-16px); } 55% { transform: translateY(0); } 75% { transform: translateY(-6px); } }
 .battle-screen.is-shaking { animation: shake calc(320ms / var(--speed, 1)) linear; }
 @keyframes shake { 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(3px, -1px); } }
@@ -97,7 +93,7 @@
 .dmg-pop--debuff { color: #e3a8ff; font-size: var(--fs-4); }
 @keyframes float-up { from { opacity: 0; transform: translate(-50%, 6px) scale(.7); } 20% { opacity: 1; transform: translate(-50%, -10px) scale(1.08); } to { opacity: 0; transform: translate(-50%, -46px); } }
 .fx-wrap .fx { width: 140px; animation: fx-burst var(--beat) ease-out both; }
-.battle-hero .fx-wrap .fx { width: 100px; }
+.battle-ally .fx-wrap .fx { width: 100px; }
 @keyframes fx-burst { from { opacity: 0; transform: scale(.6); } 30% { opacity: 1; } to { opacity: 0; transform: scale(1.15); } }
 
 /* Unit details (tap a unit). */
@@ -112,13 +108,12 @@
 .unit-info__statuses small { grid-column: 2; color: var(--text-dim); font-size: var(--fs-1); }
 
 /* Commands: skill and item descriptions inline (no hover-only info). */
-.battle-commands__meta .button { min-height: 40px; }
-.battle-commands__meta .button.is-on { border-color: var(--gold-bright); color: var(--gold-bright); }
 
-/* Result card: damage per hero, then Continue or Retry / Retreat. */
-.battle-result__damage { display: grid; gap: 4px; width: 100%; margin: 4px 0; padding: 0; list-style: none; }
-.battle-result__damage li { display: grid; grid-template-columns: 7em 1fr auto; align-items: center; gap: 8px; font-size: var(--fs-2); text-align: left; }
-.battle-result__damage i { height: 6px; border-radius: var(--r-1); background: var(--gold); }
+/* Result card: each hero's HP after the fight, then Continue or Retry / Retreat. */
+.battle-result__hp { display: grid; gap: 6px; width: 100%; margin: 4px 0; padding: 0; list-style: none; }
+.battle-result__hp li { display: grid; grid-template-columns: 6em 1fr auto; align-items: center; gap: 8px; font-size: var(--fs-2); text-align: left; }
+.battle-result__hp .meter b { display: none; }
+.battle-result__hp li.is-ko b { color: var(--bad); }
 .battle-result__note { color: var(--text-dim); font-size: var(--fs-2); }
 .battle-result__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 
@@ -128,7 +123,6 @@
   .turn-order__slot span { display: none; }
   .battle-tell, .unit-info { top: 104px; }
   .intent { max-width: 92px; font-size: var(--fs-1); }
-  .battle-hero .meter + .meter { display: none; }
 }
 .reduced-motion .battle-screen, .reduced-motion .battle-screen * { animation-duration: 1ms !important; }
 @media (prefers-reduced-motion: reduce) {

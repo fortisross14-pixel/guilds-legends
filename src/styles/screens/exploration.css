@@ -102,3 +102,15 @@
 .dialogue__choices--hub .dialogue__bye { margin-top: 4px; background: transparent; }
 .dialogue__choices .dialogue__ask { display: flex; align-items: center; gap: 8px; background: rgba(255, 252, 240, .45); }
 .dialogue__choices .dialogue__ask.is-asked { color: #6b5a44; }
+
+/* The recruit's ID card, right above the conversation (battle-hiring spec). */
+.dialogue--person { align-content: end; }
+.recruit-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; width: min(560px, calc(100% - 2 * var(--gutter))); margin: 0 auto 8px; padding: 10px 12px; border: 1px solid var(--brass); border-radius: var(--r-2); background: rgba(12, 11, 16, .92); color: var(--text); box-shadow: var(--shadow); pointer-events: auto; }
+.recruit-card__who { display: grid; gap: 3px; min-width: 0; }
+.recruit-card__who strong { font: 700 var(--fs-3)/1.15 var(--font-display); }
+.recruit-card__line { display: flex; align-items: center; gap: 6px; color: var(--text-dim); font-size: var(--fs-1); }
+.recruit-card__badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.recruit-card__stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 0; }
+.recruit-card__stats > div { display: grid; padding: 3px 6px; border-radius: 6px; background: rgba(255, 255, 255, .04); }
+.recruit-card__stats dt { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.recruit-card__stats dd { margin: 0; color: var(--gold-bright); font-size: var(--fs-2); font-weight: 700; }

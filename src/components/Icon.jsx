@@ -89,7 +89,6 @@ export const ROOM_ICONS = {
 export const PAGE_ICONS = { calendar: 'calendar', news: 'letter', quests: 'quill', settings: 'gear', chronicle: 'book', log: 'scroll', seasons: 'crown', lore: 'book', codex: 'star' };
 export const LADDER_ICONS = { strength: 'sword', legacy: 'scroll', official: 'crown' };
 export const FORMATION_ICONS = { Combat: 'swords', Diplomacy: 'letter', Expedition: 'flag', Intrigue: 'eye' };
-export const COMMAND_ICONS = { attack: 'sword', skill: 'star', item: 'cross', defend: 'shield' };
 export const EVENT_ICONS = {
   tournament: 'crown',
   mission: 'pin',

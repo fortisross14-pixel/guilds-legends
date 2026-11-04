@@ -30,14 +30,7 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 
 /* Battle: fast-forward marker */
 .battle-boost { position: absolute; z-index: 6; right: 14px; top: 54px; color: var(--gold-bright); font: 700 var(--fs-5) var(--font-display); pointer-events: none; }
-.battle-commands__who small { display: block; color: var(--text-dim); font-size: var(--fs-1); font-weight: 400; }
 
-/* Ghost hand: shown once until the gesture is used */
-.gesture-hint { position: absolute; z-index: 7; inset: 0; display: grid; place-items: center; pointer-events: none; }
-.gesture-hint small { position: absolute; bottom: 38%; padding: 4px 10px; border-radius: var(--r-1); background: rgba(10, 9, 14, .8); color: var(--gold-bright); font-size: var(--fs-2); }
-.gesture-hint__hand { position: absolute; font-size: var(--fs-5); filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); animation: ghost-drag 2.2s ease-in-out infinite; }
-@keyframes ghost-drag { 0% { transform: translate(-10vw, 30vh); opacity: 0; } 15% { opacity: 1; } 70% { transform: translate(0, -8vh); opacity: 1; } 100% { transform: translate(0, -8vh); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .gesture-hint__hand { animation: none; } }
 
 /* Two-way choice (settings) */
 .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r-1); overflow: hidden; }

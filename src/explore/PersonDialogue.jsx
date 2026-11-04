@@ -5,6 +5,7 @@ import Icon from '../components/Icon.jsx';
 import { toast } from '../components/UI.jsx';
 import { prefersInstantText, useTypewriter } from './useTypewriter.js';
 import TypedLine from './TypedLine.jsx';
+import RecruitCard from './RecruitCard.jsx';
 
 /**
  * Talking to someone in a building (engine: people.js; style: docs/DIALOGUE.md).
@@ -36,6 +37,8 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
   const typing = useTypewriter(lines[index] || '', skipped || prefersInstantText(state.settings));
   if (!talk) return null;
   const { person } = talk;
+  // A recruit's ID card sits above the box from the first line (battle-hiring spec).
+  const candidate = person.candidateId ? (state.candidates || []).find((item) => item.id === person.candidateId) : null;
   const reading = index < lines.length - 1 || !typing.done;
   // A tap finishes the line, then moves on; Skip finishes it, then jumps to the topics (or closes).
   const advance = () => {
@@ -81,6 +84,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
   const waiting = reading || closing;
   return (
     <section className="dialogue dialogue--person" aria-live="polite" onClick={waiting ? advance : undefined}>
+      {candidate ? <RecruitCard state={state} candidate={candidate} /> : null}
       <div className="dialogue__box" onClick={(event) => !waiting && event.stopPropagation()}>
         <div className="dialogue__portrait">
           <Asset id={person.portrait || 'portrait.poi'} alt="" />

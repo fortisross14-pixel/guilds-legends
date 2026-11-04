@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { COMMANDS, previewCommand, turnOrder } from '../game/combat.js';
+import { previewCommand, turnOrder } from '../game/combat.js';
 import { SKILLS, STATUSES, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
 import { Button, HeroSprite, Modal, Motes, useSceneStyle } from './UI.jsx';
@@ -31,12 +31,6 @@ const INTENT_ICONS = { attack: '⚔', spell: '✦', heal: '✚', buff: '▲', gu
 const PROFILE_NAMES = { brute: 'Brute', caster: 'Caster', healer: 'Healer', skirmisher: 'Skirmisher', tank: 'Tank' };
 const STATUS_FX = { poison: 'poison', burn: 'fire', regen: 'heal' };
 
-function commandLabel(command, unit) {
-  if (!command) return '…';
-  if (command.action === 'skill') return skillLabel(SKILLS[command.skillId], unit.primal);
-  if (command.action === 'item') return ITEMS[command.itemId]?.name;
-  return COMMANDS.find((item) => item.id === command.action)?.label;
-}
 
 const encounterKey = (encounter) => (encounter ? `${encounter.id}:${encounter.turn}:${encounter.status}:${encounter.log.length}:${encounter.events?.length || 0}` : null);
 
@@ -157,6 +151,22 @@ function StatusIcons({ status }) {
   );
 }
 
+/** Under every unit (battle-hiring spec): name, level, a slim HP bar, MP for heroes, statuses. */
+function UnitPlate({ unit, chosen = false }) {
+  return (
+    <span className="unit-plate">
+      <span className="unit-plate__name">
+        <strong>{unit.name.split(' ')[0]}</strong>
+        <small className="num">Lv {unit.level}</small>
+        {chosen ? <Icon name="check" size={12} tone="plain" /> : null}
+      </span>
+      <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
+      {unit.side === 'party' ? <Meter value={unit.mp} max={unit.maxMp} kind="mp" /> : null}
+      <StatusIcons status={unit.status} />
+    </span>
+  );
+}
+
 function EnemyArt({ unit }) {
   if (unit.sprite?.kind === 'enemy') return <Asset id={`battle.${unit.sprite.key}`} className="battle-enemy__art" />;
   return <HeroSprite hero={unit} size="lg" enemy />;
@@ -204,7 +214,7 @@ function BeatMarks({ beat, unitId }) {
 
 /** What dropping on this target would do (the first action of its radial menu). */
 function PreviewChip({ preview }) {
-  if (!preview) return null;
+  if (!preview || (preview.kind === 'heal' && !preview.min)) return null;
   const value =
     preview.kind === 'damage' ? `${preview.min}–${preview.max}` : preview.kind === 'heal' ? `+${preview.min}` : preview.kind === 'revive' ? `Revive ${preview.min}` : preview.note || 'Effect';
   return (
@@ -225,6 +235,8 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const [radial, setRadial] = useState(null);
   const [hoverOption, setHoverOption] = useState(null);
   const [dragging, setDragging] = useState(null);
+  const [itemPick, setItemPick] = useState(null);
+  const [itemDrag, setItemDrag] = useState(null);
   const [info, setInfo] = useState(null);
   const [auto, setAuto] = useState(false);
   const [intro, setIntro] = useState(() => encounter?.intro || null);
@@ -238,24 +250,18 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   // The dragged hero's ghost, and where the finger was when the drag began.
   const ghostRef = useRef(null);
   const dragFrom = useRef({ x: 0, y: 0 });
-  // The party stands just above the command HUD, whatever its height on this screen.
+  // The battlefield stands just above the bar, whatever its height on this screen.
   const screenRef = useRef(null);
   const hudRef = useRef(null);
   useEffect(() => {
-    if (!hudRef.current || typeof ResizeObserver === 'undefined') return undefined;
-    // The command panel floats above the HUD box, so measure from whichever top is higher.
-    const measure = () => {
-      const screen = screenRef.current?.getBoundingClientRect();
-      if (!screen || !hudRef.current) return;
-      const tops = [hudRef.current, ...hudRef.current.children].filter((element) => getComputedStyle(element).position !== 'fixed').map((element) => element.getBoundingClientRect().top).filter((top) => top > screen.top);
-      screenRef.current.style.setProperty('--battle-hud-h', `${Math.max(0, screen.bottom - Math.min(...tops))}px`);
-    };
+    const bar = hudRef.current?.querySelector('.battle-bar');
+    if (!bar || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => screenRef.current?.style.setProperty('--battle-bar-h', `${Math.round(bar.getBoundingClientRect().height)}px`);
     const observer = new ResizeObserver(measure);
-    observer.observe(hudRef.current);
-    [...hudRef.current.children].forEach((element) => observer.observe(element));
+    observer.observe(bar);
     measure();
     return () => observer.disconnect();
-  }, []);
+  });
   const press = useRef(null);
   const canDrag = dragEnabled(settings);
 
@@ -264,6 +270,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     setActorId(null);
     setRadial(null);
     setDragging(null);
+    setItemPick(null);
   }, [turnKey]);
 
   // The boss's intro line, shown when the battle opens.
@@ -384,10 +391,15 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
       const over = unitAt(x, y);
       if (over?.id !== state.over?.id) {
         state.over = over;
-        window.clearTimeout(state.dwell);
         setDragging({ actorId: unit.id, overId: over?.id || null });
-        // Resting on a target opens the radial menu under the thumb: keep dragging onto an action and release.
-        if (over && optionsOn(unit, over).length) {
+      }
+      // Resting the finger on another unit (still for a moment) opens its menu under the thumb;
+      // passing over a unit does not. The dragged hero itself only by dropping on it.
+      const still = state.restAt && Math.hypot(x - state.restAt.x, y - state.restAt.y) < 6;
+      if (!still) {
+        window.clearTimeout(state.dwell);
+        state.restAt = { x, y };
+        if (over && over.id !== unit.id && optionsOn(unit, over).length) {
           state.dwell = window.setTimeout(() => {
             state.radial = openRadial(unit, over, x, y, true);
           }, 260);
@@ -433,8 +445,51 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     window.addEventListener('pointercancel', abort);
   };
 
+  // Items: tap one, then the hero to use it on; or drag it onto the hero.
+  const applyItemTo = (itemId, target) => {
+    const who = actor || active;
+    if (!who || !target || target.side !== 'party') return false;
+    const kind = ITEMS[itemId]?.battle?.target;
+    const fits = target.ko ? kind === 'koAlly' : ['ally', 'allAllies', 'self'].includes(kind) && (kind !== 'self' || target.id === who.id);
+    if (!fits) {
+      haptic('error', settings);
+      return false;
+    }
+    setItemPick(null);
+    commit(who, { action: 'item', itemId, ...(['ally', 'koAlly'].includes(kind) ? { targetId: target.id } : {}) });
+    return true;
+  };
+  const onItemPointerDown = (itemId, event) => {
+    if (!ready || event.button > 0) return;
+    const start = { x: event.clientX, y: event.clientY };
+    let moved = false;
+    const move = (moveEvent) => {
+      if (!moved && Math.hypot(moveEvent.clientX - start.x, moveEvent.clientY - start.y) < DRAG_SLOP) return;
+      if (!canDrag) return;
+      moved = true;
+      moveEvent.preventDefault();
+      setItemDrag({ itemId, x: moveEvent.clientX, y: moveEvent.clientY });
+    };
+    const up = (upEvent) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      setItemDrag(null);
+      if (!moved) {
+        setItemPick((current) => (current === itemId ? null : itemId));
+        return;
+      }
+      applyItemTo(itemId, unitAt(upEvent.clientX, upEvent.clientY));
+    };
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+  };
+
   // Tap fallback: tap a hero, then tap a target, then the same radial menu.
   const tapUnit = (unit) => {
+    if (itemPick && ready && unit.side === 'party') {
+      applyItemTo(itemPick, unit);
+      return;
+    }
     if (!ready) {
       setInfo(info === unit.id ? null : unit.id);
       return;
@@ -509,6 +564,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     // Taps are handled on pointer up; the click must not reach the stage (which cancels).
     onClick: (event) => event.stopPropagation(),
     onContextMenu: (event) => event.preventDefault(),
+    onDragStart: (event) => event.preventDefault(),
   });
 
   const order = replay?.order || turnOrder(encounter);
@@ -542,7 +598,6 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
           }}
         >
           <Motes />
-          {encounter.hints?.length && !finished ? <p className="battle-hint">{encounter.hints[Math.min(encounter.turn - 1, encounter.hints.length - 1)]}</p> : null}
           {boosting ? <span className="battle-boost" aria-hidden="true">»</span> : null}
 
           {!finished ? (
@@ -577,6 +632,27 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
             </div>
           ) : null}
 
+          <div className="battle-field">
+          <div className="battle-allies" aria-label="Your party on the field">
+            {encounter.party.map((raw, index) => {
+              const unit = view(raw);
+              return (
+                <button
+                  key={unit.id}
+                  type="button"
+                  style={{ '--i': index }}
+                  className={`battle-ally ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''} ${canDrag && ready && !unit.ko ? 'is-draggable' : ''} ${dragging?.actorId === unit.id ? 'is-lifted' : ''} ${(itemPick || itemDrag) && !unit.ko ? 'is-targetable' : ''}`}
+                  {...unitHandlers(unit)}
+                  aria-label={`${unit.name}: drag onto a target`}
+                >
+                  {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
+                  <HeroSprite hero={unit} size="md" />
+                  <UnitPlate unit={unit} chosen={Boolean(commands[unit.id])} />
+                  <BeatMarks beat={beat} unitId={unit.id} />
+                </button>
+              );
+            })}
+          </div>
           <div className="battle-enemies" aria-label="Enemies">
             {encounter.enemies.map((raw, index) => {
               const unit = view(raw);
@@ -593,41 +669,19 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                   aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP`}
                 >
                   {plan && !unit.ko ? (
-                    <span className={`intent intent--${plan.icon} ${plan.big ? 'is-big' : ''}`}>
-                      <i aria-hidden="true">{plan.icon === 'taunt' ? '!' : <Icon name={INTENT_ICONS[plan.icon] || 'question'} size={14} tone="plain" />}</i>
-                      {plan.label}
-                      {target ? ` → ${target.name.split(' ')[0]}` : ''}
+                    <span className={`intent intent--${plan.icon} ${plan.big ? 'is-big' : ''}`} title={`${plan.label}${target ? ` → ${target.name}` : ''}`} aria-label={`Plans: ${plan.label}`}>
+                      {plan.icon === 'taunt' ? '!' : <Icon name={INTENT_ICONS[plan.icon] || 'question'} size={14} tone="plain" />}
                     </span>
                   ) : null}
                   {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
                   <EnemyArt unit={unit} />
-                  <strong>{unit.name}</strong>
-                  <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
-                  <StatusIcons status={unit.status} />
+                  <UnitPlate unit={unit} />
                   <BeatMarks beat={beat} unitId={unit.id} />
                 </button>
               );
             })}
           </div>
 
-          <div className="battle-allies" aria-label="Your party on the field">
-            {encounter.party.map((raw, index) => {
-              const unit = view(raw);
-              return (
-                <button
-                  key={unit.id}
-                  type="button"
-                  style={{ '--i': index }}
-                  className={`battle-ally ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''} ${canDrag && ready && !unit.ko ? 'is-draggable' : ''} ${dragging?.actorId === unit.id ? 'is-lifted' : ''}`}
-                  {...unitHandlers(unit)}
-                  aria-label={`${unit.name}: drag onto a target`}
-                >
-                  {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
-                  <HeroSprite hero={unit} size="md" />
-                  <BeatMarks beat={beat} unitId={unit.id} />
-                </button>
-              );
-            })}
           </div>
 
           {infoUnit ? <UnitInfo unit={view(infoUnit)} intent={encounter.intents?.[infoUnit.id]} onClose={() => setInfo(null)} /> : null}
@@ -638,12 +692,12 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
               <p>
                 {encounter.result?.turns} round{encounter.result?.turns === 1 ? '' : 's'} · party HP {encounter.result?.playerHpPct}%
               </p>
-              <ul className="battle-result__damage">
+              <ul className="battle-result__hp" aria-label="Your heroes after the fight">
                 {encounter.party.map((unit) => (
-                  <li key={unit.id}>
-                    <span>{unit.name}</span>
-                    <i style={{ width: `${Math.round(((encounter.result?.damageByHero?.[unit.heroId] || 0) / Math.max(1, encounter.result?.playerDamage || 1)) * 100)}%` }} />
-                    <b>{encounter.result?.damageByHero?.[unit.heroId] || 0}</b>
+                  <li key={unit.id} className={unit.ko ? 'is-ko' : ''}>
+                    <span>{unit.name.split(' ')[0]}</span>
+                    <Meter value={unit.ko ? (encounter.result?.playerWon ? 1 : 0) : unit.hp} max={unit.maxHp} kind="hp" />
+                    <b className="num">{unit.ko ? (encounter.result?.playerWon ? 'Injured · 1w' : 'Down') : `${unit.hp}/${unit.maxHp}`}</b>
                   </li>
                 ))}
               </ul>
@@ -661,7 +715,6 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                 </>
               ) : (
                 <>
-                  {encounter.result?.knockedOut?.length ? <p className="battle-result__note">{encounter.result.knockedOut.length} knocked out: they may be injured.</p> : null}
                   <Button variant="primary" size="lg" onClick={actions.concludeCombat}>
                     Continue
                   </Button>
@@ -670,42 +723,43 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
             </section>
           ) : null}
 
-          {showHand ? (
-            <div className="gesture-hint gesture-hint--battle" aria-hidden="true">
-              <span className="gesture-hint__hand"><Icon name="hand" size={22} tone="brass" /></span>
-              <small>Drag a hero onto an enemy</small>
-            </div>
-          ) : null}
+          {showHand ? <GhostHand screenRef={screenRef} /> : null}
         </section>
 
         <div className="battle-hud" ref={hudRef}>
           {!finished ? (
-            <section className="battle-commands panel" aria-label="Commands">
-              {replaying ? (
-                <span className="battle-commands__who">
-                  {beat?.actorId ? `${unitById(beat.actorId)?.name || ''}${beat.label ? `: ${beat.label}` : ''}` : 'Resolving…'} <small>Hold to speed up</small>
-                </span>
-              ) : auto ? (
-                <span className="battle-commands__who">Auto-battle is on</span>
-              ) : actor ? (
-                <span className="battle-commands__who">
-                  <b>{actor.name}</b> <small>{canDrag ? 'Drag onto a target · tap = pick' : 'Tap a target'} · long-press = inspect</small>
-                </span>
-              ) : null}
-              <div className="battle-commands__meta">
-                <Button size="sm" variant="secondary" onClick={undo} disabled={!Object.keys(commands).length || replaying}>
-                  Undo
-                </Button>
-                <Button size="sm" className={auto ? 'is-on' : ''} aria-pressed={auto} onClick={() => setAuto((value) => !value)}>
-                  Auto {auto ? 'on' : 'off'}
-                </Button>
-                <Button size="sm" aria-label={`Battle speed ${speed}×`} onClick={() => actions.updateSettings({ battleSpeed: speed === 2 ? 1 : 2 })}>
-                  {speed}×
-                </Button>
+            <section className="battle-bar panel" aria-label="Commands">
+              <div className="battle-bar__items" aria-label="Items">
+                {itemsLeft.map(([id, count]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`battle-item ${itemPick === id ? 'is-picked' : ''}`}
+                    disabled={!ready}
+                    onPointerDown={(event) => onItemPointerDown(id, event)}
+                    aria-label={`${ITEMS[id]?.name || id}, ${count} left: tap, then a hero`}
+                    title={ITEMS[id]?.name}
+                  >
+                    <Icon name={ITEMS[id]?.icon || 'potion'} size={20} />
+                    <b className="num">×{count}</b>
+                  </button>
+                ))}
+              </div>
+              <div className="battle-bar__tools">
+                <button type="button" className="battle-tool" onClick={undo} disabled={!Object.keys(commands).length || replaying} aria-label="Undo">
+                  <Icon name="undo" size={20} />
+                </button>
+                <button type="button" className={`battle-tool ${auto ? 'is-on' : ''}`} aria-pressed={auto} onClick={() => setAuto((value) => !value)} aria-label={`Auto-battle ${auto ? 'on' : 'off'}`}>
+                  <Icon name="play" size={20} />
+                  <small>Auto</small>
+                </button>
+                <button type="button" className="battle-tool" onClick={() => actions.updateSettings({ battleSpeed: speed === 2 ? 1 : 2 })} aria-label={`Battle speed ${speed}×`}>
+                  <b className="num">{speed}×</b>
+                </button>
                 {encounter.canFlee ? (
-                  <Button size="sm" variant="danger" disabled={replaying} onClick={actions.fleeCombat}>
-                    Flee
-                  </Button>
+                  <button type="button" className="battle-tool battle-tool--danger" disabled={replaying} onClick={actions.fleeCombat} aria-label="Flee">
+                    <Icon name="boot" size={20} />
+                  </button>
                 ) : null}
               </div>
             </section>
@@ -719,28 +773,6 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
             ))}
           </ol>
 
-          <section className="battle-party" aria-label="Your party">
-            {encounter.party.map((raw) => {
-              const unit = view(raw);
-              return (
-                <button
-                  key={unit.id}
-                  type="button"
-                  className={`battle-hero ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''}`}
-                  {...unitHandlers(unit, false)}
-                  aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP`}
-                >
-                  <span className="battle-hero__info">
-                    <strong>{unit.name}</strong>
-                    <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
-                    <Meter value={unit.mp} max={unit.maxMp} kind="mp" />
-                    <StatusIcons status={unit.status} />
-                    {!finished && !replaying ? <em className="battle-hero__command">{commandLabel(commands[unit.id], unit)}</em> : null}
-                  </span>
-                </button>
-              );
-            })}
-          </section>
         </div>
 
         {dragging ? (
@@ -754,6 +786,11 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
           </div>
         ) : null}
 
+        {itemDrag ? (
+          <div className="drag-sprite drag-sprite--item" style={{ transform: `translate3d(${itemDrag.x}px, ${itemDrag.y}px, 0)` }} aria-hidden="true">
+            <Icon name={ITEMS[itemDrag.itemId]?.icon || 'potion'} size={30} />
+          </div>
+        ) : null}
         {radial && radialTarget ? (
           <Radial
             radial={radial}
@@ -767,6 +804,38 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
         ) : null}
       </div>
     </Modal>
+  );
+}
+
+/** The first-battle hint: a hand drags from the first hero's body to the first enemy. Shown once. */
+function GhostHand({ screenRef }) {
+  const [path, setPath] = useState(null);
+  useEffect(() => {
+    const place = () => {
+      const screen = screenRef.current;
+      const from = screen?.querySelector('.battle-ally:not(.is-ko) .hero-sprite');
+      const to = screen?.querySelector('.battle-enemy:not(.is-ko) .battle-enemy__art, .battle-enemy:not(.is-ko) .hero-sprite');
+      if (!from || !to) return;
+      const a = from.getBoundingClientRect();
+      const b = to.getBoundingClientRect();
+      setPath({ x1: a.left + a.width / 2, y1: a.top + a.height / 2, x2: b.left + b.width / 2, y2: b.top + b.height / 2 });
+    };
+    const timer = window.setTimeout(place, 500);
+    window.addEventListener('resize', place);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('resize', place);
+    };
+  }, [screenRef]);
+  if (!path) return null;
+  return (
+    <span
+      className="ghost-hand"
+      aria-hidden="true"
+      style={{ '--x1': `${path.x1}px`, '--y1': `${path.y1}px`, '--x2': `${path.x2}px`, '--y2': `${path.y2}px` }}
+    >
+      <Icon name="hand" size={34} tone="brass" />
+    </span>
   );
 }
 
@@ -865,6 +934,7 @@ function Radial({ radial, options, hover, previews, onPick, onCancel, onHover })
 }
 
 function PreviewLine({ preview }) {
+  if (preview.kind === 'heal' && !preview.min) return null;
   const value = preview.kind === 'damage' ? `${preview.min}–${preview.max}` : preview.kind === 'heal' ? `+${preview.min}` : preview.kind === 'revive' ? `Revive ${preview.min}` : preview.note || '';
   return (
     <em className="radial__preview">
