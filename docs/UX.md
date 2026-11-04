@@ -98,6 +98,13 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 - **Safe areas:** nothing under the notch or the home bar (`viewport-fit=cover` plus `env(safe-area-inset-*)`); the game fills `100dvh` and can be added to the home screen.
 - **World labels never collide with the HUD:** a name that would sit under the place tag, the ledger or an orb fades until the camera moves.
 
+### The guild's home (7D)
+
+- **No hall, no hires.** Until story mission 1 rents the Dunmere lot, recruits can be met and interviewed, but "Would you join us?" ends with "Where would I sleep? Come back when you have a hall." The tavern's goal line, Contacts and the quest log's Guild tab say so.
+- **The lot:** rented, 6 slots, a cabin (Bedroom, 2 beds) already built. Each room takes a slot; an empty slot tile opens the build list. A rented lot cannot grow.
+- **Long-term goals** (Guild Hall and Treasury, and the ledger): "Buy the property" (price, savings, "at this rate: about N months"), then "Expand the lot" one step at a time. Buying is a ceremony and a Chronicle entry.
+- **Ledger money rows:** costs a month (rent · rooms · wages), saving (+N a month, measured from the second month), toward the deed or more land (%).
+
 ### Buildings and people (7C, Part 2)
 
 **Every building is a small walkable room** that fits one screen (`src/data/interiors.js`, `InteriorScene.jsx`): 3–7 people standing or sitting, a counter or desk, furniture. Tap a person to walk over and talk; tap furniture to use it; tap the doorway to go back out. The Guild Hall is the exception (Phase 7D rebuilds it).

@@ -33,10 +33,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | ready | Dunmere: the Guild Hall building, stage 1 (Your house) |
-| `town.dunmere.guildhall.stage2` | `art/walk/buildings/dunmere-guildhall-stage2.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 2 (Empty hall) |
-| `town.dunmere.guildhall.stage3` | `art/walk/buildings/dunmere-guildhall-stage3.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 3 (Working hall) |
-| `town.dunmere.guildhall.stage4` | `art/walk/buildings/dunmere-guildhall-stage4.png` | 160×160 | — | placeholder | Dunmere: the Guild Hall building, stage 4 (Renowned hall) |
+| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | ready | Dunmere: the Guild Hall building on its lot (the same at every stage) |
 | `town.dunmere.herald` | `art/walk/buildings/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Herald’s Office (front with door) |
 | `town.dunmere.tavern` | `art/walk/buildings/dunmere-tavern.png` | 160×160 | — | ready | Dunmere: The Wayfarer (front with door) |
 | `town.dunmere.shop` | `art/walk/buildings/dunmere-shop.png` | 160×160 | — | placeholder | Dunmere: Mira’s Supply (front with door) |
@@ -62,9 +59,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.guildhall.stage2` | `art/interiors/guildhall-stage2.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 2 (Empty hall) |
 | `interior.guildhall.stage3` | `art/interiors/guildhall-stage3.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 3 (Working hall) |
 | `interior.guildhall.stage4` | `art/interiors/guildhall-stage4.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 4 (Renowned hall) |
-| `interior.room.bunks.1` | `art/interiors/rooms/bunks-1.png` | 1280×576 | — | placeholder | Bunk room, level 1 |
-| `interior.room.bunks.2` | `art/interiors/rooms/bunks-2.png` | 1280×576 | — | placeholder | Bunk room, level 2 |
-| `interior.room.bunks.3` | `art/interiors/rooms/bunks-3.png` | 1280×576 | — | placeholder | Bunk room, level 3 |
+| `interior.room.bunks.1` | `art/interiors/rooms/bunks-1.png` | 1280×576 | — | placeholder | Bedroom, level 1 |
+| `interior.room.bunks.2` | `art/interiors/rooms/bunks-2.png` | 1280×576 | — | placeholder | Bedroom, level 2 |
+| `interior.room.bunks.3` | `art/interiors/rooms/bunks-3.png` | 1280×576 | — | placeholder | Bedroom, level 3 |
 | `interior.room.training.1` | `art/interiors/rooms/training-1.png` | 1280×576 | — | placeholder | Training ground, level 1 |
 | `interior.room.training.2` | `art/interiors/rooms/training-2.png` | 1280×576 | — | placeholder | Training ground, level 2 |
 | `interior.room.training.3` | `art/interiors/rooms/training-3.png` | 1280×576 | — | placeholder | Training ground, level 3 |

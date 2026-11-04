@@ -330,7 +330,16 @@ A visual phase (screenshots allowed, see `CLAUDE.md`). Two parts:
 - **Part 2 — Walk-in buildings and people.** One people model (name, role, place, look, memory, offers: mission, hire, challenge) replacing the recruit, contract-giver and challenger lists; every building is a small walkable room that fits one screen; you discover offers by talking; hiring is an interview; the notice board lists the contracts people gave you; Contacts in the Guild orb. The Guild Hall interior is left for 7D.
 
 ### Phase 7D — The Guild Hall compound
-Own pass: an empty lot with a small cabin that grows into a full compound (bedroom wings, training yard with stat equipment, infirmary, vault…). Details to come.
+Own pass: an empty lot with a small cabin that grows into a full compound (bedroom wings, training yard with stat equipment, infirmary, vault…).
+
+**1. Lots, renting, buying and expanding ✅ Done (2026-11-03).** Notes:
+- **Data model** (`src/data/lots.js`, `state.guild.lots`, `hqLotId`): several lots in several cities are supported, each with slots, rent, deposit, purchase price, starter rooms and expansion steps. Moving headquarters is model-only (no UI).
+- **No hall, no hires:** before story mission 1 the founder's house has one bed (theirs). Recruits talk, but "Would you join us?" ends with "Where would I sleep? Come back when you have a hall." Shown in the tavern, Contacts and the quest log (`HireGate`). Recruiting, offers and story recruits all check it; no exceptions.
+- **Renting** (mission 1): the Dunmere lot, 6 slots, 35 gold a month; a small cabin (Bedroom level 1, 2 beds) already stands in one slot. The old "dormitory corner" beds are gone.
+- **Buying:** 6,000 gold (years of saving); ends the rent; a milestone moment and a Chronicle entry. **Expanding** (owned only): 6 → 8 slots (3,500 gold, 6 weeks), 8 → 10 (6,500, 10 weeks).
+- **Money:** the ledger shows costs a month (rent, rooms, wages), the savings rate and progress toward the deed or the next land; the Guild Hall and Treasury show the "Buy the property" / "Expand the lot" goal with an "at this rate" estimate.
+- **The outside looks the same** at every stage (one exterior asset). No lot diorama yet, so expansions do not widen anything on screen.
+- **Choices to review:** prices, rent and expansion costs are first guesses (balance comes in Phase 8); the savings rate averages up to the last six months; Gideon's lines in mission 1 now describe the yard and the cabin (docs/STORY.md says "a disused stable or guild office", which still fits).
 
 ### Phase 8 — Polish, balance and testing
 - Turn the safety net back on: restore the full testing policy, put `npm test` back in `.github/workflows/deploy-pages.yml` (removed after Phase 3), add tests for the new systems, and run `npm run sim` for balance (the slice should take 2–3 hours; promotion near the end).

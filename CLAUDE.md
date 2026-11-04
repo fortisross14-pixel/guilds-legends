@@ -68,7 +68,7 @@ src/data/                 Static content: classes, missions, formations, world m
   interiors.js, people.js Building interiors (11×11 rooms: furniture, spots, the doorway); the regulars in each building and visitor name pools
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
-  rooms.js                Rented room, hall purchase, buildable rooms (levels, cost, weeks, upkeep, requirements), hall stages
+  rooms.js, lots.js       Buildable rooms (levels, cost, weeks, upkeep, requirements) and hall stages; lots (slots, rent, deposit, purchase price, starter cabin, expansion steps; several cities supported)
   charters.js, patrons.js Founding charters and run paths; the three patrons, their levels, unlocks and rivalries
 src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map, interiorMap), TownScene, WildScene, InteriorScene (a building's room), DialogueBox (scripted talk), PersonDialogue (people: offers and the interview)
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
@@ -88,7 +88,7 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   contracts.js            hero contracts and renewals, candidate scouting ranges, rival approaches, offer terms
   goals.js                goals, achievements, promotion, evaluateStateInPlace
   economy.js              upkeep (wages, rent, lease, rooms), patron loans and debt, travel
-  hall.js                 the guild's home: rented beds, buying/leasing the hall, building rooms, weekly construction, next-upgrade suggestion
+  hall.js                 the guild's home: renting a lot, buying it, expanding it (owned only), building rooms in its slots, weekly construction and expansions, next-upgrade suggestion
   connections.js          patron rewards and exclusive contracts, the Connections read model, run path scores
   seasons.js              season review, awards, record book, and read models for the mission log, hall of fame, ladder history, head-to-head and hero careers (tallies live in core.js)
   story.js                The Last Banner: story missions and steps, scenes, story contracts and duels, evidence, the Lore codex, story recruits, the prologue, skip tutorial; the shared condition checker; progress runs from a finalize hook
@@ -129,7 +129,7 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 
 - `schemaVersion`, `seed`, `rngState`: save version and RNG state (advance the RNG only via `commitRng`)
 - `date: { year, month, week, day }`: month 0–11, week 0–3, day 0–6; the campaign starts in June 1187. Time only passes through player actions (travel, rest, camps, contracts the founder joins). Travel is in days; missions, injuries and construction in weeks (missions also keep a `dueDay`). The home town is `HOME_LOCATION_ID` (Dunmere); away from it the travelling party is `travellingPartyIds(state)`
-- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `hall` ({ owned, lease, houseBeds, rooms: { roomId: level }, construction }; the founder's house has one bed, the stable is leased in story mission 1; beds are the only roster limit), `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
+- `guild`: the player guild: `name`, `crowns` (gold), `fame`, `legacy`, `tierIndex`/`tier` (Regional/National/Global), `rank`, `houseBeds` (the founder's house: one bed), `lots` ({ [lotId]: { status: rented | owned, slots, rooms: { roomId: level }, construction, expansion, expansions } }), `hqLotId` (null until story mission 1 rents the Dunmere lot; no hall, no hires), `goldHistory` (treasury at each month's start, for the savings rate); beds are the only roster limit, `appointments`, `formations`, `branches`, `founderHeroId`, `currentGuildmasterHeroId`, `successorHeroId`, `loan`, `unpaidMonths`, `mainParty` (up to 4 hero ids)
 - `heroes[]`: the player roster, including dead and retired heroes. `status` is one of `available`, `mission`, `tournament`, `injured`, `dead` or `retired`. Each hero has `level`/`xp`, `power`, `attributes`, `rarity`, `primal`, `classId`, `career`, `history`, `loyalty`, `salary`, `contract` ({ years, salary, startSerial, endSerial } in month serials; none for the founder) and an optional `poachApproach`
 - `historicHeroes[]`: archived player heroes (compacted)
 - `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee`, a `scoutLevel` (0–3, how precisely its stats are known) and an optional `demand`

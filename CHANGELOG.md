@@ -2,6 +2,13 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Phase 7D, part 1: lots
+
+- No hall, no hires: until you rent the old stable yard on Banner Plaza, recruits will talk to you but nobody signs.
+- The rented yard has six slots for rooms. A small cabin with two beds already stands in the middle.
+- Save up to buy the yard outright (no more rent), then buy the land next door to make room for more buildings.
+- The ledger now shows what each month costs (rent, rooms, wages), how much you save, and how close you are to the deed.
+
 ## Unreleased — Phase 7C, Part 2: walk-in buildings and people
 
 - Every building is now a small room you walk into: a tavern with people at the tables, a shop with shelves, an arena with a sign-up desk and a fighting ground, the herald's office with its ranking board.
