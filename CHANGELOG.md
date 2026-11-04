@@ -10,6 +10,7 @@ Newest first. Older entries were moved here from the README.
 - The ledger now shows what each month costs (rent, rooms, wages), how much you save, and how close you are to the deed.
 - Name your main party any time: a lead and up to three companions (Party → Main party, or a hero's page). The War room now only adds saved formations for special roles.
 - Fixed: the Guild Hall door opened an empty panel.
+- A new game asks only your name and class. You found the guild (its name, motto and charter) when the dying guildmaster hands you the banner.
 
 ## Unreleased — Phase 7C, Part 2: walk-in buildings and people
 

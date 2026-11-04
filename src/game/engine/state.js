@@ -229,11 +229,13 @@ export function createNewGame(options = {}) {
   state.people = {};
   seedVisitorsInPlace(state);
 
-  // "Skip tutorial": no prologue, and Act I starts at the Harvest Melee.
-  if (options.skipTutorial) {
-    skipTutorialInPlace(state, options.guildName || 'The New Banner');
+  // "Skip tutorial": the guild is still founded on the banner screen (name, motto,
+  // charter), then the tutorial's end state is applied (story.js completePrologue).
+  // Scripts that pass a guild name (the sim) skip straight away.
+  if (options.skipTutorial && options.guildName) {
+    skipTutorialInPlace(state, options.guildName);
     progressStoryInPlace(state);
-  }
+  } else if (options.skipTutorial) state.story.skipRequested = true;
   evaluateStateInPlace(state);
   return state;
 }

@@ -136,7 +136,7 @@ import { haptic } from './components/gestures.js';
 import DialogueBox from './explore/DialogueBox.jsx';
 import Asset from './components/Asset.jsx';
 import { setShowAssetIds } from './components/assetLoader.js';
-import { CHARTERS, CHARTER_LIST, PATHS } from './data/charters.js';
+import { CHARTERS } from './data/charters.js';
 import { specializationTitle } from './game/engine.js';
 
 class ErrorBoundary extends Component {
@@ -239,41 +239,38 @@ function HomeScreen({ slots, busy, onLoad, onCreate, onDelete }) {
   );
 }
 
+// New game: only who you are (name and class). The guild itself is founded later,
+// when Cassian Rook's banner is in your hands (Prologue.jsx).
 function CreateCampaignModal({ open, slot, onClose, onCreate }) {
   const [founderName, setFounderName] = useState('Rowan Vale');
   const [founderClass, setFounderClass] = useState('Guardian');
-  const [founderPrimal, setFounderPrimal] = useState('Fire');
-  const [motto, setMotto] = useState('No light is lost forever.');
-  const [seedText, setSeedText] = useState('Dunmere');
-  const [charter, setCharter] = useState('free');
   const [skipTutorial, setSkipTutorial] = useState(false);
-  const [guildName, setGuildName] = useState('');
 
   useEffect(() => {
     if (open) {
-      setCharter('free');
       setSkipTutorial(false);
-      setGuildName('');
       setFounderName('Rowan Vale');
       setFounderClass('Guardian');
-      setFounderPrimal('Fire');
-      setMotto('No light is lost forever.');
-      setSeedText('Dunmere');
     }
   }, [open]);
 
   const classInfo = CLASSES[founderClass];
   return (
-    <Modal open={open} title={`Found campaign in slot ${slot}`} eyebrow="Year 1187 · Dunmere" onClose={onClose} width="wide">
+    <Modal open={open} title="Who are you?" eyebrow={`Slot ${slot} · Dunmere, 1187`} onClose={onClose} width="medium">
       <div className="new-campaign new-campaign--founder">
-        <div className="new-campaign__crest">
-          <Crest size="xl" />
+        <div className="founder-preview">
+          <HeroPortrait hero={{ name: founderName || 'Founder', classId: founderClass, primal: 'Fire', rarity: 'Common' }} size="md" showStatus={false} />
+          <div>
+            <h3>{founderName || 'Unnamed'}</h3>
+            <p>
+              Level 1 {founderClass} · {classInfo?.description}
+            </p>
+          </div>
         </div>
         <div className="new-campaign__fields">
           <label>
             Your name
-            <input value={founderName} maxLength={36} onChange={(event) => setFounderName(event.target.value)} />
-            <small>You are an active hero, not an invisible administrator.</small>
+            <input value={founderName} maxLength={36} onChange={(event) => setFounderName(event.target.value)} autoFocus />
           </label>
           <label>
             Your class
@@ -283,82 +280,18 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
               ))}
             </select>
           </label>
-          <label>
-            Your primal
-            <select value={founderPrimal} onChange={(event) => setFounderPrimal(event.target.value)}>
-              {Object.values(PRIMALS).map((primal) => (
-                <option key={primal.id} value={primal.id}>
-                  {primal.id}
-                </option>
-              ))}
-            </select>
-            <small>Primal is permanent. It affects combat matchups.</small>
-          </label>
-          <label>
-            Motto
-            <input value={motto} maxLength={72} onChange={(event) => setMotto(event.target.value)} />
-          </label>
-          <label>
-            World seed
-            <input value={seedText} maxLength={40} onChange={(event) => setSeedText(event.target.value)} />
-            <small>The same seed produces the same opening candidates and rival variation.</small>
-          </label>
         </div>
-        <div className="founder-preview">
-          <HeroPortrait hero={{ name: founderName || 'Founder', classId: founderClass, primal: founderPrimal, rarity: 'Common' }} size="md" showStatus={false} />
-          <div>
-            <h3>{founderName || 'Unnamed founder'}</h3>
-            <p>
-              Level 1 · {founderPrimal} · {founderClass} · {classInfo?.description}
-            </p>
-          </div>
-        </div>
-        <fieldset className="charter-picker">
-          <legend>Founding charter: what kind of guild will this be?</legend>
-          <div className="charter-picker__options">
-            {CHARTER_LIST.map((item) => (
-              <button key={item.id} type="button" className={`charter-card ${charter === item.id ? 'is-selected' : ''}`} aria-pressed={charter === item.id} onClick={() => setCharter(item.id)}>
-                <Asset id={item.crest} className="charter-card__crest" />
-                <strong>{item.name}</strong>
-                <small>{item.pitch}</small>
-                <ul>
-                  {item.modifiers.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-                <em>
-                  {PATHS[item.path].name} path · {item.signature}
-                </em>
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <p className="new-campaign__premise">
+          You are nobody yet: a small house in Dunmere, one bed, no guild. Tonight someone knocks on your door. You will found your guild before the night is over.
+        </p>
         <label className="new-campaign__skip">
           <input type="checkbox" checked={skipTutorial} onChange={(event) => setSkipTutorial(event.target.checked)} />
           <span>
             <strong>Skip the tutorial</strong>
-            <small>No prologue: start with the stable rented, Nessa hired and the Old Road cleared. The Harvest Melee is next.</small>
+            <small>You still found the guild (name, motto, charter); then you start with the stable yard rented, Nessa hired and the Old Road cleared.</small>
           </span>
         </label>
-        {skipTutorial ? (
-          <label className="new-campaign__name">
-            Guild name
-            <input value={guildName} maxLength={38} placeholder="The Ember Company" onChange={(event) => setGuildName(event.target.value)} />
-          </label>
-        ) : null}
-        <div className="new-campaign__premise">
-          <strong>The Last Banner</strong>
-          <p>
-            Dunmere, 1187. You are nobody: a small house, one bed, no guild. Tonight a dying man knocks on your door with a banner that should not exist. You name
-            your guild at the end of the prologue.
-          </p>
-        </div>
-        <Button
-          variant="primary"
-          size="lg"
-          disabled={!founderName.trim() || (skipTutorial && !guildName.trim())}
-          onClick={() => onCreate({ founderName: founderName.trim(), founderClass, founderPrimal, motto: motto.trim(), seedText, charter, skipTutorial, guildName: guildName.trim() })}
-        >
+        <Button variant="primary" size="lg" disabled={!founderName.trim()} onClick={() => onCreate({ founderName: founderName.trim(), founderClass, skipTutorial })}>
           Begin
         </Button>
       </div>

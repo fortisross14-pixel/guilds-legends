@@ -33,7 +33,7 @@ import {
   rngFor,
   tallyGuild,
 } from './core.js';
-import { adjustPatronInPlace, patronAtLeast, patronLevel } from './charter.js';
+import { adjustPatronInPlace, applyCharterInPlace, patronAtLeast, patronLevel } from './charter.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
@@ -585,14 +585,23 @@ export function foundGuildInPlace(state, guildName) {
 }
 
 /**
- * The prologue's end: the first choice gives its clue (src/data/story.js
- * PROLOGUE.rewards), the guild gets its name, and Act I begins.
+ * The prologue's end, when Rook's banner is in the founder's hands: the first
+ * choice gives its clue (src/data/story.js PROLOGUE.rewards), and the guild is
+ * founded: its name, motto and charter. Then Act I begins (or, when the player
+ * asked to skip the tutorial at new game, the skipped state).
  */
-export function completePrologue(state, { choice, guildName } = {}) {
+export function completePrologue(state, { choice, guildName, motto, charter } = {}) {
   if (storyState(state).prologue === 'done') return { state, error: null };
   if (!String(guildName || '').trim()) return { state, error: 'Name your guild.' };
   const next = clone(state);
   const story = storyInPlace(next);
+  applyCharterInPlace(next, charter);
+  if (String(motto || '').trim()) next.guild.motto = String(motto).trim().slice(0, 72);
+  if (story.skipRequested) {
+    delete story.skipRequested;
+    skipTutorialInPlace(next, guildName);
+    return { state: finalize(next), error: null };
+  }
   const pick = PROLOGUE.choices.some((item) => item.id === choice) ? choice : 'banner';
   story.prologue = 'done';
   story.choices.prologue = pick;

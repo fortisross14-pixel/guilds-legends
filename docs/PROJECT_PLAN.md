@@ -340,6 +340,7 @@ Own pass: an empty lot with a small cabin that grows into a full compound (bedro
 - **Money:** the ledger shows costs a month (rent, rooms, wages), the savings rate and progress toward the deed or the next land; the Guild Hall and Treasury show the "Buy the property" / "Expand the lot" goal with an "at this rate" estimate.
 - **The outside looks the same** at every stage (one exterior asset). No lot diorama yet, so expansions do not widen anything on screen.
 - **Also:** the main party (a lead and up to three companions) no longer needs a War room; the lead takes the first slot of every arrangement, and the War room keeps saved formations. Before renting, the hall reads "Empty lot". Fixed the hall door opening an empty section.
+- **Founding moved to the banner:** a new game asks only the founder's name and class (the founder is Fire-born, from Dunmere); the guild's name, motto and charter are chosen on the founding card when Rook's banner is in your hands (end of the prologue). Skipping the tutorial shows the same card first. The charter's starting gift is applied then (`applyCharterInPlace`).
 - **Choices to review:** prices, rent and expansion costs are first guesses (balance comes in Phase 8); the savings rate averages up to the last six months; Gideon's lines in mission 1 now describe the yard and the cabin (docs/STORY.md says "a disused stable or guild office", which still fits).
 
 ### Phase 8 — Polish, balance and testing

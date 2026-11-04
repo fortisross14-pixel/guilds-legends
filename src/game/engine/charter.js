@@ -5,6 +5,20 @@
 import { CHARTERS } from '../../data/charters.js';
 import { PATRONS, PATRON_DELTAS, PATRON_LEVELS } from '../../data/patrons.js';
 
+/**
+ * Founds the guild under a charter (the banner scene, or a skipped tutorial):
+ * sets it and adds its starting gift (gold, patron standing). The campaign
+ * starts as a Free Company (no gift), so this is only applied once.
+ */
+export function applyCharterInPlace(state, charterId) {
+  const charter = CHARTERS[charterId] || CHARTERS.free;
+  state.guild.charter = charter.id;
+  state.guild.crowns += charter.start?.gold || 0;
+  Object.entries(charter.start?.patrons || {}).forEach(([id, points]) => {
+    if (state.patrons?.[id]) state.patrons[id].points += points;
+  });
+}
+
 /** The guild's charter, or null for campaigns without one. */
 export function charterOf(state) {
   return CHARTERS[state?.guild?.charter] || null;

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { PLAYER_HOUSE_MAP } from '../data/playerHouse.js';
 import { PROLOGUE } from '../data/story.js';
+import { CHARTER_LIST, PATHS } from '../data/charters.js';
 import WalkableScene, { useCoarsePointer } from '../explore/WalkableScene.jsx';
+import { PlaceTag } from '../hud/Hud.jsx';
 import Asset from './Asset.jsx';
 import { Button } from './UI.jsx';
 
@@ -9,13 +11,18 @@ import { Button } from './UI.jsx';
 // is walkable; the scene's lines play in a dialogue box over it. Phases:
 // knock (narration) → door (walk and open it) → rook (his confession) →
 // choice (the four ways to answer danger) → after (the result, the mark on the
-// door) → name (name the new guild). Nothing is saved until the end.
+// door) → name (found the guild with Rook's banner: name, motto, charter).
+// Nothing is saved until the end. A skipped tutorial goes straight to the founding.
 export default function Prologue({ state, onComplete }) {
   const coarse = useCoarsePointer();
-  const [phase, setPhase] = useState('knock');
+  const skipping = Boolean(state.story?.skipRequested);
+  const [phase, setPhase] = useState(skipping ? 'name' : 'knock');
+  const [motto, setMotto] = useState('No light is lost forever.');
+  const [charter, setCharter] = useState('free');
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState(null);
-  const [name, setName] = useState(state.guild.name && state.guild.name !== 'The Broken Lantern' ? state.guild.name : '');
+  // The guild has no name until the banner is raised (the engine's placeholder is never offered).
+  const [name, setName] = useState('');
 
   const picked = PROLOGUE.choices.find((item) => item.id === choice);
   const script =
@@ -62,15 +69,7 @@ export default function Prologue({ state, onComplete }) {
       className="opening-exploration"
       label="Prologue: the knock at the door"
     >
-      <header className="walk-hud">
-        <div className="walk-hud__place">
-          <span>{PROLOGUE.place}</span>
-          <h1>{PROLOGUE.title}</h1>
-          <small>
-            {objective} {phase === 'door' ? hint : ''}
-          </small>
-        </div>
-      </header>
+      <PlaceTag title={PROLOGUE.title} sub={PROLOGUE.place} goal={phase === 'door' ? <p className="goal-line goal-line--status">{objective} {hint}</p> : null} />
       {line ? (
         <section className="dialogue prologue-dialogue" aria-live="polite" onClick={advance}>
           <div className="dialogue__box">
@@ -119,19 +118,51 @@ export default function Prologue({ state, onComplete }) {
         <section className="opening-identity">
           <div className="opening-identity__card panel">
             <Asset id="relic.banner" className="opening-identity__banner" alt="The torn banner with a golden lantern" />
-            <span className="eyebrow">The Broken Lantern is gone</span>
-            <h1>Name your guild</h1>
+            <h1>Found your guild</h1>
             <p>
-              The banner stays with you as a relic of the old guild. The guild you found is new, and the name is yours to choose. {state.guild.founder} leads it.
+              {skipping
+                ? 'Rook’s banner is yours: a relic of the Broken Lantern, and the start of something new.'
+                : 'The Broken Lantern is gone. Its banner is in your hands now, a relic of the old guild.'}{' '}
+              The guild you found is new. {state.guild.founder} leads it.
             </p>
             <label className="opening-identity__field">
               Guild name
               <input value={name} maxLength={38} placeholder="The Ember Company" onChange={(event) => setName(event.target.value)} autoFocus />
             </label>
-            <Button variant="primary" disabled={!name.trim() || name.trim().toLowerCase() === 'the broken lantern'} onClick={() => onComplete({ choice, guildName: name.trim() })}>
+            {name.trim().toLowerCase() === 'the broken lantern' ? <small className="muted">That name belongs to the dead. Choose your own.</small> : null}
+            <label className="opening-identity__field">
+              Motto
+              <input value={motto} maxLength={72} onChange={(event) => setMotto(event.target.value)} />
+            </label>
+            <fieldset className="charter-picker">
+              <legend>Charter: what kind of guild will this be?</legend>
+              <div className="charter-picker__options">
+                {CHARTER_LIST.map((item) => (
+                  <button key={item.id} type="button" className={`charter-card ${charter === item.id ? 'is-selected' : ''}`} aria-pressed={charter === item.id} onClick={() => setCharter(item.id)}>
+                    <Asset id={item.crest} className="charter-card__crest" />
+                    <strong>{item.name}</strong>
+                    <small>{item.pitch}</small>
+                    <ul>
+                      {item.modifiers.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                    <em>
+                      {PATHS[item.path].name} path · {item.signature}
+                    </em>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <Button
+              variant="primary"
+              size="lg"
+              disabled={!name.trim() || name.trim().toLowerCase() === 'the broken lantern'}
+              why="Name your guild first."
+              onClick={() => onComplete({ choice, guildName: name.trim(), motto: motto.trim(), charter })}
+            >
               Raise the banner
             </Button>
-            {name.trim().toLowerCase() === 'the broken lantern' ? <small className="muted">That name belongs to the dead. Choose your own.</small> : null}
           </div>
         </section>
       ) : null}
