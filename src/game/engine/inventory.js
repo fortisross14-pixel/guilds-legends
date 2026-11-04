@@ -214,6 +214,11 @@ export function rollLoot(rng, tierIndex = 0, quality = 0) {
   return loot;
 }
 
+/** Loot for a reward screen: name, count and kind (the icon), one entry per item. */
+export function lootList(loot) {
+  return Object.entries(loot || {}).map(([id, count]) => ({ id, name: ITEMS[id]?.name || id, count, kind: ITEMS[id]?.kind || 'consumable' }));
+}
+
 export function lootNames(loot) {
   return Object.entries(loot || {}).map(([id, count]) => `${ITEMS[id]?.name || id}${count > 1 ? ` ×${count}` : ''}`);
 }

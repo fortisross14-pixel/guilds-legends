@@ -22,6 +22,11 @@ function worldZoomFor(map, cssWidth, cssHeight, coarse) {
   return Math.min(2.2, Math.max(fill, map.zoom ? map.zoom * comfort : comfort));
 }
 
+/** Doors and exits ask first (playtest-1-feedback): a tap opens a bubble, the bubble's tap goes through. */
+export function needsConfirm(target) {
+  return target?.kind === 'door' || target?.kind === 'exit';
+}
+
 function targetHit(target) {
   if (target.hit) return target.hit;
   const w = target.w || 28;
@@ -270,9 +275,14 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
           return inside ? { target, distance: Math.hypot(world.x - cx, world.y - cy) } : null;
         })
         .filter(Boolean)
-        .sort((a, b) => a.distance - b.distance)[0];
+        // People and objects beat a door they stand by; then the nearest.
+        .sort((a, b) => Number(needsConfirm(a.target)) - Number(needsConfirm(b.target)) || a.distance - b.distance)[0];
       if (hit) {
         const target = hit.target;
+        if (needsConfirm(target)) {
+          bridge.current?.onConfirm?.(target);
+          return target;
+        }
         if (distanceTo(target) <= (target.reach || 44)) interactWith(target);
         else walkTo(target.approach || target, target);
         return target;
@@ -290,9 +300,13 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       }
     },
     /** Walk to a target by id and interact on arrival (tapping its name). */
-    goTo(id) {
+    goTo(id, { confirmed = false } = {}) {
       const target = activeTargets().find((item) => item.id === id);
       if (!target || !scene?.player || state.paused) return null;
+      if (needsConfirm(target) && !confirmed) {
+        bridge.current?.onConfirm?.(target);
+        return target;
+      }
       if (distanceTo(target) <= (target.reach || 44)) interactWith(target);
       else walkTo(target.approach || target, target);
       return target;

@@ -1229,7 +1229,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     view === 'map' ? (
       <MapScreen {...placeProps} place={place} />
     ) : view === 'interior' && town && !wildArea ? (
-      <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
+      <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
     ) : wildArea ? (
       <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} />
     ) : town ? (

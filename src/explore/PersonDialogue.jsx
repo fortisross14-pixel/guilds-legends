@@ -85,7 +85,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
   return (
     <section className="dialogue dialogue--person" aria-live="polite" onClick={waiting ? advance : undefined}>
       {candidate ? <RecruitCard state={state} candidate={candidate} /> : null}
-      <div className="dialogue__box" onClick={(event) => !waiting && event.stopPropagation()}>
+      <div className={`dialogue__box${waiting ? ' is-reading' : ''}`} onClick={(event) => !waiting && event.stopPropagation()}>
         <div className="dialogue__portrait">
           <Asset id={person.portrait || 'portrait.poi'} alt="" />
         </div>
@@ -95,14 +95,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
             <small> · {person.role}</small>
           </span>
           <TypedLine text={lines[index]} shown={typing.shown} />
-          {waiting ? (
-            <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
-              <span className="dialogue__hint">{closing && index >= lines.length - 1 ? 'Tap to close' : 'Tap to continue'}</span>
-              <button type="button" onClick={skip}>
-                Skip
-              </button>
-            </div>
-          ) : (
+          {!waiting ? (
             <div className="dialogue__choices dialogue__choices--hub">
               {choices.map((choice) => (
                 <button key={choice.id} type="button" className={choice.asked ? 'is-asked' : ''} onClick={() => choose(choice)}>
@@ -111,8 +104,16 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
                 </button>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
+        {waiting ? (
+          <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
+            <span className="dialogue__hint">{closing && index >= lines.length - 1 ? 'Tap to close' : 'Tap to continue'}</span>
+            <button type="button" onClick={skip}>
+              Skip
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -66,7 +66,12 @@
 .dialogue__choices button { width: 100%; min-height: 52px; padding: 12px 16px; border: 1px solid rgba(44, 34, 22, .35); border-radius: var(--r-1); background: rgba(255, 252, 240, .7); color: var(--parchment-ink); text-align: left; font: 600 var(--fs-3)/1.3 var(--font-ui); }
 .dialogue__choices button:hover, .dialogue__choices button:focus-visible { border-color: #2c2216; background: #fffaf0; outline: 2px solid var(--brass); outline-offset: 1px; }
 .dialogue__choices button:last-child { background: transparent; }
-.dialogue__controls { display: flex; align-items: center; gap: 8px; }
+.dialogue__controls { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+/* Reading (playtest-1-feedback): the text has a fixed area and the controls a fixed row, so
+   "Tap to continue" stays bottom-left and Skip bottom-right whatever the line's length. */
+.dialogue__box.is-reading { --read-h: 176px; grid-template-rows: var(--read-h) auto; }
+.dialogue__box.is-reading .dialogue__body { height: var(--read-h); }
+.dialogue__box.is-narrated { grid-template-columns: minmax(0, 1fr); }
 .dialogue__hint { flex: 1; color: #5a4630; font: 600 var(--fs-1) var(--font-ui); }
 .dialogue__controls button { min-width: 64px; min-height: var(--tap); padding: 0 14px; border: 1px solid rgba(44, 34, 22, .4); border-radius: var(--r-1); background: transparent; color: var(--parchment-ink); font: 700 var(--fs-1) var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
 .dialogue__controls button.is-on { background: #2c2216; color: var(--gold-bright); }
@@ -87,8 +92,13 @@
   .dialogue__box { gap: 4px 12px; padding-top: 14px; }
   .dialogue__portrait { width: 60px; height: 60px; }
   .dialogue__text { font-size: var(--fs-3); }
+  .dialogue__box.is-reading { --read-h: 132px; }
 }
 .walk__label[data-under-hud='1'] { opacity: 0; pointer-events: none; }
+/* Doors and exits ask first: a bubble above the door; tap it to go through (playtest-1-feedback). */
+.walk__confirm { position: absolute; z-index: 6; top: 0; left: 0; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 1px solid var(--gold-bright); border-radius: 24px; background: #1d1810; color: var(--gold-bright); font: 700 var(--fs-3) var(--font-ui); white-space: nowrap; box-shadow: 0 10px 24px rgba(0, 0, 0, .55), 0 0 0 4px rgba(246, 210, 140, .15); animation: confirm-in .16s ease-out both; }
+.walk__confirm::after { content: ''; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; margin-left: -6px; border-right: 1px solid var(--gold-bright); border-bottom: 1px solid var(--gold-bright); background: #1d1810; transform: rotate(45deg); }
+@keyframes confirm-in { from { opacity: 0; } to { opacity: 1; } }
 /* People in buildings: "?" over people you have not met; offer icons over those you know. */
 .walk__unknown { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 4px; border-radius: 50%; background: var(--gold); color: #1d150b; font: 800 var(--fs-1)/1 var(--font-ui); }
 .walk__offer { margin-right: 3px; color: var(--gold-bright); }
@@ -114,3 +124,37 @@
 .recruit-card__stats > div { display: grid; padding: 3px 6px; border-radius: 6px; background: rgba(255, 255, 255, .04); }
 .recruit-card__stats dt { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
 .recruit-card__stats dd { margin: 0; color: var(--gold-bright); font-size: var(--fs-2); font-weight: 700; }
+
+/* Painted interiors (playtest-1-feedback): the painting covers the screen and pans
+   sideways on a phone; people, hotspots and the door sit on it in percentages. */
+.interior { position: fixed; inset: 0; z-index: var(--z-scene); overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #4a3423 0%, #1b130d 70%); user-select: none; -webkit-user-select: none; }
+.interior__view { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; touch-action: pan-x pan-y; }
+.interior__view::-webkit-scrollbar { display: none; }
+.interior__stage { position: relative; }
+.interior__art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.interior__art.asset--loading { background: radial-gradient(ellipse at 50% 35%, #5a4029 0%, #1b130d 75%); }
+.interior__hotspot, .interior__door { position: absolute; display: grid; place-items: end center; padding: 0 0 6px; border: 1px dashed transparent; border-radius: var(--r-1); background: transparent; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.interior__hotspot:hover, .interior__hotspot:focus-visible, .interior__door:hover, .interior__door:focus-visible { border-color: rgba(246, 210, 140, .6); background: rgba(246, 210, 140, .08); }
+.interior__door { place-items: start center; padding: 6px 0 0; }
+.interior__tag { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 3px 10px; border-radius: var(--r-1); background: rgba(12, 10, 15, .78); color: #f1dfbc; font: 600 var(--fs-1)/1.3 var(--font-ui); white-space: nowrap; }
+.interior__tag .icon { color: var(--gold); }
+/* A person: the sprite with their feet on the spot, the name above. */
+.interior__person { position: absolute; z-index: 2; display: grid; justify-items: center; gap: 2px; min-width: 56px; min-height: 64px; padding: 0; border: 0; background: none; transform: translate(-50%, -100%); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.interior__sprite { width: 40px; height: 56px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .55)); }
+.interior__name { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--r-1); background: rgba(12, 10, 15, .78); color: #f1dfbc; font: 600 var(--fs-1)/1.3 var(--font-ui); white-space: nowrap; }
+.interior__person.is-quest .interior__name { border: 1px solid var(--gold-bright); color: var(--gold-bright); }
+.interior__person.is-quest .interior__name::before { content: '! '; font-weight: 800; }
+.interior__person:disabled, .interior__hotspot:disabled, .interior__door:disabled { cursor: default; }
+.interior__confirm { z-index: 3; }
+.interior .dialogue { position: fixed; z-index: var(--z-dialogue); }
+/* The prologue house as a painted scene. */
+.house__founder, .house__rook { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
+.house__founder { width: 48px; height: 66px; }
+.house__rook { width: 120px; height: 76px; object-fit: contain; image-rendering: pixelated; }
+.house__door.is-beacon .interior__tag { border: 1px solid var(--gold-bright); color: var(--gold-bright); }
+/* Pressed: keep the centring (touch.css scales every pressed button, which would move these off the finger). */
+.interior .interior__person:not(:disabled):active { transform: translate(-50%, -100%) scale(.97); }
+/* More painting that way: an arrow at the edge pans it (a swipe does too). */
+.interior__pan { position: absolute; z-index: 4; top: 50%; display: grid; place-items: center; width: 44px; height: 64px; margin-top: -32px; border: 1px solid rgba(246, 210, 140, .45); background: rgba(12, 10, 15, .62); color: var(--gold-bright); }
+.interior__pan--left { left: calc(var(--safe-l) + 4px); border-radius: 0 var(--r-1) var(--r-1) 0; }
+.interior__pan--right { right: calc(var(--safe-r) + 4px); border-radius: var(--r-1) 0 0 var(--r-1); }

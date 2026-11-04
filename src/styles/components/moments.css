@@ -175,3 +175,26 @@
 .moment__xp li:has(.xp-bar) { padding-bottom: 22px; }
 @keyframes xp-fill { from { width: var(--from); } to { width: var(--to); } }
 .is-skipped .xp-bar i, .is-skipped .xp-bar em { animation: none; }
+
+/* Victory (playtest-1-feedback): a portrait, the XP bar (with "Level up!"), HP; then the spoils as icons. */
+.moment--victory .moment__xp li { grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; }
+.moment--victory .moment__xp .xp-bar { grid-column: auto; margin-top: 0; height: 12px; }
+.moment--victory .moment__xp .xp-bar em, .moment--victory .moment__xp .xp-bar small { position: absolute; left: 0; bottom: 14px; font: 700 var(--fs-1) var(--font-ui); font-style: normal; color: var(--text-dim); }
+.moment--victory .moment__xp .xp-bar em { color: var(--gold-bright); }
+.moment__hp { display: inline-flex; align-items: center; gap: 4px; color: var(--hp) !important; }
+.moment__hp.is-low { color: var(--bad) !important; }
+.moment__xp li.is-injured .hero-portrait { filter: saturate(.4); }
+.moment__spoils { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 6px 0 0; padding: 0; list-style: none; }
+.moment__spoils li { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 20px; background: rgba(0, 0, 0, .3); color: var(--gold-bright); font: 700 var(--fs-3) var(--font-ui); }
+.moment__spoils li small { color: var(--text-dim); font-weight: 600; }
+.moment__spoils--cost li { color: var(--text); }
+.moment__details { width: 100%; text-align: left; }
+.moment__details-toggle { min-height: 40px; padding: 0 12px; border: 0; background: none; color: var(--text-dim); font: 600 var(--fs-2) var(--font-ui); text-decoration: underline; text-underline-offset: 3px; }
+.moment__details-log { max-height: 30dvh; overflow: auto; margin: 4px 0 0; padding: 8px 12px 8px 30px; border: 1px solid var(--line-soft); border-radius: var(--r-1); color: var(--text-dim); font-size: var(--fs-1); line-height: 1.5; }
+/* Mission complete: the grade as stars, then the rewards as icons and one line from the giver. */
+.moment__stars { display: flex; justify-content: center; gap: 6px; margin: 0; }
+.moment__stars .icon { color: rgba(255, 255, 255, .18); }
+.moment__stars .icon.is-on { color: var(--gold-bright); filter: drop-shadow(0 0 8px rgba(246, 210, 140, .6)); }
+.moment__grade { margin: 4px 0 0; color: var(--gold-bright); font: 700 var(--fs-5) var(--font-display); }
+.moment__giver { margin: 4px 0 0; color: var(--text); font: italic 600 var(--fs-3) var(--font-display); text-align: center; }
+.moment__giver small { display: block; color: var(--text-dim); font: 600 var(--fs-1) var(--font-ui); font-style: normal; }

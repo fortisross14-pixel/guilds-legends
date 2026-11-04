@@ -2,6 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 
 const JOYSTICK_RADIUS = 48;
+
+/** What a door's or exit's bubble says: "Enter The Wayfarer", "Leave to Dunmere", "Travel: The Old Road". */
+export function confirmText(target) {
+  if (target.kind === 'door') return target.verb && target.verb !== 'Enter' ? `${target.verb} ${target.name.replace(/^The /, 'the ')}` : `Enter ${target.name}`;
+  const back = /^(Back|Out) to (.+)$/.exec(target.name || '');
+  if (back) return `Leave to ${back[2]}`;
+  return `Travel: ${target.name}`;
+}
 const DRAG_THRESHOLD = 12;
 const KEY_DIRECTIONS = {
   ArrowUp: [0, -1],
@@ -69,6 +77,11 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [near, setNear] = useState(null);
+  // A door or exit asking "Enter …?" (one bubble at a time; any other tap closes it).
+  const [ask, setAsk] = useState(null);
+  const askRef = useRef(null);
+  const askTarget = useRef(null);
+  askTarget.current = ask;
   const [stick, setStick] = useState(null);
   const active = activeTargets || map.targets.filter((target) => target.active !== false).map((target) => target.id);
   const activeKey = active.join('|');
@@ -78,6 +91,7 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
   // Fresh callbacks every render, read by the game through the ref.
   bridge.current = {
     onNear: (target) => setNear(target || null),
+    onConfirm: (target) => setAsk(target),
     onInteract: (target, position) => onInteract?.(target, position),
     onFrame: (project) => {
       const { width, height } = viewport.current;
@@ -114,6 +128,13 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
         if ((element.dataset.underHud === '1') !== under) element.dataset.underHud = under ? '1' : '';
         element.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translateX(-50%)`;
       });
+      if (askRef.current && askTarget.current) {
+        const target = askTarget.current;
+        const point = project(target.labelAt?.x ?? target.x, target.labelAt?.y ?? target.y + 6);
+        const x = Math.min(Math.max(point.x, 110), (width || 400) - 110);
+        const y = Math.min(Math.max(point.y - 52, 120), (height || 800) - 160);
+        askRef.current.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translateX(-50%)`;
+      }
     },
   };
 
@@ -221,6 +242,8 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
 
   const onPointerDown = (event) => {
     if (event.button > 0 || !controllerRef.current) return;
+    // Any tap away from the bubble closes it (a tap on another door opens that one's).
+    if (ask) setAsk(null);
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const point = local(event);
     pointer.current = { id: event.pointerId, start: point, last: point, lastAt: performance.now(), mode: joystick ? 'pending' : 'steer' };
@@ -281,6 +304,21 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
         onContextMenu={(event) => event.preventDefault()}
         aria-hidden="true"
       />
+      {ask && ready ? (
+        <button
+          type="button"
+          ref={askRef}
+          className="walk__confirm"
+          onClick={() => {
+            const id = ask.id;
+            setAsk(null);
+            controllerRef.current?.goTo(id, { confirmed: true });
+          }}
+        >
+          <Icon name={ask.kind === 'door' ? 'door' : 'boot'} size={16} tone="plain" />
+          {confirmText(ask)}
+        </button>
+      ) : null}
       <div className="walk__labels">
         {ready
           ? map.targets
@@ -298,6 +336,7 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
                       peeked.current = false;
                       return;
                     }
+                    if (ask && ask.id !== target.id) setAsk(null);
                     controllerRef.current?.goTo(target.id);
                   }}
                   onPointerDown={() => {

@@ -9,7 +9,6 @@ import { WILD_AREA_LIST } from './wilds/index.js';
 import { EQUIPMENT, HALL_EXTERIOR, LOT_DIORAMA, ROOMS, TIER_NAMES, equipmentArt, roomTileArt } from './rooms.js';
 import { CHARTER_LIST } from './charters.js';
 import { PATRON_LIST } from './patrons.js';
-import { INTERIORS, ROOM } from './interiors.js';
 import { REGULARS } from './people.js';
 import { CLASSES } from './content.js';
 
@@ -82,13 +81,8 @@ const LIST = [
   { id: 'bg.battle.iron', group: 'battle', path: 'art/battle/iron.png', borrow: scene(12), ...SCENE, use: 'Battles in Iron lands' },
 
   // The player's house in Dunmere (the prologue, "The knock at the door"), walkable.
-  { id: 'room.house.floor', group: 'room', path: 'art/walk/house/floor.png', w: 960, h: 540, use: 'Player’s house: floor and walls, a hearth glow, rain on the windows (prologue)' },
-  { id: 'prop.house.hearth', group: 'prop', path: 'art/walk/house/hearth.png', w: 190, h: 52, use: 'Player’s house: the hearth (top left)' },
-  { id: 'prop.house.table', group: 'prop', path: 'art/walk/house/table.png', w: 160, h: 64, use: 'Player’s house: table and two stools (middle)' },
-  { id: 'prop.house.bed', group: 'prop', path: 'art/walk/house/bed.png', w: 190, h: 70, use: 'Player’s house: the one bed (top right)' },
-  { id: 'prop.house.chest', group: 'prop', path: 'art/walk/house/chest.png', w: 120, h: 44, use: 'Player’s house: small chest (bottom left)' },
-  { id: 'prop.house.door', group: 'prop', path: 'art/walk/house/door.png', w: 32, h: 92, use: 'Player’s house: the front door (later scratched with the Argent Crown emblem)' },
-  { id: 'npc.house.rook', group: 'npc', path: 'art/walk/house/rook.png', w: 44, h: 28, use: 'Player’s house: Cassian Rook, wounded, on the floor' },
+  { id: 'interior.house', group: 'interior', path: 'art/interiors/house.png', w: 1280, h: 576, use: 'Player’s house (prologue): a small room at night, the hearth, the table, the one bed, the front door on the right wall (a painted scene; a mood gradient until drawn)' },
+  { id: 'npc.house.rook', group: 'npc', path: 'art/walk/house/rook.png', w: 88, h: 56, use: 'Player’s house: Cassian Rook, wounded, on the floor' },
 
   // Walkable towns and wild areas: shared pieces. Buildings, NPCs, portraits,
   // props and enemy groups are generated from the town and area data below.
@@ -189,15 +183,7 @@ Object.values(TOWNS).forEach((town) => {
     add({ id: `portrait.${town.id}.${npc.id}`, group: 'portrait', path: `art/portraits/npcs/${town.id}-${npc.id}.png`, w: 160, h: 160, use: `${town.name}: ${npc.name}, ${npc.role} (dialogue portrait)` });
   });
 });
-// Building interiors (Phase 7C): the room floors, the furniture, and the people
-// standing in them (regulars, and silhouettes by role or class for visitors).
-const ROOM_PX = ROOM.w * TILE_SIZE;
-Object.values(INTERIORS).forEach((room) => {
-  add({ id: room.floor, group: 'room', path: `art/walk/rooms/${room.id}.png`, w: ROOM_PX, h: ROOM_PX, use: `Interior (walkable): the ${room.id} room, floor and walls, seen from above (${ROOM.w}×${ROOM.h} tiles)` });
-  room.furniture.forEach((piece) =>
-    add({ id: piece.asset, group: 'prop', path: `art/walk/furniture/${slug(piece.asset)}.png`, w: piece.size[0] * TILE_SIZE, h: (piece.size[1] + 1) * TILE_SIZE, use: `Interior furniture: ${piece.poi?.name || piece.id} (${room.id})` }),
-  );
-});
+// The people standing in the painted interiors (regulars, and silhouettes by role or class for visitors).
 REGULARS.forEach((person) => {
   const role = person.role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const sprite = person.sprite || `npc.role.${role}`;

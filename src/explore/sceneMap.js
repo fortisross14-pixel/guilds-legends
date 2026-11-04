@@ -4,8 +4,6 @@
 // map is in world pixels.
 import { TILE_BY_CHAR, TILE_SIZE as T } from '../data/tiles.js';
 import { areaGroups } from '../data/wilds/index.js';
-import { EXIT, ROOM } from '../data/interiors.js';
-import { shortLabels } from '../game/engine.js';
 
 const BUILDING = { w: 5, h: 5 }; // tiles; the bottom row of the building sits just above its door tile
 
@@ -76,7 +74,6 @@ function exitTarget(exit, extra = {}) {
     approach: point,
     labelAt: { x: point.x, y: point.y - 44 },
     reach: 30,
-    auto: true,
     beacon: true,
     ...extra,
   };
@@ -231,91 +228,3 @@ export function wildMap(area) {
   return map;
 }
 
-/**
- * Walkable map for a building interior (src/data/interiors.js) with the people
- * in it (engine peopleIn). The room fits one screen (`fit: 'contain'`).
- * People are targets (tap to walk over and talk), `poi` furniture is tapped,
- * and the doorway at the bottom leads back out.
- */
-export function interiorMap(room, people, { id, exitName = 'Leave' } = {}) {
-  const width = ROOM.w * T;
-  const height = ROOM.h * T;
-  const blocks = [rect(0, 0, ROOM.w, 1)];
-  const props = [];
-  const targets = [];
-  room.furniture.forEach((piece) => {
-    const [col, row] = piece.at;
-    const [w, h] = piece.size;
-    props.push({ asset: piece.asset, x: col * T, y: (row - 1) * T, w: w * T, h: (h + 1) * T });
-    if (!piece.walkable) blocks.push(rect(col, row, w, h));
-    if (piece.poi) {
-      const cx = (col + w / 2) * T;
-      const below = piece.wall ? (row + h) * T + 20 : (row + h) * T + 18;
-      // Shelves on the side walls are approached from the room side.
-      const side = col === 0 ? 'left' : col + w >= ROOM.w ? 'right' : null;
-      targets.push({
-        id: `poi:${piece.id}`,
-        kind: 'poi',
-        name: piece.poi.name,
-        verb: piece.poi.verb || 'Inspect',
-        poi: piece.poi,
-        icon: piece.poi.shelf ? 'bag' : piece.poi.board === 'history' ? 'trophy' : piece.poi.board === 'rankings' ? 'crown' : 'book',
-        x: cx,
-        y: (row + h) * T,
-        hit: rect(col, row - 1, w, h + 1),
-        approach: side === 'left' ? { x: (col + w) * T + 18, y: (row + h / 2) * T } : side === 'right' ? { x: col * T - 18, y: (row + h / 2) * T } : { x: cx, y: below },
-        labelAt: { x: cx, y: (row - 1) * T - 8 },
-        reach: 44,
-      });
-    }
-  });
-  const spots = Object.fromEntries(room.spots.map((spot) => [spot.id, spot]));
-  const labels = shortLabels(people);
-  people.forEach((person) => {
-    const spot = spots[person.spot];
-    if (!spot) return;
-    const { x } = tileCenter(spot.at);
-    const feet = (spot.at[1] + 1) * T - 2;
-    targets.push({
-      id: `person:${person.id}`,
-      kind: 'npc',
-      name: person.name,
-      // First names over heads keep a full room readable; the dialogue shows the full name and role.
-      labelText: labels[person.id],
-      role: person.role,
-      verb: 'Talk',
-      person: person.id,
-      dialogue: person.dialogue || null,
-      unknown: !person.met && !person.dialogue,
-      badges: person.met || person.dialogue ? person.offers.map((offer) => (offer.type === 'hire' ? (offer.locked ? 'lock' : 'coin') : offer.type === 'mission' ? 'alert' : 'swords')) : [],
-      x,
-      y: feet,
-      asset: person.sprite,
-      w: 26,
-      h: 36,
-      bob: true,
-      approach: { x, y: feet + (spot.behind ? 2 * T : 22) },
-      labelAt: { x, y: feet - 50 },
-      reach: spot.behind ? 2 * T + 8 : 38,
-    });
-  });
-  const [ec, er] = EXIT.at;
-  const door = { x: (ec + 0.5) * T, y: (er + 0.5) * T };
-  // The doorway is approached from just inside the room (the walls around it are padded for walking).
-  const inside = { x: door.x, y: er * T - 10 };
-  targets.push({ id: 'exit', kind: 'exit', name: exitName, verb: 'Leave', x: door.x, y: door.y + T / 2, hit: rect(ec - 1, er - 1, 3, 2), approach: inside, labelAt: { x: door.x, y: door.y - 4 }, reach: 22, auto: true, icon: 'door' });
-  return {
-    id,
-    size: { width, height },
-    background: '#0b0c12',
-    ground: room.floor,
-    player: { asset: 'char.founder', w: 26, h: 36 },
-    pad: 8,
-    edge: 4,
-    blocks: [...blocks, rect(0, 0, 1, ROOM.h), rect(ROOM.w - 1, 0, 1, ROOM.h), rect(0, ROOM.h - 1, ec, 1), rect(ec + 1, ROOM.h - 1, ROOM.w - ec - 1, 1)],
-    props,
-    targets,
-    spawn: { x: door.x, y: door.y - 2 * T },
-    fit: 'contain',
-  };
-}

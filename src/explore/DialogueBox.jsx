@@ -177,7 +177,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
           </div>
         </div>
       ) : null}
-      <div className="dialogue__box" onClick={(event) => phase !== 'lines' && event.stopPropagation()}>
+      <div className={`dialogue__box${phase === 'lines' ? ' is-reading' : ''}`} onClick={(event) => phase !== 'lines' && event.stopPropagation()}>
         <div className="dialogue__portrait">
           <Asset id={line.portrait || 'portrait.poi'} alt="" />
         </div>
@@ -219,18 +219,18 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
               </button>
             </div>
           ) : null}
-          {phase === 'lines' ? (
-            <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
-              <span className="dialogue__hint">{atLastLine && after.current === 'close' ? 'Tap to close' : 'Tap · hold = faster · swipe up = log'}</span>
-              <button type="button" className={auto ? 'is-on' : ''} onClick={() => setAuto((value) => !value)} aria-pressed={auto}>
-                Auto
-              </button>
-              <button type="button" onClick={skip}>
-                Skip
-              </button>
-            </div>
-          ) : null}
         </div>
+        {phase === 'lines' ? (
+          <div className="dialogue__controls" onClick={(event) => event.stopPropagation()}>
+            <span className="dialogue__hint">{atLastLine && after.current === 'close' ? 'Tap to close' : 'Tap · hold = faster · swipe up = log'}</span>
+            <button type="button" className={auto ? 'is-on' : ''} onClick={() => setAuto((value) => !value)} aria-pressed={auto}>
+              Auto
+            </button>
+            <button type="button" onClick={skip}>
+              Skip
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

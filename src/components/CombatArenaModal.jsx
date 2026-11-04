@@ -292,6 +292,16 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const active = ready ? livingParty.find((unit) => !commands[unit.id]) || null : null;
   const actor = ready ? livingParty.find((unit) => unit.id === (dragging?.actorId || radial?.actorId || actorId)) || active : null;
 
+  // A won fight in the wild or on the road: the word "Victory" over the field, then the one
+  // victory screen (playtest-1-feedback): no result card in between.
+  const quickWin = Boolean(encounter && encounter.status !== 'active' && !replaying && encounter.result?.playerWon && ['wild', 'road'].includes(encounter.sourceType));
+  const concludeRef = useRef(actions.concludeCombat);
+  concludeRef.current = actions.concludeCombat;
+  useEffect(() => {
+    if (!quickWin) return undefined;
+    const timer = window.setTimeout(() => concludeRef.current(), 1300);
+    return () => window.clearTimeout(timer);
+  }, [quickWin]);
   if (!encounter) return null;
   const finished = encounter.status !== 'active';
   const display = replay?.display || null;
@@ -571,6 +581,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const intent = encounter.enemyIntent;
   const infoUnit = info ? unitById(info) : null;
   const wildWipe = finished && encounter.sourceType === 'wild' && !encounter.result?.playerWon && encounter.result?.method !== 'withdrew';
+
   const showHand = canDrag && ready && !settings.seenHints?.battleDrag && !dragging && !radial;
 
   return (
@@ -686,12 +697,15 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
 
           {infoUnit ? <UnitInfo unit={view(infoUnit)} intent={encounter.intents?.[infoUnit.id]} onClose={() => setInfo(null)} /> : null}
 
-          {finished && !replaying ? (
+          {quickWin ? (
+            <button type="button" className="battle-victory" onClick={() => concludeRef.current()} aria-label="Victory: continue">
+              <span>Victory</span>
+            </button>
+          ) : null}
+
+          {finished && !replaying && !quickWin ? (
             <section className={`battle-result battle-result--${encounter.result?.playerWon ? 'won' : 'lost'} panel`} onClick={(event) => event.stopPropagation()}>
               <h3>{encounter.result?.playerWon ? 'Victory!' : encounter.result?.method === 'withdrew' ? 'You withdrew' : 'Defeat'}</h3>
-              <p>
-                {encounter.result?.turns} round{encounter.result?.turns === 1 ? '' : 's'} · party HP {encounter.result?.playerHpPct}%
-              </p>
               <ul className="battle-result__hp" aria-label="Your heroes after the fight">
                 {encounter.party.map((unit) => (
                   <li key={unit.id} className={unit.ko ? 'is-ko' : ''}>

@@ -20,7 +20,7 @@ function xpEntryInPlace(hero, amount, state, source) {
   applyXpInPlace(hero, Math.round(amount * charterEffect(state, 'combatXp')), state, source);
   return { heroId: hero.id, name: hero.name, xp: amount, levelBefore, levelAfter: hero.level, from, to: fill() };
 }
-import { addItemsInPlace, lootNames, rollLoot, settleBattleItemsInPlace } from './inventory.js';
+import { addItemsInPlace, lootList, rollLoot, settleBattleItemsInPlace } from './inventory.js';
 import { evaluateStateInPlace } from './goals.js';
 import { completeIndividualTournamentInPlace, resolveIndividualRoundInPlace } from './tournaments.js';
 import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guildTournaments.js';
@@ -130,7 +130,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     addItemsInPlace(next, loot);
     wild.cleared[groupId] = campaignWeekSerial(next) + (group.respawnWeeks || WILD_RESPAWN.enemies);
     if (group.isBoss) wild.bosses = (wild.bosses || 0) + 1;
-    pushMoment(next, { type: 'victory', title: `${encounter.title} defeated`, grade: 'Victory', gold, xp, loot: lootNames(loot) });
+    pushMoment(next, { type: 'victory', title: `${encounter.title} defeated`, gold, xp, loot: lootList(loot) });
     addChronicle(next, {
       type: 'combat-victory',
       importance: group.isBoss ? 3 : 1,
@@ -156,7 +156,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
     const xp = fighters.map((hero) => xpEntryInPlace(hero, 25 * tier, next, 'a road ambush'));
     const loot = rollLoot(rng, next.guild.tierIndex, 0);
     addItemsInPlace(next, loot);
-    pushMoment(next, { type: 'victory', title: 'Ambush repelled', grade: 'Victory', gold, xp, loot: lootNames(loot) });
+    pushMoment(next, { type: 'victory', title: 'Ambush repelled', gold, xp, loot: lootList(loot) });
     addChronicle(next, {
       type: 'travel',
       importance: 1,
@@ -206,7 +206,32 @@ function carryVitalsInPlace(state, encounter, combatResult) {
   });
 }
 
+/**
+ * One screen per fight (playtest-1-feedback): when a fight queues a victory
+ * moment, the level-ups it caused fold into it (its XP bars show "Level up!"),
+ * and it carries each hero's HP and injury and the battle log for "Details".
+ */
+function mergeBattleMomentsInPlace(next, encounter, since) {
+  const fresh = (next.moments || []).slice(since);
+  const victory = fresh.find((moment) => moment.type === 'victory');
+  if (!victory) return;
+  next.moments = [...next.moments.slice(0, since), ...fresh.filter((moment) => moment.type !== 'levelUp')];
+  victory.party = encounter.party
+    .map((unit) => getHero(next, unit.heroId))
+    .filter(Boolean)
+    .map((hero) => ({ heroId: hero.id, hp: hero.health ?? 100, injured: hero.status === 'injured' }));
+  victory.details = (encounter.log || []).slice(-40).map((line) => line.text);
+}
+
 export function concludeActiveCombat(state, mutate = false) {
+  const since = state.moments?.length || 0;
+  const encounter = state.activeEncounter;
+  const concluded = concludeCombatInner(state, mutate);
+  if (!concluded.error && encounter) mergeBattleMomentsInPlace(concluded.state, encounter, since);
+  return concluded;
+}
+
+function concludeCombatInner(state, mutate) {
   if (!state.activeEncounter) return { state, error: 'There is no combat to conclude.' };
   if (state.activeEncounter.status === 'active' || !state.activeEncounter.result) return { state, error: 'The combat has not finished yet.' };
   const next = mutate ? state : clone(state);

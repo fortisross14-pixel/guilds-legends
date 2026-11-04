@@ -603,7 +603,10 @@ export function defeatInPlace(state, heroIds, where = state.world?.currentLocati
     heading: 'Defeat',
     roomId: 'defeat',
     title: `Carried home to ${LOCATION_BY_ID[HOME_LOCATION_ID]?.name || 'Dunmere'}`,
-    effect: `They wake in ${placeName}. Treatment and transport: ${cost} gold${owed ? ` (${owed} owed)` : ''}. Back on their feet in about ${weeks === 4 ? 'a month' : `${weeks} weeks`}.`,
+    effect: `They wake in ${placeName}.`,
+    cost,
+    owed,
+    weeks,
     unlocked: [],
     interior: 'scene.defeat',
   });

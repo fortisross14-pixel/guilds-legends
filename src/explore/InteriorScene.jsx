@@ -1,49 +1,76 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getStoryView, hasHall, peopleIn, storyNpcsHere } from '../game/engine.js';
+import React, { useEffect, useState } from 'react';
+import { getStoryView, hasHall, peopleIn, shortLabels, storyNpcsHere } from '../game/engine.js';
 import Icon from '../components/Icon.jsx';
-import { INTERIORS } from '../data/interiors.js';
+import Asset from '../components/Asset.jsx';
+import PaintedScene, { at, box } from './PaintedScene.jsx';
+import { interiorLayout } from '../data/interiors.js';
 import { townFor } from '../data/towns/index.js';
-import { interiorMap } from './sceneMap.js';
-import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
 import PersonDialogue from './PersonDialogue.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
 import { dateLine } from '../hud/dateLine.js';
 
+const offerIcon = (offer) => (offer.type === 'hire' ? (offer.locked ? 'lock' : 'coin') : offer.type === 'mission' ? 'alert' : 'swords');
+
 /**
- * A building's interior: a small walkable room that fits one screen, with the
- * people in it (engine people.js). Tap a person to walk over and talk; tap
- * furniture (shelves, boards) to use it; tap the doorway to leave.
- * The room is rebuilt when someone arrives or leaves (`peopleKey`).
+ * A building's interior as a painted scene (playtest-1-feedback): the painting
+ * covers the screen (on a phone it pans sideways under a finger), people stand
+ * at fixed spots on it, hotspots on it do something, and the door asks before
+ * leading out. Tap a person to talk, a hotspot to use it. No walking inside.
  */
-export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, apiRef = null, onTalk = null }) {
+export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, onTalk = null }) {
   const locationId = state.world?.currentLocationId || 'dunmere';
   const town = townFor(locationId);
-  const room = INTERIORS[building];
+  const layout = interiorLayout(building, locationId);
   const label = town?.buildings.find((item) => item.building === building)?.label || building;
   const people = peopleIn(state, locationId, building);
-  // Rebuild when who is here, or what you know about them, changes.
-  const peopleKey = people.map((person) => `${person.id}:${person.spot}:${person.met ? 1 : 0}:${person.offers.map((offer) => `${offer.type}${offer.locked ? 'L' : ''}`).join(',')}`).join('|');
-  // The Phaser room is rebuilt only when someone arrives or leaves; badges update in place.
-  const whoKey = people.map((person) => `${person.id}:${person.spot}`).join('|');
-  const sceneId = `interior:${locationId}:${building}`;
-  const map = useMemo(() => interiorMap(room, people, { id: sceneId, exitName: `Out to ${town?.name || 'the street'}` }), [peopleKey, building, locationId]); // eslint-disable-line react-hooks/exhaustive-deps
-  const ownApi = useRef(null);
-  const api = apiRef || ownApi;
+  const names = shortLabels(people);
   const [talk, setTalk] = useState(null);
+  const [ask, setAsk] = useState(false);
   // An open conversation holds back queued cards (App.jsx, the interruption queue).
   useEffect(() => {
     onTalk?.(Boolean(talk));
   }, [talk, onTalk]);
   useEffect(() => () => onTalk?.(false), [onTalk]);
+
+  // Start centred on the keeper (the one you came to see), else the middle.
+  const keeperSpot = people.find((person) => person.kind === 'regular')?.spot;
+  const focusX = (layout?.spots[keeperSpot] || [50])[0];
   // The main quest marker sits on a regular who holds the current story scene.
   const questNpcs = state.settings?.questMarker === false ? [] : storyNpcsHere(state);
-  const beacons = map.targets.filter((target) => target.dialogue && questNpcs.includes(target.dialogue)).map((target) => target.id);
+  const questPerson = people.find((person) => person.dialogue && questNpcs.includes(person.dialogue));
+  const talkTo = (person) => {
+    setAsk(false);
+    setTalk({ person: person.id, dialogue: person.dialogue || null });
+  };
+  const use = (spot) => {
+    setAsk(false);
+    if (spot.shelf) onOpen({ open: 'shop', kind: spot.shelf });
+    else if (spot.board === 'history') onOpen({ open: 'arena', tab: 'board' });
+    else if (spot.board === 'rankings') onOpen({ open: 'records', tab: 'rankings' });
+    else if (spot.board === 'records') onOpen({ open: 'records', tab: 'codex', view: 'almanac' });
+  };
+  const blocked = Boolean(paused || talk || state.activeEncounter);
 
-  // The goal line, as in town: walk to the story person here, or head out when the step is elsewhere.
+  // Test hook (docs/PLAYTEST_CH1.md): who and what is on the painting.
+  useEffect(() => {
+    window.render_game_to_text = () =>
+      JSON.stringify({
+        scene: `interior:${locationId}:${building}`,
+        people: people.map((person) => ({ id: person.id, name: person.name, spot: person.spot, offers: person.offers.map((offer) => offer.type) })),
+        hotspots: (layout?.hotspots || []).map((spot) => spot.id),
+        talking: talk?.person || null,
+        asking: ask,
+      });
+    return () => {
+      delete window.render_game_to_text;
+    };
+  });
+
+  // The goal line, as in town: talk to the story person here, or head out when the step is elsewhere.
   const step = state.settings?.questMarker === false ? null : getStoryView(state).active?.current;
   const goalLine = step ? (
-    <button type="button" className="goal-line" onClick={() => (beacons[0] ? api.current?.goTo(beacons[0]) : onLeave())} aria-label={`Goal: ${step.text}`}>
+    <button type="button" className="goal-line" onClick={() => (questPerson ? talkTo(questPerson) : setAsk(true))} aria-label={`Goal: ${step.text}`}>
       <Icon name="alert" size={14} tone="plain" />
       <span>{step.text}</span>
     </button>
@@ -51,42 +78,126 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
     <p className="goal-line goal-line--status">No hall, no hires.</p>
   ) : null;
 
-  const interact = (target) => {
-    if (target.kind === 'exit') onLeave();
-    else if (target.person) setTalk({ person: target.person, dialogue: target.dialogue });
-    else if (target.poi?.shelf) onOpen({ open: 'shop', kind: target.poi.shelf });
-    else if (target.poi?.board === 'history') onOpen({ open: 'arena', tab: 'board' });
-    else if (target.poi?.board === 'rankings') onOpen({ open: 'records', tab: 'rankings' });
-    else if (target.poi?.board === 'records') onOpen({ open: 'records', tab: 'codex', view: 'almanac' });
-  };
-
+  if (!layout) return null;
+  const doorAt = layout.door;
   return (
-    <WalkableScene
-      key={`${sceneId}-${whoKey}`}
-      map={map}
-      start={api.current?.position() || map.spawn}
-      apiRef={api}
-      beacons={beacons}
-      paused={Boolean(paused || talk || state.activeEncounter)}
-      joystick={Boolean(state.settings?.joystick)}
-      onInteract={interact}
-      className={`interior-scene interior-scene--${building}`}
+    <PaintedScene
+      art={layout.art}
+      focusX={focusX}
+      className={`interior--${building}`}
       label={`Inside ${label}`}
+      onBackgroundTap={() => ask && setAsk(false)}
+      overlay={
+        <>
+          <PlaceTag title={label} sub={dateLine(state.date)} goal={goalLine} />
+          {talk?.dialogue ? (
+            <DialogueBox
+              key={talk.person}
+              state={state}
+              actions={actions}
+              conversationId={talk.dialogue}
+              visit={null}
+              onClose={() => setTalk(null)}
+              onOpenBuilding={(id) => id !== building && onOpen({ open: id })}
+            />
+          ) : talk ? (
+            <PersonDialogue key={talk.person} state={state} actions={actions} personId={talk.person} onClose={() => setTalk(null)} onOpen={onOpen} />
+          ) : null}
+        </>
+      }
     >
-      <PlaceTag title={label} sub={dateLine(state.date)} goal={goalLine} />
-      {talk?.dialogue ? (
-        <DialogueBox
-          key={talk.person}
-          state={state}
-          actions={actions}
-          conversationId={talk.dialogue}
-          visit={null}
-          onClose={() => setTalk(null)}
-          onOpenBuilding={(id) => id !== building && onOpen({ open: id })}
-        />
-      ) : talk ? (
-        <PersonDialogue key={talk.person} state={state} actions={actions} personId={talk.person} onClose={() => setTalk(null)} onOpen={onOpen} />
+      {layout.hotspots.map((spot) => (
+        <button
+          key={spot.id}
+          type="button"
+          className="interior__hotspot"
+          style={box(spot.box)}
+          disabled={blocked}
+          onClick={(event) => {
+            event.stopPropagation();
+            use(spot);
+          }}
+          aria-label={`${spot.verb}: ${spot.name}`}
+        >
+          <span className="interior__tag">
+            <Icon name={spot.shelf ? 'bag' : spot.board === 'history' ? 'trophy' : spot.board === 'rankings' ? 'crown' : 'book'} size={14} />
+            {spot.name}
+          </span>
+        </button>
+      ))}
+      <button
+        type="button"
+        className="interior__door"
+        style={box(doorAt)}
+        disabled={blocked}
+        onClick={(event) => {
+          event.stopPropagation();
+          setAsk(true);
+        }}
+        aria-label={`Leave to ${town?.name || 'the street'}`}
+      >
+        <span className="interior__tag">
+          <Icon name="door" size={14} />
+          Out
+        </span>
+      </button>
+      {/* People sit above hotspots and the door: their tap always wins. */}
+      {people.map((person) => {
+        const spot = layout.spots[person.spot];
+        if (!spot) return null;
+        const known = person.met || person.dialogue;
+        const quest = questPerson?.id === person.id;
+        return (
+          <button
+            key={person.id}
+            type="button"
+            className={`interior__person${quest ? ' is-quest' : ''}`}
+            style={at(spot)}
+            disabled={blocked}
+            onClick={(event) => {
+              event.stopPropagation();
+              talkTo(person);
+            }}
+            aria-label={`Talk: ${person.name}, ${person.role}`}
+          >
+            <span className="interior__name">
+              {!known ? (
+                <b className="walk__unknown" aria-label="Someone you have not met">
+                  ?
+                </b>
+              ) : null}
+              {known
+                ? person.offers.map((offer, index) => (
+                    <Icon
+                      key={`${offer.type}-${index}`}
+                      name={offerIcon(offer)}
+                      size={14}
+                      tone="plain"
+                      className={`walk__offer walk__offer--${offerIcon(offer)}`}
+                    />
+                  ))
+                : null}
+              {names[person.id] || person.name}
+            </span>
+            <Asset id={person.sprite} className="interior__sprite" alt="" />
+          </button>
+        );
+      })}
+      {ask ? (
+        <button
+          type="button"
+          className="walk__confirm interior__confirm"
+          style={{ left: `${doorAt[0] + doorAt[2] / 2}%`, top: `${doorAt[1]}%`, transform: "translate(-50%, -100%)" }}
+          onClick={(event) => {
+            event.stopPropagation();
+            setAsk(false);
+            onLeave();
+          }}
+        >
+          <Icon name="door" size={16} tone="plain" />
+          Leave to {town?.name || 'the street'}
+        </button>
       ) : null}
-    </WalkableScene>
+    </PaintedScene>
   );
 }

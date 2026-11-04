@@ -27,6 +27,28 @@ function Ceremony({ fx = 'sparkle', children }) {
   );
 }
 
+const LOOT_ICONS = { consumable: 'potion', weapon: 'sword', armor: 'shield', accessory: 'gem' };
+
+/** "Details": the battle log (or a breakdown), never shown by default. */
+function Details({ lines }) {
+  const [open, setOpen] = useState(false);
+  if (!lines?.length) return null;
+  return (
+    <div className="moment__details" onClick={(event) => event.stopPropagation()}>
+      <button type="button" className="moment__details-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
+        Details
+      </button>
+      {open ? (
+        <ol className="moment__details-log">
+          {lines.map((line, index) => (
+            <li key={index}>{line}</li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
 // Reward moments: victory, level up, rankings, status title, nemesis, recruit,
 // a broken record and the end-of-year season review.
 // A click anywhere on a ceremony finishes its animation.
@@ -38,59 +60,109 @@ export default function MomentModal({ moment, state, onClose }) {
   const skipClass = skipped === moment.id ? 'is-skipped' : '';
   const skip = () => setSkipped(moment.id);
 
+  // Victory (playtest-1-feedback): show, don't tell. The big word, each hero with
+  // an XP bar (Level up! inside it), HP left and an injury mark, gold and loot as
+  // icons with numbers, Continue. The battle log waits behind Details.
   if (moment.type === 'victory') {
+    const hpOf = (heroId) => moment.party?.find((entry) => entry.heroId === heroId);
     return (
-      <Modal open title="Victory" eyebrow={moment.title} onClose={onClose} width="medium" className="modal--ceremony">
+      <Modal open title={moment.title} onClose={onClose} width="medium" className="modal--ceremony">
         <div className={`moment moment--victory ${skipClass}`} onClick={skip}>
           <Ceremony>
             <p className="moment__headline">Victory</p>
           </Ceremony>
-          {moment.grade ? <Badge tone="gold">{moment.grade}</Badge> : null}
-          {moment.gold ? (
-            <p className="moment__gold num">
-              <Icon name="coin" size={24} />+<CountUp value={moment.gold} /> G
-            </p>
-          ) : null}
           {moment.xp?.length ? (
             <ul className="moment__xp">
               {moment.xp.map((entry, index) => {
                 const member = heroById(entry.heroId);
+                const vitals = hpOf(entry.heroId);
+                const leveled = entry.levelAfter > entry.levelBefore;
                 return (
-                  <li key={entry.heroId} style={{ animationDelay: `${600 + index * 120}ms` }}>
+                  <li key={entry.heroId} style={{ animationDelay: `${600 + index * 120}ms` }} className={vitals?.injured ? 'is-injured' : ''}>
                     {member ? <HeroPortrait hero={member} size="xs" showStatus={false} /> : <span />}
-                    <span>{entry.name}</span>
-                    <b className="num">
-                      +<CountUp value={entry.xp} duration={1100} /> XP
-                    </b>
-                    {typeof entry.from === 'number' ? (
-                      <span
-                        className={`xp-bar ${entry.levelAfter > entry.levelBefore ? 'is-level-up' : ''}`}
-                        style={{
-                          '--from': `${Math.round(entry.from * 100)}%`,
-                          '--to': `${entry.levelAfter > entry.levelBefore ? 100 : Math.round(entry.to * 100)}%`,
-                          '--delay': `${800 + index * 160}ms`,
-                        }}
-                        aria-label={`XP bar, level ${entry.levelAfter}`}
-                      >
-                        <i />
-                        {entry.levelAfter > entry.levelBefore ? <em>Level up! Lv {entry.levelAfter}</em> : <small>Lv {entry.levelAfter}</small>}
-                      </span>
+                    <span
+                      className={`xp-bar ${leveled ? 'is-level-up' : ''}`}
+                      style={{ '--from': `${Math.round((entry.from || 0) * 100)}%`, '--to': `${leveled ? 100 : Math.round((entry.to || 0) * 100)}%`, '--delay': `${800 + index * 160}ms` }}
+                      aria-label={`${entry.name}: +${entry.xp} XP, level ${entry.levelAfter}`}
+                    >
+                      <i />
+                      {leveled ? <em>Level up! Lv {entry.levelAfter}</em> : <small>Lv {entry.levelAfter}</small>}
+                    </span>
+                    {vitals ? (
+                      <b className={`moment__hp num ${vitals.hp < 40 ? 'is-low' : ''}`} aria-label={`HP ${vitals.hp}%`}>
+                        <Icon name={vitals.injured ? 'bandage' : 'heart'} size={14} tone="plain" />
+                        {vitals.hp}
+                      </b>
                     ) : null}
                   </li>
                 );
               })}
             </ul>
           ) : null}
-          {moment.loot?.length ? (
-            <>
-              <p className="moment__section-label">Spoils</p>
-              <ul className="moment__loot-list">
-                {moment.loot.map((item, index) => (
-                  <li key={`${item}-${index}`}>{item}</li>
-                ))}
-              </ul>
-            </>
+          {moment.gold || moment.loot?.length ? (
+            <ul className="moment__spoils">
+              {moment.gold ? (
+                <li className="num">
+                  <Icon name="coin" size={20} />+<CountUp value={moment.gold} />
+                </li>
+              ) : null}
+              {(moment.loot || []).map((item, index) => (
+                <li key={`${item.id || item}-${index}`} title={item.name || item}>
+                  <Icon name={LOOT_ICONS[item.kind] || 'bag'} size={20} />
+                  {item.count ? <span className="num">×{item.count}</span> : <small>{item}</small>}
+                </li>
+              ))}
+            </ul>
           ) : null}
+          <Details lines={moment.details} />
+          <Button variant="primary" onClick={onClose}>
+            Continue
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Mission complete (playtest-1-feedback, missions-in-world): the contract and its
+  // grade as stars, gold, fame and reputation as icons, loot, one line from the giver.
+  if (moment.type === 'missionComplete') {
+    const stars = { Partial: 1, Success: 2, Great: 3, Legendary: 4 }[moment.grade] || 2;
+    return (
+      <Modal open title={moment.title} eyebrow="Contract complete" onClose={onClose} width="medium" className="modal--ceremony">
+        <div className={`moment moment--mission ${skipClass}`} onClick={skip}>
+          <Ceremony fx={null}>
+            <p className="moment__stars" aria-label={`${moment.grade}: ${stars} of 4 stars`}>
+              {[1, 2, 3, 4].map((star) => (
+                <Icon key={star} name="star" size={30} tone={star <= stars ? 'brass' : 'plain'} className={star <= stars ? 'is-on' : ''} />
+              ))}
+            </p>
+            <p className="moment__grade">{moment.grade}</p>
+          </Ceremony>
+          <ul className="moment__spoils">
+            {moment.gold ? (
+              <li className="num" aria-label={`${moment.gold} gold`}>
+                <Icon name="coin" size={20} />+<CountUp value={moment.gold} />
+              </li>
+            ) : null}
+            {moment.fame ? (
+              <li className="num" aria-label={`${moment.fame} fame`}>
+                <Icon name="laurel" size={20} />+{moment.fame}
+              </li>
+            ) : null}
+            {moment.reputation ? (
+              <li className="num" aria-label={`${moment.reputation} reputation`}>
+                <Icon name="banner" size={20} />+{moment.reputation}
+              </li>
+            ) : null}
+            {(moment.loot || []).map((item, index) => (
+              <li key={`${item.id || item}-${index}`} title={item.name || item}>
+                <Icon name={LOOT_ICONS[item.kind] || 'bag'} size={20} />
+                {item.count ? <span className="num">×{item.count}</span> : <small>{item}</small>}
+              </li>
+            ))}
+          </ul>
+          {moment.line ? <p className="moment__giver">“{moment.line}”{moment.giver ? <small> {moment.giver}</small> : null}</p> : null}
+          <Details lines={moment.details} />
           <Button variant="primary" onClick={onClose}>
             Continue
           </Button>
@@ -107,6 +179,16 @@ export default function MomentModal({ moment, state, onClose }) {
           {moment.interior ? <Asset id={moment.interior} className="moment__room-art" alt="" /> : null}
           <p className="moment__headline">{moment.title}</p>
           <p className="moment__effect">{moment.effect}</p>
+          <ul className="moment__spoils moment__spoils--cost">
+            <li className="num" aria-label={`Treatment and transport: ${moment.cost} gold${moment.owed ? `, ${moment.owed} owed` : ''}`}>
+              <Icon name="coin" size={20} />−{moment.cost}
+              {moment.owed ? <small> ({moment.owed} owed)</small> : null}
+            </li>
+            <li className="num" aria-label={`Recovery: ${moment.weeks} weeks`}>
+              <Icon name="bandage" size={20} />
+              {moment.weeks === 4 ? '1 month' : `${moment.weeks} weeks`}
+            </li>
+          </ul>
           <Button variant="primary" onClick={onClose}>
             Continue
           </Button>
