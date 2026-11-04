@@ -40,7 +40,7 @@
 
 /* Recruit. */
 .moment__taxonomy { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.moment--recruit .dialogue--card { width: 100%; text-align: left; }
+.moment--recruit .quote-card { width: 100%; text-align: left; }
 
 /* Rankings update. */
 .moment__ladders li { display: grid; grid-template-columns: 1fr auto 3.5ch minmax(9ch, auto); align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line-soft); color: var(--text); font-size: var(--fs-2); }
@@ -66,15 +66,15 @@
 .decision-scene__warning { margin: 0; font-size: var(--fs-2); text-align: center; }
 
 /* Dialogue: parchment panel, speaker plate, portrait, typed text, continue gem. */
-.dialogue--card { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 18px; padding: 22px 22px 22px 18px; border: 1px solid rgba(122, 92, 46, .7); border-radius: var(--r-1); background: linear-gradient(180deg, #f3e8cf 0%, #e8d9b7 100%); box-shadow: inset 0 0 0 4px rgba(255, 250, 235, .5), inset 0 0 40px rgba(122, 92, 46, .22), 0 14px 30px rgba(0, 0, 0, .45); color: var(--parchment-ink); cursor: pointer; }
-.dialogue--card .dialogue__portrait { position: relative; margin-top: 4px; }
-.dialogue--card .dialogue__portrait .hero-portrait { --size: 104px; }
-.dialogue--card .dialogue__portrait .crest svg { filter: drop-shadow(0 4px 8px rgba(60, 40, 15, .4)); }
-.dialogue--card .dialogue__body { position: relative; display: grid; gap: 8px; min-width: 0; }
-.dialogue--card .dialogue__speaker { justify-self: start; padding: 3px 14px; border: 1px solid rgba(201, 166, 107, .8); border-radius: var(--r-1); background: linear-gradient(180deg, #2b2218, #17120c); color: var(--gold-bright); font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; box-shadow: 0 3px 8px rgba(0, 0, 0, .35); }
-.dialogue--card blockquote { min-height: 4.5em; margin: 0; padding: 0; border: 0; background: none; color: var(--parchment-ink); font-family: var(--font-display); font-size: var(--fs-4); font-weight: 600; line-height: 1.45; }
-.dialogue--card .dialogue__more { position: absolute; right: 0; bottom: -10px; width: 12px; height: 12px; background: var(--gem-img) center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(122, 92, 46, .7)); animation: caret-bob 1s ease-in-out infinite; }
-.event-card--story .dialogue--card .dialogue__speaker { color: #dcc6f5; border-color: rgba(173, 143, 217, .8); }
+.quote-card { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 18px; padding: 22px 22px 22px 18px; border: 1px solid rgba(122, 92, 46, .7); border-radius: var(--r-1); background: linear-gradient(180deg, #f3e8cf 0%, #e8d9b7 100%); box-shadow: inset 0 0 0 4px rgba(255, 250, 235, .5), inset 0 0 40px rgba(122, 92, 46, .22), 0 14px 30px rgba(0, 0, 0, .45); color: var(--parchment-ink); cursor: pointer; }
+.quote-card .quote-card__portrait { position: relative; margin-top: 4px; }
+.quote-card .quote-card__portrait .hero-portrait { --size: 104px; }
+.quote-card .quote-card__portrait .crest svg { filter: drop-shadow(0 4px 8px rgba(60, 40, 15, .4)); }
+.quote-card .quote-card__body { position: relative; display: grid; gap: 8px; min-width: 0; }
+.quote-card .quote-card__speaker { justify-self: start; padding: 3px 14px; border: 1px solid rgba(201, 166, 107, .8); border-radius: var(--r-1); background: linear-gradient(180deg, #2b2218, #17120c); color: var(--gold-bright); font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; box-shadow: 0 3px 8px rgba(0, 0, 0, .35); }
+.quote-card blockquote { min-height: 4.5em; margin: 0; padding: 0; border: 0; background: none; color: var(--parchment-ink); font-family: var(--font-display); font-size: var(--fs-4); font-weight: 600; line-height: 1.45; }
+.quote-card .quote-card__more { position: absolute; right: 0; bottom: -10px; width: 12px; height: 12px; background: var(--gem-img) center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(122, 92, 46, .7)); animation: caret-bob 1s ease-in-out infinite; }
+.event-card--story .quote-card .quote-card__speaker { color: #dcc6f5; border-color: rgba(173, 143, 217, .8); }
 
 .combat-aftermath-callout { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 12px; padding: 14px 0; }
 .combat-aftermath-callout strong { font-family: var(--font-display); font-size: var(--fs-4); }
@@ -160,10 +160,11 @@
   .council-report__activity-list > button { grid-template-columns: auto 1fr; }
   .council-report__deltas { grid-column: 2; justify-content: flex-start; max-width: none; }
   .moment__stats { grid-template-columns: 1fr; }
-  .moment__headline { font-size: var(--fs-5); }
-  .dialogue--card { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
-  .dialogue--card .dialogue__portrait { display: none; }
-  .dialogue--card blockquote { font-size: var(--fs-4); }
+  .moment__headline { font-size: var(--fs-4); letter-spacing: .04em; }
+  .moment__room-art { max-height: 18dvh; }
+  .quote-card { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
+  .quote-card .quote-card__portrait { display: none; }
+  .quote-card blockquote { font-size: var(--fs-4); }
 }
 
 /* Victory: each hero's XP bar fills from where it was; a level-up shows a callout. */

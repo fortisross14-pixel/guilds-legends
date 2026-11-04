@@ -11,14 +11,14 @@ export function Dialogue({ speaker, text, hero = null }) {
   const [done, setDone] = useState(false);
   useEffect(() => setDone(false), [text]);
   return (
-    <div className={`dialogue dialogue--card ${done ? 'is-done' : ''}`} onClick={() => setDone(true)} role="group" aria-label={`${speaker} says`}>
-      <div className="dialogue__portrait">{hero ? <HeroPortrait hero={hero} size="lg" showStatus={false} /> : <Crest size="lg" />}</div>
-      <div className="dialogue__body">
-        <span className="dialogue__speaker">{hero ? hero.name : speaker}</span>
+    <div className={`quote-card ${done ? 'is-done' : ''}`} onClick={() => setDone(true)} role="group" aria-label={`${speaker} says`}>
+      <div className="quote-card__portrait">{hero ? <HeroPortrait hero={hero} size="lg" showStatus={false} /> : <Crest size="lg" />}</div>
+      <div className="quote-card__body">
+        <span className="quote-card__speaker">{hero ? hero.name : speaker}</span>
         <blockquote>
           <TypeText text={text} done={done} />
         </blockquote>
-        <span className="dialogue__more" aria-hidden="true" />
+        <span className="quote-card__more" aria-hidden="true" />
       </div>
     </div>
   );
