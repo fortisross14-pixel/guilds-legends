@@ -19,7 +19,7 @@ import ContactsScreen from './ContactsScreen.jsx';
 import { BUILDINGS } from '../data/world.js';
 import { ROOM_BY_ID, roomInterior } from '../data/rooms.js';
 import { firstAsset } from '../data/assets.js';
-import { HOME_LOCATION_ID, atHome, hallStage, roomLevel } from '../game/engine.js';
+import { HOME_LOCATION_ID, atHome, hallStage, hasHall, roomLevel } from '../game/engine.js';
 
 // Every screen outside the walkable world is a section in the one template
 // (Section.jsx). This file says which tabs each section has and what each tab shows.
@@ -45,7 +45,7 @@ export const SECTION_TABS = {
 };
 
 const HELP = {
-  party: 'Tap a hero for their page. Drag a hero into the main party, or tap to toggle.',
+  party: 'Main party: a lead and up to three companions. Drag heroes in and out, or tap to toggle.',
   items: 'Drag an item onto a hero to equip or use it. Tap an item, then a hero, to do the same.',
   hall: 'Drag heroes from the bar onto a room to give them a task.',
   quests: 'Show on map marks where a quest happens.',
@@ -76,7 +76,7 @@ export function sectionTitle(state, section) {
     if (room === 'build') return 'Build a room';
     if (room === 'rest') return 'Rest at the hall';
     if (room && ROOM_BY_ID[room]) return ROOM_BY_ID[room].name;
-    return hallStage(state).key === 'house' ? 'Your house' : 'Guild Hall';
+    return hasHall(state) ? 'Guild Hall' : 'Empty lot';
   }
   if (id === 'inn') return 'A room for the night';
   if (id === 'noticeBoard') return 'Notice board';
@@ -98,7 +98,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
     return (
       <Section {...common}>
         {tab === 'roster' ? <HeroesScreen {...props} tabs={['roster']} /> : null}
-        {tab === 'main' ? (roomLevel(state, 'war') ? <WarRoom state={state} actions={actions} /> : <NoWarRoom navigate={navigate} />) : null}
+        {tab === 'main' ? <WarRoom state={state} actions={actions} /> : null}
         {tab === 'legends' ? <HeroesScreen {...props} tabs={['legends']} /> : null}
       </Section>
     );
@@ -189,15 +189,6 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
         {id === 'noticeBoard' ? rail : null}
       </Section>
     </>
-  );
-}
-
-function NoWarRoom({ navigate }) {
-  return (
-    <div className="section-empty">
-      <p>Build a War room in the Guild Hall to choose a main party of four.</p>
-      <Button onClick={() => navigate({ section: 'hall', tab: 'build' })}>Open the build list</Button>
-    </div>
   );
 }
 

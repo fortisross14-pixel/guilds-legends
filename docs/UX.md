@@ -53,7 +53,7 @@ Navigation used to live in four places (a sidebar, an 8-item top bar, a stack of
 
 | Orb | Item | Opens |
 |---|---|---|
-| Guild | Party | heroes (status, equipment and skills on each hero's page), main party (the War room's party zones), retired and fallen |
+| Guild | Party | heroes (status, equipment and skills on each hero's page), main party (a lead and up to three companions; the War room adds saved formations), retired and fallen |
 | Guild | Items | the inventory; drag an item onto a hero to equip or use it |
 | Guild | Guild Hall | the hall and its rooms (kept as it is; 7D rebuilds it) |
 | Guild | Quests | main, side and guild quests, evidence, "Show on map" |
@@ -103,6 +103,7 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 - **No hall, no hires.** Until story mission 1 rents the Dunmere lot, recruits can be met and interviewed, but "Would you join us?" ends with "Where would I sleep? Come back when you have a hall." The tavern's goal line, Contacts and the quest log's Guild tab say so.
 - **The lot:** rented, 6 slots, a cabin (Bedroom, 2 beds) already built. Each room takes a slot; an empty slot tile opens the build list. A rented lot cannot grow.
 - **Long-term goals** (Guild Hall and Treasury, and the ledger): "Buy the property" (price, savings, "at this rate: about N months"), then "Expand the lot" one step at a time. Buying is a ceremony and a Chronicle entry.
+- **Before renting** the hall door, the Guild orb item and the section all say **Empty lot**: the yard for rent, a button to talk to Gideon Rusk, and the house you live in until then.
 - **Ledger money rows:** costs a month (rent · rooms · wages), saving (+N a month, measured from the second month), toward the deed or more land (%).
 
 ### Buildings and people (7C, Part 2)
@@ -164,7 +165,8 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **tournament** | competition, event | an individual tournament (one hero per guild) |
 | **championship** | guild tournament | a team tournament (outside Chapter 1) |
 | **party** | company, squad | the heroes sent on a contract or a fight |
-| **main party** | team, lineup | up to 4 heroes picked in the War room |
+| **main party** | team, lineup | a lead and up to three companions (Party → Main party); no room needed |
+| **party lead** | captain, leader | the main party's first hero; takes the lead role in every arrangement |
 | **task** | activity, assignment | what a hero does at home (training, infirmary, scouting, rest, guild duty…) |
 | **rest** | wait, skip | let time pass: at the Guild Hall (any length), an inn (1–3 nights) or a camp (1 night) |
 | **Guild Hall** | headquarters, HQ | the old stable on Banner Plaza, where rooms are built |

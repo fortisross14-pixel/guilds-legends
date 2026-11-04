@@ -41,10 +41,10 @@ import {
   getHero,
   getReport,
   getStoryView,
+  hasHall,
   upkeepBreakdown,
   savingsRate,
   propertyGoal,
-  hallStage,
   HOME_LOCATION_ID,
   INN_NIGHT_COST,
   travellingPartyIds,
@@ -83,6 +83,7 @@ import {
   sendIdleHeroesTo,
   autoAssignRooms,
   toggleMainPartyMember,
+  setPartyLead,
   renewContract,
   counterOffer,
   makeOffer,
@@ -1072,6 +1073,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       sendIdleHeroesTo: (activity) => applyResult(sendIdleHeroesTo(state, activity)),
       autoAssignRooms: () => applyResult(autoAssignRooms(state), 'Heroes assigned to rooms.'),
       toggleMainParty: (heroId) => applyResult(toggleMainPartyMember(state, heroId)),
+      makeLead: (heroId) => applyResult(setPartyLead(state, heroId), 'A new party lead.'),
       // A hero dragged onto something (src/components/DraggableHero.jsx). Rooms take
       // the hero, the main party adds or removes them; other drops go to the open screen.
       dropHero: (heroId, target) => {
@@ -1296,7 +1298,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   const guildItems = [
     { id: 'party', label: 'Party', icon: 'party', badge: injured || null, onSelect: () => navigate('heroes') },
     { id: 'items', label: 'Items', icon: 'bag', onSelect: () => navigate('items') },
-    { id: 'hall', label: hallStage(state).key === 'house' ? 'Your house' : 'Guild Hall', icon: 'castle', badge: state.pendingDecisions.length || hallDone || null, onSelect: () => navigate('hall') },
+    { id: 'hall', label: hasHall(state) ? 'Guild Hall' : 'Empty lot', icon: 'castle', badge: state.pendingDecisions.length || hallDone || null, onSelect: () => navigate('hall') },
     { id: 'quests', label: 'Quests', icon: 'quill', badge: story.active?.current?.canTalk ? true : null, onSelect: () => navigate('quests') },
     { id: 'contacts', label: 'Contacts', icon: 'contacts', onSelect: () => navigate('contacts') },
   ];
@@ -1359,7 +1361,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   const wildArea = WILD_AREAS[state.world?.wildAreaId];
   const covered = Boolean(section);
   // Doors: a building with an interior is walked into; the Guild Hall and the notice board open as sections.
-  const openBuilding = (id) => (INTERIORS[id] ? navigate({ view: 'interior', building: id }) : navigate(id === 'noticeBoard' ? 'missions' : { section: id, tab: null }));
+  const openBuilding = (id) => (INTERIORS[id] ? navigate({ view: 'interior', building: id }) : navigate({ noticeBoard: 'missions', guildHall: 'hall' }[id] || { section: id, tab: null }));
   const placeLayer =
     view === 'map' ? (
       <MapScreen {...placeProps} place={place} />

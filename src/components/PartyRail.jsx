@@ -1,4 +1,3 @@
-import { roomLevel } from '../game/engine.js';
 import React, { useState } from 'react';
 import { HeroPortrait, ProgressBar } from './UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
@@ -17,7 +16,7 @@ export default function PartyRail({ state, actions, onOpenHero, onOpenQuests }) 
     <aside className={`party-rail ${collapsed ? 'party-rail--collapsed' : ''}`} aria-label="Your heroes">
       <div className="party-rail__title">
         <span>Your company</span>
-        <small>{mainParty.length ? `${mainParty.length} in the main party` : roomLevel(state, 'war') ? 'Pick a main party in the War room' : 'Build a War room to pick a main party'}</small>
+        <small>{mainParty.length ? `${mainParty.length} in the main party` : 'Pick a lead and companions: Party → Main party'}</small>
         <div className="party-rail__tools">
           <button onClick={onOpenQuests}>Quest log</button>
           <button className="party-rail__toggle" onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed}>

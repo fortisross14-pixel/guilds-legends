@@ -1,4 +1,3 @@
-import { roomLevel } from '../game/engine.js';
 import React, { useRef, useState } from 'react';
 import { LONG_PRESS_MS, useSwipe } from './gestures.js';
 import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, APPOINTMENTS, normalizeClassId } from '../data/content.js';
@@ -347,15 +346,25 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
 
             {own ? (
               <section className="hero-status__actions">
-                {roomLevel(state, 'war') ? (
+                <Button
+                  variant={inMainParty ? 'secondary' : 'primary'}
+                  disabled={!inMainParty && (state.guild.mainParty || []).length >= MAIN_PARTY_SIZE}
+                  why="The main party is full: a lead and three companions."
+                  onClick={() => actions.toggleMainParty(hero.id)}
+                >
+                  {inMainParty ? 'Remove from main party' : 'Add to main party'}
+                </Button>
+                {(state.guild.mainParty || [])[0] !== hero.id ? (
                   <Button
-                    variant={inMainParty ? 'secondary' : 'primary'}
                     disabled={!inMainParty && (state.guild.mainParty || []).length >= MAIN_PARTY_SIZE}
-                    onClick={() => actions.toggleMainParty(hero.id)}
+                    why="The main party is full: remove someone first."
+                    onClick={() => actions.makeLead(hero.id)}
                   >
-                    {inMainParty ? 'Remove from main party' : 'Add to main party'}
+                    Make party lead
                   </Button>
-                ) : null}
+                ) : (
+                  <Badge tone="gold">Party lead</Badge>
+                )}
                 {apprenticeOptions.length && !sliceHides('mentorship') ? (
                   <label>
                     Mentor

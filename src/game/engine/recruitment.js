@@ -368,13 +368,23 @@ export function autoAssignRooms(state) {
   return { state: finalize(next), error: null };
 }
 
+/**
+ * The main party: a lead (the first id) and up to three companions. Anyone can
+ * name one; the War room only adds saved formations for special roles.
+ */
 export function setMainParty(state, heroIds) {
-  if (!roomLevel(state, 'war')) return { state, error: 'Build a War room to pick a main party.' };
   const ids = [...new Set(heroIds)].filter((id) => state.heroes.some((hero) => hero.id === id && !['dead', 'retired'].includes(hero.status)));
   if (ids.length > MAIN_PARTY_SIZE) return { state, error: `The main party holds up to ${MAIN_PARTY_SIZE} heroes.` };
   const next = clone(state);
   next.guild.mainParty = ids;
   return { state: finalize(next), error: null };
+}
+
+/** Makes a hero the party lead (joining the party first if there is room). */
+export function setPartyLead(state, heroId) {
+  const current = (state.guild.mainParty || []).filter((id) => id !== heroId);
+  if (current.length >= MAIN_PARTY_SIZE) return { state, error: `The main party holds up to ${MAIN_PARTY_SIZE} heroes. Remove someone first.` };
+  return setMainParty(state, [heroId, ...current]);
 }
 
 export function toggleMainPartyMember(state, heroId) {

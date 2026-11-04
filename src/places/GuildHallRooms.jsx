@@ -3,7 +3,7 @@ import { APPOINTMENTS } from '../data/content.js';
 import { HALL_ROOMS, MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { FORMATION_TYPES } from '../data/formations.js';
 import { HOUSE, ROOM_BY_ID } from '../data/rooms.js';
-import { HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
+import { HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, roomLevel, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
 import Icon, { ROOM_ICONS } from '../components/Icon.jsx';
@@ -232,7 +232,12 @@ function BuildList({ hall, actions }) {
 /** Before a lot is rented: the founder's house, and where to go next (story mission 1). No hall, no hires. */
 function House({ state, hall, actions }) {
   return (
-    <Panel title={HOUSE.name} eyebrow="Your home, not yet a guild hall">
+    <Panel title="The old stable yard on Banner Plaza" eyebrow="An empty lot, for rent">
+      <p>A fenced yard with a small cabin in the middle (two bunks) and room for five more buildings. Gideon Rusk rents it out.</p>
+      <Button variant="primary" onClick={() => actions.playStoryScene('m1')}>
+        Talk to Gideon Rusk
+      </Button>
+      <h3 className="house-heading">Until then: {HOUSE.name}</h3>
       <ul className="rented-room">
         <li>
           <Icon name="moon" size={24} /> {hall.houseBeds} bed ({hall.used} used)
@@ -244,10 +249,7 @@ function House({ state, hall, actions }) {
           <Icon name="bag" size={24} /> A small chest: {chestUsed(state)}/{chestCapacity(state)} items
         </li>
       </ul>
-      <p className="muted">No hall, no hires: recruits will talk to you, but nobody signs with a guild that has nowhere to sleep. The old stable yard on Banner Plaza stands empty; Gideon Rusk rents it out (story mission 1).</p>
-      <Button variant="primary" onClick={() => actions.playStoryScene('m1')}>
-        Talk to Gideon Rusk
-      </Button>
+      <p className="muted">No hall, no hires: recruits will talk to you, but nobody signs with a guild that has nowhere to sleep.</p>
     </Panel>
   );
 }
@@ -294,7 +296,7 @@ export function WarRoom({ state, actions }) {
   const party = state.guild.mainParty || [];
   return (
     <>
-      <Panel title="Main party" eyebrow={`${party.length}/${MAIN_PARTY_SIZE} · drag heroes in and out, or tap to toggle`}>
+      <Panel title="Main party" eyebrow={`${party.length}/${MAIN_PARTY_SIZE} · a lead and up to three companions`}>
         <div className="war-room__zones">
           {[
             ['party', 'Main party', activeRoster(state).filter((hero) => party.includes(hero.id))],
@@ -313,14 +315,30 @@ export function WarRoom({ state, actions }) {
                 >
                   <HeroPortrait hero={hero} size="xs" showStatus={false} />
                   <span>
+                    {zone === 'party' && party[0] === hero.id ? <b className="war-room__lead">Lead · </b> : null}
                     {hero.name} · Lv {hero.level} · {heroStatus(state, hero).label}
                   </span>
+                  {zone === 'party' && party[0] !== hero.id ? (
+                    <button
+                      type="button"
+                      className="war-room__make-lead"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        actions.makeLead(hero.id);
+                      }}
+                    >
+                      Make lead
+                    </button>
+                  ) : null}
                 </DraggableHero>
               ))}
             </div>
           ))}
         </div>
       </Panel>
+      {!roomLevel(state, 'war') ? (
+        <p className="muted">A War room adds saved formations: who takes which special role for combat, diplomacy, expeditions and intrigue.</p>
+      ) : (
       <Panel title="Saved formations" eyebrow="Save them from the Notice Board party builder">
         {Object.keys(FORMATION_TYPES).map((type) => {
           const saved = state.guild.formations?.[type] || [];
@@ -332,6 +350,7 @@ export function WarRoom({ state, actions }) {
           );
         })}
       </Panel>
+      )}
     </>
   );
 }

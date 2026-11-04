@@ -36,9 +36,12 @@ function buildBestFormation(state, formationType) {
 function buildMainPartyFormation(state, formationType) {
   const party = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter((hero) => hero?.status === 'available');
   if (!party.length) return null;
-  const used = new Set();
+  // The party lead takes the first slot (the arrangement's lead role); companions fill the rest by fit.
+  const lead = party[0]?.id === state.guild.mainParty?.[0] ? party[0] : null;
+  const used = new Set(lead ? [lead.id] : []);
   return FORMATION_TYPES[formationType].slots
-    .map((slot) => {
+    .map((slot, index) => {
+      if (index === 0 && lead) return { slotId: slot.id, role: slot.role, heroId: lead.id };
       const hero = party.filter((item) => !used.has(item.id)).sort((a, b) => roleRating(b, slot.role) - roleRating(a, slot.role))[0];
       if (!hero) return null;
       used.add(hero.id);

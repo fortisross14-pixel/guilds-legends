@@ -73,7 +73,6 @@ export {
   renameGuild,
   renameFounderHero,
   appointHero,
-  chooseAlignment,
   inspectHero,
 } from './engine/recruitment.js';
 export {
@@ -139,7 +138,7 @@ export {
   travellingPartyIds,
 } from './engine/core.js';
 export { getCalendarEntries } from './engine/dashboard.js';
-export { MAIN_PARTY_SIZE, isHeroAway, sendIdleHeroesTo, autoAssignRooms, setMainParty, toggleMainPartyMember } from './engine/recruitment.js';
+export { MAIN_PARTY_SIZE, isHeroAway, sendIdleHeroesTo, autoAssignRooms, setMainParty, setPartyLead, toggleMainPartyMember } from './engine/recruitment.js';
 export {
   CONTRACT_LENGTHS,
   CONTRACT_WARNING_MONTHS,

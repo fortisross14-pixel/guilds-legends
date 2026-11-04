@@ -40,7 +40,7 @@ export const ROUTES = {
 export function resolveRoute(target) {
   if (target && typeof target === 'object') {
     if (target.section) return target;
-    if (target.building) return ROUTES[target.building === 'noticeBoard' ? 'missions' : target.building] || { section: target.building, tab: target.tab || null };
+    if (target.building) return ROUTES[{ noticeBoard: 'missions', guildHall: 'hall' }[target.building] || target.building] || { section: target.building, tab: target.tab || null };
     if (target.view === 'town') return { view: 'scene' };
     if (target.view === 'menu') return ROUTES[target.page] || ROUTES.menu;
     return target;
