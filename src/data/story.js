@@ -16,6 +16,8 @@
 // `rewards`: gold, fame, legacy, items, patron { id, amount }, region { id, amount },
 // codex [ids], evidence id. Missions 9–12 are Chapter 2 stubs.
 
+import { TOURNAMENTS } from './tournaments.js';
+
 export const STORY_TITLE = 'The Last Banner';
 
 export const CHAPTERS = {
@@ -94,7 +96,8 @@ export const STORY_HEROES = {
   },
 };
 
-const regional = ['dunmere-harvest-melee', 'greenhollow-thorn-cup', 'ironford-hammer-trials', 'windmere-cliff-duels'];
+// Any Initiation tournament counts for mission 4 when the Melee is missed.
+const regional = TOURNAMENTS.filter((definition) => definition.circuit === 'Initiation').map((definition) => definition.id);
 
 export const STORY_MISSIONS = [
   // ---------------------------------------------------------------- Act I (the tutorial)
@@ -175,7 +178,7 @@ export const STORY_MISSIONS = [
     locationId: 'dunmere',
     summary: 'A local Duelist thinks your guild is a joke and dares you into the Harvest Melee. Here you will see how strong the real guilds are.',
     gate: { text: 'Clear the Old Road (mission 3)', if: { storyDone: 'm3' } },
-    alternatives: [{ text: 'Any regional tournament counts if you miss the Melee', if: { storyDone: 'm3' } }],
+    alternatives: [{ text: 'Any Initiation tournament counts if you miss the Melee', if: { storyDone: 'm3' } }],
     steps: [
       { id: 'bram', kind: 'scene', scene: 'story.m4.bram', at: 'dunmere', npc: 'dunmere.fighter', text: 'Answer Bram Calder’s challenge.', hint: 'Bram is by the arena on Arena Lane. Tap him.', screen: 'town' },
       {
@@ -183,7 +186,7 @@ export const STORY_MISSIONS = [
         kind: 'check',
         if: { any: [{ signedUp: 'dunmere-harvest-melee' }, { tournamentPlayed: 'any' }] },
         text: 'Sign up for the Dunmere Harvest Melee at the arena.',
-        hint: 'Open the arena, tap the sign-up desk and pick your entrant.',
+        hint: 'Open the arena, tap the sign-up desk and pick your team (up to 2 heroes).',
         screen: 'tournaments',
       },
       {
@@ -282,7 +285,7 @@ export const STORY_MISSIONS = [
         kind: 'check',
         if: { tournamentPlayed: 'windmere-cliff-duels' },
         skipIf: { any: [{ choice: { m7: 'challenge' } }, { choice: { m7: 'confession' } }] },
-        text: 'Fight in the Windmere Cliff Duels (sign up at the Windmere arena; any result).',
+        text: 'Fight in the Windmere Cliff Duels (sign up a team of up to 2 at the Windmere arena; any result).',
       },
       {
         id: 'duel',

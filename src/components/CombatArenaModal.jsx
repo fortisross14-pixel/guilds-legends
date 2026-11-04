@@ -294,7 +294,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
 
   // A won fight in the wild or on the road: the word "Victory" over the field, then the one
   // victory screen (playtest-1-feedback): no result card in between.
-  const quickWin = Boolean(encounter && encounter.status !== 'active' && !replaying && encounter.result?.playerWon && ['wild', 'road', 'site'].includes(encounter.sourceType));
+  const quickWin = Boolean(encounter && encounter.status !== 'active' && !replaying && encounter.result?.playerWon && ['wild', 'road', 'site', 'tournament'].includes(encounter.sourceType));
   const concludeRef = useRef(actions.concludeCombat);
   concludeRef.current = actions.concludeCombat;
   useEffect(() => {

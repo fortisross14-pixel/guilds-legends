@@ -313,7 +313,7 @@ function pauseReason(state) {
   if (state.activeEncounter) return 'Conclude the active combat before advancing time.';
   if (state.pendingRoadEvent) return 'Deal with the event on the road before advancing time.';
   if (state.story?.scene) return 'Someone wants a word with you first.';
-  if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
+  if ((state.tournaments || []).some((tournament) => tournament.status === 'active')) {
     return 'Finish the active tournament before advancing time.';
   }
   return null;

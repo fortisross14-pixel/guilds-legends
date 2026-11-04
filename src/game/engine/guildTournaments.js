@@ -1,13 +1,13 @@
 // @ts-check
-// Guild championships, yearly tournament creation and scheduled resolution.
-import { FORMATION_TYPES } from '../../data/formations.js';
+// Tournaments (tournaments-circuits spec): every year all fifteen events of the
+// three circuits are created, each a guild event with a field of guilds of its
+// circuit; rounds (team bouts for the player, ratings for the rest), champions,
+// title records, and the special titles collections of wins unlock.
 import { LOCATION_BY_ID, primalCombatModifier } from '../../data/world.js';
-import { GUILD_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
-import { MAX_TOURNAMENT_HISTORY, addChronicle, clamp, clone, ensureTournamentCareer, getHero, hashString, campaignWeekSerial, dateWeekSerial } from './core.js';
-import { applyXpInPlace, formationSlotFor, roleRating } from './heroes.js';
+import { SPECIAL_TITLE_BY_ID, TOURNAMENTS } from '../../data/tournaments.js';
+import { MAX_TOURNAMENT_HISTORY, addChronicle, clamp, clone, ensureTournamentCareer, getHero, campaignWeekSerial, dateWeekSerial, pushMoment } from './core.js';
+import { applyXpInPlace, roleRating } from './heroes.js';
 import {
-  completeIndividualTournamentInPlace,
-  createIndividualTournamentsInPlace,
   guildTournamentRating,
   placementPrize,
   seedEntrants,
@@ -18,15 +18,22 @@ import { pushRankingsMomentInPlace, recordOfficialResultsInPlace } from './ranki
 import { awardTrophyInPlace } from './hall.js';
 import { afterTournamentInPlace } from './seasons.js';
 
-function buildGuildTournamentField(state, tournament) {
-  const eligible = state.rivals
-    .filter((guild) => guild.tierIndex >= tournament.tierIndex)
-    .sort((a, b) => guildTournamentRating(state, b.id) - guildTournamentRating(state, a.id));
-  return eligible.slice(0, tournament.size).map((guild) => guild.id);
+/**
+ * The field: rival guilds of the circuit's status (a guild enters its own tier or
+ * lower; the strongest of its tier are invited), topped up from the tier below
+ * when there are too few.
+ */
+function buildTournamentField(state, tournament) {
+  const byRating = (a, b) => guildTournamentRating(state, b.id) - guildTournamentRating(state, a.id);
+  const own = state.rivals.filter((guild) => guild.tierIndex === tournament.tierIndex).sort(byRating);
+  const below = state.rivals.filter((guild) => guild.tierIndex < tournament.tierIndex).sort(byRating);
+  const above = state.rivals.filter((guild) => guild.tierIndex > tournament.tierIndex).sort(byRating);
+  return [...own, ...below, ...above].slice(0, tournament.size).map((guild) => guild.id);
 }
 
-function createGuildTournamentsInPlace(state) {
-  state.guildTournaments = GUILD_TOURNAMENT_DEFINITIONS.map((definition) => {
+/** This year's fifteen tournaments, all guild events (the World Conclave too: it is yearly now). */
+export function createTournamentsInPlace(state) {
+  state.tournaments = TOURNAMENTS.map((definition) => {
     const location = LOCATION_BY_ID[definition.locationId];
     const tournament = {
       id: `${definition.id}-${state.date.year}`,
@@ -35,14 +42,14 @@ function createGuildTournamentsInPlace(state) {
       year: state.date.year,
       name: definition.name,
       circuit: definition.circuit,
-      division: definition.circuit,
       locationId: definition.locationId,
-      location: location.name,
-      region: location.region,
-      primal: location.primal,
+      location: location?.name || definition.locationId,
+      region: location?.region || '',
+      primal: location?.primal || 'Iron',
       month: definition.month,
-      week: definition.week ?? hashString(definition.id) % 4,
+      week: definition.week,
       size: definition.size,
+      teamSize: definition.teamSize,
       entryFee: definition.entryFee,
       purse: definition.purse,
       prestige: definition.prestige,
@@ -50,6 +57,7 @@ function createGuildTournamentsInPlace(state) {
       description: definition.description,
       tierIndex: definition.tierIndex,
       status: 'registration',
+      signup: null,
       assignments: [],
       bracket: [],
       playerBoutWins: 0,
@@ -57,47 +65,19 @@ function createGuildTournamentsInPlace(state) {
       expectedFinish: null,
       championGuildId: null,
     };
-    tournament.initialEntrants = buildGuildTournamentField(state, tournament);
+    tournament.initialEntrants = buildTournamentField(state, tournament);
     tournament.activeEntrants = seedEntrants(state, tournament, tournament.initialEntrants, (id) => guildTournamentRating(state, id));
     tournament.currentRoundSize = tournament.activeEntrants.length;
     return tournament;
   });
 }
 
-export function createTournamentsInPlace(state, rng) {
-  createIndividualTournamentsInPlace(state, rng);
-  createGuildTournamentsInPlace(state);
-}
-
+/** A team's strength for seeding: the heroes' average role rating, a little more for each extra hero. */
 export function tournamentTeamEstimate(state, assignments) {
-  const formation = FORMATION_TYPES.Combat;
-  const filled = assignments.map((assignment) => ({ ...assignment, slot: formationSlotFor('Combat', assignment) })).filter((assignment) => assignment.slot);
-  const ids = new Set(filled.map((assignment) => assignment.heroId));
-  const requiredMissing = formation.slots.filter((slot) => slot.required && !filled.some((assignment) => assignment.slot.id === slot.id));
-  const breakdown = filled
-    .map((assignment) => {
-      const hero = getHero(state, assignment.heroId);
-      return hero
-        ? {
-            heroId: hero.id,
-            heroName: hero.name,
-            classId: hero.classId,
-            role: assignment.slot.role,
-            slotId: assignment.slot.id,
-            rating: roleRating(hero, assignment.slot.role),
-          }
-        : null;
-    })
-    .filter(Boolean);
-  const power = breakdown.length
-    ? Math.round(breakdown.reduce((sum, item) => sum + item.rating, 0) / breakdown.length + Math.max(0, breakdown.length - 2) * 2.5)
-    : 0;
-  return {
-    power,
-    breakdown,
-    requiredMissing,
-    valid: breakdown.length >= 2 && breakdown.length <= 5 && ids.size === breakdown.length && requiredMissing.length === 0,
-  };
+  const heroes = assignments.map((assignment) => getHero(state, assignment.heroId)).filter(Boolean);
+  const breakdown = heroes.map((hero, index) => ({ heroId: hero.id, heroName: hero.name, classId: hero.classId, role: assignments[index]?.role || 'Fighter', rating: roleRating(hero, assignments[index]?.role || 'Fighter') }));
+  const power = breakdown.length ? Math.round(breakdown.reduce((sum, item) => sum + item.rating, 0) / breakdown.length + Math.max(0, breakdown.length - 1) * 2.5) : 0;
+  return { power, breakdown, valid: breakdown.length >= 1 };
 }
 
 export function resolveGuildRoundInPlace(state, tournament, rng, tactic = 'Measured', forcedPlayerResult = null) {
@@ -145,12 +125,18 @@ export function resolveGuildRoundInPlace(state, tournament, rng, tactic = 'Measu
         applyXpInPlace(hero, xpGain, state, `${tournament.name} ${roundName.toLowerCase()}`);
         hero.career.xpEarned += xpGain;
       });
-      if (winnerId === 'player') tournament.playerBoutWins += 1;
-      else playerLost = true;
+      if (winnerId === 'player') {
+        tournament.playerBoutWins += 1;
+        // Giant Killer: beating a guild two status tiers above yours.
+        if ((opponent?.tierIndex || 0) >= state.guild.tierIndex + 2) grantTitleInPlace(state, 'player', 'giant-killer');
+      } else playerLost = true;
     } else {
       const ratingA = guildTournamentRating(state, guildAId) + rng.int(-8, 8);
       const ratingB = guildTournamentRating(state, guildBId) + rng.int(-8, 8);
       winnerId = ratingA >= ratingB ? guildAId : guildBId;
+      const winner = state.rivals.find((guild) => guild.id === winnerId);
+      const loser = state.rivals.find((guild) => guild.id === (winnerId === guildAId ? guildBId : guildAId));
+      if (winner && loser && loser.tierIndex >= winner.tierIndex + 2) grantTitleInPlace(state, winnerId, 'giant-killer');
     }
     winners.push(winnerId);
     tournament.bracket.push({
@@ -204,7 +190,6 @@ function finishPlayerGuildTournamentInPlace(state, tournament, actualFinish) {
   if (actualFinish === 1) {
     awardTrophyInPlace(state, tournament.definitionId || tournament.id, tournament.trophy || tournament.name);
     state.stats.tournamentsWon += 1;
-    state.stats.guildTournamentWins = (state.stats.guildTournamentWins || 0) + 1;
     state.stats.signatureFeats += 1;
   }
   return {
@@ -221,6 +206,7 @@ function finishPlayerGuildTournamentInPlace(state, tournament, actualFinish) {
 
 function recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult = null) {
   updateGuildTitleRecordInPlace(state, tournament, championGuildId);
+  noteWinInPlace(state, championGuildId, tournament);
   if (championGuildId !== 'player') {
     const guild = state.rivals.find((item) => item.id === championGuildId);
     if (guild) {
@@ -241,7 +227,7 @@ function recordGuildTournamentInPlace(state, tournament, championGuildId, player
   const championName = championGuildId === 'player' ? state.guild.name : state.rivals.find((guild) => guild.id === championGuildId)?.name || 'Unknown guild';
   const record = {
     id: `guild-record-${tournament.id}`,
-    kind: 'guild-tournament',
+    kind: 'tournament',
     tournamentId: tournament.id,
     definitionId: tournament.definitionId,
     title: tournament.name,
@@ -273,7 +259,7 @@ function recordGuildTournamentInPlace(state, tournament, championGuildId, player
   };
   state.tournamentHistory.unshift(record);
   state.tournamentHistory = state.tournamentHistory.slice(0, MAX_TOURNAMENT_HISTORY);
-  state.universeStats.guildTournamentsResolved = (state.universeStats.guildTournamentsResolved || 0) + 1;
+  state.universeStats.tournamentsResolved = (state.universeStats.tournamentsResolved || 0) + 1;
   recordOfficialResultsInPlace(state, tournament, 'guild');
   if (playerResult) {
     afterTournamentInPlace(state, { heroIds: record.team.map((member) => member.heroId), finish: playerResult.finish });
@@ -282,7 +268,7 @@ function recordGuildTournamentInPlace(state, tournament, championGuildId, player
   }
   addChronicle(state, {
     type: 'tournament',
-    importance: championGuildId === 'player' || tournament.circuit === 'Global' ? 5 : 3,
+    importance: championGuildId === 'player' || tournament.circuit === 'Elite' ? 5 : 3,
     title: `${championName} wins ${tournament.name}`,
     text: record.narrative,
     guildIds: [championGuildId],
@@ -304,13 +290,48 @@ export function completeGuildTournamentInPlace(state, tournament, rng, playerFin
   return recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult);
 }
 
+/** Tournaments whose week has passed without the player resolve on their own. */
 export function simulateScheduledCompetitionsInPlace(state, rng) {
-  const all = [...(state.tournaments || []), ...(state.guildTournaments || [])];
-  all.forEach((tournament) => {
+  (state.tournaments || []).forEach((tournament) => {
     if (tournament.status !== 'registration') return;
     const hasPassed = campaignWeekSerial(state) > dateWeekSerial({ year: tournament.year, month: tournament.month, week: tournament.week || 0 });
-    if (!hasPassed) return;
-    if (tournament.kind === 'individual') completeIndividualTournamentInPlace(state, tournament, rng, null);
-    else completeGuildTournamentInPlace(state, tournament, rng, null);
+    if (hasPassed) completeGuildTournamentInPlace(state, tournament, rng, null);
   });
+}
+
+// ---------------------------------------------------------------- special titles
+
+/** A guild's wins by tournament, by year: state.tournamentWins[guildId][definitionId] = [years]. */
+function noteWinInPlace(state, guildId, tournament) {
+  state.tournamentWins ||= {};
+  const wins = (state.tournamentWins[guildId] ||= {});
+  (wins[tournament.definitionId] ||= []).push(tournament.year);
+  checkCollectionTitlesInPlace(state, guildId, tournament.year);
+}
+
+/** Grants a special title once (the player's go in guild.specialTitles, a rival's on the rival). */
+export function grantTitleInPlace(state, guildId, titleId) {
+  const title = SPECIAL_TITLE_BY_ID[titleId];
+  if (!title) return;
+  const holder = guildId === 'player' ? state.guild : state.rivals.find((guild) => guild.id === guildId);
+  if (!holder) return;
+  holder.specialTitles ||= [];
+  if (holder.specialTitles.some((item) => item.id === titleId)) return;
+  holder.specialTitles.push({ id: titleId, name: title.name, year: state.date.year });
+  const name = guildId === 'player' ? state.guild.name : holder.name;
+  addChronicle(state, { type: 'title', importance: 4, title: `${name}: ${title.name}`, text: `${title.how}.`, guildIds: [guildId], tags: ['tournament', 'title'] });
+  if (guildId === 'player') pushMoment(state, { type: 'statusTitle', title: 'A special title', statusTitle: title.name, text: title.how });
+}
+
+/** The collection titles: Triple Crowned, Master of the World, the Grand Tour, the Slam, a Season Sweep, a Dynasty. */
+function checkCollectionTitlesInPlace(state, guildId, year) {
+  const wins = state.tournamentWins?.[guildId] || {};
+  const won = (definition) => (wins[definition.id] || []).length > 0;
+  const of = (circuit) => TOURNAMENTS.filter((definition) => definition.circuit === circuit);
+  if (of('Elite').every(won)) grantTitleInPlace(state, guildId, 'triple-crowned');
+  if (of('Initiation').every(won)) grantTitleInPlace(state, guildId, 'initiation-grand-tour');
+  if (of('Champion').every(won)) grantTitleInPlace(state, guildId, 'champions-slam');
+  if (TOURNAMENTS.every(won)) grantTitleInPlace(state, guildId, 'master-of-the-world');
+  if (['Initiation', 'Champion', 'Elite'].some((circuit) => of(circuit).every((definition) => (wins[definition.id] || []).includes(year)))) grantTitleInPlace(state, guildId, 'season-sweep');
+  if (Object.values(wins).some((years) => years.some((first) => years.includes(first + 1) && years.includes(first + 2)))) grantTitleInPlace(state, guildId, 'dynasty');
 }

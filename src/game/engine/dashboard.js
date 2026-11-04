@@ -1,6 +1,6 @@
 // @ts-check
 // Read models for the UI (next action, summary) and small UI-state actions.
-import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
+import { TOURNAMENTS } from '../../data/tournaments.js';
 import { TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID, travelDays } from '../../data/world.js';
 import { ROOM_BY_ID, TIER_NAMES } from '../../data/rooms.js';
@@ -243,14 +243,11 @@ export function getDashboardSummary(state) {
 function tournamentEntry(state, tournament, now) {
   const req = tournamentRequirements(tournament);
   const date = { year: tournament.year, month: tournament.month, week: tournament.week ?? hashString(tournament.definitionId || tournament.id) % 4 };
-  const needs = [req.level ? `Lv ${req.level}+` : null, req.fame ? `${req.fame} fame` : null, req.combatWins ? `${req.combatWins} combat wins` : null].filter(
-    Boolean,
-  );
+  const needs = [`${tournament.circuit}, teams of ${tournament.teamSize}`, req.fame ? `${req.fame} fame` : null, req.combatWins ? `${req.combatWins} battles won` : null].filter(Boolean);
   const locked = (req.tierIndex || 0) > state.guild.tierIndex;
   const source = state.world?.knowledge?.events?.[tournament.definitionId] || state.world?.knowledge?.events?.[tournament.id] || null;
-  // "Almost": the tier is open but no hero meets the other requirements yet.
-  const best = [...state.heroes].filter((hero) => !['dead', 'retired'].includes(hero.status)).sort((a, b) => b.level - a.level)[0];
-  const missing = locked ? [] : getTournamentAccess(state, tournament, best?.id).checks.filter((check) => !check.met);
+  // "Almost": the circuit is open but the guild misses the fame or battles won.
+  const missing = locked ? [] : getTournamentAccess(state, tournament).checks.filter((check) => !check.met);
   return {
     kind: 'tournament',
     id: tournament.id,
@@ -266,7 +263,7 @@ function tournamentEntry(state, tournament, now) {
     detail: tournament.signup
       ? `Signed up. Be in ${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location} when it starts, or forfeit.`
       : locked
-      ? `Unlocks at ${TIERS[req.tierIndex]?.id}`
+      ? `Unlocks at ${TIERS[req.tierIndex]?.name} status`
       : missing.length
         ? `Missing: ${missing.map((check) => `${check.label} ${check.target} (have ${check.current})`).join(', ')}`
         : `${LOCATION_BY_ID[tournament.locationId]?.name || tournament.location || ''} · ${needs.length ? needs.join(', ') : 'open entry'}`,
@@ -274,9 +271,7 @@ function tournamentEntry(state, tournament, now) {
 }
 
 function projectedTournaments(year) {
-  return [...INDIVIDUAL_TOURNAMENT_DEFINITIONS, ...GUILD_TOURNAMENT_DEFINITIONS]
-    .filter((definition) => !definition.cadence || year % definition.cadence === 0)
-    .map((definition) => ({
+  return TOURNAMENTS.map((definition) => ({
       ...definition,
       id: `${definition.id}-${year}`,
       definitionId: definition.id,
@@ -304,7 +299,7 @@ export function getCalendarEntries(state, months = 12) {
   };
   const years = [state.date.year, state.date.year + 1];
   years.forEach((year) => {
-    const pool = year === state.date.year ? [...(state.tournaments || []), ...(state.guildTournaments || [])] : projectedTournaments(year);
+    const pool = year === state.date.year ? (state.tournaments || []) : projectedTournaments(year);
     pool.filter((tournament) => tournament.status !== 'completed' && knowsTournament(state, tournament)).forEach((tournament) => add(tournamentEntry(state, tournament, now)));
   });
   // Contracts have no clock; only a deadline goes on the calendar.

@@ -1,14 +1,13 @@
 // @ts-check
 // World generation: rival guilds, historic legends, title records, artifacts and the contract board.
 import { MISSION_TEMPLATES, TIERS } from '../../data/content.js';
+import { TOURNAMENTS } from '../../data/tournaments.js';
 import { formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, LOCATIONS, PRIMAL_IDS, unlockedLocations } from '../../data/world.js';
 import { SLICE } from '../../data/slice.js';
 import {
   GUILD_BLUEPRINTS,
-  GUILD_TOURNAMENT_DEFINITIONS,
   HISTORIC_LEGENDS,
-  INDIVIDUAL_TOURNAMENT_DEFINITIONS,
   WORLD_ARTIFACT_SEEDS,
 } from '../../data/universe.js';
 import { clamp, clone, ensureTournamentCareer, tierIndexByName, uid } from './core.js';
@@ -122,6 +121,7 @@ function createRival(blueprint, state, rng, index) {
     wins: rng.int(4 + tierIndex * 12, 20 + tierIndex * 32),
     losses: rng.int(2, 14 + tierIndex * 8),
     titles: blueprint.titles ?? rng.int(tierIndex, 2 + tierIndex * 4),
+    specialTitles: blueprint.specialTitles ? blueprint.specialTitles.map((title) => ({ ...title })) : [],
     prizeMoney: rng.int(tierIndex * 800, 1800 + tierIndex * 8000),
     seasonPoints: rng.int(10, 90) + tierIndex * 75,
     careerPoints: rng.int(40, 280) + tierIndex * 480,
@@ -189,28 +189,8 @@ function createHistoricHero(base, state, rng) {
 }
 
 export function createTitleRecords() {
-  return Object.fromEntries([
-    ...INDIVIDUAL_TOURNAMENT_DEFINITIONS.map((definition) => [
-      definition.id,
-      {
-        id: definition.id,
-        name: definition.name,
-        kind: 'individual',
-        circuit: definition.circuit,
-        locationId: definition.locationId,
-        recordHolderName: definition.record.name,
-        recordWins: definition.record.wins,
-        winners: definition.record.years.map((year) => ({
-          year,
-          heroId: null,
-          heroName: definition.record.name,
-          guildName: 'Historical record',
-          player: false,
-        })),
-        winsByHero: { [`historic:${definition.record.name}`]: definition.record.wins },
-      },
-    ]),
-    ...GUILD_TOURNAMENT_DEFINITIONS.map((definition) => [
+  return Object.fromEntries(
+    TOURNAMENTS.map((definition) => [
       definition.id,
       {
         id: definition.id,
@@ -220,7 +200,7 @@ export function createTitleRecords() {
         locationId: definition.locationId,
         recordHolderName: definition.record.name,
         recordWins: definition.record.wins,
-        // Historical champions by year; a vacated title keeps its year and the struck name.
+        // Past champions by year; a vacated title keeps its year and the struck name.
         winners: [
           ...(definition.record.vacated
             ? [{ year: definition.record.vacated.year, guildId: null, guildName: 'Title vacated', struck: definition.record.vacated.guildName, vacated: true, player: false }]
@@ -230,7 +210,7 @@ export function createTitleRecords() {
         winsByGuild: { [`historic:${definition.record.name}`]: definition.record.wins },
       },
     ]),
-  ]);
+  );
 }
 
 export function createWorldArtifactsInPlace(state, rng) {

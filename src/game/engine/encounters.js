@@ -21,7 +21,6 @@ function xpEntryInPlace(hero, amount, state, source) {
 }
 import { addItemsInPlace, lootList, rollLoot, settleBattleItemsInPlace } from './inventory.js';
 import { evaluateStateInPlace } from './goals.js';
-import { completeIndividualTournamentInPlace, resolveIndividualRoundInPlace } from './tournaments.js';
 import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guildTournaments.js';
 import { siteFightConcludedInPlace } from './sites.js';
 import { recordRivalryInPlace, settleChallengeInPlace } from './rivalry.js';
@@ -220,24 +219,14 @@ function concludeCombatInner(state, mutate) {
     return { state: finalize(next), error: null, result: { kind: 'site-combat', combat: combatResult } };
   }
 
-  if (encounter.sourceType === 'hero-tournament') {
+  if (encounter.sourceType === 'tournament') {
+    // A tournament bout (tournaments-circuits): a team battle; the bracket moves on.
     const tournament = next.tournaments.find((item) => item.id === encounter.sourceId);
     if (!tournament || tournament.status !== 'active') return { state, error: 'The tournament round can no longer be found.' };
-    const rng = rngFor(next, `hero-tournament-combat:${tournament.id}:${tournament.currentRoundSize}`);
-    round = resolveIndividualRoundInPlace(next, tournament, rng, 'Measured', combatResult);
-    const opponentGuild = getHero(next, encounter.sourceMeta?.opponentHeroId)?.guildId;
-    recordRivalryInPlace(next, opponentGuild, combatResult.playerWon ? 'boutWon' : 'boutLost');
-    if (combatResult.playerWon)
-      pushMoment(next, { type: 'victory', title: `${tournament.name}: bout won`, grade: combatResult.method, gold: 0, xp: [], loot: [] });
-    if (round.playerLost) report = completeIndividualTournamentInPlace(next, tournament, rng, round.roundSize);
-    else if (tournament.activeEntrants.length === 1) report = completeIndividualTournamentInPlace(next, tournament, rng, 1);
-    commitRng(next, rng);
-  } else if (encounter.sourceType === 'guild-tournament') {
-    const tournament = next.guildTournaments.find((item) => item.id === encounter.sourceId);
-    if (!tournament || tournament.status !== 'active') return { state, error: 'The guild championship round can no longer be found.' };
-    const rng = rngFor(next, `guild-tournament-combat:${tournament.id}:${tournament.currentRoundSize}`);
+    const rng = rngFor(next, `tournament-combat:${tournament.id}:${tournament.currentRoundSize}`);
     round = resolveGuildRoundInPlace(next, tournament, rng, 'Measured', combatResult);
     recordRivalryInPlace(next, encounter.sourceMeta?.opponentGuildId, combatResult.playerWon ? 'guildBoutWon' : 'guildBoutLost');
+    if (combatResult.playerWon) pushMoment(next, { type: 'victory', title: `${tournament.name}: bout won`, gold: 0, xp: [], loot: [] });
     if (round.playerLost) report = completeGuildTournamentInPlace(next, tournament, rng, round.roundSize);
     else if (tournament.activeEntrants.length === 1) report = completeGuildTournamentInPlace(next, tournament, rng, 1);
     commitRng(next, rng);

@@ -222,7 +222,7 @@ function serviceChoices(person, state, asked) {
     case 'inn':
       return [choice('service.inn', 'I need a room for the night.')];
     case 'registrar':
-      return [choice('service.registrar', 'I’d like to sign someone up.')];
+      return [choice('service.registrar', 'I’d like to sign up a team.')];
     case 'referee': {
       const running = (state.tournaments || []).some((tournament) => tournament.locationId === here && tournament.status === 'active');
       return [choice('service.referee', running ? 'We’re ready for our bout.' : 'Any bouts today?')];

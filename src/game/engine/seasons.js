@@ -104,6 +104,8 @@ export function afterContractInPlace(state, { mission, grade, success, heroIds, 
 export function afterBattleInPlace(state, encounter, result) {
   if (!encounter || !result) return;
   tallyGuild(state, result.playerWon ? 'battlesWon' : 'battlesLost');
+  // Every won battle counts toward the tournaments' combat-win entry rule.
+  if (result.playerWon) state.stats.combatWins = (state.stats.combatWins || 0) + 1;
   encounter.party.forEach((unit) => {
     if (!unit.heroId) return;
     tallyHero(state, unit.heroId, 'battles');
@@ -275,6 +277,7 @@ export function closeSeasonInPlace(state, year) {
     year,
     record: { won: season.g.won || 0, failed: season.g.failed || 0, battlesWon: season.g.battlesWon || 0, battlesLost: season.g.battlesLost || 0 },
     titles: season.g.titles || 0,
+    specialTitles: (state.guild.specialTitles || []).filter((title) => title.year === year).map((title) => title.name),
     bestFinish: season.g.bestFinish && season.g.bestFinish < 99 ? season.g.bestFinish : null,
     earned: season.g.earned || 0,
     spent,
@@ -332,7 +335,7 @@ export function getRecordBook(state) {
   const rivals = [...(state.rivals || [])];
   const topTitles = rivals.sort((a, b) => (b.titles || 0) - (a.titles || 0))[0];
   const strongest = guildLadder(state, 'strength').find((row) => !row.player);
-  const ourTitles = (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0);
+  const ourTitles = (state.stats?.tournamentsWon || 0);
   return {
     guild: Object.entries(GUILD_RECORDS).map(([key, definition]) => ({
       key,
@@ -507,7 +510,7 @@ export function getHeadToHead(state, rivalId) {
       poached: (rivalry.poachedFromUs || 0) + (rivalry.poachedFromThem || 0),
       score: rivalry.score || 0,
     },
-    titles: { ours: (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0), theirs: rival.titles || 0 },
+    titles: { ours: (state.stats?.tournamentsWon || 0), theirs: rival.titles || 0 },
     seasons,
   };
 }

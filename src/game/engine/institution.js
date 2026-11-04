@@ -23,7 +23,7 @@ import { addItemsInPlace } from './inventory.js';
 
 export function designateSuccessor(state, heroId) {
   const next = clone(state);
-  if ((next.guild?.tierIndex || 0) < 1) return { state, error: 'Formal succession planning unlocks at National status.' };
+  if ((next.guild?.tierIndex || 0) < 1) return { state, error: 'Formal succession planning unlocks at Champion status.' };
   const hero = getHero(next, heroId);
   if (!hero || ['dead', 'retired'].includes(hero.status)) return { state, error: 'Choose an active hero as successor.' };
   if (hero.id === next.guild.currentGuildmasterHeroId) return { state, error: 'The current guildmaster cannot succeed themselves.' };
@@ -81,7 +81,7 @@ export function assignMentor(state, mentorId, apprenticeId) {
 
 export function foundBranch(state, locationId, commanderHeroId) {
   const next = clone(state);
-  if (branchCapacity(next) <= 0) return { state, error: 'Branches unlock when the guild reaches National status.' };
+  if (branchCapacity(next) <= 0) return { state, error: 'Branches unlock when the guild reaches Champion status.' };
   next.guild.branches ||= [];
   if (next.guild.branches.filter((branch) => branch.active !== false).length >= branchCapacity(next))
     return { state, error: `Your current status supports only ${branchCapacity(next)} branch${branchCapacity(next) === 1 ? '' : 'es'}.` };

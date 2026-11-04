@@ -171,7 +171,7 @@ export function checkCondition(state, condition, context = {}) {
       case 'heroClass':
         return state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status) && hero.classId === value.classId && hero.level >= (value.level || 1));
       case 'signedUp':
-        return (state.tournaments || []).some((tournament) => tournament.definitionId === value && (tournament.signup || tournament.playerHeroId));
+        return (state.tournaments || []).some((tournament) => tournament.definitionId === value && (tournament.signup || tournament.assignments?.length));
       case 'tournamentPlayed':
         return tournamentPlayed(state, value);
       case 'freeBed':
@@ -716,7 +716,7 @@ export function getChapterSummary(state) {
     choices: Object.entries(OUTCOME_TEXT).map(([key, texts]) => texts[story.choices[key]]).filter(Boolean),
     stats: {
       contracts: state.stats?.missionsWon || 0,
-      titles: (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0),
+      titles: (state.stats?.tournamentsWon || 0),
       fame: state.guild.fame,
       legacy: state.guild.legacy,
       heroes: state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).length,

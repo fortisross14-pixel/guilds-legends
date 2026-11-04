@@ -251,7 +251,6 @@ export function migrateGame(raw) {
   next.freeAgents ||= [];
   next.worldHistoricHeroes ||= [];
   next.titleRecords ||= {};
-  next.guildTournaments ||= [];
   next.universeStats ||= {};
   next.world ||= { currentLocationId: 'dunmere', visitedLocationIds: ['dunmere'], activeTravel: null };
   next.world.currentLocationId ||= 'dunmere';
@@ -417,7 +416,7 @@ export function migrateGame(raw) {
   // Older prototypes did that here, which made a save/load change history.
   if (!Array.isArray(next.candidates) || next.candidates.length === 0) refreshCandidatesForLocationInPlace(next, universeRng, next.world.currentLocationId);
   if (!Array.isArray(next.missions) || next.missions.length === 0) refreshMissionsInPlace(next, universeRng);
-  if (!Array.isArray(next.tournaments) || next.tournaments.length === 0 || !Array.isArray(next.guildTournaments) || next.guildTournaments.length === 0) {
+  if (!Array.isArray(next.tournaments) || next.tournaments.length === 0) {
     createTournamentsInPlace(next, universeRng);
   }
   // Very old saves predate persistent tournament commitments. Release only
@@ -425,9 +424,6 @@ export function migrateGame(raw) {
   if (sourceVersion < 8) {
     const committed = new Set();
     (next.tournaments || [])
-      .filter((tournament) => tournament.status === 'active' && tournament.playerHeroId)
-      .forEach((tournament) => committed.add(tournament.playerHeroId));
-    (next.guildTournaments || [])
       .filter((tournament) => tournament.status === 'active')
       .forEach((tournament) => (tournament.assignments || []).forEach((assignment) => committed.add(assignment.heroId)));
     next.heroes
@@ -507,21 +503,11 @@ export function validateGame(state) {
   (state.tournaments || [])
     .filter((tournament) => tournament.status === 'active')
     .forEach((tournament) => {
-      if (!tournament.playerHeroId) errors.push(`Active individual tournament has no player hero: ${tournament.id}`);
-      const hero = state.heroes.find((item) => item.id === tournament.playerHeroId);
-      if (!hero) errors.push(`Tournament references missing hero: ${tournament.playerHeroId}`);
-      else if (hero.status !== 'tournament') errors.push(`Tournament hero has invalid status: ${hero.name}`);
-      else if (deployed.has(hero.id)) errors.push(`Hero is deployed twice: ${hero.id}`);
-      else deployed.add(hero.id);
-    });
-  (state.guildTournaments || [])
-    .filter((tournament) => tournament.status === 'active')
-    .forEach((tournament) => {
       (tournament.assignments || []).forEach((assignment) => {
         if (deployed.has(assignment.heroId)) errors.push(`Hero is deployed twice: ${assignment.heroId}`);
         deployed.add(assignment.heroId);
         const hero = state.heroes.find((item) => item.id === assignment.heroId);
-        if (!hero) errors.push(`Guild tournament references missing hero: ${assignment.heroId}`);
+        if (!hero) errors.push(`Tournament references missing hero: ${assignment.heroId}`);
         else if (hero.status !== 'tournament') errors.push(`Tournament hero has invalid status: ${hero.name}`);
       });
     });

@@ -103,7 +103,7 @@ export function getPathScores(state) {
   const ranks = getPlayerRanks(state);
   const strength = ranks.strength || { rank: 30, total: 30 };
   const anyAlly = PATRON_LIST.some((patron) => patronAtLeast(state, patron.id, 'ally'));
-  const titles = (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0);
+  const titles = (state.stats?.tournamentsWon || 0);
   const rare = [...(state.heroes || []), ...(state.historicHeroes || [])].filter((hero) => ['Epic', 'Legend'].includes(hero.rarity)).length;
   const story = Object.values(state.story?.missions || {}).filter((mission) => mission.status === 'done').length;
   const scores = {

@@ -46,14 +46,14 @@ function evaluatePromotionInPlace(state) {
     addChronicle(state, {
       type: 'promotion',
       importance: 5,
-      title: `${state.guild.name} earns ${state.guild.tier} status`,
+      title: `${state.guild.name} earns ${TIERS[state.guild.tierIndex].name} status`,
       text: `The guild’s social scale changes. New routes, obligations and rivals replace the old boundaries of Dunmere.`,
       tags: ['promotion', state.guild.tier],
     });
     state.notifications.push({
       id: `promotion-${state.guild.tierIndex}`,
       tone: 'gold',
-      title: `${state.guild.tier} status achieved`,
+      title: `${TIERS[state.guild.tierIndex].name} status achieved`,
       text: `${TIERS[state.guild.tierIndex].scope} is now open to the banner.`,
     });
     const rng = rngFor(state, `promotion-${state.guild.tierIndex}`);

@@ -120,7 +120,7 @@
  */
 
 /**
- * An individual or guild tournament for the current year.
+ * A team tournament of one circuit (Initiation, Champion, Elite) for the current year.
  * @typedef {Object} Tournament
  * @property {string} id
  * @property {string} definitionId
@@ -129,7 +129,6 @@
  * @property {number} month
  * @property {string} locationId
  * @property {string} status 'scheduled' | 'active' | 'complete'
- * @property {string | null} [playerHeroId]
  * @property {any[]} [entrants]
  */
 
@@ -170,7 +169,6 @@
  * @property {any[]} pendingDecisions
  * @property {any[]} pendingReports
  * @property {Tournament[]} tournaments
- * @property {Tournament[]} guildTournaments
  * @property {any[]} tournamentHistory
  * @property {any[]} missionHistory
  * @property {Record<string, any>} titleRecords

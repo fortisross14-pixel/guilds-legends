@@ -3,7 +3,7 @@
 //   Strength – current power (guild = average of its top 5 heroes). Moves fast.
 //   Legacy   – all-time points from completed missions (difficulty × grade) and titles. Never decays.
 //   Official – tennis-style tournament points from the last 12 months.
-// Plus the status title (Unknown → Global Power), monthly rank snapshots and
+// Plus the status title (Unknown → Elite Power), monthly rank snapshots and
 // rankings moments. The old blended composite score is gone.
 import { TIERS } from '../../data/content.js';
 import { addChronicle, campaignMonthSerial, ensureTournamentCareer, getHero, getHeroGuildName, getWorldHeroes, pushMoment } from './core.js';
@@ -25,8 +25,8 @@ export const GUILD_TITLE_LEGACY = 150;
 export const HERO_TITLE_LEGACY = 150;
 export const HERO_GUILD_TITLE_LEGACY = 60;
 
-export const STATUS_TITLES = ['Unknown', 'Contender', 'Regional Power', 'National Power', 'Global Power'];
-/** Official rank needed (in that tier's ladder) for the Regional/National/Global Power titles. */
+export const STATUS_TITLES = ['Unknown', 'Contender', 'Initiation Power', 'Champion Power', 'Elite Power'];
+/** Official rank needed (in that tier's ladder) for the Initiation/Champion/Elite Power titles. */
 export const POWER_TITLE_RANK = 5;
 
 function scopeIndex(scope) {
@@ -221,9 +221,9 @@ export function getStatusTitle(state) {
   const official = officialTotals(state).guilds.player || 0;
   if (!official) return 'Unknown';
   const rankIn = (scope) => guildLadder(state, 'official', scope).find((row) => row.player)?.rank || 99;
-  if (state.guild.tierIndex >= 2 && rankIn('Global') <= POWER_TITLE_RANK) return 'Global Power';
-  if (state.guild.tierIndex >= 1 && rankIn('National') <= POWER_TITLE_RANK) return 'National Power';
-  if (rankIn('Regional') <= POWER_TITLE_RANK) return 'Regional Power';
+  if (state.guild.tierIndex >= 2 && rankIn('Global') <= POWER_TITLE_RANK) return 'Elite Power';
+  if (state.guild.tierIndex >= 1 && rankIn('National') <= POWER_TITLE_RANK) return 'Champion Power';
+  if (rankIn('Regional') <= POWER_TITLE_RANK) return 'Initiation Power';
   return 'Contender';
 }
 

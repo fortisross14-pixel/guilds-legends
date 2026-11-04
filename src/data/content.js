@@ -14,9 +14,9 @@ export const MONTHS = [
 ];
 
 export const TIERS = [
-  { id: 'Regional', fame: 120, contracts: 10, rank: 8, minYears: 0, color: '#7fbc9b', scope: 'Four linked settlements of western Valedorn' },
-  { id: 'National', fame: 650, contracts: 36, rank: 4, minYears: 4, color: '#d2ad5d', scope: 'Ten major locations across the Kingdom of Valedorn' },
-  { id: 'Global', fame: 2200, contracts: 95, rank: 1, minYears: 14, color: '#9b78c8', scope: 'The known world, remote frontiers and mythic routes' },
+  { id: 'Regional', name: 'Initiation', fame: 120, contracts: 10, rank: 8, minYears: 0, color: '#7fbc9b', scope: 'Four linked settlements of western Valedorn' },
+  { id: 'National', name: 'Champion', fame: 650, contracts: 36, rank: 4, minYears: 4, color: '#d2ad5d', scope: 'Ten major locations across the Kingdom of Valedorn' },
+  { id: 'Global', name: 'Elite', fame: 2200, contracts: 95, rank: 1, minYears: 14, color: '#9b78c8', scope: 'The known world, remote frontiers and mythic routes' },
 ];
 
 export const CLASS_MIGRATIONS = { Shaman: 'Cleric', Berserker: 'Guardian', Bard: 'Scholar', Beastmaster: 'Ranger' };

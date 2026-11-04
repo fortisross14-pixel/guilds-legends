@@ -1,6 +1,7 @@
 // @ts-check
 // Upkeep, patron loans and debt, travel, facility upgrades.
 import { ROOM_BY_ID } from '../../data/rooms.js';
+import { statusName } from '../../data/tournaments.js';
 import { LOT_BY_ID } from '../../data/lots.js';
 import { charterEffect } from './charter.js';
 import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
@@ -47,11 +48,11 @@ export function startTravel(state, destinationId) {
   const next = clone(state);
   if (next.world?.activeTravel) return { state, error: 'The guild is already traveling.' };
   if (next.activeEncounter) return { state, error: 'Conclude the active combat before leaving.' };
-  if ([...(next.tournaments || []), ...(next.guildTournaments || [])].some((tournament) => tournament.status === 'active'))
+  if ((next.tournaments || []).some((tournament) => tournament.status === 'active'))
     return { state, error: 'Finish the active tournament before traveling.' };
   const quote = getTravelQuote(next, destinationId);
   if (!quote.destination) return { state, error: 'Unknown destination.' };
-  if (!quote.unlocked) return { state, error: `${quote.destination.name} requires ${quote.destination.tier} status.` };
+  if (!quote.unlocked) return { state, error: `${quote.destination.name} requires ${statusName(quote.destination.tier)} status.` };
   if (quote.same) return { state, error: `The guild is already in ${quote.destination.name}.` };
   if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} gold.` };
   next.guild.crowns -= quote.cost;

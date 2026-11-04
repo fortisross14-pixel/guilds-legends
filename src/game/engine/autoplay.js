@@ -132,7 +132,7 @@ export function simulateAutoplay(initialState, months = 240) {
     if (!progressed) {
       // A defensive escape hatch for malformed imported saves. A valid world
       // should always either advance or expose a decision/tournament.
-      if ([...(state.tournaments || []), ...(state.guildTournaments || [])].some((tournament) => tournament.status === 'active')) {
+      if ((state.tournaments || []).some((tournament) => tournament.status === 'active')) {
         break;
       }
       const single = advanceWeeks(state, 1, true);

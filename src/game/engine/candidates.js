@@ -47,7 +47,7 @@ export function candidateDemandFor(hero, state, rng) {
   if (['Become champion', 'Surpass a famous parent'].includes(dream) || (hero.classId === 'Duelist' && rng.chance(0.45))) {
     kind = 'tournament';
     label = 'A place in the arena';
-    description = 'Enter this hero in an individual tournament before the promise expires.';
+    description = 'Enter this hero in a tournament before the promise expires.';
   } else {
     if (dream === 'Map the world' || dream === 'Recover a lost artifact' || ['Ranger', 'Artificer', 'Scholar'].includes(normalizeClassId(hero.classId)))
       formationType = 'Expedition';

@@ -144,7 +144,7 @@ export function getHallView(state) {
     equipment: EQUIPMENT,
     upkeep: hallUpkeep(state),
     trophies: trophyList(state),
-    titles: state.guild.titles || [],
+    titles: state.guild.specialTitles || [],
     crownFame: crownFame(state),
     suggestion: nextUpgrade(state),
   };
