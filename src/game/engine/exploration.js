@@ -389,6 +389,7 @@ export function restAtCamp(state, areaId) {
   next.heroes.forEach((hero) => {
     if (['dead', 'retired'].includes(hero.status)) return;
     hero.health = clamp((hero.health ?? 100) + 20, 0, 100);
+    hero.mana = 100;
     hero.fatigue = clamp((hero.fatigue ?? 0) - 20, 0, 100);
     if (hero.status === 'injured') {
       hero.injuryWeeks = Math.max(0, (hero.injuryWeeks || 0) - 1);

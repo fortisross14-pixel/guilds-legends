@@ -1,6 +1,7 @@
 // @ts-check
 // Active combat and mission-game actions, and concluding them.
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
+import { VITALS } from '../../data/activities.js';
 import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
 import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, finalize, getHero, pushMoment, rngFor } from './core.js';
@@ -199,6 +200,25 @@ export function autoResolveActiveCombat(state, mutate = false) {
   return { state: finalize(next), error: null, encounter: next.activeEncounter };
 }
 
+/** HP and MP carry over (battle-hiring spec). Knocked out in a won fight: 1 HP, injured for a week. */
+function carryVitalsInPlace(state, encounter, combatResult) {
+  encounter.party.forEach((unit) => {
+    const hero = unit.heroId ? getHero(state, unit.heroId) : null;
+    if (!hero) return;
+    hero.mana = Math.round((100 * Math.max(0, unit.mp)) / Math.max(1, unit.maxMp));
+    if (!unit.ko) {
+      hero.health = Math.max(1, Math.round((100 * unit.hp) / Math.max(1, unit.maxHp)));
+      return;
+    }
+    hero.health = 1;
+    if (combatResult.playerWon && hero.status === 'available') {
+      hero.status = 'injured';
+      hero.injury = 'Knocked out';
+      hero.injuryWeeks = Math.max(hero.injuryWeeks || 0, VITALS.knockoutWeeks);
+    }
+  });
+}
+
 export function concludeActiveCombat(state, mutate = false) {
   if (!state.activeEncounter) return { state, error: 'There is no combat to conclude.' };
   if (state.activeEncounter.status === 'active' || !state.activeEncounter.result) return { state, error: 'The combat has not finished yet.' };
@@ -209,6 +229,7 @@ export function concludeActiveCombat(state, mutate = false) {
   let round = null;
   settleBattleItemsInPlace(next, combatResult.itemsUsed);
   afterBattleInPlace(next, encounter, combatResult);
+  carryVitalsInPlace(next, encounter, combatResult);
 
   if (encounter.sourceType === 'challenge') {
     settleChallengeInPlace(next, encounter.sourceId, combatResult.playerWon);

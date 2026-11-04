@@ -243,6 +243,7 @@ export function restAtInn(state, nights) {
     .filter((hero) => party.includes(hero.id))
     .forEach((hero) => {
       hero.health = clamp((hero.health ?? 100) + 12 * nights, 0, 100);
+      hero.mana = 100;
       hero.fatigue = clamp((hero.fatigue ?? 0) - 15 * nights, 0, 100);
     });
   return advanceDays(next, nights, true);

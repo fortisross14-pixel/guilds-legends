@@ -41,12 +41,6 @@ function random(encounter, salt = '') {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-export const COMMANDS = [
-  { id: 'attack', label: 'Attack', icon: '⚔' },
-  { id: 'skill', label: 'Skill', icon: '✦' },
-  { id: 'item', label: 'Item', icon: '✚' },
-  { id: 'defend', label: 'Defend', icon: '◆' },
-];
 
 // ---------------------------------------------------------------- combatants
 
@@ -60,6 +54,9 @@ function makeCombatant(hero, side, { role = null, sprite = null, scale = 1, mods
   const m = { hp: 1, atk: 1, def: 1, mag: 1, spd: 1, ...(mods || {}) };
   const maxHp = Math.round((30 + get('Endurance') * 1.0 + get('Might') * 0.2 + level * 3 + gear.hp) * scale * m.hp);
   const maxMp = Math.round(8 + (get('Mind') + get('Spirit')) * 0.15 + level * 1.5 + gear.mp);
+  // The party fights with what it has (HP and MP carry over between battles; percents on the hero).
+  const hpNow = side === 'party' ? Math.max(1, Math.min(maxHp, Math.round((maxHp * (hero.health ?? 100)) / 100))) : maxHp;
+  const mpNow = side === 'party' ? Math.max(0, Math.min(maxMp, Math.round((maxMp * (hero.mana ?? 100)) / 100))) : maxMp;
   return {
     id: `${side}-${hero.id}`,
     heroId: side === 'party' ? hero.id : null,
@@ -73,9 +70,9 @@ function makeCombatant(hero, side, { role = null, sprite = null, scale = 1, mods
     profile: side === 'enemy' ? profile || CLASS_PROFILES[classId] || 'brute' : null,
     boss,
     maxHp,
-    hp: maxHp,
+    hp: hpNow,
     maxMp,
-    mp: maxMp,
+    mp: mpNow,
     atk: Math.round((get('Might') * 0.45 + get('Finesse') * 0.25 + level * 0.8 + gear.atk) * scale * m.atk),
     def: Math.round((get('Endurance') * 0.3 + get('Spirit') * 0.1 + level * 0.5 + gear.def) * m.def),
     mag: Math.round((get('Mind') * 0.4 + get('Spirit') * 0.3 + level * 0.8 + gear.mag) * scale * m.mag),

@@ -1,6 +1,7 @@
 // @ts-check
 // The day, week, month and year loop: council activities, aging, advanceDays.
 import { normalizeClassId } from '../../data/content.js';
+import { VITALS } from '../../data/activities.js';
 import { LOCATIONS, unlockedLocations } from '../../data/world.js';
 import {
   MAX_HEROES,
@@ -486,6 +487,16 @@ function updateMissionClocksInPlace(state) {
  * returns true. A council report summarizes the advance when it crossed a month.
  * Time only moves through player actions (travel, rest, camps, contracts).
  */
+/** Every day, heroes at home recover a little HP and all their MP (battle-hiring spec). */
+function recoverDailyInPlace(state) {
+  const away = new Set(travellingPartyIds(state));
+  state.heroes.forEach((hero) => {
+    if (!['available', 'injured'].includes(hero.status) || away.has(hero.id)) return;
+    hero.health = clamp((hero.health ?? 100) + VITALS.dailyHeal, 1, 100);
+    hero.mana = 100;
+  });
+}
+
 export function advanceDays(state, count = 1, mutate = false, until = null) {
   const blocked = pauseReason(state);
   if (blocked) return { state, error: blocked };
@@ -498,6 +509,7 @@ export function advanceDays(state, count = 1, mutate = false, until = null) {
     const rng = rngFor(next, `day-${step}`);
     progressTravelInPlace(next, rng);
     next.date.day += 1;
+    recoverDailyInPlace(next);
     if (next.date.day >= DAYS_PER_WEEK) {
       next.date.day = 0;
       runWeekInPlace(next, rng, summary);

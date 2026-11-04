@@ -49,3 +49,8 @@ export const HALL_ROOMS = [
   { id: 'courtyard', name: 'Town square', icon: '✦', activity: 'Public Exhibition', description: 'Public exhibitions in town build fame.' },
   { id: 'office', name: 'Office', icon: '♜', activity: 'Guild Duty', needsHall: true, description: 'Guild duty, appointments and doctrine.' },
 ];
+
+/** HP and MP between battles (battle-hiring spec). Heroes start a fight with what they have
+ * (hero.health and hero.mana are percents). Every day at home: +dailyHeal health and full MP.
+ * Knocked out in a won fight: 1 HP and injured for knockoutWeeks. */
+export const VITALS = { dailyHeal: 6, knockoutWeeks: 1 };

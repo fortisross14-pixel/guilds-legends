@@ -181,7 +181,7 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
     .filter((item) => item.hero && item.hero.status !== 'dead');
   if (playerHeroes.length < 2) return false;
-  // The story's first fight (mission 3) is guaranteed winnable, with hints.
+  // The story's first fight (mission 3) is guaranteed winnable.
   const scripted = mission.story === 'm3.contract';
   const encounterSeed = (state.rngState ^ hashString(`mission-combat:${mission.id}:${state.date.year}:${state.date.month}`)) >>> 0;
   const opponentPower = clamp(Math.round(mission.difficulty * 0.84 + mission.risk * 3), 32, 96);
@@ -211,14 +211,6 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     boss: bossForMission(mission),
     items: battleItems(state),
   });
-  if (scripted) {
-    state.activeEncounter.hints = [
-      'Drag a hero onto a wolf, then pick an action. (Or tap the hero, then the wolf.)',
-      'The marker over an enemy shows its next move. Long-press anyone to inspect.',
-      'Hurt? Drag a hero onto an ally (or itself) for potions, heals and Defend.',
-      'Finish the weakest wolf first. Hold the screen to speed up a round.',
-    ];
-  }
   mission.combatStarted = true;
   addChronicle(state, {
     type: 'combat',

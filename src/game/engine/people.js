@@ -332,7 +332,7 @@ function aboutLines(candidate) {
 
 function skillLines(state, candidate) {
   const ranges = candidateRanges(state, candidate);
-  const span = ([low, high]) => (low === high ? `${low}` : `${low} to ${high}`);
+  const span = ([low, high]) => (Math.round(low) === Math.round(high) ? `${Math.round(low)}` : `${Math.round(low)} to ${Math.round(high)}`);
   const trade = (CLASSES[normalizeClassId(candidate.classId)]?.description || '').replace(/\.$/, '').toLowerCase();
   const talent = candidate.rarity && candidate.rarity !== 'Common' ? ` ${candidate.rarity} talent, they tell me.` : '';
   return [
