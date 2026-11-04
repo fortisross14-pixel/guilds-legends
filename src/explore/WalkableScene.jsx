@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PixelIcon from '../components/PixelIcon.jsx';
+import Icon from '../components/Icon.jsx';
 
 const JOYSTICK_RADIUS = 48;
 const DRAG_THRESHOLD = 12;
@@ -53,6 +53,16 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
   const stickBase = useRef(null);
   const stickKnob = useRef(null);
   const viewport = useRef({ width: 0, height: 0 });
+  // Where the HUD sits (place tag, ledger, orbs): names over the world never collide with it.
+  const hudRects = useRef([]);
+  useEffect(() => {
+    const read = () => {
+      hudRects.current = [...document.querySelectorAll('.place-tag > *, .ledger, .orb')].map((element) => element.getBoundingClientRect()).filter((rect) => rect.width);
+    };
+    read();
+    const timer = window.setInterval(read, 500);
+    return () => window.clearInterval(timer);
+  }, []);
   const initial = useRef({ map, start: start || map.spawn });
   const coarse = useCoarsePointer();
   const coarseRef = useRef(coarse);
@@ -88,6 +98,10 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
           else if (y > bottom) [y, edge] = [bottom, edge || 'down'];
         }
         if (element.dataset.edge !== edge) element.dataset.edge = edge;
+        const w = element.offsetWidth || 80;
+        const h = element.offsetHeight || 28;
+        const under = !edge && hudRects.current.some((rect) => x + w / 2 > rect.left - 6 && x - w / 2 < rect.right + 6 && y + h > rect.top - 6 && y < rect.bottom + 6);
+        if ((element.dataset.underHud === '1') !== under) element.dataset.underHud = under ? '1' : '';
         element.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translateX(-50%)`;
       });
     },
@@ -291,7 +305,7 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
                   tabIndex={-1}
                   aria-label={`${target.verb}: ${target.name}`}
                 >
-                  {target.icon ? <PixelIcon name={target.icon} size={16} /> : null}
+                  {target.icon ? <Icon name={target.icon} size={16} /> : null}
                   {target.labelText || target.name}
                 </button>
               ))

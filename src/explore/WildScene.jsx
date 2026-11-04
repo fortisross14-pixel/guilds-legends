@@ -4,7 +4,8 @@ import { TOWNS } from '../data/towns/index.js';
 import { wildMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
-import SceneHud from './SceneHud.jsx';
+import { PlaceTag } from '../hud/Hud.jsx';
+import { dateLine } from '../hud/dateLine.js';
 import { Button } from '../components/UI.jsx';
 
 /**
@@ -12,9 +13,10 @@ import { Button } from '../components/UI.jsx';
  * walking into one or tapping it starts a battle. Gathering spots give items
  * or gold, a night at the camp heals the party (one day passes), the exit leads back to town.
  */
-export default function WildScene({ area, state, actions, navigate }) {
+export default function WildScene({ area, state, actions, paused = false, apiRef = null }) {
   const map = useMemo(() => wildMap(area), [area]);
-  const api = useRef(null);
+  const ownApi = useRef(null);
+  const api = apiRef || ownApi;
   const [talk, setTalk] = useState(null);
   const [camp, setCamp] = useState(false);
   const view = getWildAreaView(state, area.id);
@@ -31,11 +33,6 @@ export default function WildScene({ area, state, actions, navigate }) {
     else if (target.kind === 'exit') actions.leaveWild(position);
     else if (target.dialogue) setTalk({ id: target.dialogue, visit: { sceneId: area.id, targetId: target.id, position } });
   };
-  const leave = (route) => {
-    const position = api.current?.position();
-    if (position) actions.savePosition(area.id, position);
-    navigate(route);
-  };
   const remaining = view.groups.filter((group) => group.available).length;
 
   return (
@@ -45,26 +42,21 @@ export default function WildScene({ area, state, actions, navigate }) {
       start={start}
       apiRef={api}
       activeTargets={view.activeTargets}
-      paused={Boolean(talk || camp || state.activeEncounter || state.pendingEvent)}
+      paused={Boolean(paused || talk || camp || state.activeEncounter || state.pendingEvent)}
       joystick={Boolean(state.settings?.joystick)}
       onInteract={interact}
       className={`wild-scene wild-scene--${area.id}`}
       label={`Explore ${area.name}`}
     >
-      <SceneHud
-        eyebrow={area.tagline}
+      <PlaceTag
         title={area.name}
-        leave={leave}
-        extra={
-          <button type="button" className="walk-nav__minor" onClick={() => actions.leaveWild(api.current?.position())}>
-            Back to {hub?.name}
-          </button>
+        sub={dateLine(state.date)}
+        goal={
+          <p className="goal-line goal-line--status">
+            {fit} fit{hurt ? ` · ${hurt} injured` : ''} · {remaining ? `${remaining} group${remaining === 1 ? '' : 's'} here` : 'quiet'} · the signpost leads back to {hub?.name}
+          </p>
         }
-      >
-        <span className="walk-hud__status">
-          {fit} fit{hurt ? ` · ${hurt} injured` : ''} · {remaining ? `${remaining} group${remaining === 1 ? '' : 's'} on the map` : 'the area is quiet'}
-        </span>
-      </SceneHud>
+      />
       {camp ? (
         <section className="walk-card" role="dialog" aria-label={area.camp.name}>
           <div className="walk-card__box panel">

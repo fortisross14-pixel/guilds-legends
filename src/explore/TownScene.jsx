@@ -1,23 +1,26 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { checkCondition, freeBeds, getArenaView, getLivingHistory, getPlayerRanks, getStoryView, hallStage, storyNpcsHere } from '../game/engine.js';
+import { checkCondition, freeBeds, getArenaView, getPlayerRanks, getStoryView, hallStage, storyNpcsHere } from '../game/engine.js';
 import { BUILDINGS } from '../data/world.js';
 import { Button } from '../components/UI.jsx';
 import { townMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
-import SceneHud from './SceneHud.jsx';
+import { PlaceTag } from '../hud/Hud.jsx';
+import { dateLine } from '../hud/dateLine.js';
+import Icon from '../components/Icon.jsx';
 
 /**
  * A walkable town (src/data/towns). Doors open their building, people and
  * landmarks talk through the dialogue system, exits lead to wild areas.
  * The position is saved whenever the founder leaves, so returning puts them back.
  */
-export default function TownScene({ town, state, actions, navigate, openBuilding, showBuilding, openDirectory }) {
+export default function TownScene({ town, state, actions, navigate, openBuilding, showBuilding, paused = false, apiRef = null }) {
   // The guild's own hall stands in Dunmere and changes with its stage.
   const stage = hallStage(state);
   const hall = town.id === 'dunmere' ? { asset: stage.exterior, label: stage.townLabel } : null;
   const map = useMemo(() => townMap(town, hall), [town, hall?.asset, hall?.label]);
-  const api = useRef(null);
+  const ownApi = useRef(null);
+  const api = apiRef || ownApi;
   const [talk, setTalk] = useState(null);
   const [peek, setPeek] = useState(null);
   // Conditional people (an NPC with `if`) appear only while their condition holds.
@@ -44,7 +47,6 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
     navigate(route);
   };
 
-  const livingHistory = getLivingHistory(state);
   return (
     <WalkableScene
       key={`${town.id}-${stage.id}`}
@@ -54,35 +56,25 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
       activeTargets={active}
       beacons={beacons}
       onPeek={(target) => setPeek(target)}
-      paused={Boolean(talk || state.activeEncounter)}
+      paused={Boolean(paused || talk || state.activeEncounter)}
       joystick={Boolean(state.settings?.joystick)}
       onInteract={interact}
       className={`town-scene town-scene--${town.id}`}
       label={`Explore ${town.name}`}
     >
-      <SceneHud
-        eyebrow={town.tagline}
+      <PlaceTag
         title={town.name}
-        leave={leave}
-        extra={
-          <button type="button" className="walk-nav__minor" onClick={() => {
-            const position = api.current?.position();
-            if (position) actions.savePosition(town.id, position);
-            openDirectory();
-          }}>
-            Town directory
-          </button>
+        sub={dateLine(state.date)}
+        goal={
+          <QuestChip
+            state={state}
+            actions={actions}
+            town={town}
+            beacons={beacons}
+            onGo={(targetId) => api.current?.goTo(targetId)}
+            onMap={(pin) => leave({ view: 'map', pin })}
+          />
         }
-      />
-      {livingHistory.spotlight && !talk ? (
-        <div className={`walk-history exploration-history--${livingHistory.spotlight.tone}`}>{livingHistory.spotlight.title}</div>
-      ) : null}
-      <QuestChip
-        state={state}
-        town={town}
-        beacons={beacons}
-        onGo={(targetId) => api.current?.goTo(targetId)}
-        onMap={(pin) => leave({ view: 'map', pin })}
       />
       {peek && !talk ? (
         <PeekCard
@@ -148,7 +140,7 @@ function PeekCard({ state, town, target, onClose, onGo }) {
       <header>
         <strong>{target.name}</strong>
         <button type="button" onClick={onClose} aria-label="Close">
-          ×
+          <Icon name="close" size={18} tone="plain" />
         </button>
       </header>
       {lines.map((line) => (
@@ -161,8 +153,11 @@ function PeekCard({ state, town, target, onClose, onGo }) {
   );
 }
 
-/** The current goal as a chip: tap and the founder walks there (or the map opens). */
-function QuestChip({ state, town, beacons, onGo, onMap }) {
+/**
+ * The current goal, one line under the place tag. Tap: the founder walks there,
+ * the scene plays (when it needs no one to walk to), or the map opens.
+ */
+function QuestChip({ state, actions, town, beacons, onGo, onMap }) {
   if (state.settings?.questMarker === false) return null;
   const story = getStoryView(state);
   const step = story.active?.current;
@@ -170,6 +165,7 @@ function QuestChip({ state, town, beacons, onGo, onMap }) {
   const here = step.at === town.id || (step.at === 'hall' && town.id === 'dunmere');
   const go = () => {
     if (!here) return onMap(step.at === 'hall' ? 'dunmere' : step.at);
+    if (step.canTalk && !beacons[0]) return actions.playStoryScene(story.active.id);
     if (beacons[0]) return onGo(beacons[0]);
     if (step.at === 'hall' || step.screen === 'rest' || step.screen === 'hall') return onGo('door:guildHall');
     if (step.screen === 'tournaments' || step.kind === 'duel') return onGo('door:arena');
@@ -177,9 +173,9 @@ function QuestChip({ state, town, beacons, onGo, onMap }) {
     return onGo('door:guildHall');
   };
   return (
-    <button type="button" className="quest-chip" onClick={go} aria-label={`Go to the goal: ${step.text}`}>
-      <b>!</b>
-      <span>{story.active.title}</span>
+    <button type="button" className="goal-line" onClick={go} aria-label={`Goal: ${step.text}`}>
+      <Icon name="alert" size={14} tone="plain" />
+      <span>{step.text}</span>
     </button>
   );
 }

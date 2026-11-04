@@ -1,0 +1,16 @@
+{
+  "name": "Guilds of Legend",
+  "short_name": "Guilds",
+  "description": "Found a guild, recruit heroes and climb the rankings in an HD-2D guild RPG.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0c12",
+  "theme_color": "#0b0c12",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,96 +1,38 @@
 /* Shell breakpoints. Screen files carry their own layout breakpoints.
-   Desktop ≥ 1100px: labelled dock. Tablet 760–1099px: icon dock. Phone < 760px: bottom dock, bottom sheets. */
-
-@media (max-width: 1440px) {
-  .topbar__location { display: none; }
-  .topbar__journal { max-width: 220px; }
-}
-
-@media (max-width: 1240px) {
-  .topbar__status { display: none; }
-  .topbar__rank .rank-change { display: none; }
-}
-
-@media (max-width: 1099px) {
-  :root { --dock-w: 68px; }
-  .sidebar { padding: 10px 6px; }
-  .sidebar__brand { justify-content: center; padding: 2px 0 10px; }
-  .sidebar__brand > div { display: none; }
-  .sidebar nav button { grid-template-columns: 1fr; justify-items: center; padding: 6px 4px 6px 16px; }
-  .sidebar nav button strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .sidebar nav button::before { left: 4px; }
-  .sidebar nav button > i { position: absolute; top: 2px; right: 2px; margin: 0; }
-  .sidebar__footer { flex-direction: column; padding-top: 8px; }
-  .sidebar__footer > button { display: none; }
-  .save-indicator { font-size: 0; }
-  .topbar__resources > span.topbar__rank { display: none; }
-  .topbar__rank-chip { display: inline-block; }
-  .party-rail__member { width: 176px; }
-}
+   Phone < 760px: sections fill the screen, details become a bottom panel, modals become bottom panels.
+   Wider: sections float as one large panel; details sit in a side column. */
 
 @media (max-width: 759px) {
-  :root { --party-h: 132px; --strip-h: 52px; }
-  h1 { font-size: 32px; }
-  h2 { font-size: 23px; }
-  .sidebar { display: none; }
-  .game-main { padding: 0 12px; }
-
-  .topbar { margin: 0 -12px; padding: 4px 8px; gap: 2px; }
-  .topbar::after { left: 8px; right: 8px; }
-  .topbar__date { padding: 0 8px 0 4px; gap: 6px; }
-  .topbar__month { display: none; }
-  .topbar__date strong { font-size: 21px; }
-  .topbar__resources { gap: 0; }
-  .topbar__resources > span.topbar__gold { padding: 0 6px; }
-  .topbar__rank-chip { padding: 0 8px; font-size: 11px; }
-  .topbar__journal { max-width: 44px; padding: 0 9px; }
-  .topbar__journal-title, .topbar__journal i { display: none; }
-  .journal { left: 12px; right: 12px; width: auto; }
-  .message-bar { top: calc(var(--strip-h) + 8px); }
-
-  .screen-container { padding-top: 14px; }
-  .screen-heading { display: block; margin-bottom: var(--s4); }
-  .heading-metrics { justify-content: flex-start; margin-top: 8px; }
-
-  .party-rail { left: 8px; right: 8px; bottom: calc(66px + env(safe-area-inset-bottom)); gap: 6px; }
-  .party-rail__tools { grid-auto-flow: row; }
-  .party-rail__tools button { min-height: 26px; padding: 0 8px; font-size: 9.5px; }
-  .party-rail__members { gap: 6px; padding-top: 6px; }
+  :root { --gutter: 12px; --orb: 56px; }
+  .section-layer { padding: 0; background: rgba(4, 4, 8, .6); }
+  .section { width: 100%; max-height: none; border-width: 0; border-radius: 0; background: var(--panel-solid); padding: var(--safe-t) var(--safe-r) 0 var(--safe-l); }
+  .section__head { min-height: 56px; padding: 6px 12px 2px 4px; }
+  .section__tabs { padding: 0 12px; }
+  .section__list { padding: 12px 14px 20px; }
+  .section.has-detail .section__main { grid-template-columns: minmax(0, 1fr); }
+  .section__detail { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; max-height: 78%; border: 1px solid var(--line); border-bottom: 0; border-radius: var(--r-2) var(--r-2) 0 0; background: var(--panel-solid); box-shadow: 0 -18px 40px rgba(0, 0, 0, .55); animation: sheet-up 320ms var(--ease) both; }
+  .section__grip { display: block; position: absolute; top: 6px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: var(--r-1); background: var(--line); }
+  .section__grip-row { position: relative; padding-top: 14px; touch-action: none; }
+  .section__foot { padding: 8px 12px calc(10px + var(--safe-b)) 14px; }
+  .section__help { font-size: var(--fs-1); }
+  .section .party-rail { margin: 16px -14px -20px; padding-left: 14px; padding-right: 14px; }
   .party-rail__member { width: auto; grid-template-columns: auto 52px; gap: 6px; padding: 5px 7px 5px 5px; }
-  .party-rail__member > span > strong { font-size: 13px; }
   .party-rail__member > span > small { display: none; }
   .party-rail__member .hero-portrait { --size: 32px; }
 
-  .mobile-nav { position: fixed; z-index: 55; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(3, 1fr); min-height: 54px; padding: 0 4px; border: 1px solid var(--line); border-radius: 27px; background: var(--panel-bg); box-shadow: var(--shadow); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
-  .mobile-nav button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 6px 0 22px; border-radius: 26px; color: var(--text-dim); }
-  .mobile-nav button::before { left: 6px; }
-  .mobile-nav button .pixel-icon { width: 18px; height: 18px; color: var(--brass); image-rendering: auto; }
-  .mobile-nav button.is-active { color: var(--gold-bright); }
-  .mobile-nav small { font-family: var(--font-label); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: inherit; }
-
-  .toast-stack { top: calc(var(--strip-h) + 8px); right: 8px; width: calc(100% - 16px); }
   .modal-layer { padding: 0; align-items: end; }
-  .modal { width: 100%; max-width: none !important; max-height: 92dvh; border-radius: 14px 14px 0 0; animation: sheet-up 340ms var(--ease) both; }
+  .modal { width: 100%; max-width: none !important; max-height: 92dvh; border-radius: var(--r-2) var(--r-2) 0 0; animation: sheet-up 340ms var(--ease) both; }
   .modal__header { padding: 16px 16px 10px; }
-  .modal__header h2 { font-size: 24px; }
-  .modal__body { padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); }
-}
-
-@media (max-width: 380px) {
-  .party-rail__member { grid-template-columns: auto; }
-  .party-rail__member > span { display: none; }
+  .modal__body { padding: 14px 16px calc(20px + var(--safe-b)); }
+  .place-tag__name strong { font-size: var(--fs-3); }
+  .toast-stack, .message-bar { top: calc(var(--hud-top) + 104px); }
+  .ledger__book { padding-right: 10px; }
 }
 
 .compact-mode .panel__body { padding: 6px 14px 12px; }
-.compact-mode .screen-container { padding-top: 10px; }
 
-/* Phone status bar: keep every control on one row. */
-@media (max-width: 759px) {
-  .topbar { gap: 0; }
-  .topbar > * + *:not(.topbar__resources):not(.topbar__journal) { border-left: 0; }
-  .topbar__date strong { font-size: 19px; }
-  .topbar__resources > span.topbar__gold { padding: 0 4px; }
-  .topbar__resources b { font-size: 13px; }
-  .topbar__rank-chip { padding: 0 7px; font-size: 10.5px; letter-spacing: -.01em; }
-  .topbar__journal { max-width: 38px; min-height: 36px; padding: 0 7px; }
+@media (prefers-reduced-motion: reduce) {
+  .orb__item, .ledger__rows, .section, .section-layer, .section__detail, .ledger__delta { animation: none !important; }
+  .place-tag__name, .place-tag__name > span { transition: none; }
 }
+.reduced-motion .orb__item, .reduced-motion .ledger__rows, .reduced-motion .section, .reduced-motion .section-layer, .reduced-motion .section__detail { animation: none !important; }

@@ -38,7 +38,11 @@ import {
   getDashboardSummary,
   getHero,
   getReport,
-  getNextAction,
+  getStoryView,
+  hallStage,
+  HOME_LOCATION_ID,
+  INN_NIGHT_COST,
+  travellingPartyIds,
   hashString,
   inheritAmbition,
   inspectGoals,
@@ -94,37 +98,39 @@ import {
   validateGame,
 } from './game/engine.js';
 import { deleteGame, exportGame, importGame, listSaveSlots, loadGame, saveGame } from './game/storage.js';
-import { CLASSES, MONTHS } from './data/content.js';
-import { LOCATION_BY_ID, PRIMALS } from './data/world.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, RankChange, SceneBackdrop, useMenuKeys } from './components/UI.jsx';
-import PixelIcon, { LADDER_ICONS, PLACE_ICONS } from './components/PixelIcon.jsx';
+import { CLASSES } from './data/content.js';
+import { LOCATION_BY_ID, PRIMALS, locationBuildings } from './data/world.js';
+import { townFor } from './data/towns/index.js';
+import { WILD_AREAS } from './data/wilds/index.js';
+import { Badge, Button, Crest, HeroPortrait, Modal, SceneBackdrop, useMenuKeys } from './components/UI.jsx';
+import Icon, { IconDefs } from './components/Icon.jsx';
 import MapScreen from './places/MapScreen.jsx';
-import TownScreen from './places/TownScreen.jsx';
-import MenuScreen from './places/MenuScreen.jsx';
+import TownScene from './explore/TownScene.jsx';
+import WildScene from './explore/WildScene.jsx';
+import HeroesScreen from './screens/HeroesScreen.jsx';
+import MissionsScreen from './screens/MissionsScreen.jsx';
+import ArenaScreen from './screens/ArenaScreen.jsx';
+import ShopScreen from './screens/ShopScreen.jsx';
+import RankingsScreen from './screens/RankingsScreen.jsx';
 import { resolveRoute } from './places/routes.js';
+import { Ledger, Orb, OrbScrim, PlaceTag } from './hud/Hud.jsx';
+import { SectionView } from './hud/sections.jsx';
+import { dateLine } from './hud/dateLine.js';
 import CouncilReportModal from './components/CouncilReportModal.jsx';
 import CombatArenaModal from './components/CombatArenaModal.jsx';
 import MissionGameModal from './components/MissionGameModal.jsx';
 import RoadEventModal from './components/RoadEventModal.jsx';
-import UpcomingStrip from './components/UpcomingStrip.jsx';
 import MomentModal from './components/MomentModal.jsx';
 import EventCardModal from './components/EventCardModal.jsx';
 import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
-import PartyRail from './components/PartyRail.jsx';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
 import Prologue from './components/Prologue.jsx';
 import { haptic } from './components/gestures.js';
 import DialogueBox from './explore/DialogueBox.jsx';
 import Asset from './components/Asset.jsx';
+import { setShowAssetIds } from './components/assetLoader.js';
 import { CHARTERS, CHARTER_LIST, PATHS } from './data/charters.js';
 import { specializationTitle } from './game/engine.js';
-
-// Three places replace the old 11-item navigation.
-const PLACE_NAV = [
-  { id: 'map', label: 'World', glyph: 'world' },
-  { id: 'town', label: 'Guild', glyph: 'guild' },
-  { id: 'menu', label: 'Chronicle', glyph: 'chronicle' },
-];
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -275,7 +281,7 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
             <select value={founderPrimal} onChange={(event) => setFounderPrimal(event.target.value)}>
               {Object.values(PRIMALS).map((primal) => (
                 <option key={primal.id} value={primal.id}>
-                  {primal.icon} {primal.id}
+                  {primal.id}
                 </option>
               ))}
             </select>
@@ -296,7 +302,7 @@ function CreateCampaignModal({ open, slot, onClose, onCreate }) {
           <div>
             <h3>{founderName || 'Unnamed founder'}</h3>
             <p>
-              Level 1 · {PRIMALS[founderPrimal]?.icon} {founderPrimal} · {founderClass} · {classInfo?.description}
+              Level 1 · {founderPrimal} · {founderClass} · {classInfo?.description}
             </p>
           </div>
         </div>
@@ -387,7 +393,7 @@ function RefoundModal({ state, open, onRefound, onReturnHome }) {
             <select value={founderPrimal} onChange={(event) => setFounderPrimal(event.target.value)}>
               {Object.values(PRIMALS).map((primal) => (
                 <option key={primal.id} value={primal.id}>
-                  {primal.icon} {primal.id}
+                  {primal.id}
                 </option>
               ))}
             </select>
@@ -828,11 +834,24 @@ function ReportModal({ report, onClose, openHero }) {
   );
 }
 
+// Notices show for a few seconds and then step aside (they stay in the list until dismissed),
+// so they never sit over the world the player is tapping.
+const NOTICE_MS = 6000;
 function Toasts({ notifications, onDismiss, onClear }) {
-  if (!notifications.length) return null;
+  const [faded, setFaded] = useState(() => new Set());
+  const timers = useRef({});
+  useEffect(() => {
+    notifications.forEach((notification) => {
+      if (timers.current[notification.id]) return;
+      timers.current[notification.id] = window.setTimeout(() => setFaded((current) => new Set(current).add(notification.id)), NOTICE_MS);
+    });
+  }, [notifications]);
+  useEffect(() => () => Object.values(timers.current).forEach((timer) => window.clearTimeout(timer)), []);
+  const shown = notifications.filter((notification) => !faded.has(notification.id));
+  if (!shown.length) return null;
   return (
     <div className="toast-stack" aria-live="polite">
-      {notifications.slice(-4).map((notification) => (
+      {shown.slice(-3).map((notification) => (
         <button
           key={notification.id}
           className={`toast toast--${notification.tone}`}
@@ -858,9 +877,9 @@ function Toasts({ notifications, onDismiss, onClear }) {
           <i>×</i>
         </button>
       ))}
-      {notifications.length > 4 ? (
+      {shown.length > 3 ? (
         <button className="toast-clear" onClick={onClear}>
-          Clear {notifications.length} notices
+          Clear {shown.length} notices
         </button>
       ) : null}
     </div>
@@ -868,7 +887,8 @@ function Toasts({ notifications, onDismiss, onClear }) {
 }
 
 function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlotsChanged }) {
-  const [place, setPlaceState] = useState({ view: 'town' });
+  const [place, setPlaceState] = useState({ view: 'scene' });
+  const [section, setSectionState] = useState(null);
   // Arriving somewhere (the opening ends, a journey ends, entering or leaving a
   // wild area) puts the player in that place's walkable scene.
   const arrivalKey = `${state.world?.currentLocationId}|${state.world?.activeTravel ? 'road' : 'here'}|${state.world?.wildAreaId || ''}|${state.story?.prologue}`;
@@ -876,7 +896,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   useEffect(() => {
     if (lastArrival.current === arrivalKey) return;
     lastArrival.current = arrivalKey;
-    if (!state.world?.activeTravel) setPlaceState({ view: 'town' });
+    if (!state.world?.activeTravel) {
+      setPlaceState({ view: 'scene' });
+      setSectionState(null);
+    }
   }, [arrivalKey, state.world?.activeTravel]);
   const [heroModalId, setHeroModalId] = useState(null);
   const [storyScene, setStoryScene] = useState(null);
@@ -887,24 +910,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   useEffect(() => {
     if (!storyScene && !blocked && state.story?.scene?.conversation) setStoryScene(state.story.scene.conversation);
   }, [storyScene, blocked, state.story?.scene?.conversation]);
-  // The journal (next step + upcoming events) is a per-viewer convenience kept in localStorage.
-  const [journalOpen, setJournalOpen] = useState(() => {
-    try {
-      return window.localStorage.getItem('gol.journalOpen') === '1';
-    } catch {
-      return false;
-    }
-  });
-  const toggleJournal = () => {
-    setJournalOpen((current) => {
-      try {
-        window.localStorage.setItem('gol.journalOpen', current ? '0' : '1');
-      } catch {
-        /* storage unavailable: keep the in-memory choice */
-      }
-      return !current;
-    });
-  };
   const [reportModalRef, setReportModalRef] = useState(null);
   const [message, setMessage] = useState(null);
   // Short messages from anywhere (a disabled button saying why, src/components/UI.jsx toast).
@@ -916,7 +921,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
-  const nextAction = getNextAction(state);
   useMenuKeys();
 
   const commitState = useCallback(
@@ -997,6 +1001,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     memory.moment = moment?.id || null;
   }, [state]);
 
+  useEffect(() => setShowAssetIds(state.settings.showAssetIds), [state.settings.showAssetIds]);
   useEffect(() => {
     document.documentElement.classList.toggle('reduced-motion', state.settings.reducedMotion);
     document.documentElement.classList.toggle('compact-mode', state.settings.compactMode);
@@ -1198,35 +1203,140 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     [state, setState, slot, commitState, applyResult, saveNow, onReturnHome, onDeleteCurrent, onSlotsChanged],
   );
 
-  const setPlace = (next) => {
-    setPlaceState(next);
-    window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
+  // Where the player is: the walkable scene (town or wild area) or the world map.
+  // Everything else is a section in the one template, opened over the place.
+  const traveling = Boolean(state.world?.activeTravel);
+  const view = traveling ? 'map' : place.view;
+  const sceneApi = useRef(null);
+  const sceneId = state.world?.wildAreaId || state.world?.currentLocationId;
+  const keepPosition = () => {
+    const position = sceneApi.current?.position();
+    if (position && view === 'scene') actions.savePosition(sceneId, position);
   };
-  // One back behavior everywhere: the top-bar ◀ and a swipe from the left edge.
-  // Back closes the open room, then the building or menu page, then returns to town.
-  const backTarget =
-    place.view === 'town' && place.building
-      ? place.tab
-        ? { ...place, tab: null }
-        : { view: 'town', building: null }
-      : place.view === 'menu' && place.page
-        ? { view: 'menu', page: null }
-        : place.view !== 'town'
-          ? { view: 'town' }
-          : null;
-  const goBack = () => backTarget && setPlace(backTarget);
-  const edge = useRef(null);
-
+  const setSection = (next) => {
+    setOrb(null);
+    setSectionState(next);
+  };
   const navigate = (target) => {
     const route = resolveRoute(target);
-    setPlace({ ...route });
-    if (route.page === 'codex' && route.tab === 'goals' && !state.flags.goalsInspected) actions.inspectGoals();
+    setOrb(null);
+    setLedgerOpen(false);
+    if (route.section) {
+      setSectionState({ id: route.section, tab: route.tab ?? null, view: route.view || null });
+      if (route.section === 'records' && route.tab === 'goals' && !state.flags.goalsInspected) actions.inspectGoals();
+      return;
+    }
+    if (route.view === 'map' && view === 'scene') keepPosition();
+    setSectionState(null);
+    setPlaceState({ view: route.view === 'map' ? 'map' : 'scene', pin: route.pin || null });
   };
 
-  const placeProps = { state, actions, navigate, slot, place, setPlace };
-  const renderedScreen =
-    place.view === 'town' ? <TownScreen {...placeProps} /> : place.view === 'menu' ? <MenuScreen {...placeProps} /> : <MapScreen {...placeProps} />;
-  const townName = LOCATION_BY_ID[state.world?.currentLocationId]?.name || 'Town';
+  // One back behavior everywhere: the section's back button, Esc, or a swipe from the left edge.
+  const goBack = () => {
+    if (section?.id === 'hall' && section.tab) setSection({ ...section, tab: null });
+    else if (section) setSection(null);
+    else if (view === 'map' && !traveling) setPlaceState({ view: 'scene' });
+  };
+  const edge = useRef(null);
+
+  // The HUD: two orbs and the ledger. One orb open at a time.
+  const [orb, setOrb] = useState(null);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+  const orbUses = state.settings.seenHints?.orbUses || 0;
+  const openOrb = (side, open) => {
+    setLedgerOpen(false);
+    setOrb(open ? side : null);
+    if (open && orbUses < 4) actions.updateSettings({ seenHints: { ...(state.settings.seenHints || {}), orbUses: orbUses + 1 } });
+  };
+  const roster = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
+  const injured = roster.filter((hero) => hero.status === 'injured').length;
+  const story = getStoryView(state);
+  const hallDone = (state.moments || []).some((moment) => moment.type === 'construction');
+  const guildItems = [
+    { id: 'party', label: 'Party', icon: 'party', badge: injured || null, onSelect: () => navigate('heroes') },
+    { id: 'items', label: 'Items', icon: 'bag', onSelect: () => navigate('items') },
+    { id: 'hall', label: hallStage(state).key === 'house' ? 'Your house' : 'Guild Hall', icon: 'castle', badge: state.pendingDecisions.length || hallDone || null, onSelect: () => navigate('hall') },
+    { id: 'quests', label: 'Quests', icon: 'quill', badge: story.active?.current?.canTalk ? true : null, onSelect: () => navigate('quests') },
+    { id: 'contacts', label: 'Contacts', icon: 'contacts', onSelect: () => navigate('contacts') },
+  ];
+  const worldItems = [
+    { id: 'map', label: 'Map', icon: 'map', onSelect: () => navigate('map') },
+    { id: 'calendar', label: 'Calendar', icon: 'calendar', badge: state.newsUnread || null, onSelect: () => navigate('calendar') },
+    { id: 'records', label: 'Records', icon: 'trophy', onSelect: () => navigate('rankings') },
+    { id: 'system', label: 'System', icon: 'gear', onSelect: () => navigate('menu') },
+  ];
+  const ledgerRows = [
+    { id: 'gold', icon: 'coin', label: 'Gold', value: summary.crowns.toLocaleString(), num: summary.crowns, onOpen: () => navigate('treasury') },
+    { id: 'fame', icon: 'laurel', label: 'Fame', value: summary.fame.toLocaleString(), num: summary.fame, onOpen: () => navigate('reputation') },
+    ...LADDERS.map((ladder) => ({
+      id: ladder,
+      icon: { strength: 'sword', legacy: 'scroll', official: 'crown' }[ladder],
+      label: LADDER_LABELS[ladder],
+      value: `#${summary.ranks[ladder].rank}`,
+      num: summary.ranks[ladder].rank,
+      rank: true,
+      change: summary.movement[ladder] || 0,
+      onOpen: () => navigate({ section: 'records', tab: 'rankings', view: 'guilds' }),
+    })),
+    { id: 'title', icon: 'banner', label: 'Status', value: summary.statusTitle, onOpen: () => navigate({ section: 'records', tab: 'rankings', view: 'path' }) },
+    { id: 'known', icon: 'star', label: 'Known for', value: specializationTitle(state) || 'Nothing yet', onOpen: () => navigate('reputation') },
+  ];
+
+  // Keyboard shortcuts on desktop: P party, I items, Q quests, M map, R records, Esc system.
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName || '')) return;
+      if (document.querySelector('.modal-layer, .dialogue, .story-scene')) return;
+      const key = event.key.toLowerCase();
+      const routes = { p: 'heroes', i: 'items', q: 'quests', m: 'map', r: 'rankings' };
+      if (routes[key]) {
+        event.preventDefault();
+        if (key === 'm' && view === 'map' && !section) goBack();
+        else navigate(routes[key]);
+      } else if (event.key === 'Escape' && !section && !orb && !ledgerOpen) {
+        event.preventDefault();
+        navigate('menu');
+      } else if (event.key === 'Escape' && (orb || ledgerOpen)) {
+        setOrb(null);
+        setLedgerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  const placeProps = { state, actions, navigate, slot };
+  const locationId = state.world?.currentLocationId || HOME_LOCATION_ID;
+  const town = townFor(locationId);
+  const wildArea = WILD_AREAS[state.world?.wildAreaId];
+  const covered = Boolean(section);
+  const openBuilding = (id) => setSection({ id, tab: null });
+  const placeLayer =
+    view === 'map' ? (
+      <MapScreen {...placeProps} place={place} />
+    ) : wildArea ? (
+      <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} />
+    ) : town ? (
+      <TownScene key={town.id} town={town} {...placeProps} paused={covered} apiRef={sceneApi} openBuilding={openBuilding} showBuilding={openBuilding} />
+    ) : (
+      <MapScreen {...placeProps} place={place} />
+    );
+  const innHere = locationId !== HOME_LOCATION_ID && locationBuildings(locationId).includes('tavern');
+  const renderBuilding = (id) => {
+    if (id === 'tavern')
+      return (
+        <>
+          {innHere ? <InnRest state={state} actions={actions} /> : null}
+          <HeroesScreen {...placeProps} tabs={['recruit']} />
+        </>
+      );
+    if (id === 'noticeBoard') return <MissionsScreen {...placeProps} />;
+    if (id === 'arena') return <ArenaScreen {...placeProps} locationId={locationId} />;
+    if (id === 'shop') return <ShopScreen {...placeProps} />;
+    if (id === 'herald') return <RankingsScreen {...placeProps} views={['guilds', 'heroLadders', 'rivals', 'directory']} />;
+    return null;
+  };
 
   const activeReportReference = reportModalRef || state.pendingReports?.[0] || null;
   const activeReport = getReport(state, activeReportReference);
@@ -1267,7 +1377,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
   return (
     <div
-      className="game-shell"
+      className={`game game--${view}${section ? ' has-section' : ''}${interruption ? ' has-interruption' : ''}`}
       onPointerDown={(event) => {
         edge.current = event.clientX < 24 ? { x: event.clientX, y: event.clientY } : null;
       }}
@@ -1277,150 +1387,45 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         if (from && event.clientX - from.x > 80 && Math.abs(event.clientY - from.y) < 60) goBack();
       }}
     >
-      <aside className="sidebar">
-        <div className="sidebar__brand">
-          <Crest size="md" />
-          <div>
-            <strong>{state.guild.name}</strong>
-            <small>
-              {state.guild.tier} · Year {state.date.year}
-            </small>
-          </div>
-        </div>
-        <nav aria-label="Places" data-menu>
-          {PLACE_NAV.map((item) => (
-            <button
-              key={item.id}
-              className={place.view === item.id ? 'is-active' : ''}
-              aria-current={place.view === item.id ? 'page' : undefined}
-              onClick={() => navigate(item.id)}
-            >
-              <PixelIcon name={PLACE_ICONS[item.glyph]} size={24} />
-              <strong>{item.id === 'town' ? `Guild · ${townName}` : item.label}</strong>
-              {item.id === 'town' && state.pendingDecisions.length ? <i className="nav-alert">{state.pendingDecisions.length}</i> : null}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar__footer">
-          <div className={`save-indicator save-indicator--${saveStatus}`}>
-            <i />
-            {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'unsaved' ? 'Unsaved' : saveStatus === 'error' ? 'Save error' : 'Saved'}
-          </div>
-          <button onClick={() => actions.saveNow()}>Save slot {slot}</button>
-        </div>
-      </aside>
+      <IconDefs />
+      <div className="game__place">{placeLayer}</div>
 
-      <div className="game-main">
-        <header className="topbar">
-          {backTarget ? (
-            <button className="topbar__back" onClick={goBack} aria-label="Back">
-              ◀
-            </button>
+      {section ? (
+        <SectionView section={section} state={state} actions={actions} navigate={navigate} slot={slot} setSection={setSection} extras={{ renderBuilding, innHere, saveStatus }} />
+      ) : null}
+
+      {/* The HUD. The bottom corners belong to the orbs only while nothing else owns the bottom. */}
+      {!interruption ? (
+        <div className="hud">
+          {view === 'map' && !section ? <PlaceTag title={traveling ? 'On the road' : 'World map'} sub={dateLine(state.date)} /> : null}
+          <Ledger
+            gold={summary.crowns}
+            crest={<Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="ledger__charter" />}
+            rows={ledgerRows}
+            open={ledgerOpen}
+            onOpenChange={(open) => {
+              setOrb(null);
+              setLedgerOpen(open);
+            }}
+          />
+          {orb ? <OrbScrim onClose={() => setOrb(null)} /> : null}
+          {!section ? (
+            <>
+              <Orb side="left" icon="banner" label="Guild" items={guildItems} showLabel={orbUses < 4} open={orb === 'left'} onOpenChange={(open) => openOrb('left', open)} settings={state.settings} />
+              <Orb side="right" icon="world" label="World" items={worldItems} showLabel={orbUses < 4} open={orb === 'right'} onOpenChange={(open) => openOrb('right', open)} settings={state.settings} />
+            </>
           ) : null}
-          <button className="topbar__date" onClick={() => navigate('calendar')} title="Open the calendar">
-            <span className="topbar__month">
-              {MONTHS[state.date.month]} · Week {(state.date.week || 0) + 1} · Day {(state.date.day || 0) + 1}
-            </span>
-            <strong>{state.date.year}</strong>
-          </button>
-          <button className="topbar__location" onClick={() => navigate('world')} title="Current guild location">
-            <i>{summary.travel ? '➜' : PRIMALS[summary.locationPrimal]?.icon || '⌖'}</i>
-            <span>{summary.travel ? `Traveling · ${summary.travel.daysRemaining}d` : summary.location}</span>
-          </button>
-          <button className="topbar__identity" onClick={() => navigate('rankings')} title="Your charter, and what the guild is known for (the Herald)">
-            <Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="topbar__crest" />
-            <span>
-              <b>{CHARTERS[state.guild.charter]?.name || 'Free Company'}</b>
-              <small>{specializationTitle(state) || 'Known for nothing yet'}</small>
-            </span>
-          </button>
-          <div className="topbar__resources">
-            <span className="topbar__gold" title="Treasury">
-              <PixelIcon name="coin" size={24} />
-              <b>{summary.crowns.toLocaleString()}</b>
-            </span>
-            {LADDERS.map((ladder) => (
-              <span
-                key={ladder}
-                className="topbar__rank"
-                title={`${LADDER_LABELS[ladder]} ladder (${summary.tier}): #${summary.ranks[ladder].rank} of ${summary.ranks[ladder].total}`}
-              >
-                <PixelIcon name={LADDER_ICONS[ladder]} size={24} label={LADDER_LABELS[ladder]} />
-                <b>#{summary.ranks[ladder].rank}</b>
-                <RankChange change={summary.movement[ladder]} />
-              </span>
-            ))}
-            <button className="topbar__rank-chip" onClick={() => navigate('rankings')} title="Strength · Legacy · Official ranks">
-              ⚔{summary.ranks.strength.rank} ▤{summary.ranks.legacy.rank} ♛{summary.ranks.official.rank}
-            </button>
-            <button className="topbar__status" onClick={() => navigate('rankings')} title="Status title from the Official ladder">
-              {summary.statusTitle}
-            </button>
-          </div>
-          <button
-            className={`topbar__journal topbar__journal--${nextAction.kind}`}
-            onClick={toggleJournal}
-            aria-expanded={journalOpen}
-            aria-controls="journal"
-            title="Journal: next step and upcoming events"
-          >
-            <span className="topbar__journal-mark" aria-hidden="true">
-              {nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}
-            </span>
-            <span className="topbar__journal-title">{nextAction.title}</span>
-            <i aria-hidden="true">{journalOpen ? '▴' : '▾'}</i>
-          </button>
-        </header>
-        {journalOpen ? (
-          <div className="journal" id="journal" role="region" aria-label="Journal">
-            <section className={`objective-ribbon objective-ribbon--${nextAction.kind}`}>
-              <span className="objective-ribbon__mark">{nextAction.kind === 'tutorial' ? nextAction.step : nextAction.kind === 'critical' ? '!' : '✦'}</span>
-              <div className="objective-ribbon__text">
-                <strong className="objective-ribbon__title">{nextAction.title}</strong>
-                <span className="objective-ribbon__body">
-                  {nextAction.body}
-                  {typeof nextAction.progress === 'number' && typeof nextAction.target === 'number' ? ` (${nextAction.progress}/${nextAction.target})` : ''}
-                </span>
-              </div>
-              <div className="objective-ribbon__actions">
-                <Button
-                  size="sm"
-                  variant={nextAction.kind === 'critical' ? 'danger' : 'primary'}
-                  onClick={() => (nextAction.canTalk ? actions.playStoryScene(nextAction.missionId) : navigate(nextAction.screen || 'hall'))}
-                >
-                  {nextAction.kind === 'critical' ? 'Resolve' : nextAction.canTalk ? 'Talk now' : 'Go'}
-                </Button>
-              </div>
-            </section>
-            <UpcomingStrip state={state} actions={actions} navigate={navigate} />
-          </div>
-        ) : null}
-        {message ? (
-          <button className={`message-bar message-bar--${message.tone}`} onClick={() => setMessage(null)}>
-            <span>{message.tone === 'red' ? '!' : message.tone === 'green' ? '✓' : '◆'}</span>
-            <p>{message.text}</p>
-            <i>×</i>
-          </button>
-        ) : null}
-        <main className="screen-container" key={`${place.view}-${place.building || ''}-${place.page || ''}`}>
-          {renderedScreen}
-        </main>
-      </div>
+        </div>
+      ) : null}
 
-      <nav className="mobile-nav" aria-label="Places" data-menu>
-        {PLACE_NAV.map((item) => (
-          <button
-            key={item.id}
-            className={place.view === item.id ? 'is-active' : ''}
-            aria-current={place.view === item.id ? 'page' : undefined}
-            onClick={() => navigate(item.id)}
-          >
-            <PixelIcon name={PLACE_ICONS[item.glyph]} size={24} />
-            <small>{item.label}</small>
-          </button>
-        ))}
-      </nav>
-      <PartyRail state={state} actions={actions} onOpenHero={actions.openHero} onOpenQuests={() => navigate('quests')} />
+      {message ? (
+        <button className={`message-bar message-bar--${message.tone}`} onClick={() => setMessage(null)}>
+          <Icon name={message.tone === 'red' ? 'alert' : message.tone === 'green' ? 'check' : 'info'} size={16} tone="plain" />
+          <p>{message.text}</p>
+          <Icon name="close" size={16} tone="plain" />
+        </button>
+      ) : null}
+
       {/* One interruption at a time, in priority order (docs/UX.md). */}
       {interruption === 'combat' ? <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} /> : null}
       {interruption === 'missionGame' ? <MissionGameModal game={state.activeMissionGame} actions={actions} /> : null}
@@ -1438,22 +1443,39 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               actions.finishStoryScene(storyScene);
               setStoryScene(null);
             }}
-            onOpenBuilding={(building) => navigate({ view: 'town', building, tab: null })}
+            onOpenBuilding={(building) => navigate({ section: building, tab: null })}
           />
         </div>
       ) : null}
       {interruption === 'moment' ? <MomentModal moment={state.moments?.[0]} state={state} onClose={actions.acknowledgeMoment} /> : null}
       {interruption === 'event' ? <EventCardModal card={state.pendingEvent} onChoose={actions.resolveTownEvent} heroes={state.heroes} /> : null}
       <CouncilReportModal state={state} open={interruption === 'council'} onClose={actions.acknowledgeCouncilReport} openHero={actions.openHero} />
-      <RefoundModal
-        state={state}
-        open={defunct && !interruption}
-        onRefound={actions.refoundGuild}
-        onReturnHome={actions.returnHome}
-      />
+      <RefoundModal state={state} open={defunct && !interruption} onRefound={actions.refoundGuild} onReturnHome={actions.returnHome} />
       <HeroStatusScreen state={state} heroId={heroModalId} onClose={() => setHeroModalId(null)} onSelect={setHeroModalId} actions={actions} />
       <Toasts notifications={state.notifications} onDismiss={actions.dismissNotification} onClear={actions.clearNotifications} />
     </div>
+  );
+}
+
+/** Away from home, the tavern is an inn: rest 1–3 nights (heals the party, passes time). */
+function InnRest({ state, actions }) {
+  const party = Math.max(1, travellingPartyIds(state).length);
+  return (
+    <section className="inn-rest">
+      <div>
+        <strong>Rooms for the night</strong>
+        <small>
+          {INN_NIGHT_COST} gold a night per traveller ({party} with you). Rest heals the party; the heroes at home keep to their tasks.
+        </small>
+      </div>
+      <div className="inn-rest__buttons">
+        {[1, 2, 3].map((nights) => (
+          <Button key={nights} size="sm" disabled={state.guild.crowns < INN_NIGHT_COST * nights * party} why="Not enough gold." onClick={() => actions.restAtInn(nights)}>
+            Rest {nights} night{nights === 1 ? '' : 's'} ({INN_NIGHT_COST * nights * party} gold)
+          </Button>
+        ))}
+      </div>
+    </section>
   );
 }
 

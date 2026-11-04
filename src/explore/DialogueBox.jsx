@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { freeBeds, getDialogueReply, getDialogueView, getHallView, recruitObjection } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import { Button } from '../components/UI.jsx';
+import Icon from '../components/Icon.jsx';
 
 const AUTO_MS = 2600;
 
@@ -23,6 +24,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   // Hold anywhere to fast-forward the lines; swipe up for the conversation so far.
   const [holding, setHolding] = useState(false);
   const [log, setLog] = useState(false);
+  const logSwipe = useRef(null);
   const seen = useRef([]);
   const press = useRef(null);
   const [recruit, setRecruit] = useState(false);
@@ -116,18 +118,39 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
       }}
     >
       {log ? (
-        <div className="dialogue__log panel" onClick={(event) => {
-          event.stopPropagation();
-          setLog(false);
-        }}>
-          <strong>So far</strong>
-          {seen.current.map((entry, row) => (
-            <p key={row}>
-              {entry.speaker ? <b>{entry.speaker}: </b> : null}
-              {entry.text}
-            </p>
-          ))}
-          <small>Tap to close</small>
+        <div
+          className="dialogue__log"
+          role="dialog"
+          aria-label="The conversation so far"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerUp={(event) => event.stopPropagation()}
+        >
+          <div
+            className="dialogue__log-head"
+            onPointerDown={(event) => {
+              logSwipe.current = event.clientY;
+              event.currentTarget.setPointerCapture?.(event.pointerId);
+            }}
+            onPointerUp={(event) => {
+              const from = logSwipe.current;
+              logSwipe.current = null;
+              if (from !== null && event.clientY - from > 60) setLog(false);
+            }}
+          >
+            <strong>So far</strong>
+            <button type="button" className="section__close" onClick={() => setLog(false)} aria-label="Close the log">
+              <Icon name="close" size={18} tone="plain" />
+            </button>
+          </div>
+          <div className="dialogue__log-body">
+            {seen.current.map((entry, row) => (
+              <p key={row}>
+                {entry.speaker ? <b>{entry.speaker}: </b> : null}
+                {entry.text}
+              </p>
+            ))}
+          </div>
         </div>
       ) : null}
       <div className="dialogue__box" onClick={(event) => phase !== 'lines' && event.stopPropagation()}>

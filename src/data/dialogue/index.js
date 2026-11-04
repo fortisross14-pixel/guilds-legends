@@ -46,11 +46,12 @@
 import dunmere from './dunmere.js';
 import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';
+import windmere from './windmere.js';
 import wilds from './wilds.js';
 import story from './story.js';
 import storyAct2 from './storyAct2.js';
 
-export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...wilds, ...story, ...storyAct2 };
+export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...windmere, ...wilds, ...story, ...storyAct2 };
 
 /** Flags that live at state.flags[name] (other systems read them), not in state.flags.dialogue. */
 export const TOP_LEVEL_FLAGS = ['oldRoadIntroduced', 'harvestMeleeIntroduced'];

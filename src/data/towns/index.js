@@ -3,8 +3,9 @@
 import dunmere from './dunmere.js';
 import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';
+import windmere from './windmere.js';
 
-export const TOWNS = { dunmere, greenhollow, ironford };
+export const TOWNS = { dunmere, greenhollow, ironford, windmere };
 
 export function townFor(locationId) {
   return TOWNS[locationId] || null;

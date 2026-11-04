@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { LOCATION_BY_ID } from '../data/world.js';
 import { ACTS, CHAPTERS, STORY_HEROES } from '../data/story.js';
 import { getConnectionsView, getHero, getPromotionRequirement, getStoryView, nextUpgrade } from '../game/engine.js';
-import { Badge, Button, EmptyState, Panel, ProgressBar, Tabs } from '../components/UI.jsx';
+import { Badge, Button, EmptyState, Panel, ProgressBar } from '../components/UI.jsx';
+import Icon from '../components/Icon.jsx';
 
 // The Quest Log: Main (the story, with gates, routes and evidence), Side (story
 // recruits, patrons, promises, side jobs and leads), Guild (the tutorial, then
@@ -15,7 +16,7 @@ function MapButton({ locationId, navigate }) {
   if (!locationId || !LOCATION_BY_ID[locationId === 'hall' ? 'dunmere' : locationId]) return null;
   return (
     <button type="button" className="quest-row__map" onClick={() => navigate({ view: 'map', pin: locationId === 'hall' ? 'dunmere' : locationId })}>
-      Show on map 📍
+      Show on map <Icon name="pin" size={14} tone="plain" />
     </button>
   );
 }
@@ -25,7 +26,7 @@ function StepList({ mission, state, actions, navigate }) {
     <ol className="quest-steps">
       {mission.steps.map((step) => (
         <li key={step.id} className={step.done ? 'is-done' : step.current ? 'is-current' : ''}>
-          <span>{step.done ? (step.skipped ? '↷' : '✓') : step.current ? '▶' : '·'}</span>
+          <span>{step.done ? (step.skipped ? <Icon name="next" size={14} tone="plain" /> : <Icon name="check" size={14} tone="plain" />) : step.current ? <Icon name="play" size={14} tone="plain" /> : '·'}</span>
           <div>
             <p>{step.text}</p>
             {step.current && step.hint ? <small>{step.hint}</small> : null}
@@ -101,7 +102,7 @@ function MainTab({ state, actions, navigate, story }) {
         <ul className="quest-evidence">
           {story.evidence.map((item) => (
             <li key={item.id} className={item.found ? 'is-found' : ''}>
-              <strong>{item.found ? '✓' : '○'} {item.name}</strong>
+              <strong>{item.found ? <Icon name="check" size={14} tone="plain" /> : <Icon name="dot" size={14} tone="plain" />} {item.name}</strong>
               <small>{item.found ? item.text : item.from}</small>
             </li>
           ))}
@@ -192,7 +193,7 @@ function GuildTab({ state, actions, navigate, story }) {
           <ol className="quest-steps">
             {tutorial.map((mission) => (
               <li key={mission.id} className={mission.status === 'done' ? 'is-done' : mission.status === 'active' ? 'is-current' : ''}>
-                <span>{mission.status === 'done' ? '✓' : mission.status === 'active' ? '▶' : mission.number}</span>
+                <span>{mission.status === 'done' ? <Icon name="check" size={14} tone="plain" /> : mission.status === 'active' ? <Icon name="play" size={14} tone="plain" /> : mission.number}</span>
                 <div>
                   <p>
                     {mission.number}. {mission.title}
@@ -273,7 +274,7 @@ function DoneTab({ state, story }) {
           {missions.map((mission) => (
             <p key={mission.id} className="quest-row">
               <strong>
-                ✓ {mission.number}. {mission.title}
+                <Icon name="check" size={14} tone="plain" /> {mission.number}. {mission.title}
               </strong>
               <small>{mission.summary}</small>
             </p>
@@ -284,7 +285,7 @@ function DoneTab({ state, story }) {
         <Panel title="Goals" eyebrow={`${goals.length} done`}>
           {goals.map((goal) => (
             <p key={goal.id} className="quest-row">
-              <strong>✓ {goal.title}</strong> <small>{goal.description}</small>
+              <strong><Icon name="check" size={14} tone="plain" /> {goal.title}</strong> <small>{goal.description}</small>
             </p>
           ))}
         </Panel>
@@ -293,24 +294,20 @@ function DoneTab({ state, story }) {
   );
 }
 
-export default function QuestLogScreen({ state, actions, navigate }) {
+export const QUEST_TABS = [
+  { id: 'main', label: 'Main', icon: 'star' },
+  { id: 'side', label: 'Side', icon: 'quill' },
+  { id: 'guild', label: 'Guild', icon: 'castle' },
+  { id: 'done', label: 'Done', icon: 'check' },
+];
+
+/** The quest log body; the section owns the tabs (QUEST_TABS). */
+export default function QuestLogScreen({ state, actions, navigate, tab = 'main' }) {
   const story = getStoryView(state);
-  const [tab, setTab] = useState('main');
   const marker = state.settings?.questMarker !== false;
   return (
     <div className="quest-log">
       <header className="quest-log__head">
-        <Tabs
-          active={tab}
-          onChange={setTab}
-          ariaLabel="Quest Log"
-          items={[
-            { id: 'main', label: 'Main', icon: '★' },
-            { id: 'side', label: 'Side', icon: '✎' },
-            { id: 'guild', label: 'Guild', icon: '♜' },
-            { id: 'done', label: 'Done', icon: '✓' },
-          ]}
-        />
         <label className="quest-log__marker">
           <input type="checkbox" checked={marker} onChange={(event) => actions.updateSettings({ questMarker: event.target.checked })} />
           Show the main quest marker

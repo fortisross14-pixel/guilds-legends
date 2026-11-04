@@ -6,7 +6,7 @@ import { HOUSE, ROOM_BY_ID } from '../data/rooms.js';
 import { HOME_LOCATION_ID, MAIN_PARTY_SIZE, activityAvailable, atHome, availableDrills, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, specializationTitle, trophyCount, upkeepBreakdown } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from '../components/heroStatus.js';
-import PixelIcon, { ROOM_ICONS } from '../components/PixelIcon.jsx';
+import Icon, { ROOM_ICONS } from '../components/Icon.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
 import DraggableHero from '../components/DraggableHero.jsx';
 import HeadquartersScreen from '../screens/HeadquartersScreen.jsx';
@@ -73,7 +73,7 @@ function HeroRow({ state, hero, room, actions }) {
           <strong>{hero.name}</strong>
           <small>
             Lv {hero.level} {hero.classId} · {status.label}
-            {warnings.length ? ` · ⚠ ${warnings.join(', ')}` : ''}
+            {warnings.length ? ` · ${warnings.join(', ')}` : ''}
           </small>
         </span>
       </button>
@@ -183,7 +183,7 @@ function BuildOffer({ plan, hall, actions, compact = false }) {
   return (
     <article className={`build-offer ${next.met ? '' : 'is-locked'} ${compact ? 'build-offer--compact' : ''}`}>
       <header>
-        <PixelIcon name={ROOM_ICONS[plan.id] || 'castle'} size={24} />
+        <Icon name={ROOM_ICONS[plan.id] || 'castle'} size={24} />
         <strong>
           {plan.name}
           {plan.built ? ` → level ${next.level}` : ''}
@@ -229,13 +229,13 @@ function House({ state, hall, actions }) {
     <Panel title={HOUSE.name} eyebrow="Your home, not yet a guild hall">
       <ul className="rented-room">
         <li>
-          <PixelIcon name="moon" size={24} /> {hall.houseBeds} bed ({hall.used} used)
+          <Icon name="moon" size={24} /> {hall.houseBeds} bed ({hall.used} used)
         </li>
         <li>
-          <PixelIcon name="flag" size={24} /> The banner, hidden under the floorboards
+          <Icon name="flag" size={24} /> The banner, hidden under the floorboards
         </li>
         <li>
-          <PixelIcon name="bag" size={24} /> A small chest: {chestUsed(state)}/{chestCapacity(state)} items
+          <Icon name="bag" size={24} /> A small chest: {chestUsed(state)}/{chestCapacity(state)} items
         </li>
       </ul>
       <p className="muted">The old stable on Banner Plaza stands empty. Gideon Rusk owns it; talk to him in the plaza (story mission 1).</p>
@@ -259,7 +259,7 @@ function BuyHall({ state, hall, actions }) {
   );
 }
 
-function WarRoom({ state, actions }) {
+export function WarRoom({ state, actions }) {
   const party = state.guild.mainParty || [];
   return (
     <>
@@ -391,16 +391,16 @@ function TrophyHall({ state }) {
     <>
       <Panel title="On display" eyebrow={`${trophyCount(state)} trophies · +${Math.min(trophyCount(state), 5) * 2} fame a month`}>
         <ul className="trophy-list">
-          {state.stats.individualTournamentWins ? <li>♛ {state.stats.individualTournamentWins} tournament title(s)</li> : null}
-          {state.stats.guildTournamentWins ? <li>⚑ {state.stats.guildTournamentWins} guild title(s)</li> : null}
+          {state.stats.individualTournamentWins ? <li><Icon name="crown" size={14} tone="brass" /> {state.stats.individualTournamentWins} tournament title(s)</li> : null}
+          {state.stats.guildTournamentWins ? <li><Icon name="flag" size={14} tone="brass" /> {state.stats.guildTournamentWins} guild title(s)</li> : null}
           {(state.artifacts || []).map((artifact) => (
-            <li key={artifact.id || artifact.name}>✦ {artifact.name}</li>
+            <li key={artifact.id || artifact.name}><Icon name="star" size={14} tone="brass" /> {artifact.name}</li>
           ))}
           {(state.defeatedBosses || []).map((boss) => (
-            <li key={boss}>☠ {String(boss).replace(/^boss-/, '').replace(/-/g, ' ')}</li>
+            <li key={boss}><Icon name="skull" size={14} tone="brass" /> {String(boss).replace(/^boss-/, '').replace(/-/g, ' ')}</li>
           ))}
           {wildBosses.map(([areaId]) => (
-            <li key={areaId}>☠ The boss of {areaId.replace(/-/g, ' ')}</li>
+            <li key={areaId}><Icon name="skull" size={14} tone="brass" /> The boss of {areaId.replace(/-/g, ' ')}</li>
           ))}
           {!trophyCount(state) ? <li className="muted">Empty cases, waiting.</li> : null}
         </ul>
@@ -491,7 +491,7 @@ function Tile({ id, icon, name, text, badge, onClick, className = '', activity =
     <div className={`room-tile-wrap ${activity ? 'is-drop' : ''}`} {...(activity ? { 'data-drop': 'room', 'data-drop-id': activity } : {})}>
       <button className={`building-tile room-tile room-tile--${id} ${className}`} onClick={onClick}>
         <span className="building-tile__icon">
-          <PixelIcon name={icon} size={36} />
+          <Icon name={icon} size={36} />
         </span>
         <strong>{name}</strong>
         <small>{text}</small>
@@ -541,7 +541,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
         </div>
         {hall.owned && !state.settings?.seenHints?.roomDrag && state.settings?.gestures !== 'tap' ? (
           <p className="gesture-tip">
-            <span className="gesture-tip__hand" aria-hidden="true">☝</span> Drag a hero from the party bar onto a room to put them to work.
+            <span className="gesture-tip__hand" aria-hidden="true"><Icon name="hand" size={22} tone="brass" /></span> Drag a hero from the party bar onto a room to put them to work.
           </p>
         ) : null}
         <nav className="building-grid" aria-label="Guild Hall rooms" data-menu>
@@ -588,9 +588,9 @@ export default function GuildHallRooms({ state, actions, navigate, slot, room: r
       <HallSummary state={state} hall={hall} />
       <h2 className="hall-room__title">
         <Button size="sm" className="town-header__back" onClick={() => setRoom(null)}>
-          ◀ Hall
+          <Icon name="back" size={14} tone="plain" /> Hall
         </Button>
-        <PixelIcon name={roomId === 'build' ? 'hammer' : roomId === 'rest' ? 'calendar' : ROOM_ICONS[roomId] || 'castle'} size={24} />
+        <Icon name={roomId === 'build' ? 'hammer' : roomId === 'rest' ? 'calendar' : ROOM_ICONS[roomId] || 'castle'} size={24} />
         {title}
       </h2>
       {roomId === 'build' ? <BuildList hall={hall} actions={actions} /> : null}

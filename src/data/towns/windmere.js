@@ -1,0 +1,61 @@
+import { rows } from '../tiles.js';
+
+// Windmere: a hill town of couriers and dueling schools on a cliff. Cobbled
+// terraces climb north toward the monastery wall; the Cliff Ring stands on the
+// southern edge above the drop. No guild hall and no herald here.
+export default {
+  id: 'windmere',
+  kind: 'town',
+  name: 'Windmere',
+  tagline: 'Hill monasteries · cliff duels',
+  landmark: 'The Cliff Ring',
+  summary: 'Wind off the cliffs decides as many bouts as the blades. Old fighters come home to Windmere to die, or to keep fighting.',
+  districts: ['Courier Steps', 'Monastery Terrace', 'The Cliff Ring'],
+  width: 36,
+  height: 24,
+  spawn: [17, 21],
+  arrive: [17, 21],
+  tiles: rows(
+    36,
+    ['WWWWWWWWW', 'WWWWWWWWW', 'WWWWWWWWW', 'WWWWWWWWW'],
+    ['W........', '.........', '.........', '........W'],
+    ['W........', '.........', '.........', '........W'],
+    ['W........', '.........', '.........', '........W'],
+    ['W........', '.........', '.........', '........W'],
+    ['W........', '.........', '.........', '........W'],
+    ['W........', '.........', '.........', '........W'],
+    ['W..======', '=========', '=========', '======..W'],
+    ['W..=.....', '...=.....', '.....=...', '.....=..W'],
+    ['W..=.....', '...=..###', '###..=...', '.....=..W'],
+    ['W..=.....', '...=..###', '###..=...', '.....=..W'],
+    ['W..=.....', '...=..###', '###..=...', '.....=..W'],
+    ['W..======', '=========', '=========', '======..W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W......==', '=========', '=========', '==......W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['W........', '.........', '....=....', '........W'],
+    ['WWWWWWWWW', 'WWWWWWWWW', 'WWWWWWWWW', 'WWWWWWWWW'],
+  ),
+  buildings: [
+    { building: 'tavern', label: 'The Gull’s Rest', door: [8, 7], asset: 'town.windmere.inn' },
+    { building: 'shop', label: 'Courier Supply', door: [27, 7], asset: 'town.windmere.shop' },
+    { building: 'arena', label: 'The Cliff Ring', door: [17, 19], asset: 'town.windmere.arena' },
+  ],
+  props: [
+    { id: 'noticeBoard', asset: 'prop.noticeboard', at: [22, 10], size: [2, 2], poi: { name: 'Notice Board', verb: 'Inspect', building: 'noticeBoard' } },
+    { id: 'windbell', asset: 'prop.windbell', at: [16, 9], size: [2, 2], poi: { name: 'The wind bell', verb: 'Inspect', dialogue: 'windmere.bell' } },
+    { id: 'lamp-1', asset: 'prop.lamp', at: [4, 13], size: [1, 1] },
+    { id: 'lamp-2', asset: 'prop.lamp', at: [31, 13], size: [1, 1] },
+  ],
+  npcs: [
+    { id: 'courier', name: 'Sela Wick', role: 'Courier', at: [12, 15], dialogue: 'windmere.courier' },
+    { id: 'monk', name: 'Brother Hale', role: 'Monastery keeper', at: [24, 15], dialogue: 'windmere.monk' },
+  ],
+  exits: [],
+};

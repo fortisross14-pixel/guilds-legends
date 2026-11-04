@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { MAX_REST_DAYS, campaignDaySerial, dateFromDaySerial, getCalendarEntries, spanLabel } from '../game/engine.js';
-import PixelIcon, { EVENT_ICONS } from '../components/PixelIcon.jsx';
+import Icon, { EVENT_ICONS } from '../components/Icon.jsx';
 import { Button } from '../components/UI.jsx';
 
 // The rest dial: drag along a timeline (days → weeks → months) dotted with the
@@ -33,7 +33,7 @@ export default function RestDial({ state, disabled, onRest }) {
       <div className="rest-dial__track">
         {events.map((entry) => (
           <span key={`${entry.kind}-${entry.id}`} className={`rest-dial__event rest-dial__event--${entry.kind}`} style={{ left: `${toPos(entry.day)}%` }} title={entry.title}>
-            <PixelIcon name={EVENT_ICONS[entry.kind] || 'star'} size={16} />
+            <Icon name={EVENT_ICONS[entry.kind] || 'star'} size={16} />
           </span>
         ))}
         <input

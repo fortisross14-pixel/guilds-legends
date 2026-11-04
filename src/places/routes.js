@@ -1,33 +1,46 @@
-// Where each destination lives. Screens still call navigate('missions') etc.;
-// these ids map onto the three places: the world map, the current town
-// (building + optional tab) and the menu (page + optional tab).
+// Where each destination lives. Screens still call navigate('missions') etc.
+// A route is either a place (the walkable scene or the world map) or a section
+// (a screen in the one template, opened over the place; src/hud/sections.jsx).
 export const ROUTES = {
   map: { view: 'map' },
   world: { view: 'map' },
-  town: { view: 'town' },
-  hall: { view: 'town', building: 'guildHall', tab: null },
-  rest: { view: 'town', building: 'guildHall', tab: 'rest' },
-  heroes: { view: 'town', building: 'guildHall', tab: null },
-  headquarters: { view: 'town', building: 'guildHall', tab: 'office' },
-  equipment: { view: 'town', building: 'guildHall', tab: 'armory' },
-  warRoom: { view: 'town', building: 'guildHall', tab: 'war' },
-  treasury: { view: 'town', building: 'guildHall', tab: 'treasury' },
-  tavern: { view: 'town', building: 'tavern' },
-  missions: { view: 'town', building: 'noticeBoard' },
-  tournaments: { view: 'town', building: 'arena' },
-  shop: { view: 'town', building: 'shop' },
-  rankings: { view: 'town', building: 'herald' },
-  menu: { view: 'menu' },
-  settings: { view: 'menu', page: 'settings' },
-  chronicle: { view: 'menu', page: 'chronicle' },
-  calendar: { view: 'menu', page: 'calendar' },
-  quests: { view: 'menu', page: 'quests' },
-  codex: { view: 'menu', page: 'codex', tab: 'goals' },
-  goals: { view: 'menu', page: 'codex', tab: 'goals' },
-  legacy: { view: 'menu', page: 'codex', tab: 'legacy' },
+  town: { view: 'scene' },
+  hall: { section: 'hall', tab: null },
+  rest: { section: 'hall', tab: 'rest' },
+  headquarters: { section: 'hall', tab: 'office' },
+  treasury: { section: 'hall', tab: 'treasury' },
+  warRoom: { section: 'party', tab: 'main' },
+  heroes: { section: 'party', tab: 'roster' },
+  equipment: { section: 'items' },
+  items: { section: 'items' },
+  tavern: { section: 'tavern' },
+  missions: { section: 'noticeBoard' },
+  tournaments: { section: 'arena' },
+  shop: { section: 'shop' },
+  herald: { section: 'herald' },
+  rankings: { section: 'records', tab: 'rankings' },
+  reputation: { section: 'records', tab: 'rankings', view: 'reputation' },
+  menu: { section: 'system', tab: 'game' },
+  settings: { section: 'system', tab: 'settings' },
+  chronicle: { section: 'records', tab: 'almanac' },
+  calendar: { section: 'calendar', tab: 'calendar' },
+  news: { section: 'calendar', tab: 'news' },
+  quests: { section: 'quests', tab: 'main' },
+  contacts: { section: 'contacts' },
+  codex: { section: 'records', tab: 'goals' },
+  goals: { section: 'records', tab: 'goals' },
+  legacy: { section: 'records', tab: 'goals' },
+  lore: { section: 'records', tab: 'lore' },
 };
 
+/** A route from an id or an object. Old place objects ({ view: 'town', building }) still work. */
 export function resolveRoute(target) {
-  if (target && typeof target === 'object') return target;
+  if (target && typeof target === 'object') {
+    if (target.section) return target;
+    if (target.building) return { section: target.building, tab: target.tab || null };
+    if (target.view === 'town') return { view: 'scene' };
+    if (target.view === 'menu') return ROUTES[target.page] || ROUTES.menu;
+    return target;
+  }
   return ROUTES[target] || ROUTES.map;
 }

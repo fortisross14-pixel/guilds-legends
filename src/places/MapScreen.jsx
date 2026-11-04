@@ -7,7 +7,7 @@ import { WILD_AREAS, WILD_AREA_LIST } from '../data/wilds/index.js';
 import { Badge, Button, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
 import { useAssetUrl } from '../components/Asset.jsx';
 import { BEYOND_TEASER, inSlice, sliceHides } from '../data/slice.js';
-import PixelIcon from '../components/PixelIcon.jsx';
+import Icon from '../components/Icon.jsx';
 
 const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
 
@@ -66,28 +66,16 @@ export default function MapScreen({ state, actions, navigate, place }) {
 
   return (
     <div className="screen screen--world">
-      <header className="map-header">
-        <h1>The Living World</h1>
-        <span
-          className="help-tip"
-          tabIndex={0}
-          title="Missions, tournaments and recruitment are local. Travel costs gold and days (time only passes when you act), but lets the guild seek the classes and primals it needs."
-        >
-          ?
-        </span>
-        <Badge tone="blue">
-          {knownLocationCount}/{LOCATIONS.length} known
-        </Badge>
-        <Badge tone="gold">{current.name}</Badge>
-        <PrimalBadge primal={current.primal} />
-      </header>
+      <p className="map-known">
+        {knownLocationCount}/{LOCATIONS.length} places known · you are in {current.name}
+      </p>
 
       {travel ? (
         <section className="travel-banner">
           <div className="travel-banner__route">
-            <span>{LOCATION_BY_ID[travel.fromId]?.icon}</span>
-            <i>···➜</i>
-            <span>{LOCATION_BY_ID[travel.toId]?.icon}</span>
+            <span><Icon name={LOCATION_BY_ID[travel.fromId]?.icon} size={16} /></span>
+            <i><Icon name="next" size={14} tone="plain" /></i>
+            <span><Icon name={LOCATION_BY_ID[travel.toId]?.icon} size={16} /></span>
           </div>
           <div>
             <span className="eyebrow">The guild is on the road</span>
@@ -114,7 +102,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
           <section className="world-map world-map--locations" aria-label="Fictional world travel map (drag to pan, pinch to zoom)" {...panZoom.handlers}>
             {panZoom.zoomed ? (
               <button type="button" className="world-map__reset" onClick={panZoom.reset} aria-label="Reset the map view">
-                ⤢
+                <Icon name="recenter" size={18} tone="plain" />
               </button>
             ) : null}
             <div className="world-map__plane" style={panZoom.style}>
@@ -155,7 +143,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     top: `${LOCATION_BY_ID[travel.fromId].y + (LOCATION_BY_ID[travel.toId].y - LOCATION_BY_ID[travel.fromId].y) * ((travel.totalDays - travel.daysRemaining) / travel.totalDays)}%`,
                   }}
                 >
-                  <PixelIcon name="flag" size={24} />
+                  <Icon name="flag" size={24} />
                 </span>
               ) : null}
               {LOCATIONS.map((location) => {
@@ -175,11 +163,11 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     {isCurrent && !travel ? (
                       <em className="location-node__here">
                         <span>You are here</span>
-                        <PixelIcon name="pointer" size={12} />
+                        <Icon name="pointer" size={12} />
                       </em>
                     ) : null}
                     <span className="location-node__icon">
-                      <PixelIcon name={canReach ? (knowledgeStatus === 'unknown' ? 'pin' : isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
+                      <Icon name={canReach ? (knowledgeStatus === 'unknown' ? 'pin' : isCurrent ? 'castle' : 'town') : 'lock'} size={24} />
                     </span>
                     <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted' : location.name) : beyond ? 'Beyond' : location.tier}</strong>
                     <small>
@@ -209,7 +197,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     style={{ left: `${LOCATION_BY_ID[mission.locationId].x}%`, top: `${LOCATION_BY_ID[mission.locationId].y}%` }}
                     title={mission.title}
                   >
-                    <PixelIcon name="skull" size={24} label={`Boss: ${mission.title}`} />
+                    <Icon name="skull" size={24} label={`Boss: ${mission.title}`} />
                   </span>
                 ))}
               {WILD_AREA_LIST.map((area) => {
@@ -225,11 +213,11 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     {view.here ? (
                       <em className="location-node__here">
                         <span>You are here</span>
-                        <PixelIcon name="pointer" size={12} />
+                        <Icon name="pointer" size={12} />
                       </em>
                     ) : null}
                     <span className="location-node__icon">
-                      <PixelIcon name={view.unlocked ? 'tree' : 'lock'} size={24} />
+                      <Icon name={view.unlocked ? 'tree' : 'lock'} size={24} />
                     </span>
                     <strong>{area.name}</strong>
                     <small>{view.unlocked ? 'Wild area' : 'Closed'}</small>
@@ -238,13 +226,13 @@ export default function MapScreen({ state, actions, navigate, place }) {
               })}
               {questId && LOCATION_BY_ID[questId] ? (
                 <span className="map-quest" style={{ left: `${LOCATION_BY_ID[questId].x}%`, top: `${LOCATION_BY_ID[questId].y}%` }}>
-                  <PixelIcon name="star" size={18} label={`Main quest: ${questTitle}`} />
+                  <Icon name="star" size={18} label={`Main quest: ${questTitle}`} />
                   <span>{questTitle}</span>
                 </span>
               ) : null}
               {pinId && LOCATION_BY_ID[pinId] ? (
                 <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
-                  <PixelIcon name="pin" size={24} label="Contract location" />
+                  <Icon name="pin" size={24} label="Contract location" />
                 </span>
               ) : null}
             </div>
@@ -273,7 +261,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         <aside className="region-dossier region-dossier--location" style={{ '--primal': PRIMALS[selected.primal].color }}>
           <div className="region-dossier__banner">
             <span>
-              <PixelIcon name={unlocked ? (selected.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={24} />
+              <Icon name={unlocked ? (selected.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={24} />
             </span>
             <div>
               <small>
@@ -387,7 +375,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
             </>
           ) : unlocked && ['rumored', 'discovered'].includes(selectedKnowledge) ? (
             <div className="locked-dossier">
-              <PixelIcon name="pin" size={28} />
+              <Icon name="pin" size={28} />
               <h3>{selectedKnowledge === 'discovered' ? 'A marked destination' : 'A name on the road'}</h3>
               <p>{selectedSource?.note || `Travelers have spoken of ${selected.name}, but little else is certain.`}</p>
               <small>Source: {selectedSource?.source || 'Travelers'}</small>
@@ -400,7 +388,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
             </div>
           ) : unlocked ? (
             <div className="locked-dossier">
-              <PixelIcon name="pin" size={28} />
+              <Icon name="pin" size={28} />
               <h3>An uncharted route</h3>
               <p>The guild knows only that a settlement lies beyond this road. Travel there to put a name, people and opportunities to the mark.</p>
               {selected.id !== currentLocationId ? (
@@ -412,14 +400,14 @@ export default function MapScreen({ state, actions, navigate, place }) {
             </div>
           ) : selectedBeyond ? (
             <div className="locked-dossier locked-dossier--beyond">
-              <PixelIcon name="lock" size={28} />
+              <Icon name="lock" size={28} />
               <h3>{selectedKnown ? `${selected.name}, ${selected.region}` : 'A road into the haze'}</h3>
               <p>{BEYOND_TEASER.text}</p>
               <Badge tone="purple">A later chapter</Badge>
             </div>
           ) : (
             <div className="locked-dossier">
-              <PixelIcon name="lock" size={28} />
+              <Icon name="lock" size={28} />
               <h3>{selected.tier} reach required</h3>
               <p>The guild can hear stories about {selected.name}, but has neither the route, patronage nor reputation needed to move its operation there.</p>
               <Badge tone="purple">Earn {selected.tier} status</Badge>
@@ -433,7 +421,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         {WILD_AREA_LIST.map((area) => (
           <button key={area.id} className={selectedWild?.id === area.id ? 'is-selected' : ''} onClick={() => setSelectedId(`wild:${area.id}`)}>
             <span style={{ '--primal': PRIMALS[area.primal]?.color }}>
-              <PixelIcon name="tree" size={12} />
+              <Icon name="tree" size={12} />
             </span>
             <div>
               <strong>{area.name}</strong>
@@ -461,7 +449,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               onClick={() => setSelectedId(location.id)}
             >
               <span style={{ '--primal': PRIMALS[location.primal].color }}>
-                <PixelIcon name={canReach ? (location.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={12} />
+                <Icon name={canReach ? (location.id === currentLocationId ? 'castle' : 'town') : 'lock'} size={12} />
               </span>
               <div>
                 <strong>{canReach ? (knowledgeStatus === 'unknown' ? 'Uncharted frontier' : location.name) : beyond ? BEYOND_TEASER.title : `${location.tier} frontier`}</strong>
@@ -490,7 +478,7 @@ function WildCard({ area, state, actions }) {
     <aside className="region-dossier region-dossier--location region-dossier--wild" style={{ '--primal': PRIMALS[area.primal]?.color }}>
       <div className="region-dossier__banner">
         <span>
-          <PixelIcon name={view.unlocked ? 'tree' : 'lock'} size={24} />
+          <Icon name={view.unlocked ? 'tree' : 'lock'} size={24} />
         </span>
         <div>
           <small>Wild area · reached from {hub?.name}</small>
@@ -545,7 +533,7 @@ function WildCard({ area, state, actions }) {
         </>
       ) : (
         <div className="locked-dossier">
-          <PixelIcon name="lock" size={28} />
+          <Icon name="lock" size={28} />
           <h3>Closed for now</h3>
           <p>{area.lockedText}</p>
         </div>

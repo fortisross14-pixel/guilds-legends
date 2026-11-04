@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { getCalendarEntries } from '../game/engine.js';
 import { Badge, Button, Panel } from '../components/UI.jsx';
-import PixelIcon, { EVENT_ICONS } from '../components/PixelIcon.jsx';
+import Icon, { EVENT_ICONS } from '../components/Icon.jsx';
 
 function sameDate(a, b) {
   return a.year === b.year && a.month === b.month && a.week === b.week;
@@ -75,7 +75,7 @@ export default function CalendarScreen({ state, actions, canAdvance = false }) {
                         onClick={() => setSelected(entry)}
                       >
                         <i aria-hidden="true">
-                          <PixelIcon name={EVENT_ICONS[entry.kind] || 'star'} size={24} />
+                          <Icon name={EVENT_ICONS[entry.kind] || 'star'} size={24} />
                         </i>{' '}
                         {entry.title}
                         {entry.signedUp ? <Badge tone="gold">Signed up</Badge> : entry.enterable ? <Badge tone="green">Can enter</Badge> : null}
