@@ -281,6 +281,11 @@ These reconcile the story with the existing game. Follow them unless the author 
 - **Slice locations:** add **Windmere** to the slice for mission 7, with a small arena or exhibition ground for its tournament. Mooncourt stays outside the slice; in Chapter 1, Wren's location and every Act II mission must be reachable within the slice.
 - **The Blackwood:** in Chapter 1, the wild area is reachable only at its edge. The Hollow Warden's presence blocks the way deeper, as a teaser for mission 10.
 
+### Story contracts are places (missions-in-world spec)
+- A story step of kind `contract` posts its contract on the town's notice board; taking it places a **site** (`src/data/missions/index.js`, `STORY_SITES` by `<mission>.<step>` and the route's variant). Mission 3 is the Old Road (tracks, the pack, the handler); mission 5 the Thornwood edge (nightcap); mission 6 the Ironford archive as a painted site (sneak in, talk the council round, force it, or decipher the copy in town); mission 8 the Thornwood edge or Greenhollow's streets (protect Linnet, smuggle her out, or ask door to door).
+- Story contracts finish on the spot when their required objectives are done (no report back): the reward moment shows, and the next story step (the giver's scene) follows. A missed deadline posts the contract again a week later.
+- The opening peddler (mission 3) meets the party when the contract is taken.
+
 ### Clashing names and lore already in the game (fix these)
 - **The existing story data** (`src/data/story.js`) says Aldric traded the guild's luck to the Hollow Warden. That is now **Thorne's false official story**: keep it as the rumor NPCs repeat early on. Replace the beats with these 12 missions.
 - **"Captain Rook"** (a bandit boss in `src/data/enemies.js`): rename, to avoid confusion with Cassian Rook.

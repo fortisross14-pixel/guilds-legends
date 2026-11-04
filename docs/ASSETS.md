@@ -67,6 +67,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.arena.greenhollow` | `art/interiors/arena-greenhollow.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Greenhollow: fighting ground, sign-up desk, history board |
 | `interior.arena.ironford` | `art/interiors/arena-ironford.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Ironford: fighting ground, sign-up desk, history board |
 | `interior.arena.windmere` | `art/interiors/arena-windmere.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Windmere: fighting ground, sign-up desk, history board |
+| `site.ironford.archive` | `art/sites/ironford-archive.png` | 1280×576 | `art/interiors/herald.png` | borrowed | Contract site: the Ironford archive vault (shelves, a desk, the quartermaster’s ledgers) |
+| `site.ironford.slagpits` | `art/sites/ironford-slagpits.png` | 1280×576 | `art/interiors/arena-ironford.png` | borrowed | Contract site: the slag pits behind the Ironford foundries |
+| `site.windmere.cliffs` | `art/sites/windmere-cliffs.png` | 1280×576 | `art/interiors/arena-windmere.png` | borrowed | Contract site: the cliff path above Windmere harbour |
 | `interior.inn.greenhollow` | `art/interiors/inn-greenhollow.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Greenhollow (rest 1–3 nights, recruits) |
 | `interior.inn.ironford` | `art/interiors/inn-ironford.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Ironford (rest 1–3 nights, recruits) |
 | `interior.inn.windmere` | `art/interiors/inn-windmere.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Windmere (rest 1–3 nights, recruits) |
@@ -120,6 +123,10 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `prop.gather.herb` | `art/walk/props/gather-herb.png` | 28×28 | — | placeholder | Gathering spot: herbs |
 | `prop.gather.ore` | `art/walk/props/gather-ore.png` | 28×28 | — | placeholder | Gathering spot: ore and shards |
 | `prop.gather.coin` | `art/walk/props/gather-coin.png` | 28×28 | — | placeholder | Gathering spot: coin pouches |
+| `site.marker.inspect` | `art/sites/marker-inspect.png` | 28×28 | — | placeholder | Contract objective on a walkable map: something to inspect (tracks, a clue, a lock) |
+| `site.marker.collect` | `art/sites/marker-collect.png` | 28×28 | — | placeholder | Contract objective on a walkable map: something to collect (herbs, ore, evidence, a cache) |
+| `site.marker.destination` | `art/sites/marker-destination.png` | 28×28 | — | placeholder | Contract objective on a walkable map: where an escort ends |
+| `site.marker.door` | `art/sites/marker-door.png` | 32×40 | — | placeholder | A door in town to a painted contract site |
 | `prop.fountain` | `art/walk/props/fountain.png` | 96×128 | — | placeholder | Dunmere: Banner Fountain |
 | `prop.noticeboard` | `art/walk/props/noticeboard.png` | 64×96 | — | placeholder | Dunmere: Notice Board |
 | `prop.well` | `art/walk/props/well.png` | 32×64 | — | placeholder | Dunmere: Old well |

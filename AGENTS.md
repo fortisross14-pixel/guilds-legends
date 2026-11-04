@@ -58,11 +58,12 @@ npm run build       # production build to dist/ (not committed)
 src/App.jsx               Shell: save slots, the place (walkable scene or world map), the open section, the HUD, modals, the `actions` object (UI → engine)
 src/hud/                  The HUD and the one screen template: Hud.jsx (Orb, Ledger, PlaceTag), Section.jsx (the template), sections.jsx (which tabs each section has and what they show), GuildScreen (Charter, Reputation, Patrons, Rivals, Finances), ContactsScreen, CreditsScreen, HireGate, dateLine.js
 src/places/               MapScreen (world map, wild-area cards), RestDial (the hall's rest timeline), GuildHallRooms (the lot diorama: slots, the build list, a room's panel, heroes into rooms, the rest dial; and the Treasury, shown in Guild → Finances), JournalScreen (Now, Quests, Contracts, Calendar), CalendarScreen, routes.js (route ids → a place or a section)
-src/components/           UI primitives and scene backdrop (UI.jsx), the icon set (Icon.jsx + iconPaths.js: game-icons.net and Phosphor), modals (combat, mission game, council, moments), PartyRail (party bar), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door), ChapterEnd; touch: gestures.js (long-press, swipe, vibration), useDraggable.js (drag and drop onto data-drop targets), usePanZoom.js, DraggableHero.jsx
+src/components/           UI primitives and scene backdrop (UI.jsx), the icon set (Icon.jsx + iconPaths.js: game-icons.net and Phosphor), modals (combat, council, moments, road events), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door), ChapterEnd; touch: gestures.js (long-press, swipe, vibration), useDraggable.js (drag and drop onto data-drop targets), usePanZoom.js, DraggableHero.jsx
 src/screens/              Building/page content rendered inside places (Missions, Heroes, MainPartyScreen (Party → Main party, saved formations), Rankings + RivalryScreens, HistoryScreens, CodexScreen (Lore, Almanac, Bestiary, Guilds), ArenaScreen + GuildChampionships, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
   dialogue/               Data-driven conversations (opener variants, hub topics, goodbyes; choices with effects); format in dialogue/index.js, style and voices in docs/DIALOGUE.md; story.js and storyAct2.js hold the story scenes
+  missions/               Contract sites (missions-in-world): index.js (each template's and story contract's place and objectives: fight, talk with stat tests, inspect, collect, escort; extras, par days, deadlines; family-built sites for the rest), places.js (free tiles in wild areas and towns, painted sites behind a door)
   story.js, lore.js       The Last Banner (docs/STORY.md): missions, steps, gates, evidence, story heroes, the prologue; the Broken Lantern's seven, the official story, the Lore codex
   tiles.js, playerHouse.js  Ground tiles for walkable layouts; the player's house (prologue): a painted scene (door, founder, Rook)
   interiors.js, people.js Building interiors as painted scenes (the painting per town, spots, hotspots and the door in percentages: interiorLayout); the regulars in each building and visitor name pools
@@ -70,7 +71,7 @@ src/data/                 Static content: classes, missions, formations, world m
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
   rooms.js, lots.js       Room types with three tiers (cost, weeks, upkeep, what each gives), training equipment, the defeat, injury, Crown Room, Armory and visitor numbers; lots (slots, rent, deposit, purchase price, starter cabin, expansion steps; several cities supported)
   charters.js, patrons.js Founding charters and run paths; the three patrons, their levels, unlocks and rivalries
-src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer; the door and exit bubble), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map), TownScene, WildScene; PaintedScene (a painting that covers the screen, things placed on it in percentages) and InteriorScene (a building as a painted scene: people, hotspots, the door); DialogueBox (scripted talk), PersonDialogue (people: offers and the interview)
+src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer; the door and exit bubble), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map; contract objectives and site doors as targets), TownScene, WildScene; SiteScene (a painted contract site) and SiteCard (an objective on site: talk, inspect, collect, escort); PaintedScene (a painting that covers the screen, things placed on it in percentages) and InteriorScene (a building as a painted scene: people, hotspots, the door); DialogueBox (scripted talk), PersonDialogue (people: offers and the interview)
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   charter.js              founding charter effects and patron standing (data-only imports, so it sits first)
@@ -95,9 +96,10 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   tournaments.js          individual tournaments (ratings, fields, AI resolution, records)
   guildTournaments.js     guild championships, yearly creation, scheduled resolution
   tournamentEntry.js      arena sign-up, tournament start days and forfeits, the arena read model, starting tournament combat
-  missions.js             contract inspection, party selection, launch, encounter queueing
+  missions.js             contracts in the world: accepting one (its site and objectives placed), declining or giving up, the steps (Journal), where objectives stand (siteObjects, siteDoors), saved formations
   people.js               people in buildings (Phase 7C): regulars and monthly visitors built on candidates and contracts, offers (mission, hire, challenge), talking and the interview, bouts, Contacts
-  outcomes.js             mission resolution: grades, injuries, rewards, reports, sagas
+  outcomes.js             reporting a contract back: the grade from what was done (objectives, extras, knockouts, days), rewards and the Mission complete moment; deadlines; acknowledging tournament reports
+  sites.js                doing a contract on site: talk (stat tests), inspect, collect, escort, site fights and their result (a loss is the defeat rule)
   encounters.js           active combat / mission-game actions and conclusion
   rivals.js               rival seasons, AI transfer market, rival institutions
   time.js                 day loop (advanceDays; weekly and monthly systems on rollover), advanceToDate (Guild Hall only), monthly council resolution, aging
@@ -105,12 +107,11 @@ src/game/engine/          Engine implementation, layered bottom-up (each file im
   dashboard.js            UI read models (getNextAction, getDashboardSummary), small UI actions
   state.js                createNewGame and default state pieces
   save.js                 compactForSave, migrateGame, validateGame
-  timeActions.js          the only ways time moves: travelTo + road events, continueJourney, launchExpedition, restAtHall, restAtInn
+  timeActions.js          the only ways time moves: travelTo + road events, continueJourney, restAtHall, restAtInn (contracts have no clock)
   exploration.js          walkable scenes: dialogue conditions/effects, scene positions, wild areas (enter, gather, camp, battles)
   autoplay.js             simulateAutoplay (long tests, sim script)
 src/game/types.js         JSDoc typedefs (GameState, Hero, Guild, Mission, Tournament, Rival)
 src/game/combat.js        Per-hero turn-based battles: commands, hit/crit/primal rolls, statuses, enemy AI profiles, boss phases, tell, turn order, target previews, auto-battle; each round records `encounter.events` that CombatArenaModal replays as animations
-src/game/missionGames.js  Playable Diplomacy / Expedition / Intrigue challenges
 src/game/legacy.js        Branch, ambition and artifact definitions
 src/game/storage.js       IndexedDB save slots, export/import
 src/audio/sfx.js          Web Audio retro sound effects (playSound, configureSound, unlockAudio)
@@ -135,8 +136,8 @@ One plain JSON-serializable object, created by `createNewGame` and upgraded by `
 - `historicHeroes[]`: archived player heroes (compacted)
 - `candidates[]`: recruits on the market. Each has a `locationId`, a `signingFee`, a `scoutLevel` (0–3, how precisely its stats are known) and an optional `demand`
 - `rivals[]`: 30 AI guilds, each with a `star` and `members[]`. `freeAgents[]` and `worldHistoricHeroes[]` hold the rest of the world's heroes
-- `missions[]` (contract board), `activeMissions[]` (deployed, with `assignments` and `remaining`)
-- `activeEncounter` (combat in progress), `activeMissionGame` (non-combat challenge in progress), `pendingDecisions[]`, `pendingReports[]`: while any of these is set, time is paused
+- `missions[]`: contracts (posted, held by people, or taken). A taken one has `accepted` and `site` ({ status: active | ready | failed, place: { kind: wild | town | painted, id }, slots: { objectiveId: { tile } or { at } or { box } }, done, progress, failed, escort, alarm, kos, rough, startDay, par, deadlineDay }), and `giverId`/`giverName` when a person gave it; story contracts carry `story` and `storyVariant`
+- `activeEncounter` (combat in progress; `sourceType` site for a contract fight), `pendingReports[]` (tournaments): while one is set, time is paused
 - `tournaments[]` (a `signup: { heroId, fee, day }` until the start day), `guildTournaments[]`, `tournamentHistory[]`, `titleRecords`
 - `world: { currentLocationId, visitedLocationIds, activeTravel ({ fromId, toId, daysRemaining, totalDays, cost }), wildAreaId, exploration }`: `wildAreaId` is the wild area the guild is walking (null in town); `exploration` holds `positions[sceneId]`, `discovered[sceneId]`, `talked[conversationId]`, `npcs` (relationship), `wild[areaId] = { cleared, gathered, visited, bosses }` (cleared/gathered hold the week serial they return)
 - `chronicle[]`, `missionHistory[]`, `artifacts[]`, `sagas[]`, `stats`, `legacy`

@@ -59,7 +59,7 @@ Navigation used to live in four places (a sidebar, an 8-item top bar, a stack of
 | Guild | Guild | Charter (charter, status, known for, promotion, paths), Reputation, Patrons, Rivals, Finances (costs, property, debt) |
 | Guild | Contacts | everyone you have met: where they are, what they offer, how they feel; "moved on" for visitors who left |
 | World | Map | the world map; travel |
-| World | Journal | what is happening and what is next: **Now** (heroes away and when they return, injured heroes, construction, the tournament, news), **Quests** (the main mission as title, goal, current step, Go and Show on map; other steps and how it opened behind a tap; evidence; side quests; guild tasks; done), **Contracts** (in the field, and the same list as the notice board), **Calendar** (its main button rests at the Guild Hall at home or the inn away) |
+| World | Journal | what is happening and what is next: **Now** (heroes away and when they return, injured heroes, construction, the tournament, news), **Quests** (the main mission as title, goal, current step, Go and Show on map; other steps and how it opened behind a tap; evidence; side quests; guild tasks; done), **Contracts** (the ones you are working on as short steps with their deadline, and the board's list), **Calendar** (its main button rests at the Guild Hall at home or the inn away) |
 | World | Records | rankings and history: **Rankings** (the guild's status and three ranks, a Guilds/Heroes toggle and the ladder picker; long-press a ladder for what it measures), Seasons (reviews and season-by-season ranks), Record book, Hall of fame, Mission log, **Codex** (Lore, Almanac, Bestiary, Guilds) |
 | World | System | Game (save, load or quit to title), Settings (short labelled rows, including the main quest marker), Credits |
 
@@ -89,7 +89,7 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 | World map | the map (pan, pinch) with the place tag and the location card |
 | Sections | Party, Items, Guild Hall, Guild, Contacts, Journal, Records, System |
 | Building interiors | Tavern / Inn, Arena, Shop, Herald: walkable rooms with people; their panels (shop, inn, sign-up desk, history board) open in the template |
-| Notice board | the contracts people gave you, in the template |
+| Notice board | a compact list: contracts posted here and taken from people; tap one for its steps, place, pay, deadline and Accept / Report / Give up |
 | Overlays | battle (full screen), story scenes and ceremonies (full screen), everything else as a bottom panel |
 
 ### The battle screen (battle-hiring spec)
@@ -153,7 +153,7 @@ From a recruit's first line, a card sits right above the conversation: portrait,
 
 | Ask | Leads to |
 |---|---|
-| Need anything done? | the petitioner describes the problem, the pay and the danger → **We’ll take it.** (pinned to the notice board) or **Not this one.** (a rival takes it, a little regional reputation lost) |
+| Need anything done? | the petitioner describes the problem, the pay and the danger → **We’ll take it.** (it starts at once: in the Journal, on the map, its objectives placed) or **Not this one.** (a rival takes it, a little regional reputation lost). Later: **It’s done.** reports it (the Mission complete screen); after a missed deadline they say so once. |
 | Looking for work? | the interview, in their personality’s voice: **Tell me about yourself.** (dream, flaw) · **What can you do?** (narrows their stat ranges, like scouting) · **What would it take to sign you?** (fee, monthly wage, 2 years, a free bed; or why not: reputation, charter, no bed, gold, "beat me first") → **Deal. Welcome to …** hires them. "Where are you from?" is small talk. |
 | Fancy a friendly bout? | a friendly one-on-one with the existing combat; win: +3 fame, more respect, and a challenger agrees to hear your offer; lose: −1 fame |
 | A keeper's service | Shop: the shop panel slides up (shelves open their category) · Inn: rest 1–3 nights · Registrar: the sign-up desk · Referee: starts the bout during a tournament ("No tournament in progress" otherwise) · Herald's clerk: Records → Rankings · Messenger: the news · Traveller: a rumour puts a new place on the map |
@@ -165,7 +165,16 @@ From a recruit's first line, a card sits right above the conversation: portrait,
 - **Herald's office** (Dunmere, Ironford): the clerk at the desk (rankings), the ranking board (rankings), the records shelf (almanac and lore), a messenger while there is unread news.
 - **Shop:** the shopkeeper opens the shop; each shelf opens its category (potions, weapons, armor, charms).
 
-**The notice board** (the one list): a physical board in each town square. It shows the contracts people gave you (plus story and boss contracts, which are posted), with status, reward and risk; contracts in other towns are listed with **Show on map**. Pick one here and drag heroes into its slots, as before.
+**The notice board** (the one list): a physical board in each town square. It lists the contracts posted there (story and boss contracts) and the ones people here gave you, each with its status (New, Working, Done: report, Too late). Tap one for its panel: the stakes in one line, where it happens, its steps, the pay and the deadline, then **Accept** (and **Decline**), **Go**, **Report** (a posted job) or **Give up**. Contracts in other towns are listed under "Elsewhere".
+
+### Contracts in the world (missions-in-world spec)
+
+- **A contract is a place to go and things to do there.** Taking one (from a person or the board) adds it to Journal → Contracts as short steps ("Inspect wolf tracks · Defeat the pack · Defeat the handler · Return to Ulric Lark"), puts a marker on the world map and places its objectives: in the wild area by the town (the Old Road, the Thornwood edge, the Blackwood), in the town's own streets (talk-heavy jobs), or in a painted site behind a door in town (the Ironford archive vault and slag pits, the Windmere cliff path).
+- **Objectives are things in the world**, all marked like a quest so they stay in view: enemy groups (touch or tap one for the normal battle; bosses wear a skull), people (talk; a choice may test a hero's stat, shown as "Presence 52: likely", or cost gold), clues and locks (inspect; some need a stat or class: "A Rogue could open this"; a failed sneak raises the alarm and the next fight there is harder), finds (collect, 1/3), and escorts (they come with you to the place marked "Bring Elsa here"). Extras (a hidden cache, a side clue) are optional.
+- **Steps update as you do them**; nothing is rolled out of sight. When the required ones are done, report back to the giver ("It's done.") or at the board. Story contracts finish on the spot and the story moves on.
+- **The grade comes from what you did:** Success for the job; a star more for every extra found, a star more for a clean job (nobody knocked out, within the days it should take), a star less for a rough one (two or more knocked out, a corner cut in talk, or twice the days). One Mission complete screen shows it.
+- **No mission clock and no pop-ups:** time passes only through travel, camping and resting; some contracts have a calendar deadline (Journal, board, calendar). Losing a fight on site is the defeat rule; the contract stays open. Only the battle screen and talk with people on site interrupt.
+- **Road events are a card:** the title, one line of narration and the choices as full-width rows, nothing under it.
 
 **Contacts** (Guild orb): everyone you have met, with portrait, where they are (town and building), what they offer and how they feel about you; people who rotated out are marked "Moved on · last seen in …". **Map** shows their town.
 
@@ -178,7 +187,7 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **First battle**, one hero's action | 3 (Attack, target, confirm); 4 for a skill (Skill, skill, target, confirm) | **1** drag (hero → wolf, release on Attack); tap fallback 3 (hero, wolf, Attack) | drag + radial; previews on the target; long-press to inspect |
 | **Assign 2 heroes and rest a month** | 9 (room tile, 2 × pick from a list, back, Rest, 1 month…) | **5** (2 drags onto room tiles, Rest, drag the dial, Rest) | rooms take dropped heroes; the rest dial snaps to events |
 | **Hire a recruit** | 3 (Tavern, scroll, Hire) | **3** (Tavern, swipe, Hire) | swipe cards; disabled Hire says why |
-| **Contract → battle → result** (2 heroes, 2 rounds) | 1 board + 1 contract + 4 slot picks + Launch + 12 battle taps + 3 result = **22** | 1 + 1 + 2 drags + Launch + 4 battle drags + 3 = **12** | heroes drag into slots; one gesture per battle action |
+| **Contract → battle → result** (2 heroes, 2 rounds) | 1 board + 1 contract + 4 slot picks + Launch + 12 battle taps + 3 result = **22** | talk (2) + walk to the group (1) + 4 battle drags + Continue (1) = **8** | no party builder: the party travels with you; one gesture per battle action |
 | **Tournament sign-up** | 4 (Arena, desk, hero, Sign up) | **4** | long-press the Arena door peeks at the next tournament without walking |
 | **Build a room** | 3 (Hall, empty wing, Build) | **3** | Build says why when blocked |
 | **Travel** | 3 (Map, location, Travel) | **3** | the map pans and zooms; Travel says why when blocked |
@@ -191,12 +200,14 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | Use | Not | Meaning |
 |---|---|---|
 | **gold** | crowns, coin | money (the state field is still `guild.crowns`) |
-| **contract** | job, quest, mission | paid work from a notice board |
+| **contract** | job, quest, mission | paid work from a person or a notice board, played in person at its site |
+| **site** | dungeon, instance | where a contract happens: a wild area, the town, or a painted place behind a door |
+| **objective** | task, goal | one thing to do at a site (fight, talk, inspect, collect, escort); an **extra** is optional |
 | **story mission** | quest, chapter | one of the 12 missions of The Last Banner |
 | **quest** | task, objective | any entry in Journal → Quests: main (story), side, guild |
 | **tournament** | competition, event | an individual tournament (one hero per guild) |
 | **championship** | guild tournament | a team tournament (outside Chapter 1) |
-| **party** | company, squad | the heroes sent on a contract or a fight |
+| **party** | company, squad | the heroes with the founder: they fight, talk and travel together |
 | **main party** | team, lineup | a lead and up to three companions (Party → Main party); no room needed |
 | **party lead** | captain, leader | the main party's first hero; takes the lead role in every arrangement |
 | **task** | activity, assignment | what a hero not in a room does at home (rest, scouting, exhibitions, guild duty) |
