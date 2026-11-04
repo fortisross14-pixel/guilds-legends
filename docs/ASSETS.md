@@ -33,7 +33,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | ready | Dunmere: the Guild Hall building on its lot (the same at every stage) |
+| `town.dunmere.guildhall.stage1` | `art/walk/buildings/dunmere-guildhall-stage1.png` | 160×160 | — | ready | Dunmere: the Guild Hall building on its lot |
 | `town.dunmere.herald` | `art/walk/buildings/dunmere-herald.png` | 160×160 | — | placeholder | Dunmere: Herald’s Office (front with door) |
 | `town.dunmere.tavern` | `art/walk/buildings/dunmere-tavern.png` | 160×160 | — | ready | Dunmere: The Wayfarer (front with door) |
 | `town.dunmere.shop` | `art/walk/buildings/dunmere-shop.png` | 160×160 | — | placeholder | Dunmere: Mira’s Supply (front with door) |
@@ -55,67 +55,65 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `interior.guildhall.stage1` | `art/interiors/guildhall-stage1.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Guild Hall interior, stage 1 (Your house) |
-| `interior.guildhall.stage2` | `art/interiors/guildhall-stage2.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 2 (Empty hall) |
-| `interior.guildhall.stage3` | `art/interiors/guildhall-stage3.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 3 (Working hall) |
-| `interior.guildhall.stage4` | `art/interiors/guildhall-stage4.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Guild Hall interior, stage 4 (Renowned hall) |
-| `interior.room.bunks.1` | `art/interiors/rooms/bunks-1.png` | 1280×576 | — | placeholder | Bedroom, level 1 |
-| `interior.room.bunks.2` | `art/interiors/rooms/bunks-2.png` | 1280×576 | — | placeholder | Bedroom, level 2 |
-| `interior.room.bunks.3` | `art/interiors/rooms/bunks-3.png` | 1280×576 | — | placeholder | Bedroom, level 3 |
-| `interior.room.training.1` | `art/interiors/rooms/training-1.png` | 1280×576 | — | placeholder | Training ground, level 1 |
-| `interior.room.training.2` | `art/interiors/rooms/training-2.png` | 1280×576 | — | placeholder | Training ground, level 2 |
-| `interior.room.training.3` | `art/interiors/rooms/training-3.png` | 1280×576 | — | placeholder | Training ground, level 3 |
-| `interior.room.infirmary.1` | `art/interiors/rooms/infirmary-1.png` | 1280×576 | — | placeholder | Infirmary, level 1 |
-| `interior.room.infirmary.2` | `art/interiors/rooms/infirmary-2.png` | 1280×576 | — | placeholder | Infirmary, level 2 |
-| `interior.room.armory.1` | `art/interiors/rooms/armory-1.png` | 1280×576 | — | placeholder | Armory, level 1 |
-| `interior.room.war.1` | `art/interiors/rooms/war-1.png` | 1280×576 | — | placeholder | War room, level 1 |
-| `interior.room.scouts.1` | `art/interiors/rooms/scouts-1.png` | 1280×576 | — | placeholder | Scout table, level 1 |
-| `interior.room.trophies.1` | `art/interiors/rooms/trophies-1.png` | 1280×576 | — | placeholder | Trophy hall, level 1 |
-| `interior.room.treasury.1` | `art/interiors/rooms/treasury-1.png` | 1280×576 | — | placeholder | Treasury, level 1 |
-| `interior.room.treasury.2` | `art/interiors/rooms/treasury-2.png` | 1280×576 | — | placeholder | Treasury, level 2 |
+| `scene.hall.lot` | `art/hall/lot.png` | 1080×1080 | `art/interiors/guildhall-stage1.png` | borrowed | Guild Hall: the lot seen from above (the cabin, the slots, the yard) |
+| `scene.defeat` | `art/scenes/defeat.png` | 1280×576 | — | placeholder | Defeat: the party wakes in the infirmary (or the founder’s house) |
 | `interior.tavern` | `art/interiors/tavern.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Tavern (recruits) |
-| `interior.shop` | `art/interiors/shop.png` | 1280×576 | `art/scenes/scene_01.png` | borrowed | Shop |
-| `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena (tournaments) |
-| `interior.herald` | `art/interiors/herald.png` | 1280×576 | `art/scenes/scene_03.png` | borrowed | Herald (rankings) |
-| `interior.noticeboard` | `art/interiors/noticeboard.png` | 1280×576 | `art/scenes/scene_10.png` | borrowed | Notice Board (contracts) |
-| `interior.arena.dunmere` | `art/interiors/arena-dunmere.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Dunmere: fighting ground, sign-up desk, history board |
-| `interior.arena.greenhollow` | `art/interiors/arena-greenhollow.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Greenhollow: fighting ground, sign-up desk, history board |
-| `interior.arena.ironford` | `art/interiors/arena-ironford.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Ironford: fighting ground, sign-up desk, history board |
-| `interior.arena.windmere` | `art/interiors/arena-windmere.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Arena interior in Windmere: fighting ground, sign-up desk, history board |
-| `interior.inn.greenhollow` | `art/interiors/inn-greenhollow.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Inn in Greenhollow (rest 1–3 nights, recruits) |
-| `interior.inn.ironford` | `art/interiors/inn-ironford.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Inn in Ironford (rest 1–3 nights, recruits) |
-| `interior.inn.windmere` | `art/interiors/inn-windmere.png` | 1280×576 | `art/scenes/scene_08.png` | borrowed | Inn in Windmere (rest 1–3 nights, recruits) |
-
-## Battle background (`battle`, placeholder #6a2f34)
-
-| Id | Path | Size | Borrows | Status | Used for |
-|---|---|---|---|---|---|
-| `bg.battle.oldroad` | `art/battle/oldroad.png` | 1280×576 | — | ready | Battles on the Old Road |
-| `bg.battle.thornwood` | `art/battle/thornwood.png` | 1280×576 | — | placeholder | Battles at the Thornwood edge |
-| `bg.battle.blackwood` | `art/battle/blackwood.png` | 1280×576 | — | placeholder | Battles in the Blackwood |
-| `bg.battle.arena` | `art/battle/arena.png` | 1280×576 | `art/scenes/scene_02.png` | borrowed | Tournaments, duels, challenges |
-| `bg.battle.fire` | `art/battle/fire.png` | 1280×576 | `art/scenes/scene_12.png` | borrowed | Battles in Fire lands |
-| `bg.battle.plant` | `art/battle/plant.png` | 1280×576 | `art/scenes/scene_11.png` | borrowed | Battles in Plant lands |
-| `bg.battle.water` | `art/battle/water.png` | 1280×576 | `art/scenes/scene_04.png` | borrowed | Battles in Water lands |
-| `bg.battle.air` | `art/battle/air.png` | 1280×576 | `art/scenes/scene_05.png` | borrowed | Battles in Air lands |
-| `bg.battle.animal` | `art/battle/animal.png` | 1280×576 | `art/scenes/scene_11.png` | borrowed | Battles in Animal lands |
-| `bg.battle.psychic` | `art/battle/psychic.png` | 1280×576 | `art/scenes/scene_06.png` | borrowed | Battles in Psychic lands |
-| `bg.battle.iron` | `art/battle/iron.png` | 1280×576 | `art/scenes/scene_12.png` | borrowed | Battles in Iron lands |
-
-## Room (walkable) (`room`, placeholder #4a3140)
-
-| Id | Path | Size | Borrows | Status | Used for |
-|---|---|---|---|---|---|
-| `room.house.floor` | `art/walk/house/floor.png` | 960×540 | — | placeholder | Player’s house: floor and walls, a hearth glow, rain on the windows (prologue) |
-| `room.tavern` | `art/walk/rooms/tavern.png` | 352×352 | — | placeholder | Interior (walkable): the tavern room, floor and walls, seen from above (11×11 tiles) |
-| `room.shop` | `art/walk/rooms/shop.png` | 352×352 | — | placeholder | Interior (walkable): the shop room, floor and walls, seen from above (11×11 tiles) |
-| `room.arena` | `art/walk/rooms/arena.png` | 352×352 | — | placeholder | Interior (walkable): the arena room, floor and walls, seen from above (11×11 tiles) |
-| `room.herald` | `art/walk/rooms/herald.png` | 352×352 | — | placeholder | Interior (walkable): the herald room, floor and walls, seen from above (11×11 tiles) |
+| `interior.shop` | `art/interiors/shop.png` | 1280×576 | `art/scenes/scene_01.png` | ready | Shop |
+| `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena (tournaments) |
+| `interior.herald` | `art/interiors/herald.png` | 1280×576 | `art/scenes/scene_03.png` | ready | Herald (rankings) |
+| `interior.noticeboard` | `art/interiors/noticeboard.png` | 1280×576 | `art/scenes/scene_10.png` | ready | Notice Board (contracts) |
+| `interior.arena.dunmere` | `art/interiors/arena-dunmere.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Dunmere: fighting ground, sign-up desk, history board |
+| `interior.arena.greenhollow` | `art/interiors/arena-greenhollow.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Greenhollow: fighting ground, sign-up desk, history board |
+| `interior.arena.ironford` | `art/interiors/arena-ironford.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Ironford: fighting ground, sign-up desk, history board |
+| `interior.arena.windmere` | `art/interiors/arena-windmere.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Windmere: fighting ground, sign-up desk, history board |
+| `interior.inn.greenhollow` | `art/interiors/inn-greenhollow.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Greenhollow (rest 1–3 nights, recruits) |
+| `interior.inn.ironford` | `art/interiors/inn-ironford.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Ironford (rest 1–3 nights, recruits) |
+| `interior.inn.windmere` | `art/interiors/inn-windmere.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Windmere (rest 1–3 nights, recruits) |
 
 ## Prop (`prop`, placeholder #55602e)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
+| `hall.room.bedroom.1` | `art/hall/rooms/bedroom-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Bedroom, Basic |
+| `hall.room.bedroom.2` | `art/hall/rooms/bedroom-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Bedroom, Advanced |
+| `hall.room.bedroom.3` | `art/hall/rooms/bedroom-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Bedroom, State of the art |
+| `hall.room.training.1` | `art/hall/rooms/training-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Training room, Basic |
+| `hall.room.training.2` | `art/hall/rooms/training-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Training room, Advanced |
+| `hall.room.training.3` | `art/hall/rooms/training-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Training room, State of the art |
+| `hall.room.infirmary.1` | `art/hall/rooms/infirmary-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Infirmary, Basic |
+| `hall.room.infirmary.2` | `art/hall/rooms/infirmary-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Infirmary, Advanced |
+| `hall.room.infirmary.3` | `art/hall/rooms/infirmary-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Infirmary, State of the art |
+| `hall.room.treasury.1` | `art/hall/rooms/treasury-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Treasury, Basic |
+| `hall.room.treasury.2` | `art/hall/rooms/treasury-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Treasury, Advanced |
+| `hall.room.treasury.3` | `art/hall/rooms/treasury-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Treasury, State of the art |
+| `hall.room.armory.1` | `art/hall/rooms/armory-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Armory, Basic |
+| `hall.room.armory.2` | `art/hall/rooms/armory-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Armory, Advanced |
+| `hall.room.armory.3` | `art/hall/rooms/armory-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Armory, State of the art |
+| `hall.room.scouts.1` | `art/hall/rooms/scouts-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Scout table, Basic |
+| `hall.room.scouts.2` | `art/hall/rooms/scouts-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Scout table, Advanced |
+| `hall.room.scouts.3` | `art/hall/rooms/scouts-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Scout table, State of the art |
+| `hall.room.crown.1` | `art/hall/rooms/crown-1.png` | 256×256 | — | placeholder | Guild Hall slot tile: Crown Room, Basic |
+| `hall.room.crown.2` | `art/hall/rooms/crown-2.png` | 256×256 | — | placeholder | Guild Hall slot tile: Crown Room, Advanced |
+| `hall.room.crown.3` | `art/hall/rooms/crown-3.png` | 256×256 | — | placeholder | Guild Hall slot tile: Crown Room, State of the art |
+| `hall.equipment.dummy.1` | `art/hall/equipment/dummy-1.png` | 128×128 | — | placeholder | Training equipment: Training dummy (Might), Basic |
+| `hall.equipment.dummy.2` | `art/hall/equipment/dummy-2.png` | 128×128 | — | placeholder | Training equipment: Training dummy (Might), Advanced |
+| `hall.equipment.dummy.3` | `art/hall/equipment/dummy-3.png` | 128×128 | — | placeholder | Training equipment: Training dummy (Might), State of the art |
+| `hall.equipment.targets.1` | `art/hall/equipment/targets-1.png` | 128×128 | — | placeholder | Training equipment: Archery targets (Finesse), Basic |
+| `hall.equipment.targets.2` | `art/hall/equipment/targets-2.png` | 128×128 | — | placeholder | Training equipment: Archery targets (Finesse), Advanced |
+| `hall.equipment.targets.3` | `art/hall/equipment/targets-3.png` | 128×128 | — | placeholder | Training equipment: Archery targets (Finesse), State of the art |
+| `hall.equipment.desk.1` | `art/hall/equipment/desk-1.png` | 128×128 | — | placeholder | Training equipment: Reading desk (Mind), Basic |
+| `hall.equipment.desk.2` | `art/hall/equipment/desk-2.png` | 128×128 | — | placeholder | Training equipment: Reading desk (Mind), Advanced |
+| `hall.equipment.desk.3` | `art/hall/equipment/desk-3.png` | 128×128 | — | placeholder | Training equipment: Reading desk (Mind), State of the art |
+| `hall.equipment.shrine.1` | `art/hall/equipment/shrine-1.png` | 128×128 | — | placeholder | Training equipment: Shrine (Spirit), Basic |
+| `hall.equipment.shrine.2` | `art/hall/equipment/shrine-2.png` | 128×128 | — | placeholder | Training equipment: Shrine (Spirit), Advanced |
+| `hall.equipment.shrine.3` | `art/hall/equipment/shrine-3.png` | 128×128 | — | placeholder | Training equipment: Shrine (Spirit), State of the art |
+| `hall.equipment.weights.1` | `art/hall/equipment/weights-1.png` | 128×128 | — | placeholder | Training equipment: Weights (Endurance), Basic |
+| `hall.equipment.weights.2` | `art/hall/equipment/weights-2.png` | 128×128 | — | placeholder | Training equipment: Weights (Endurance), Advanced |
+| `hall.equipment.weights.3` | `art/hall/equipment/weights-3.png` | 128×128 | — | placeholder | Training equipment: Weights (Endurance), State of the art |
+| `hall.equipment.podium.1` | `art/hall/equipment/podium-1.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), Basic |
+| `hall.equipment.podium.2` | `art/hall/equipment/podium-2.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), Advanced |
+| `hall.equipment.podium.3` | `art/hall/equipment/podium-3.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), State of the art |
+| `hall.crown.case` | `art/hall/crown-case.png` | 128×128 | — | placeholder | Crown Room: a trophy case (one per trophy, with its count) |
 | `prop.house.hearth` | `art/walk/house/hearth.png` | 190×52 | — | placeholder | Player’s house: the hearth (top left) |
 | `prop.house.table` | `art/walk/house/table.png` | 160×64 | — | placeholder | Player’s house: table and two stools (middle) |
 | `prop.house.bed` | `art/walk/house/bed.png` | 190×70 | — | placeholder | Player’s house: the one bed (top right) |
@@ -160,6 +158,49 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `prop.milestone` | `art/walk/props/milestone.png` | 32×64 | — | placeholder | The Old Road: Old milestone |
 | `prop.hollowwarden` | `art/walk/props/hollowwarden.png` | 32×64 | — | placeholder | The Blackwood: The Hollow Warden |
 | `prop.brokenlantern` | `art/walk/props/brokenlantern.png` | 32×64 | — | placeholder | The Blackwood: Broken lantern |
+
+## Character sprite (`char`, placeholder #8a6a23)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `hall.pose.patient` | `art/hall/pose-patient.png` | 96×96 | — | placeholder | Guild Hall: a hero lying in an infirmary bed (silhouette) |
+| `hall.pose.sleeping` | `art/hall/pose-sleeping.png` | 96×96 | — | placeholder | Guild Hall: a hero asleep in a bedroom (silhouette) |
+| `hall.pose.training` | `art/hall/pose-training.png` | 96×96 | — | placeholder | Guild Hall: a hero at the training equipment (silhouette) |
+| `char.founder` | `art/walk/chars/founder.png` | 26×36 | — | ready | Player founder, walking (4-direction sheet later) |
+| `char.class.guardian` | `art/walk/chars/class-guardian.png` | 30×40 | `art/sprites/guardian.png` | borrowed | Recruits and challengers in buildings: Guardian (walk sprite) |
+| `char.class.duelist` | `art/walk/chars/class-duelist.png` | 30×40 | `art/sprites/duelist.png` | borrowed | Recruits and challengers in buildings: Duelist (walk sprite) |
+| `char.class.ranger` | `art/walk/chars/class-ranger.png` | 30×40 | `art/sprites/ranger.png` | borrowed | Recruits and challengers in buildings: Ranger (walk sprite) |
+| `char.class.rogue` | `art/walk/chars/class-rogue.png` | 30×40 | `art/sprites/rogue.png` | borrowed | Recruits and challengers in buildings: Rogue (walk sprite) |
+| `char.class.cleric` | `art/walk/chars/class-cleric.png` | 30×40 | `art/sprites/cleric.png` | borrowed | Recruits and challengers in buildings: Cleric (walk sprite) |
+| `char.class.mage` | `art/walk/chars/class-mage.png` | 30×40 | `art/sprites/mage.png` | borrowed | Recruits and challengers in buildings: Mage (walk sprite) |
+| `char.class.scholar` | `art/walk/chars/class-scholar.png` | 30×40 | `art/sprites/scholar.png` | borrowed | Recruits and challengers in buildings: Scholar (walk sprite) |
+| `char.class.artificer` | `art/walk/chars/class-artificer.png` | 30×40 | `art/sprites/artificer.png` | borrowed | Recruits and challengers in buildings: Artificer (walk sprite) |
+
+## Battle background (`battle`, placeholder #6a2f34)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `bg.battle.oldroad` | `art/battle/oldroad.png` | 1280×576 | — | ready | Battles on the Old Road |
+| `bg.battle.thornwood` | `art/battle/thornwood.png` | 1280×576 | — | ready | Battles at the Thornwood edge |
+| `bg.battle.blackwood` | `art/battle/blackwood.png` | 1280×576 | — | ready | Battles in the Blackwood |
+| `bg.battle.arena` | `art/battle/arena.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Tournaments, duels, challenges |
+| `bg.battle.fire` | `art/battle/fire.png` | 1280×576 | `art/scenes/scene_12.png` | ready | Battles in Fire lands |
+| `bg.battle.plant` | `art/battle/plant.png` | 1280×576 | `art/scenes/scene_11.png` | ready | Battles in Plant lands |
+| `bg.battle.water` | `art/battle/water.png` | 1280×576 | `art/scenes/scene_04.png` | ready | Battles in Water lands |
+| `bg.battle.air` | `art/battle/air.png` | 1280×576 | `art/scenes/scene_05.png` | ready | Battles in Air lands |
+| `bg.battle.animal` | `art/battle/animal.png` | 1280×576 | `art/scenes/scene_11.png` | ready | Battles in Animal lands |
+| `bg.battle.psychic` | `art/battle/psychic.png` | 1280×576 | `art/scenes/scene_06.png` | ready | Battles in Psychic lands |
+| `bg.battle.iron` | `art/battle/iron.png` | 1280×576 | `art/scenes/scene_12.png` | ready | Battles in Iron lands |
+
+## Room (walkable) (`room`, placeholder #4a3140)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `room.house.floor` | `art/walk/house/floor.png` | 960×540 | — | placeholder | Player’s house: floor and walls, a hearth glow, rain on the windows (prologue) |
+| `room.tavern` | `art/walk/rooms/tavern.png` | 352×352 | — | placeholder | Interior (walkable): the tavern room, floor and walls, seen from above (11×11 tiles) |
+| `room.shop` | `art/walk/rooms/shop.png` | 352×352 | — | placeholder | Interior (walkable): the shop room, floor and walls, seen from above (11×11 tiles) |
+| `room.arena` | `art/walk/rooms/arena.png` | 352×352 | — | placeholder | Interior (walkable): the arena room, floor and walls, seen from above (11×11 tiles) |
+| `room.herald` | `art/walk/rooms/herald.png` | 352×352 | — | placeholder | Interior (walkable): the herald room, floor and walls, seen from above (11×11 tiles) |
 
 ## NPC sprite (`npc`, placeholder #4f3d78)
 
@@ -211,20 +252,6 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `tiles.ground` | `art/walk/tiles/ground.png` | 384×32 | — | placeholder | Ground tiles for towns and wild areas, one row of 32 px tiles in src/data/tiles.js order |
-
-## Character sprite (`char`, placeholder #8a6a23)
-
-| Id | Path | Size | Borrows | Status | Used for |
-|---|---|---|---|---|---|
-| `char.founder` | `art/walk/chars/founder.png` | 26×36 | — | ready | Player founder, walking (4-direction sheet later) |
-| `char.class.guardian` | `art/walk/chars/class-guardian.png` | 30×40 | `art/sprites/guardian.png` | borrowed | Recruits and challengers in buildings: Guardian (walk sprite) |
-| `char.class.duelist` | `art/walk/chars/class-duelist.png` | 30×40 | `art/sprites/duelist.png` | borrowed | Recruits and challengers in buildings: Duelist (walk sprite) |
-| `char.class.ranger` | `art/walk/chars/class-ranger.png` | 30×40 | `art/sprites/ranger.png` | borrowed | Recruits and challengers in buildings: Ranger (walk sprite) |
-| `char.class.rogue` | `art/walk/chars/class-rogue.png` | 30×40 | `art/sprites/rogue.png` | borrowed | Recruits and challengers in buildings: Rogue (walk sprite) |
-| `char.class.cleric` | `art/walk/chars/class-cleric.png` | 30×40 | `art/sprites/cleric.png` | borrowed | Recruits and challengers in buildings: Cleric (walk sprite) |
-| `char.class.mage` | `art/walk/chars/class-mage.png` | 30×40 | `art/sprites/mage.png` | borrowed | Recruits and challengers in buildings: Mage (walk sprite) |
-| `char.class.scholar` | `art/walk/chars/class-scholar.png` | 30×40 | `art/sprites/scholar.png` | borrowed | Recruits and challengers in buildings: Scholar (walk sprite) |
-| `char.class.artificer` | `art/walk/chars/class-artificer.png` | 30×40 | `art/sprites/artificer.png` | borrowed | Recruits and challengers in buildings: Artificer (walk sprite) |
 
 ## Portrait (`portrait`, placeholder #6a4a5e)
 

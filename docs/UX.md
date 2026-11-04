@@ -55,7 +55,7 @@ Navigation used to live in four places (a sidebar, an 8-item top bar, a stack of
 |---|---|---|
 | Guild | Party | heroes (one row each: portrait, name, level, class, health, status; the filter icon appears at 6+ heroes), main party (a lead and up to three companions; the War room adds saved formations), retired and fallen (only once someone is in it) |
 | Guild | Items | the inventory; drag an item onto a hero to equip or use it |
-| Guild | Guild Hall | the hall and its rooms (kept as it is; 7D rebuilds it) |
+| Guild | Guild Hall | the lot diorama: rooms in slots, heroes in rooms, building, resting, the office |
 | Guild | Guild | Charter (charter, status, known for, promotion, paths), Reputation, Patrons, Rivals, Finances (costs, property, debt) |
 | Guild | Contacts | everyone you have met: where they are, what they offer, how they feel; "moved on" for visitors who left |
 | World | Map | the world map; travel |
@@ -125,9 +125,19 @@ From a recruit's first line, a card sits right above the conversation: portrait,
 - **Before renting** the hall door, the Guild orb item and the section all say **Empty lot**: the yard for rent, a button to talk to Gideon Rusk, and the house you live in until then.
 - **Ledger money rows:** costs a month (rent · rooms · wages), saving (+N a month, measured from the second month), toward the deed or more land (%).
 
+### The Guild Hall screen (guild-hall-rooms spec)
+
+- **The lot diorama:** every slot on one phone screen, three to a row: the cabin's bedroom, each built room (icon, name, tier pips, what it gives, who is in it), the room being built (progress), and empty slots (dashed, **+**). Bedrooms show their two beds, filled or empty.
+- **Tap an empty slot:** the bottom panel lists every room type (icon, one line, cost, weeks, upkeep, what it gives); a training room picks its equipment there. The next-upgrade line's **Build** opens the same list with its room marked.
+- **Tap a built room:** the bottom panel shows who is in it and what it does, then **Upgrade** (to Advanced, then State of the art; training rooms upgrade their equipment), **Swap equipment** (training rooms; the old piece sells back for half) and **Clear the room** (a confirm; part of the price back; the slot is free in a week). The Crown Room's panel shows every trophy with its count (×2) and every special title.
+- **Heroes into rooms:** drag a hero from the strip under the lot onto a training room or the infirmary; drag a hero out of a room onto the yard to take them out. Tap fallback: tap the hero (it lights up), then the room. **Auto-assign** puts the injured into infirmary beds and fit heroes into empty training rooms. One hero per training room, one patient per infirmary.
+- **Below the strip:** **Rest and pass time…** (the rest dial in the bottom panel, with what each room will give this rest: "Nessa: +2 Finesse a month", "Crown Room: +3 fame a month"; it closes after resting), **Auto-assign**, **Office** (appointments), then the property goal.
+- **One bottom panel at a time**, closed by its ✕. Routes `rest`, `build` and `office` open the hall with that panel up.
+- **Defeat** (a lost battle, accepted): a calm card, "Carried home to Dunmere. They wake in the Guild Hall. Treatment and transport: 90 gold. Back on their feet in about a month." In the wild, the defeat card offers **Retry battle** and **Accept defeat**. Nobody dies in battle.
+
 ### Buildings and people (7C, Part 2)
 
-**Every building is a small walkable room** that fits one screen (`src/data/interiors.js`, `InteriorScene.jsx`): 3–7 people standing or sitting, a counter or desk, furniture. Tap a person to walk over and talk; tap furniture to use it; tap the doorway to go back out. The Guild Hall is the exception (Phase 7D rebuilds it).
+**Every building is a small walkable room** that fits one screen (`src/data/interiors.js`, `InteriorScene.jsx`): 3–7 people standing or sitting, a counter or desk, furniture. Tap a person to walk over and talk; tap furniture to use it; tap the doorway to go back out. The Guild Hall is the exception: the lot diorama (The Guild Hall screen, above).
 
 **One people model** (`src/game/engine/people.js`): each person has a name, a role, a place (town, building, spot), a look (a silhouette by role or class until art arrives), a memory (met, talks, relationship, interview) and **offers**: `mission`, `hire`, `challenge`. Regulars (keepers, clerks, registrars, referees, Mara Fen) stay; visitors rotate every month (recruits, petitioners, challengers, travellers, a messenger while there is news). Recruits *are* the candidates, petitioners hold the contracts, challengers are candidates who join only after a won bout: nothing is duplicated.
 
@@ -186,10 +196,13 @@ Counts are taps or gestures from the place the flow starts. A drag counts as one
 | **party** | company, squad | the heroes sent on a contract or a fight |
 | **main party** | team, lineup | a lead and up to three companions (Party → Main party); no room needed |
 | **party lead** | captain, leader | the main party's first hero; takes the lead role in every arrangement |
-| **task** | activity, assignment | what a hero does at home (training, infirmary, scouting, rest, guild duty…) |
+| **task** | activity, assignment | what a hero not in a room does at home (rest, scouting, exhibitions, guild duty) |
 | **rest** | wait, skip | let time pass: at the Guild Hall (any length), an inn (1–3 nights) or a camp (1 night) |
 | **Guild Hall** | headquarters, HQ | the old stable on Banner Plaza, where rooms are built |
-| **room** | facility, wing | a built part of the hall (Training ground, Infirmary…) |
+| **room** | facility, wing | a built part of the hall, in one slot (Bedroom, Training room, Infirmary, Treasury, Armory, Scout table, Crown Room) |
+| **tier** | level (for rooms) | a room's grade: Basic, Advanced, State of the art |
+| **equipment** | drill, focus | what a training room holds; it sets the stat (dummy: Might, targets: Finesse, reading desk: Mind, shrine: Spirit, weights: Endurance, podium: Presence) |
+| **defeat** | death, wipe | losing a fight: the party wakes in the infirmary at home, pays treatment and transport, and recovers for weeks |
 | **fame / legacy** | renown (for the guild) | public reputation / lasting history |
 | **ranks** | ladders (in text) | Strength, Legacy, Official |
 | **season** | year (in the review) | one calendar year of results |
