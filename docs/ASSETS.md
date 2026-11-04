@@ -62,6 +62,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena (tournaments) |
 | `interior.herald` | `art/interiors/herald.png` | 1280×576 | `art/scenes/scene_03.png` | ready | Herald (rankings) |
 | `interior.noticeboard` | `art/interiors/noticeboard.png` | 1280×576 | `art/scenes/scene_10.png` | ready | Notice Board (contracts) |
+| `interior.house` | `art/interiors/house.png` | 1280×576 | — | placeholder | Player’s house (prologue): a small room at night, the hearth, the table, the one bed, the front door on the right wall (a painted scene; a mood gradient until drawn) |
 | `interior.arena.dunmere` | `art/interiors/arena-dunmere.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Dunmere: fighting ground, sign-up desk, history board |
 | `interior.arena.greenhollow` | `art/interiors/arena-greenhollow.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Greenhollow: fighting ground, sign-up desk, history board |
 | `interior.arena.ironford` | `art/interiors/arena-ironford.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Ironford: fighting ground, sign-up desk, history board |
@@ -114,31 +115,11 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `hall.equipment.podium.2` | `art/hall/equipment/podium-2.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), Advanced |
 | `hall.equipment.podium.3` | `art/hall/equipment/podium-3.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), State of the art |
 | `hall.crown.case` | `art/hall/crown-case.png` | 128×128 | — | placeholder | Crown Room: a trophy case (one per trophy, with its count) |
-| `prop.house.hearth` | `art/walk/house/hearth.png` | 190×52 | — | placeholder | Player’s house: the hearth (top left) |
-| `prop.house.table` | `art/walk/house/table.png` | 160×64 | — | placeholder | Player’s house: table and two stools (middle) |
-| `prop.house.bed` | `art/walk/house/bed.png` | 190×70 | — | placeholder | Player’s house: the one bed (top right) |
-| `prop.house.chest` | `art/walk/house/chest.png` | 120×44 | — | placeholder | Player’s house: small chest (bottom left) |
-| `prop.house.door` | `art/walk/house/door.png` | 32×92 | — | placeholder | Player’s house: the front door (later scratched with the Argent Crown emblem) |
 | `prop.campfire` | `art/walk/props/campfire.png` | 64×64 | — | placeholder | Wild-area camp: rest spot |
 | `prop.signpost` | `art/walk/props/signpost.png` | 32×48 | — | placeholder | Exit from a town or wild area |
 | `prop.gather.herb` | `art/walk/props/gather-herb.png` | 28×28 | — | placeholder | Gathering spot: herbs |
 | `prop.gather.ore` | `art/walk/props/gather-ore.png` | 28×28 | — | placeholder | Gathering spot: ore and shards |
 | `prop.gather.coin` | `art/walk/props/gather-coin.png` | 28×28 | — | placeholder | Gathering spot: coin pouches |
-| `furniture.wall` | `art/walk/furniture/wall.png` | 352×64 | — | placeholder | Interior furniture: back-wall (tavern) |
-| `furniture.bar` | `art/walk/furniture/bar.png` | 224×64 | — | placeholder | Interior furniture: bar (tavern) |
-| `furniture.table` | `art/walk/furniture/table.png` | 64×64 | — | placeholder | Interior furniture: table-1 (tavern) |
-| `furniture.hearth` | `art/walk/furniture/hearth.png` | 64×64 | — | placeholder | Interior furniture: hearth (tavern) |
-| `furniture.counter` | `art/walk/furniture/counter.png` | 160×64 | — | placeholder | Interior furniture: counter (shop) |
-| `furniture.shelf` | `art/walk/furniture/shelf.png` | 32×128 | — | placeholder | Interior furniture: Potions shelf (shop) |
-| `furniture.rack` | `art/walk/furniture/rack.png` | 32×128 | — | placeholder | Interior furniture: Weapon rack (shop) |
-| `furniture.stand` | `art/walk/furniture/stand.png` | 64×64 | — | placeholder | Interior furniture: Armor stand (shop) |
-| `furniture.case` | `art/walk/furniture/case.png` | 64×64 | — | placeholder | Interior furniture: Charm case (shop) |
-| `furniture.desk` | `art/walk/furniture/desk.png` | 96×64 | — | placeholder | Interior furniture: desk (arena) |
-| `furniture.historyboard` | `art/walk/furniture/historyboard.png` | 96×64 | — | placeholder | Interior furniture: History board (arena) |
-| `furniture.ring` | `art/walk/furniture/ring.png` | 128×128 | — | placeholder | Interior furniture: ring (arena) |
-| `furniture.bench` | `art/walk/furniture/bench.png` | 96×64 | — | placeholder | Interior furniture: bench (arena) |
-| `furniture.rankboard` | `art/walk/furniture/rankboard.png` | 32×128 | — | placeholder | Interior furniture: Ranking board (herald) |
-| `furniture.bookshelf` | `art/walk/furniture/bookshelf.png` | 32×128 | — | placeholder | Interior furniture: Records shelf (herald) |
 | `prop.fountain` | `art/walk/props/fountain.png` | 96×128 | — | placeholder | Dunmere: Banner Fountain |
 | `prop.noticeboard` | `art/walk/props/noticeboard.png` | 64×96 | — | placeholder | Dunmere: Notice Board |
 | `prop.well` | `art/walk/props/well.png` | 32×64 | — | placeholder | Dunmere: Old well |
@@ -192,21 +173,11 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `bg.battle.psychic` | `art/battle/psychic.png` | 1280×576 | `art/scenes/scene_06.png` | ready | Battles in Psychic lands |
 | `bg.battle.iron` | `art/battle/iron.png` | 1280×576 | `art/scenes/scene_12.png` | ready | Battles in Iron lands |
 
-## Room (walkable) (`room`, placeholder #4a3140)
-
-| Id | Path | Size | Borrows | Status | Used for |
-|---|---|---|---|---|---|
-| `room.house.floor` | `art/walk/house/floor.png` | 960×540 | — | placeholder | Player’s house: floor and walls, a hearth glow, rain on the windows (prologue) |
-| `room.tavern` | `art/walk/rooms/tavern.png` | 352×352 | — | placeholder | Interior (walkable): the tavern room, floor and walls, seen from above (11×11 tiles) |
-| `room.shop` | `art/walk/rooms/shop.png` | 352×352 | — | placeholder | Interior (walkable): the shop room, floor and walls, seen from above (11×11 tiles) |
-| `room.arena` | `art/walk/rooms/arena.png` | 352×352 | — | placeholder | Interior (walkable): the arena room, floor and walls, seen from above (11×11 tiles) |
-| `room.herald` | `art/walk/rooms/herald.png` | 352×352 | — | placeholder | Interior (walkable): the herald room, floor and walls, seen from above (11×11 tiles) |
-
 ## NPC sprite (`npc`, placeholder #4f3d78)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `npc.house.rook` | `art/walk/house/rook.png` | 44×28 | — | placeholder | Player’s house: Cassian Rook, wounded, on the floor |
+| `npc.house.rook` | `art/walk/house/rook.png` | 88×56 | — | placeholder | Player’s house: Cassian Rook, wounded, on the floor |
 | `npc.dunmere.merchant` | `art/walk/npcs/dunmere-merchant.png` | 26×36 | — | placeholder | Dunmere: Corwin Pell, Road merchant (walk sprite) |
 | `npc.dunmere.fighter` | `art/walk/npcs/dunmere-fighter.png` | 26×36 | — | placeholder | Dunmere: Bram Calder, Duelist (walk sprite) |
 | `npc.dunmere.stablemaster` | `art/walk/npcs/dunmere-stablemaster.png` | 26×36 | — | placeholder | Dunmere: Gideon Rusk, Stable owner (walk sprite) |

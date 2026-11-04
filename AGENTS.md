@@ -64,13 +64,13 @@ src/data/                 Static content: classes, missions, formations, world m
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
   dialogue/               Data-driven conversations (opener variants, hub topics, goodbyes; choices with effects); format in dialogue/index.js, style and voices in docs/DIALOGUE.md; story.js and storyAct2.js hold the story scenes
   story.js, lore.js       The Last Banner (docs/STORY.md): missions, steps, gates, evidence, story heroes, the prologue; the Broken Lantern's seven, the official story, the Lore codex
-  tiles.js, playerHouse.js  Ground tiles for walkable layouts; the player's house (prologue)
-  interiors.js, people.js Building interiors (11×11 rooms: furniture, spots, the doorway); the regulars in each building and visitor name pools
+  tiles.js, playerHouse.js  Ground tiles for walkable layouts; the player's house (prologue): a painted scene (door, founder, Rook)
+  interiors.js, people.js Building interiors as painted scenes (the painting per town, spots, hotspots and the door in percentages: interiorLayout); the regulars in each building and visitor name pools
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
   slice.js                Chapter 1 slice flag: reachable places and hidden systems
   rooms.js, lots.js       Room types with three tiers (cost, weeks, upkeep, what each gives), training equipment, the defeat, injury, Crown Room, Armory and visitor numbers; lots (slots, rent, deposit, purchase price, starter cabin, expansion steps; several cities supported)
   charters.js, patrons.js Founding charters and run paths; the three patrons, their levels, unlocks and rivalries
-src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map, interiorMap), TownScene, WildScene, InteriorScene (a building's room), DialogueBox (scripted talk), PersonDialogue (people: offers and the interview)
+src/explore/              Walkable scenes: WalkableScene (touch/keyboard layer; the door and exit bubble), walkGame.js (lazy Phaser), pathfinding, sceneMap (layout → map), TownScene, WildScene; PaintedScene (a painting that covers the screen, things placed on it in percentages) and InteriorScene (a building as a painted scene: people, hotspots, the door); DialogueBox (scripted talk), PersonDialogue (people: offers and the interview)
 src/game/engine.js        Public engine API: a re-export barrel. Import from here.
 src/game/engine/          Engine implementation, layered bottom-up (each file imports only earlier ones):
   charter.js              founding charter effects and patron standing (data-only imports, so it sits first)
