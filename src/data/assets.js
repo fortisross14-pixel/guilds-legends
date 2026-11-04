@@ -48,8 +48,9 @@ const LIST = [
 
   // Building interiors (art-backed menu scenes).
   // The Guild Hall grows in four stages (src/data/rooms.js): exterior in walkable Dunmere, interior behind the hall screen.
+  // The outside looks the same whatever is built: one exterior for every stage (Phase 7D).
+  { id: HALL_STAGES[0].exterior, group: 'building', path: 'art/walk/buildings/dunmere-guildhall-stage1.png', w: 160, h: 160, use: 'Dunmere: the Guild Hall building on its lot (the same at every stage)' },
   ...HALL_STAGES.flatMap((stage) => [
-    { id: stage.exterior, group: 'building', path: `art/walk/buildings/dunmere-guildhall-stage${stage.id}.png`, w: 160, h: 160, use: `Dunmere: the Guild Hall building, stage ${stage.id} (${stage.name})` },
     { id: stage.interior, group: 'interior', path: `art/interiors/guildhall-stage${stage.id}.png`, borrow: stage.id === 1 ? scene(8) : scene(9), ...SCENE, use: `Guild Hall interior, stage ${stage.id} (${stage.name})` },
   ]),
   // Every built room has its own interior per level.

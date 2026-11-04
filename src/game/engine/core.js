@@ -3,7 +3,7 @@
 import { MONTHS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
-import { HALL_PURCHASE, HALL_STAGES, HOUSE, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
+import { HALL_STAGES, HOUSE, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
 import { patronAtLeast } from './charter.js';
 
 export const SCHEMA_VERSION = 15;
@@ -188,14 +188,23 @@ export function getHeroGuildName(state, hero) {
 // ---- The guild's home (src/data/rooms.js; actions in hall.js) ----
 
 /** Level of a built room (0 when not built). */
-export function roomLevel(state, roomId) {
-  return state.guild?.hall?.rooms?.[roomId] || 0;
+/** The lot the guild's headquarters stands on (null before story mission 1 rents one). src/data/lots.js. */
+export function hqLot(state) {
+  return state.guild?.lots?.[state.guild?.hqLotId] || null;
 }
 
-/** Beds are the only roster limit: rented beds, the hall's dormitory corner and bunk rooms. */
+/** Does the guild have a hall yet? No hall, no hires. */
+export function hasHall(state) {
+  return Boolean(hqLot(state));
+}
+
+export function roomLevel(state, roomId) {
+  return hqLot(state)?.rooms?.[roomId] || 0;
+}
+
+/** Beds are the only roster limit: the founder's bed at home, and two per bedroom level in the hall. */
 export function bedCount(state) {
-  const hall = state.guild?.hall || {};
-  return (hall.houseBeds ?? HOUSE.beds) + (hall.owned ? HALL_PURCHASE.beds : 0) + roomLevel(state, 'bunks') * 2;
+  return (state.guild?.houseBeds ?? HOUSE.beds) + roomLevel(state, 'bunks') * 2;
 }
 
 export function freeBeds(state) {
@@ -272,7 +281,7 @@ const ACTIVITY_ROOM = { Training: 'training', Infirmary: 'infirmary', Scouting: 
 
 /** True when a monthly activity can be chosen: its room is built. */
 export function activityAvailable(state, activity) {
-  if (activity === 'Guild Duty') return Boolean(state.guild?.hall?.owned);
+  if (activity === 'Guild Duty') return hasHall(state);
   const room = ACTIVITY_ROOM[activity];
   return room ? roomLevel(state, room) > 0 : ['Rest', 'Public Exhibition'].includes(activity);
 }
@@ -282,11 +291,11 @@ export function availableDrills(state) {
   return trainingDrills(roomLevel(state, 'training'));
 }
 
-/** Hall stage: rented room → empty hall → working hall → renowned hall. */
+/** Hall stage: your house → empty hall → working hall → renowned hall. */
 export function hallStage(state) {
-  const hall = state.guild?.hall || {};
-  if (!hall.owned) return HALL_STAGES[0];
-  const levels = Object.values(hall.rooms || {});
+  const lot = hqLot(state);
+  if (!lot) return HALL_STAGES[0];
+  const levels = Object.values(lot.rooms || {});
   const built = levels.filter((level) => level > 0).length;
   const total = levels.reduce((sum, level) => sum + level, 0);
   if (built >= STAGE_RULES.renowned.rooms && total >= STAGE_RULES.renowned.levels) return HALL_STAGES[3];

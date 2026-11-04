@@ -1,5 +1,5 @@
-// The guild's home: the founder's house, then the old stable on Banner Plaza
-// (rented in story mission 1), growing room by room into a renowned hall.
+// The guild's home: the founder's house, then a lot (src/data/lots.js: rented in
+// story mission 1, bought later, expanded once owned) where rooms are built, one per slot.
 // Engine: src/game/engine/hall.js (actions) and core.js (bedCount, roomLevel, hallStage).
 //
 // Requirements (all keys must hold): fame, tier (0 Regional…), contracts
@@ -13,29 +13,16 @@ export const HOUSE = {
 };
 
 /**
- * The old stable on Banner Plaza: rented in story mission 1 (A Banner Without
- * a Hall) and the place where rooms get built. It can be bought outright later.
- */
-export const HALL_PURCHASE = {
-  name: 'The old stable on Banner Plaza',
-  requires: {},
-  buy: { cost: 700 },
-  lease: { cost: 160, rent: 35 },
-  beds: 2, // a dormitory corner comes with the hall
-  wings: 6, // empty wings to build rooms in
-  renownedWings: 2, // extra wings once the hall is renowned
-};
-
-/**
  * Rooms. Each level: cost (crowns), weeks to build, monthly upkeep and its
  * requirement. `effect(level)` is the short line shown on the build list.
  */
 export const ROOMS = [
   {
     id: 'bunks',
-    name: 'Bunk room',
+    name: 'Bedroom',
     icon: '☾',
-    description: 'Bunks, chests and a stove. More heroes can live in the hall.',
+    // The rented lot comes with this one already built: the small cabin in the middle.
+    description: 'A cabin of bunks, chests and a stove. More heroes can live in the hall.',
     levels: [
       { cost: 260, weeks: 2, upkeep: 10, requires: {} },
       { cost: 480, weeks: 3, upkeep: 16, requires: { fame: 80 } },
@@ -125,14 +112,14 @@ export function trainingDrills(level) {
 
 /**
  * Hall stages, in order. The stage advances from rooms built and their levels
- * (see hallStage in core.js). Each has an exterior (the walkable Dunmere town)
- * and an interior (the Guild Hall screen) asset id.
+ * (see hallStage in core.js). The outside looks the same whatever is built (one
+ * exterior asset for every stage); each stage has its own interior.
  */
 export const HALL_STAGES = [
-  { id: 1, key: 'house', name: 'Your house', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage1', townLabel: 'Old stable · empty' },
-  { id: 2, key: 'empty', name: 'Empty hall', exterior: 'town.dunmere.guildhall.stage2', interior: 'interior.guildhall.stage2', townLabel: 'Guild Hall' },
-  { id: 3, key: 'working', name: 'Working hall', exterior: 'town.dunmere.guildhall.stage3', interior: 'interior.guildhall.stage3', townLabel: 'Guild Hall' },
-  { id: 4, key: 'renowned', name: 'Renowned hall', exterior: 'town.dunmere.guildhall.stage4', interior: 'interior.guildhall.stage4', townLabel: 'Guild Hall' },
+  { id: 1, key: 'house', name: 'Your house', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage1', townLabel: 'Empty lot' },
+  { id: 2, key: 'empty', name: 'Empty hall', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage2', townLabel: 'Guild Hall' },
+  { id: 3, key: 'working', name: 'Working hall', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage3', townLabel: 'Guild Hall' },
+  { id: 4, key: 'renowned', name: 'Renowned hall', exterior: 'town.dunmere.guildhall.stage1', interior: 'interior.guildhall.stage4', townLabel: 'Guild Hall' },
 ];
 
 /** Rooms built and total levels needed for the working and renowned stages. */

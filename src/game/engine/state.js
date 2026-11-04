@@ -15,9 +15,12 @@ import { createTournamentsInPlace } from './guildTournaments.js';
 import { refreshSideJobsInPlace } from './townLife.js';
 import { progressStoryInPlace, skipTutorialInPlace } from './story.js';
 
-/** Every campaign starts in the founder's house: one bed, the banner, a small chest. */
-export function startingHall() {
-  return { owned: false, lease: false, houseBeds: 1, rooms: {}, construction: null };
+/**
+ * Every campaign starts in the founder's house: one bed, the banner, a small chest,
+ * and no lot (story mission 1 rents one; src/data/lots.js).
+ */
+export function startingHome() {
+  return { houseBeds: 1, lots: {}, hqLotId: null, goldHistory: [] };
 }
 
 export function initialStats() {
@@ -102,7 +105,7 @@ export function createNewGame(options = {}) {
       officialPoints: 0,
       statusTitle: 'Unknown',
       mainParty: [],
-      hall: startingHall(),
+      ...startingHome(),
       appointments: {},
       formations: emptyFormations(),
       branches: [],
