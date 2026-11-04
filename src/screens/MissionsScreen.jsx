@@ -5,7 +5,7 @@ import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
 import { operationalLocationIds, partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, RiskPips } from '../components/UI.jsx';
 import SideJobsPanel from './SideJobsPanel.jsx';
-import PixelIcon, { FORMATION_ICONS } from '../components/PixelIcon.jsx';
+import Icon, { FORMATION_ICONS } from '../components/Icon.jsx';
 import { sliceHides } from '../data/slice.js';
 import { PATRONS } from '../data/patrons.js';
 import { getReputationSummary } from '../game/engine.js';
@@ -170,7 +170,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
 
       {traveling && activeLocationId === currentLocationId ? (
         <div className="travel-lock">
-          <span>➜</span>
+          <span><Icon name="next" size={14} tone="plain" /></span>
           <div>
             <strong>Headquarters is traveling</strong>
             <p>Permanent branches can still launch companies while the main hall moves toward {LOCATION_BY_ID[state.world.activeTravel.toId]?.name}.</p>
@@ -235,7 +235,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
               <button key={mission.id} className={`mission-card ${selected?.id === mission.id ? 'is-selected' : ''}`} onClick={() => selectMission(mission)}>
                 <div className="mission-card__art" style={{ '--region-color': enemyInfo?.color || '#777' }}>
                   <span>
-                    <PixelIcon name={FORMATION_ICONS[approach] || 'swords'} size={24} />
+                    <Icon name={FORMATION_ICONS[approach] || 'swords'} size={24} />
                   </span>
                   <small>{mission.locationName}</small>
                   <PrimalBadge primal={mission.enemyPrimal} compact />
@@ -328,7 +328,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
               <div className="formation-tabs" aria-label="Mission arrangement">
                 {Object.values(FORMATION_TYPES).map((item) => (
                   <button key={item.id} className={formationType === item.id ? 'is-active' : ''} onClick={() => changeFormation(item.id)}>
-                    <span>{item.icon}</span>
+                    <span><Icon name={item.icon} size={18} /></span>
                     <strong>{item.id}</strong>
                     {item.id === recommended ? <small>Recommended</small> : null}
                   </button>
@@ -337,7 +337,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
 
               <div className={`formation-explainer formation-explainer--${formation.color}`}>
                 <div>
-                  <span>{formation.icon}</span>
+                  <span><Icon name={formation.icon} size={18} /></span>
                   <strong>{formation.label}</strong>
                 </div>
                 <p>{formation.description}</p>

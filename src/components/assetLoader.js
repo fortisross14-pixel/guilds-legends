@@ -1,6 +1,6 @@
 // Resolves asset ids (src/data/assets.js) to something drawable, for both React
 // and Phaser: the real file if it loads, else the borrowed file, else a
-// labelled placeholder canvas. Results are cached per id for the session.
+// placeholder canvas (a silhouette, soft shape or mood gradient). Results are cached per id for the session.
 import { ASSET_GROUPS, assetFor } from '../data/assets.js';
 
 const cache = new Map();
@@ -33,11 +33,196 @@ function fitFont(context, text, maxWidth, start, family) {
   return size;
 }
 
-/**
- * Draws a placeholder: the group's color, diagonal hatching, a border, the id
- * and the pixel size. Small sprites are painted at a higher scale so the
- * label stays legible when shown at their logical size.
- */
+// Placeholders that look intentional (DESIGN.md, Placeholders): people are
+// silhouettes in their role or class colour, props and buildings are soft
+// shapes, backdrops are mood gradients. The asset id is painted on top only
+// when the "Show asset ids" developer setting is on.
+let showIds = false;
+
+/** Turns the asset-id labels on placeholders on or off (Settings → Developer). Repaints them. */
+export function setShowAssetIds(on) {
+  if (showIds === Boolean(on)) return;
+  showIds = Boolean(on);
+  [...settled.entries()].forEach(([id, result]) => {
+    if (result.placeholder) {
+      settled.delete(id);
+      cache.delete(id);
+    }
+  });
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('gol:assets'));
+}
+
+function hashHue(text) {
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
+  return Math.abs(hash);
+}
+
+// Muted role and class colours for silhouettes (an asset can set its own `tint`).
+const TINTS = ['#8a6a3c', '#5f7d8f', '#7a5a86', '#6f8a5a', '#8f5d4f', '#5c6f9c', '#9a7f4a', '#6a7a72'];
+const ROLE_TINTS = [
+  [/innkeep|tavern|bar/i, '#a0703a'],
+  [/merchant|shop|supply|trader/i, '#b08a3e'],
+  [/clerk|herald|registrar|archiv|scholar|monk|keeper/i, '#5f78a8'],
+  [/referee|champion|duelist|fighter|guard|captain|warrior/i, '#a4553f'],
+  [/hunter|ranger|warden|scout/i, '#5f8a4f'],
+  [/cleric|healer|herbal/i, '#8fae8a'],
+  [/mage|spark|psychic/i, '#8a63b0'],
+  [/courier|traveler|traveller|visitor|stranger/i, '#7d8a92'],
+];
+function tintFor(asset) {
+  if (asset.tint) return asset.tint;
+  const text = `${asset.id} ${asset.use || ''}`;
+  const role = ROLE_TINTS.find(([pattern]) => pattern.test(text));
+  return role ? role[1] : TINTS[hashHue(asset.id) % TINTS.length];
+}
+
+// Mood gradients per backdrop group: [top, bottom, glow].
+const MOODS = {
+  bg: ['#1b2436', '#0d0f16', 'rgba(246, 210, 140, .16)'],
+  interior: ['#3a2618', '#120c0a', 'rgba(255, 190, 110, .22)'],
+  battle: ['#3a1e22', '#0e0a0d', 'rgba(230, 120, 90, .18)'],
+  room: ['#2c2030', '#0f0b12', 'rgba(255, 200, 150, .18)'],
+  town: ['#22352a', '#0b120e', 'rgba(220, 230, 160, .14)'],
+};
+
+function paintSilhouette(context, width, height, color, kind) {
+  const cx = width / 2;
+  const ground = context.createLinearGradient(0, 0, 0, height);
+  ground.addColorStop(0, kind === 'portrait' ? '#24202c' : 'rgba(0,0,0,0)');
+  ground.addColorStop(1, kind === 'portrait' ? '#0e0c12' : 'rgba(0,0,0,0)');
+  context.fillStyle = ground;
+  context.fillRect(0, 0, width, height);
+  context.fillStyle = color;
+  context.globalAlpha = 0.92;
+  if (kind === 'enemy') {
+    // A crouched beast: body, head, two ears.
+    context.beginPath();
+    context.ellipse(cx, height * 0.66, width * 0.36, height * 0.24, 0, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.ellipse(cx + width * 0.26, height * 0.42, width * 0.17, height * 0.17, 0, 0, Math.PI * 2);
+    context.fill();
+  } else {
+    // A person: head and shoulders (bust for portraits, full figure for sprites).
+    const portrait = kind === 'portrait';
+    const headR = portrait ? width * 0.17 : width * 0.2;
+    const headY = portrait ? height * 0.38 : height * 0.2;
+    context.beginPath();
+    context.arc(cx, headY, headR, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    const top = headY + headR * 1.05;
+    const shoulder = portrait ? width * 0.36 : width * 0.32;
+    context.moveTo(cx - shoulder, portrait ? height : height * 0.98);
+    context.quadraticCurveTo(cx - shoulder, top, cx, top);
+    context.quadraticCurveTo(cx + shoulder, top, cx + shoulder, portrait ? height : height * 0.98);
+    context.closePath();
+    context.fill();
+  }
+  // Rim light from above.
+  context.globalAlpha = 0.35;
+  const rim = context.createLinearGradient(0, 0, 0, height);
+  rim.addColorStop(0, 'rgba(255, 240, 210, .9)');
+  rim.addColorStop(0.5, 'rgba(255, 240, 210, 0)');
+  context.globalCompositeOperation = 'source-atop';
+  context.fillStyle = rim;
+  context.fillRect(0, 0, width, height);
+  context.globalCompositeOperation = 'source-over';
+  context.globalAlpha = 1;
+}
+
+function paintShape(context, width, height, color, kind) {
+  const r = Math.min(width, height) * 0.18;
+  const pad = Math.max(2, Math.min(width, height) * 0.06);
+  context.fillStyle = color;
+  context.globalAlpha = 0.85;
+  context.beginPath();
+  if (kind === 'crest') {
+    // A heraldic shield with a brass rim.
+    const w = width - pad * 2;
+    const h = height - pad * 2;
+    context.globalAlpha = 1;
+    context.fillStyle = '#c9a05a';
+    context.moveTo(pad + w / 2, pad);
+    context.lineTo(pad + w, pad + h * 0.14);
+    context.lineTo(pad + w, pad + h * 0.5);
+    context.quadraticCurveTo(pad + w, pad + h * 0.86, pad + w / 2, pad + h);
+    context.quadraticCurveTo(pad, pad + h * 0.86, pad, pad + h * 0.5);
+    context.lineTo(pad, pad + h * 0.14);
+    context.closePath();
+    context.fill();
+    context.fillStyle = color;
+    context.beginPath();
+    const i = Math.max(2, w * 0.08);
+    context.moveTo(pad + w / 2, pad + i);
+    context.lineTo(pad + w - i, pad + h * 0.17);
+    context.lineTo(pad + w - i, pad + h * 0.5);
+    context.quadraticCurveTo(pad + w - i, pad + h * 0.82, pad + w / 2, pad + h - i * 1.4);
+    context.quadraticCurveTo(pad + i, pad + h * 0.82, pad + i, pad + h * 0.5);
+    context.lineTo(pad + i, pad + h * 0.17);
+    context.closePath();
+    context.fill();
+  } else if (kind === 'building') {
+    // A house: walls and a pitched roof, a lit door.
+    const wallTop = height * 0.42;
+    context.moveTo(pad, wallTop);
+    context.lineTo(width / 2, pad);
+    context.lineTo(width - pad, wallTop);
+    context.lineTo(width - pad, height - pad);
+    context.lineTo(pad, height - pad);
+    context.closePath();
+    context.fill();
+    context.globalAlpha = 0.9;
+    context.fillStyle = 'rgba(255, 210, 140, .55)';
+    context.fillRect(width / 2 - width * 0.08, height - pad - height * 0.24, width * 0.16, height * 0.24);
+  } else {
+    context.roundRect?.(pad, pad + height * 0.12, width - pad * 2, height - pad * 2 - height * 0.12, r);
+    if (!context.roundRect) context.rect(pad, pad + height * 0.12, width - pad * 2, height - pad * 2 - height * 0.12);
+    context.fill();
+  }
+  context.globalAlpha = 1;
+  const shade = context.createLinearGradient(0, 0, 0, height);
+  shade.addColorStop(0, 'rgba(255, 240, 210, .18)');
+  shade.addColorStop(1, 'rgba(0, 0, 0, .35)');
+  context.globalCompositeOperation = 'source-atop';
+  context.fillStyle = shade;
+  context.fillRect(0, 0, width, height);
+  context.globalCompositeOperation = 'source-over';
+}
+
+function paintMood(context, width, height, mood) {
+  const [top, bottom, glow] = mood;
+  const base = context.createLinearGradient(0, 0, 0, height);
+  base.addColorStop(0, top);
+  base.addColorStop(1, bottom);
+  context.fillStyle = base;
+  context.fillRect(0, 0, width, height);
+  const light = context.createRadialGradient(width * 0.5, height * 0.38, 0, width * 0.5, height * 0.38, Math.max(width, height) * 0.6);
+  light.addColorStop(0, glow);
+  light.addColorStop(1, 'rgba(0,0,0,0)');
+  context.fillStyle = light;
+  context.fillRect(0, 0, width, height);
+  // A soft horizon so a backdrop reads as a place.
+  context.fillStyle = 'rgba(0, 0, 0, .22)';
+  context.fillRect(0, height * 0.72, width, height * 0.28);
+}
+
+function paintIdLabel(context, asset, width, height, ink) {
+  const family = 'Manrope, system-ui, sans-serif';
+  const pad = Math.max(4, width * 0.06);
+  const idSize = fitFont(context, asset.id, width - pad * 2, Math.max(10, Math.min(40, Math.round(height / 6))), family);
+  if (idSize <= 6) return;
+  context.fillStyle = ink;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.shadowColor = 'rgba(0,0,0,.8)';
+  context.shadowBlur = 4;
+  context.fillText(asset.id, width / 2, height / 2);
+  context.shadowBlur = 0;
+}
+
+/** Draws a placeholder for an asset that has no file yet. */
 export function paintPlaceholder(asset) {
   if (asset.tiles) return paintTileset(asset);
   const group = ASSET_GROUPS[asset.group] || ASSET_GROUPS.missing;
@@ -48,41 +233,15 @@ export function paintPlaceholder(asset) {
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext('2d');
-  context.fillStyle = group.fill;
-  context.fillRect(0, 0, width, height);
-  context.strokeStyle = 'rgba(0,0,0,.18)';
-  context.lineWidth = Math.max(2, Math.min(width, height) / 40);
-  const step = Math.max(12, Math.min(width, height) / 6);
-  for (let x = -height; x < width; x += step) {
-    context.beginPath();
-    context.moveTo(x, height);
-    context.lineTo(x + height, 0);
-    context.stroke();
-  }
-  const border = Math.max(2, Math.round(Math.min(width, height) / 60));
-  context.strokeStyle = group.ink;
-  context.globalAlpha = 0.7;
-  context.lineWidth = border;
-  context.strokeRect(border / 2, border / 2, width - border, height - border);
-  context.globalAlpha = 1;
-  const family = 'Manrope, system-ui, sans-serif';
-  const pad = Math.max(4, width * 0.06);
-  const idSize = fitFont(context, asset.id, width - pad * 2, Math.max(10, Math.min(48, Math.round(height / 5))), family);
-  if (idSize > 6) {
-    context.fillStyle = group.ink;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.shadowColor = 'rgba(0,0,0,.55)';
-    context.shadowBlur = 4;
-    context.fillText(asset.id, width / 2, height / 2 - (height > 60 ? idSize * 0.5 : 0));
-    if (height > 60) {
-      const meta = `${group.label} · ${asset.w}×${asset.h}`;
-      fitFont(context, meta, width - pad * 2, Math.round(idSize * 0.6), family);
-      context.globalAlpha = 0.8;
-      context.fillText(meta, width / 2, height / 2 + idSize * 0.75);
-      context.globalAlpha = 1;
-    }
-  }
+  const color = tintFor(asset);
+  if (MOODS[asset.group]) paintMood(context, width, height, MOODS[asset.group]);
+  else if (['char', 'npc', 'battler'].includes(asset.group)) paintSilhouette(context, width, height, color, 'figure');
+  else if (asset.group === 'portrait') paintSilhouette(context, width, height, color, 'portrait');
+  else if (asset.group === 'enemy') paintSilhouette(context, width, height, '#5a3a32', 'enemy');
+  else if (asset.group === 'building') paintShape(context, width, height, color, 'building');
+  else if (asset.group === 'crest') paintShape(context, width, height, '#8a2a36', 'crest');
+  else paintShape(context, width, height, asset.group === 'missing' ? group.fill : color, 'prop');
+  if (showIds || asset.group === 'missing') paintIdLabel(context, asset, width, height, group.ink);
   return canvas;
 }
 

@@ -2,53 +2,53 @@
    Herald's identity strip, Path panel and Connections page, recruit refusals. */
 
 .charter-picker { grid-column: 1 / -1; margin: 0; padding: 0; border: 0; }
-.charter-picker legend { margin-bottom: 8px; color: var(--text); font: 600 15px var(--font-ui); }
+.charter-picker legend { margin-bottom: 8px; color: var(--text); font: 600 var(--fs-3) var(--font-ui); }
 .charter-picker__options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
-.charter-card { display: grid; align-content: start; gap: 6px; min-height: 44px; padding: 12px; border: 1px solid var(--line); border-radius: 3px; background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; cursor: pointer; }
+.charter-card { display: grid; align-content: start; gap: 6px; min-height: 44px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; cursor: pointer; }
 .charter-card.is-selected { border-color: var(--gold-bright); box-shadow: 0 0 0 1px var(--gold-bright), 0 0 22px rgba(246, 210, 140, .25); }
-.charter-card__crest { width: 44px; height: 44px; object-fit: cover; border-radius: 3px; }
-.charter-card strong { font: 700 18px var(--font-display); }
-.charter-card small { color: var(--text-dim); font-size: 12.5px; }
-.charter-card ul { margin: 0; padding-left: 16px; font-size: 12.5px; }
-.charter-card em { color: var(--gold-bright); font-size: 12px; font-style: normal; }
+.charter-card__crest { width: 44px; height: 44px; object-fit: cover; border-radius: var(--r-1); }
+.charter-card strong { font: 700 var(--fs-4) var(--font-display); }
+.charter-card small { color: var(--text-dim); font-size: var(--fs-1); }
+.charter-card ul { margin: 0; padding-left: 16px; font-size: var(--fs-1); }
+.charter-card em { color: var(--gold-bright); font-size: var(--fs-1); font-style: normal; }
 
-.topbar__identity { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 2px 10px 2px 4px; border: 1px solid var(--line-soft); border-radius: 3px; background: rgba(10, 9, 14, .55); color: var(--text); text-align: left; cursor: pointer; }
-.topbar__crest { width: 32px; height: 32px; object-fit: cover; border-radius: 2px; }
+.topbar__identity { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 2px 10px 2px 4px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(10, 9, 14, .55); color: var(--text); text-align: left; cursor: pointer; }
+.topbar__crest { width: 32px; height: 32px; object-fit: cover; border-radius: var(--r-1); }
 .topbar__identity span { display: grid; line-height: 1.15; }
-.topbar__identity b { font-size: 12.5px; }
-.topbar__identity small { color: var(--gold-bright); font-size: 11px; }
+.topbar__identity b { font-size: var(--fs-1); }
+.topbar__identity small { color: var(--gold-bright); font-size: var(--fs-1); }
 @media (max-width: 759px) { .topbar__identity span { display: none; } }
 
-.identity-strip { display: grid; grid-template-columns: auto 1fr 1fr; align-items: center; gap: 14px; margin: 8px 0 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 3px; background: rgba(10, 9, 14, .72); }
-.identity-strip__crest { width: 56px; height: 56px; object-fit: cover; border-radius: 3px; }
-.identity-strip strong { display: block; font: 700 20px var(--font-display); }
-.identity-strip small { color: var(--text-dim); font-size: 12.5px; }
+.identity-strip { display: grid; grid-template-columns: auto 1fr 1fr; align-items: center; gap: 14px; margin: 8px 0 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .72); }
+.identity-strip__crest { width: 56px; height: 56px; object-fit: cover; border-radius: var(--r-1); }
+.identity-strip strong { display: block; font: 700 var(--fs-4) var(--font-display); }
+.identity-strip small { color: var(--text-dim); font-size: var(--fs-1); }
 @media (max-width: 759px) { .identity-strip { grid-template-columns: auto 1fr; } .identity-strip > div:last-child { grid-column: 1 / -1; } }
 
 .path-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-.path-card { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--line-soft); border-radius: 3px; background: rgba(10, 9, 14, .6); }
+.path-card { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(10, 9, 14, .6); }
 .path-card header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.path-card header strong { font: 700 17px var(--font-display); }
+.path-card header strong { font: 700 var(--fs-3) var(--font-display); }
 .path-card.is-charter { border-color: var(--gold); }
-.path-card__score { margin: 0; color: var(--gold-bright); font: 700 26px var(--font-display); }
-.path-card small { color: var(--text-dim); font-size: 12px; }
-.path-card em { color: var(--text); font-size: 12.5px; font-style: italic; }
+.path-card__score { margin: 0; color: var(--gold-bright); font: 700 var(--fs-4) var(--font-display); }
+.path-card small { color: var(--text-dim); font-size: var(--fs-1); }
+.path-card em { color: var(--text); font-size: var(--fs-1); font-style: italic; }
 
 .connections { display: grid; gap: 12px; }
-.patron-card { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 3px; background: rgba(10, 9, 14, .72); }
+.patron-card { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .72); }
 .patron-card header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
-.patron-card__crest { width: 48px; height: 48px; object-fit: cover; border-radius: 3px; }
-.patron-card header strong { display: block; font: 700 18px var(--font-display); }
-.patron-card header small { color: var(--text-dim); font-size: 12.5px; }
-.patron-card p { margin: 0; color: var(--text-dim); font-size: 13.5px; }
-.patron-card__standing { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 13px; }
-.patron-card__unlocks { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--text-faint); }
+.patron-card__crest { width: 48px; height: 48px; object-fit: cover; border-radius: var(--r-1); }
+.patron-card header strong { display: block; font: 700 var(--fs-4) var(--font-display); }
+.patron-card header small { color: var(--text-dim); font-size: var(--fs-1); }
+.patron-card p { margin: 0; color: var(--text-dim); font-size: var(--fs-2); }
+.patron-card__standing { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: var(--fs-2); }
+.patron-card__unlocks { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; font-size: var(--fs-2); color: var(--text-faint); }
 .patron-card__unlocks .is-open { color: var(--text); }
 .patron-card__unlocks .is-open b { color: var(--gold-bright); }
-.patron-card__notes { font-size: 12.5px; }
+.patron-card__notes { font-size: var(--fs-1); }
 .patron-card .button { justify-self: start; min-height: 44px; }
 .patron-card--rival { border-color: rgba(220, 95, 79, .6); }
 
-.candidate-refusal { margin: 4px 0; padding: 6px 10px; border-left: 2px solid var(--bad); color: var(--text); font-size: 13px; font-style: italic; }
+.candidate-refusal { margin: 4px 0; padding: 6px 10px; border-left: 2px solid var(--bad); color: var(--text); font-size: var(--fs-2); font-style: italic; }
 .candidate-refusal b { color: var(--bad); font-style: normal; }
 .dialogue__refusal { color: #8a2f25; font-style: italic; }

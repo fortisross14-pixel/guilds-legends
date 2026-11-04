@@ -3,7 +3,7 @@ import { CHARTERS } from '../data/charters.js';
 import { getConnectionsView, getPathScores, getReputationSummary } from '../game/engine.js';
 import { Badge, Button, Panel, ProgressBar } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
-import PixelIcon from '../components/PixelIcon.jsx';
+import Icon from '../components/Icon.jsx';
 
 /** Who the guild set out to be, and what it has become: shown at the top of the Herald. */
 export function IdentityStrip({ state }) {
@@ -39,7 +39,7 @@ export function PathPanel({ state }) {
         {paths.map((path) => (
           <article key={path.id} className={`path-card ${path.charterPath ? 'is-charter' : ''} ${best?.id === path.id ? 'is-leading' : ''}`}>
             <header>
-              <PixelIcon name={path.icon} size={24} />
+              <Icon name={path.icon} size={24} />
               <strong>{path.name}</strong>
               {path.charterPath ? <Badge tone="gold">Your charter</Badge> : null}
               {best?.id === path.id && path.score > 0 ? <Badge tone="green">Leading</Badge> : null}
@@ -90,7 +90,7 @@ export function ConnectionsPage({ state, actions }) {
           <ul className="patron-card__unlocks">
             {patron.unlocks.map((unlock) => (
               <li key={unlock.id} className={unlock.open ? 'is-open' : ''}>
-                <b>{unlock.open ? '✓' : '·'} {unlock.name}:</b> {unlock.text}
+                <b>{unlock.open ? <Icon name="check" size={14} tone="plain" /> : '·'} {unlock.name}:</b> {unlock.text}
               </li>
             ))}
           </ul>

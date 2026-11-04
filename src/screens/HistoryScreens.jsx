@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { getHallOfFame, getHeadToHead, getHeroCareer, getLadderHistory, getMissionLog, getRecordBook, getSeasonList, getSeasonReview } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, Modal, Panel } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
+import Icon from '../components/Icon.jsx';
 
 // Phase 5 history pages: the season review cards, record book, hall of fame,
 // mission log, ladder history, head-to-head and the hero Career tab.
@@ -266,7 +267,7 @@ export function SeasonReview({ review, onClose }) {
         </div>
         <div className="season-review__actions">
           <Button size="sm" disabled={index === 0} onClick={() => setIndex(index - 1)}>
-            ◀ Back
+            <Icon name="back" size={14} tone="plain" /> Back
           </Button>
           {last ? null : (
             <Button size="sm" onClick={onClose}>
@@ -274,7 +275,7 @@ export function SeasonReview({ review, onClose }) {
             </Button>
           )}
           <Button variant="primary" onClick={() => (last ? onClose() : setIndex(index + 1))}>
-            {last ? 'Close' : 'Next ▶'}
+            {last ? 'Close' : <>Next <Icon name="next" size={14} tone="plain" /></>}
           </Button>
         </div>
       </div>

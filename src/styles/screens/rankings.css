@@ -6,38 +6,38 @@
 
 .status-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 14px; }
 .status-banner .eyebrow { order: 1; flex-basis: 100%; }
-.status-banner__title { color: var(--gold); font-family: var(--font-display); font-size: 30px; font-weight: 700; }
-.status-banner__ranks { order: 2; display: flex; flex-wrap: wrap; gap: 4px 18px; margin-left: auto; font-size: var(--t-ui); }
-.status-banner__ranks b { font-size: 20px; }
+.status-banner__title { color: var(--gold); font-family: var(--font-display); font-size: var(--fs-5); font-weight: 700; }
+.status-banner__ranks { order: 2; display: flex; flex-wrap: wrap; gap: 4px 18px; margin-left: auto; font-size: var(--fs-3); }
+.status-banner__ranks b { font-size: var(--fs-4); }
 .status-banner__ranks small { font-family: var(--font-ui); color: var(--text-faint); }
 
-.points-to-pass { margin: 0 0 10px; padding: 6px 10px; color: var(--text); font-family: var(--font-ui); font-size: var(--t-ui); }
+.points-to-pass { margin: 0 0 10px; padding: 6px 10px; color: var(--text); font-family: var(--font-ui); font-size: var(--fs-3); }
 
 /* The ladder table. */
 .ladder-table { display: grid; }
 .ladder-row { display: grid; grid-template-columns: 3ch auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 4px 8px 4px 28px; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; color: var(--text); font-family: var(--font-ui); text-align: left; }
 article.ladder-row, .ladder-row--head { grid-template-columns: 3ch minmax(0, 1fr) minmax(0, 220px) 12ch; }
-.ladder-row--head { min-height: 32px; border-bottom: 1px solid var(--line-soft); color: var(--text-faint); font-size: var(--t-label); font-family: var(--font-label); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.ladder-row--head { min-height: 32px; border-bottom: 1px solid var(--line-soft); color: var(--text-faint); font-size: var(--fs-1); font-family: var(--font-label); font-size: var(--fs-1); letter-spacing: .12em; text-transform: uppercase; }
 .ladder-row--head > :last-child { text-align: right; }
 .ladder-row.is-player { background: var(--glow); }
 .ladder-row.is-player .ladder-row__name strong { color: var(--gold); }
 .ladder-row.is-player::before { opacity: 1; }
-.ranking-position { color: var(--text-dim); font-size: 18px; text-align: right; }
+.ranking-position { color: var(--text-dim); font-size: var(--fs-4); text-align: right; }
 .ladder-row__name { display: grid; min-width: 0; }
-.ladder-row__name strong { overflow: hidden; font-family: var(--font-display); font-size: 19px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.ladder-row__value { font-family: var(--font-display); font-size: 19px; font-weight: 700; text-align: right; white-space: nowrap; }
-.ladder-row__value small { font-family: var(--font-ui); font-size: var(--t-label); color: var(--text-faint); font-weight: 400; }
+.ladder-row__name strong { overflow: hidden; font-family: var(--font-display); font-size: var(--fs-4); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.ladder-row__value { font-family: var(--font-display); font-size: var(--fs-4); font-weight: 700; text-align: right; white-space: nowrap; }
+.ladder-row__value small { font-family: var(--font-ui); font-size: var(--fs-1); color: var(--text-faint); font-weight: 400; }
 .ranking-star { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--text); font-family: var(--font-ui); text-align: left; }
 button.ranking-star { min-height: 40px; padding-left: 24px; }
-.ranking-star > span { min-width: 0; overflow: hidden; color: var(--text-dim); font-size: var(--t-label); text-overflow: ellipsis; white-space: nowrap; }
+.ranking-star > span { min-width: 0; overflow: hidden; color: var(--text-dim); font-size: var(--fs-1); text-overflow: ellipsis; white-space: nowrap; }
 
 /* Greatest careers. */
 .goat-summary { display: grid; grid-template-columns: repeat(3, 1fr); }
 .goat-summary > div { display: grid; gap: 2px; padding: 10px 14px; border-right: 1px solid var(--line-soft); }
 .goat-summary > div:last-child { border-right: 0; }
-.goat-summary small { font-family: var(--font-ui); font-size: var(--t-label); color: var(--text-faint); }
-.goat-summary strong { color: var(--gold); font-family: var(--font-display); font-size: 30px; font-weight: 700; }
-.goat-summary span { color: var(--text-dim); font-family: var(--font-ui); font-size: var(--t-small); }
+.goat-summary small { font-family: var(--font-ui); font-size: var(--fs-1); color: var(--text-faint); }
+.goat-summary strong { color: var(--gold); font-family: var(--font-display); font-size: var(--fs-5); font-weight: 700; }
+.goat-summary span { color: var(--text-dim); font-family: var(--font-ui); font-size: var(--fs-2); }
 .universe-hero-ranking { display: grid; }
 .universe-hero-ranking > button { display: grid; grid-template-columns: 4ch auto minmax(200px, 1.5fr) repeat(4, 72px) 64px; align-items: center; gap: 10px; min-height: 60px; padding: 4px 8px 4px 28px; border-bottom: 1px solid var(--line-soft); }
 .universe-hero-ranking > button.is-player { color: var(--gold); }
@@ -45,8 +45,8 @@ button.ranking-star { min-height: 40px; padding-left: 24px; }
 .universe-hero-ranking__identity > strong, .universe-hero-ranking__identity > small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .universe-hero-ranking__identity > span { display: flex; gap: 4px; margin-top: 2px; }
 .universe-hero-ranking > button > span:not(.ranking-position) { display: grid; text-align: right; }
-.universe-hero-ranking > button > span small { font-family: var(--font-ui); font-size: 12px; color: var(--text-faint); }
-.historical-score { color: var(--gold); font-size: 18px; text-align: right; }
+.universe-hero-ranking > button > span small { font-family: var(--font-ui); font-size: var(--fs-1); color: var(--text-faint); }
+.historical-score { color: var(--gold); font-size: var(--fs-4); text-align: right; }
 
 /* Almanac. */
 .tournament-almanac-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); }
@@ -59,9 +59,9 @@ button.ranking-star { min-height: 40px; padding-left: 24px; }
 .record-chase-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .record-chase-grid article { display: grid; gap: 2px; padding: 8px 10px; }
 .record-chase-grid strong { font-weight: 600; }
-.record-chase-grid p { margin: 4px 0; font-size: var(--t-small); }
+.record-chase-grid p { margin: 4px 0; font-size: var(--fs-2); }
 .record-chase-grid em { color: var(--gold); font-style: normal; }
-.record-chase-grid span { color: var(--text-dim); font-size: var(--t-label); }
+.record-chase-grid span { color: var(--text-dim); font-size: var(--fs-1); }
 
 /* Guild directory. */
 .guild-directory { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--s4); align-items: start; }
@@ -72,25 +72,25 @@ button.ranking-star { min-height: 40px; padding-left: 24px; }
 .guild-directory > aside strong, .guild-directory > aside small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .guild-directory > aside strong { font-weight: 500; }
 .directory-banner { display: grid; gap: 10px; padding: 12px; }
-.directory-banner blockquote { margin: 0; color: var(--text); font-size: 17px; }
+.directory-banner blockquote { margin: 0; color: var(--text); font-size: var(--fs-3); }
 .directory-banner > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.directory-banner span { display: grid; color: var(--text-faint); font-size: var(--t-label); }
-.directory-banner b { color: var(--text); font-size: var(--t-ui); }
+.directory-banner span { display: grid; color: var(--text-faint); font-size: var(--fs-1); }
+.directory-banner b { color: var(--text); font-size: var(--fs-3); }
 .directory-roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; margin-top: 10px; }
 .directory-roster button { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 8px; padding: 4px 6px 4px 28px; border-bottom: 1px solid var(--line-soft); }
 .directory-roster button > div { display: grid; min-width: 0; }
-.directory-roster button small { color: var(--gold); font-family: var(--font-ui); font-size: 12px; font-family: var(--font-label); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
-.directory-roster button span { color: var(--text-dim); font-size: var(--t-label); }
+.directory-roster button small { color: var(--gold); font-family: var(--font-ui); font-size: var(--fs-1); font-family: var(--font-label); font-size: var(--fs-1); letter-spacing: .12em; text-transform: uppercase; }
+.directory-roster button span { color: var(--text-dim); font-size: var(--fs-1); }
 
 /* Artifacts. */
 .world-artifact-grid, .artifact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .artifact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .world-artifact-grid article, .artifact-grid article { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 10px; }
 .world-artifact-grid article.is-player { border-color: var(--gold); }
-.world-artifact-grid article > span { color: var(--xp); font-size: 26px; }
+.world-artifact-grid article > span { color: var(--xp); font-size: var(--fs-4); }
 .world-artifact-grid h3, .artifact-grid h3 { margin: 2px 0; }
-.world-artifact-grid p, .artifact-grid p { font-size: var(--t-small); }
-.world-artifact-grid button { min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--mp); font-family: var(--font-ui); font-size: var(--t-label); text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+.world-artifact-grid p, .artifact-grid p { font-size: var(--fs-2); }
+.world-artifact-grid button { min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--mp); font-family: var(--font-ui); font-size: var(--fs-1); text-align: left; text-decoration: underline; text-underline-offset: 3px; }
 
 /* Reputation and rivals. */
 .reputation-view__title { margin: 0; }
@@ -100,7 +100,7 @@ button.ranking-star { min-height: 40px; padding-left: 24px; }
 .nemesis-chip { padding: 4px 12px 4px 26px; }
 .nemesis-chip.is-nemesis { color: var(--bad); }
 .nemesis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s4); margin-bottom: 10px; }
-.nemesis-grid h3 { margin: 0 0 6px; color: var(--text-dim); font-size: var(--t-label); font-family: var(--font-label); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.nemesis-grid h3 { margin: 0 0 6px; color: var(--text-dim); font-size: var(--fs-1); font-family: var(--font-label); font-size: var(--fs-1); letter-spacing: .12em; text-transform: uppercase; }
 
 @media (max-width: 1240px) {
   .universe-hero-ranking > button { grid-template-columns: 4ch auto minmax(180px, 1fr) repeat(2, 64px) 60px; }

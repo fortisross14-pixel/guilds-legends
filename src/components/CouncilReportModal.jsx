@@ -1,5 +1,6 @@
 import React from 'react';
 import { Badge, Button, HeroPortrait, Modal } from './UI.jsx';
+import Icon from './Icon.jsx';
 
 function delta(value, suffix = '') {
   if (!value) return `0${suffix}`;
@@ -56,11 +57,11 @@ export default function CouncilReportModal({ state, open, onClose, openHero }) {
               const hero = heroById.get(item.heroId);
               return (
                 <button key={`${item.heroId}-${item.activity}`} onClick={() => hero && openHero(item.heroId)}>
-                  {hero ? <HeroPortrait hero={hero} size="sm" /> : <span className="council-report__icon">{item.icon}</span>}
+                  {hero ? <HeroPortrait hero={hero} size="sm" /> : <span className="council-report__icon"><Icon name={item.icon} size={22} /></span>}
                   <div>
                     <strong>{item.name}</strong>
                     <small>
-                      {item.icon} {item.activity}
+                      {item.activity}
                     </small>
                     <p>{item.summary}</p>
                   </div>

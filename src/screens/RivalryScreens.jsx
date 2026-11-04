@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getNemesisView, getReputationSummary, nemesisIds, rivalRecord } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { HeadToHeadPanel } from './HistoryScreens.jsx';
+import Icon from '../components/Icon.jsx';
 
 // Herald → Reputation: families (with perks) and regions.
 export function ReputationView({ state }) {
@@ -88,7 +89,7 @@ export function NemesisView({ state, actions, initialRivalId = null }) {
                 className={`nemesis-chip ${id === rivalId ? 'is-selected' : ''} ${nemeses.includes(id) ? 'is-nemesis' : ''}`}
                 onClick={() => setRivalId(id)}
               >
-                {nemeses.includes(id) ? '⚔ ' : ''}
+                {nemeses.includes(id) ? <Icon name="swords" size={14} tone="plain" /> : null}
                 {rival.name} <small>{rivalRecord(state, id).score}</small>
               </button>
             );

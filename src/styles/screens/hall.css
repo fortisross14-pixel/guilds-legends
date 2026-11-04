@@ -5,14 +5,14 @@
 
 /* One short line with one button. */
 .next-upgrade { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin: 10px 0; padding: 8px 12px; border-left: 3px solid var(--gold); background: rgba(246, 210, 140, .08); }
-.next-upgrade span { color: var(--text); font-size: 14px; }
+.next-upgrade span { color: var(--text); font-size: var(--fs-2); }
 .next-upgrade b { color: var(--gold-bright); font-weight: 700; }
 .next-upgrade .button { min-height: 44px; }
 
 .hall-start { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 12px; }
 .rented-room { display: grid; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
 .rented-room li { display: flex; align-items: center; gap: 8px; color: var(--text); }
-.rented-room .pixel-icon { color: var(--brass); }
+.rented-room .icon { color: var(--brass); }
 .hall-purchase__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .hall-purchase__actions .button, .rented-room + .button { min-height: 44px; }
 
@@ -23,12 +23,12 @@
 
 /* Build offers: cost, requirement, time and effect. */
 .build-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.build-offer { display: grid; align-content: start; gap: 6px; padding: 14px; border: 1px solid var(--line); border-radius: 3px; background: rgba(10, 9, 14, .78); }
+.build-offer { display: grid; align-content: start; gap: 6px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .78); }
 .build-offer header { display: flex; align-items: center; gap: 8px; }
-.build-offer header strong { font: 700 18px var(--font-display); }
-.build-offer__desc { margin: 0; color: var(--text-dim); font-size: 13px; }
-.build-offer__effect { margin: 0; color: var(--gold-bright); font-size: 14px; font-weight: 600; }
-.build-offer__facts { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; font-size: 13px; }
+.build-offer header strong { font: 700 var(--fs-4) var(--font-display); }
+.build-offer__desc { margin: 0; color: var(--text-dim); font-size: var(--fs-2); }
+.build-offer__effect { margin: 0; color: var(--gold-bright); font-size: var(--fs-2); font-weight: 600; }
+.build-offer__facts { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; font-size: var(--fs-2); }
 .build-offer__facts dt { color: var(--text-faint); }
 .build-offer__facts dd { margin: 0; color: var(--text); }
 .build-offer.is-locked .build-offer__facts dd:last-child { color: var(--bad); }
@@ -42,20 +42,20 @@
 /* Treasury: income vs costs as two bars. */
 .treasury-bars { display: grid; gap: 6px; }
 .treasury-bars p { display: grid; grid-template-columns: 5em 1fr auto; align-items: center; gap: 10px; margin: 0; }
-.treasury-bars i { height: 10px; border-radius: 2px; }
+.treasury-bars i { height: 10px; border-radius: var(--r-1); }
 .treasury-bars .is-income { background: var(--heal); }
 .treasury-bars .is-costs { background: var(--bad); }
 .treasury-bars .is-good { color: var(--heal); font-weight: 700; }
 .treasury-bars .is-bad { color: var(--bad); font-weight: 700; }
 
-.trophy-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 15px; text-transform: capitalize; }
+.trophy-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: var(--fs-3); text-transform: capitalize; }
 
 /* Tavern: no free bed. */
-.no-free-bed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px dashed rgba(220, 95, 79, .6); border-radius: 3px; }
+.no-free-bed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px dashed rgba(220, 95, 79, .6); border-radius: var(--r-1); }
 .no-free-bed strong { color: var(--bad); }
 .no-free-bed .button { min-height: 44px; }
 .dialogue__note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: var(--bad); font-weight: 600; }
 
 /* Construction complete. */
-.moment__room-art { display: block; width: min(100%, 420px); aspect-ratio: 1280 / 576; object-fit: cover; margin: 6px auto; border: 1px solid var(--line); border-radius: 3px; }
-.moment__effect { margin: 6px 0; color: var(--text); font-size: 16px; text-align: center; }
+.moment__room-art { display: block; width: min(100%, 420px); aspect-ratio: 1280 / 576; object-fit: cover; margin: 6px auto; border: 1px solid var(--line); border-radius: var(--r-1); }
+.moment__effect { margin: 6px 0; color: var(--text); font-size: var(--fs-3); text-align: center; }

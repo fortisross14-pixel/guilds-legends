@@ -15,7 +15,7 @@
 .succession-history small { display: block; }
 .branch-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 12px; }
 .branch-card.is-inactive { border-style: dashed; color: var(--text-dim); }
-.branch-card__seal { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line-soft); background: var(--panel-deep); font-family: var(--font-ui); font-size: 20px; }
+.branch-card__seal { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line-soft); background: var(--panel-deep); font-family: var(--font-ui); font-size: var(--fs-4); }
 .branch-card h3 { margin: 2px 0; }
 .branch-card p { margin: 0; }
 .branch-founder, .mentor-form { display: grid; gap: 12px; }
@@ -29,9 +29,9 @@
 .ambition-list article.is-complete { border-color: color-mix(in srgb, var(--hp) 55%, var(--line-soft)); }
 .inherited-list article { display: grid; grid-template-columns: 1fr minmax(180px, .65fr); gap: 12px; padding: 10px 12px; }
 .inherited-list p { margin: 2px 0; }
-.artifact-glyph { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line-soft); background: var(--panel-deep); color: var(--xp); font-size: 20px; }
+.artifact-glyph { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line-soft); background: var(--panel-deep); color: var(--xp); font-size: var(--fs-4); }
 .artifact-owner { display: flex; justify-content: space-between; margin: 10px 0 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
-.artifact-grid details { margin-top: 6px; color: var(--text-dim); font-family: var(--font-ui); font-size: var(--t-small); }
+.artifact-grid details { margin-top: 6px; color: var(--text-dim); font-family: var(--font-ui); font-size: var(--fs-2); }
 .institution-events article > p { flex: 1; margin: 0; }
 
 @media (max-width: 899px) {

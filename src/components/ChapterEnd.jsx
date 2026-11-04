@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getChapterSummary } from '../game/engine.js';
 import { Button, Modal } from './UI.jsx';
 import Asset from './Asset.jsx';
+import Icon from './Icon.jsx';
 
 // The end of Chapter 1: a short card sequence in the style of the season
 // review (what happened, what the guild chose, where it stands), then the
@@ -23,7 +24,7 @@ export default function ChapterEnd({ state, onClose }) {
               <ul className="season-card__facts">
                 {summary.missions.map((mission) => (
                   <li key={mission.number}>
-                    {mission.number}. {mission.title} <b>{mission.done ? '✓' : '—'}</b>
+                    {mission.number}. {mission.title} <b>{mission.done ? <Icon name="check" size={14} tone="plain" /> : '—'}</b>
                   </li>
                 ))}
               </ul>
@@ -83,10 +84,10 @@ export default function ChapterEnd({ state, onClose }) {
         </article>
         <div className="season-review__actions">
           <Button size="sm" disabled={index === 0} onClick={() => setIndex(index - 1)}>
-            ◀ Back
+            <Icon name="back" size={14} tone="plain" /> Back
           </Button>
           <Button variant="primary" onClick={() => (last ? onClose() : setIndex(index + 1))}>
-            {last ? 'Keep playing' : 'Next ▶'}
+            {last ? 'Keep playing' : <>Next <Icon name="next" size={14} tone="plain" /></>}
           </Button>
         </div>
       </div>

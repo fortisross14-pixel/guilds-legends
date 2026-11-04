@@ -241,7 +241,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                       >
                         {MONTHLY_ACTIVITIES.map((item) => (
                           <option key={item.id} value={item.id}>
-                            {item.icon} {item.label}
+                            {item.label}
                           </option>
                         ))}
                       </select>
@@ -267,7 +267,7 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
                     <span>{classInfo.glyph}</span>
                     <p>{classInfo.description}</p>
                     <small>
-                      {PRIMALS[hero.primal]?.icon} Beats {PRIMALS[hero.primal]?.beats} · weak to {PRIMALS[hero.primal]?.weakTo}
+                      Beats {PRIMALS[hero.primal]?.beats} · weak to {PRIMALS[hero.primal]?.weakTo}
                     </small>
                   </div>
                 </article>

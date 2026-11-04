@@ -14,9 +14,10 @@ import {
   specializationTitle,
 } from '../game/engine.js';
 import { NemesisView, ReputationView } from './RivalryScreens.jsx';
-import { Badge, Button, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline, Tabs } from '../components/UI.jsx';
+import { Badge, Button, HeroPortrait, Panel, PrimalBadge, RankChange, RarityBadge, Sparkline } from '../components/UI.jsx';
 import { ConnectionsPage, IdentityStrip, PathPanel } from './IdentityScreens.jsx';
 import { HallOfFame, LadderHistoryPanel, RecordBook } from './HistoryScreens.jsx';
+import Icon from '../components/Icon.jsx';
 
 const LADDER_COPY = {
   strength: 'Current power: the average of each guild’s top five heroes. Moves fast.',
@@ -267,7 +268,7 @@ function TournamentLegends({ state, actions }) {
                 <strong>{hero.name}</strong>
                 <small>{hero.career?.titles || 0} titles</small>
               </div>
-              <b>{(hero.career?.prizeMoney || 0).toLocaleString()} ◈</b>
+              <b>{(hero.career?.prizeMoney || 0).toLocaleString()} G</b>
             </button>
           ))}
         </div>
@@ -315,7 +316,7 @@ function ArtifactAlmanac({ state, actions }) {
           const guild = artifact.player ? state.guild.name : state.rivals.find((item) => item.id === artifact.ownerGuildId)?.name;
           return (
             <article key={artifact.id} className={artifact.player ? 'is-player' : ''}>
-              <span>◈</span>
+              <span><Icon name="coin" size={16} tone="brass" /></span>
               <div>
                 <small>Prestige {artifact.prestige}</small>
                 <h3>{artifact.name}</h3>
@@ -358,7 +359,7 @@ function GuildDirectory({ state, actions, onOpenRival }) {
         eyebrow={`${guild.archetype} · Founded ${guild.founded}`}
         action={
           <Button size="sm" onClick={() => onOpenRival(guild.id)}>
-            Rivalry ⚔
+            Rivalry <Icon name="swords" size={14} tone="plain" />
           </Button>
         }
       >
@@ -400,51 +401,42 @@ function GuildDirectory({ state, actions, onOpenRival }) {
   );
 }
 
-export default function RankingsScreen({ state, actions, initialTab = null }) {
-  const [tab, setTab] = useState(initialTab || (state.challenge?.status === 'pending' ? 'rivals' : 'path'));
+const VIEW_ITEMS = [
+  { id: 'guilds', label: 'Guild ladders', icon: 'flag' },
+  { id: 'heroLadders', label: 'Hero ladders', icon: 'party' },
+  { id: 'path', label: 'Path', icon: 'star' },
+  { id: 'rivals', label: 'Rivals', icon: 'swords' },
+  { id: 'reputation', label: 'Reputation', icon: 'shield' },
+  { id: 'connections', label: 'Connections', icon: 'letter' },
+  { id: 'directory', label: 'Directory', icon: 'scroll' },
+  { id: 'records', label: 'Record book', icon: 'star' },
+  { id: 'hall', label: 'Hall of fame', icon: 'crown' },
+  { id: 'heroes', label: 'All-time greats', icon: 'laurel' },
+  { id: 'tournaments', label: 'Tournament legends', icon: 'trophy' },
+  { id: 'artifacts', label: 'Artifacts', icon: 'gem' },
+];
+
+/** The Herald's records. `views` limits which views show (Records tabs pass a few). */
+export default function RankingsScreen({ state, actions, initialTab = null, views = null }) {
+  const items = VIEW_ITEMS.filter((item) => !views || views.includes(item.id));
+  const [tab, setTab] = useState(initialTab && items.some((item) => item.id === initialTab) ? initialTab : state.challenge?.status === 'pending' && items.some((item) => item.id === 'rivals') ? 'rivals' : items[0].id);
   const [rivalFocus, setRivalFocus] = useState(null);
   const openRival = (id) => {
     setRivalFocus(id);
     setTab('rivals');
   };
-  const heroCount =
-    state.rivals.reduce((sum, guild) => sum + 1 + guild.members.length, 0) +
-    (state.freeAgents?.length || 0) +
-    (state.worldHistoricHeroes?.length || 0) +
-    state.heroes.length;
   return (
     <div className="screen screen--rankings">
-      <header className="screen-heading">
-        <div>
-          <span className="eyebrow">The world existed before you—and keeps moving without you</span>
-          <h1>The Herald</h1>
-          <p>Compare your young banner to regional companies, national powers, global institutions and generations of champions.</p>
+      {items.some((item) => item.id === 'guilds') ? <IdentityStrip state={state} /> : null}
+      {items.length > 1 ? (
+        <div className="view-picker" role="group" aria-label="Show">
+          {items.map((item) => (
+            <button key={item.id} type="button" className={tab === item.id ? 'is-active' : ''} aria-pressed={tab === item.id} onClick={() => setTab(item.id)}>
+              {item.label}
+            </button>
+          ))}
         </div>
-        <div className="heading-metrics">
-          <Badge tone="gold">{state.rivals.length + 1} guilds</Badge>
-          <Badge tone="purple">{heroCount} simulated heroes</Badge>
-          <Badge tone="blue">{state.universeStats?.boutsResolved || 0} recorded bouts</Badge>
-        </div>
-      </header>
-      <IdentityStrip state={state} />
-      <Tabs
-        active={tab}
-        onChange={setTab}
-        items={[
-          { id: 'path', label: 'Path', icon: '✦' },
-          { id: 'connections', label: 'Connections', icon: '✉' },
-          { id: 'guilds', label: 'Guild ladders', icon: '⚑' },
-          { id: 'heroLadders', label: 'Hero ladders', icon: '♟' },
-          { id: 'records', label: 'Record book', icon: '✦' },
-          { id: 'hall', label: 'Hall of fame', icon: '♛' },
-          { id: 'heroes', label: 'All-time greats', icon: '✦' },
-          { id: 'tournaments', label: 'Tournament legends', icon: '♛' },
-          { id: 'reputation', label: 'Reputation', icon: '❖' },
-          { id: 'rivals', label: 'Rivals & nemeses', icon: '⚔' },
-          { id: 'directory', label: 'Guild directory', icon: '▤' },
-          { id: 'artifacts', label: 'Artifacts', icon: '◈' },
-        ]}
-      />
+      ) : null}
       {tab === 'path' ? <PathPanel state={state} /> : null}
       {tab === 'connections' ? <ConnectionsPage state={state} actions={actions} /> : null}
       {tab === 'guilds' ? <GuildLadders state={state} actions={actions} /> : null}

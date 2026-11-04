@@ -17,7 +17,7 @@
   --glow-strong: rgba(246, 210, 140, .24);
   --blur: blur(14px) saturate(1.15);
   --shadow: 0 18px 40px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .35);
-  --radius: 4px;
+  --radius: var(--r-1);
 
   /* Text */
   --text: #ece4d2;
@@ -57,17 +57,52 @@
   --p-psychic: #b28ad9;
   --p-iron: #a3abb8;
 
-  /* Type */
+  /* Type: two faces, five sizes (DESIGN.md). Cormorant for titles and names, Manrope for the rest.
+     Small caps (uppercase + tracking) only for tiny labels at --fs-1. */
   --font-display: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
-  --font-label: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
   --font-ui: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --t-label: 12px;
-  --t-ui: 15px;
-  --t-title: 22px;
-  --t-h2: 26px;
-  --t-h1: 40px;
-  --t-prose: 15px;
-  --t-small: 13px;
+  --font-label: var(--font-ui);
+  --fs-1: 12px;  /* tiny labels, meta */
+  --fs-2: 14px;  /* secondary text, lists */
+  --fs-3: 16px;  /* body, menus, buttons */
+  --fs-4: 21px;  /* names, panel titles */
+  --fs-5: clamp(28px, 3vw, 38px); /* screen titles, ceremonies */
+  --fs-logo: clamp(48px, 9vw, 88px); /* the title logo is art, not a sixth text size */
+  --t-label: var(--fs-1);
+  --t-small: var(--fs-2);
+  --t-ui: var(--fs-3);
+  --t-prose: var(--fs-3);
+  --t-title: var(--fs-4);
+  --t-h2: var(--fs-4);
+  --t-h1: var(--fs-5);
+
+  /* Radii: controls and panels, sheets and large cards, round. */
+  --r-1: 3px;
+  --r-2: 10px;
+  --r-round: 50%;
+
+  /* One layer scale for the whole game. Local stacking inside a component uses 0–9. */
+  --z-scene: 0;      /* walkable canvas, world map, backdrops */
+  --z-labels: 10;    /* names and icons over the scene */
+  --z-hud: 20;       /* place tag, orbs, ledger, goal */
+  --z-panel: 30;     /* section screens, bottom panels, peek cards */
+  --z-dialogue: 40;  /* conversations */
+  --z-overlay: 50;   /* battles, decisions, reports, ceremonies */
+  --z-toast: 60;     /* messages and notices */
+  --z-drag: 70;      /* drag ghost, drag line, radial and orb fans */
+  --z-system: 80;    /* loading, fatal errors */
+
+  /* Screen zones (shell). Everything respects the safe areas. */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --gutter: 16px;
+  --hud-top: calc(var(--safe-t) + 12px);
+  --hud-bottom: calc(var(--safe-b) + 14px);
+  --orb: 60px;
+  --orb-item: 48px;
+  --tap: 44px;
 
   /* Space (4px grid) */
   --s1: 4px;
@@ -84,9 +119,9 @@
   --slow: 700ms;
 
   /* Layout */
-  --dock-w: 212px;
-  --strip-h: 56px;
-  --party-h: 76px;
+  --dock-w: 0px; /* no dock since 7C */
+  --strip-h: calc(var(--safe-t) + 64px); /* the HUD row at the top */
+  --party-h: calc(var(--safe-b) + 84px); /* the orb row at the bottom */
   --content-max: 1240px;
 
   /* Brass corner flourishes (one per corner) for panels. */

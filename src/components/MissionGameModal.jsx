@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MISSION_GAME_ACTIONS, missionGameActionPreview, PERSONALITY_GAME_NOTES } from '../game/missionGames.js';
 import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar } from './UI.jsx';
+import Icon from './Icon.jsx';
 
 const NO_ACTIONS = [];
 
@@ -158,7 +159,7 @@ export default function MissionGameModal({ game, actions }) {
             const unavailable = game.type === 'Intrigue' && action.id === 'extract' && game.metrics.progress < 70;
             return (
               <button key={action.id} disabled={unavailable} onClick={() => actions.missionGameAction(action.id, leadHeroId)}>
-                <span className="mission-game__action-icon">{action.icon}</span>
+                <span className="mission-game__action-icon"><Icon name={action.icon} size={20} /></span>
                 <div>
                   <strong>{action.label}</strong>
                   <p>{action.hint}</p>

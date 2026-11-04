@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FORMATION_TYPES } from '../data/formations.js';
 import { getHero, getTournamentAccess, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, Panel } from '../components/UI.jsx';
+import Icon from '../components/Icon.jsx';
 
 // Guild championships (team tournaments). Outside the Chapter 1 slice; the
 // arena registrar shows this when the slice stops hiding them.
@@ -69,7 +70,7 @@ export default function GuildChampionships({ state, actions, navigate }) {
             <span>{event.circuit}</span>
             <strong>{event.name}</strong>
             <small>
-              {event.location} · {event.purse.toLocaleString()} ◈
+              {event.location} · {event.purse.toLocaleString()} G
             </small>
             <EventStatus state={state} tournament={event} />
           </button>
@@ -87,7 +88,7 @@ export default function GuildChampionships({ state, actions, navigate }) {
             <Badge>{selected.size} guilds</Badge>
           </div>
         </div>
-        <span>⚑</span>
+        <span><Icon name="flag" size={18} tone="brass" /></span>
       </section>
 
       {selected.status === 'registration' ? (
@@ -143,14 +144,14 @@ export default function GuildChampionships({ state, actions, navigate }) {
               disabled={!requiredFilled || !access?.unlocked || !access?.locationMet || state.guild.crowns < selected.entryFee}
               onClick={() => actions.enterGuildTournament(selected.id, 'Combat', assignments)}
             >
-              Register company · {selected.entryFee} ◈
+              Register company · {selected.entryFee} G
             </Button>
           </Panel>
           <Panel title="Championship license" eyebrow="Guild events are not local">
             <div className="qualification-checks qualification-checks--vertical">
               {access?.checks.map((check) => (
                 <div key={check.id} className={check.met ? 'is-met' : ''}>
-                  <span>{check.met ? '✓' : '○'}</span>
+                  <span>{check.met ? <Icon name="check" size={14} tone="plain" /> : <Icon name="dot" size={14} tone="plain" />}</span>
                   <p>
                     <strong>{check.label}</strong>
                     <small>
@@ -160,7 +161,7 @@ export default function GuildChampionships({ state, actions, navigate }) {
                 </div>
               ))}
               <div className={access?.locationMet ? 'is-met' : ''}>
-                <span>{access?.locationMet ? '✓' : '○'}</span>
+                <span>{access?.locationMet ? <Icon name="check" size={14} tone="plain" /> : <Icon name="dot" size={14} tone="plain" />}</span>
                 <p>
                   <strong>Present in host city</strong>
                   <small>{selected.location}</small>

@@ -11,79 +11,72 @@ body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
 button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.97); filter: brightness(1.12); }
 
 /* Drag and drop */
-.drag-ghost { position: fixed; z-index: 200; left: 0; top: 0; margin: -22px 0 0 -40px; padding: 6px 12px; border: 1px solid var(--gold-bright); border-radius: 3px; background: rgba(10, 9, 14, .92); color: var(--gold-bright); font: 600 13px var(--font-ui); white-space: nowrap; pointer-events: none; box-shadow: 0 8px 22px rgba(0, 0, 0, .5); }
+.drag-ghost { position: fixed; z-index: var(--z-drag); left: 0; top: 0; margin: -22px 0 0 -40px; padding: 6px 12px; border: 1px solid var(--gold-bright); border-radius: var(--r-1); background: rgba(10, 9, 14, .92); color: var(--gold-bright); font: 600 var(--fs-2) var(--font-ui); white-space: nowrap; pointer-events: none; box-shadow: 0 8px 22px rgba(0, 0, 0, .5); }
 [data-drop].is-drop-over { outline: 2px solid var(--gold-bright); outline-offset: 2px; box-shadow: 0 0 18px rgba(246, 210, 140, .35); }
-.drag-line { position: fixed; inset: 0; z-index: 70; width: 100vw; height: 100vh; pointer-events: none; }
+.drag-line { position: fixed; inset: 0; z-index: var(--z-drag); width: 100vw; height: 100vh; pointer-events: none; }
 .drag-line line { stroke: var(--gold-bright); stroke-width: 3; stroke-dasharray: 8 6; stroke-linecap: round; }
 
 /* The radial menu opens under the thumb */
-.radial { position: fixed; z-index: 80; width: 0; height: 0; }
-.radial__center { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .9); color: var(--text); font-size: 20px; cursor: pointer; }
-.radial__option { position: absolute; left: -40px; top: -40px; display: grid; justify-items: center; align-content: center; gap: 1px; width: 80px; min-height: 80px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 50%; background: rgba(16, 13, 20, .94); color: var(--text); font: 600 11px/1.15 var(--font-ui); text-align: center; cursor: pointer; animation: radial-in .16s ease-out both; }
+.radial { position: fixed; z-index: var(--z-drag); width: 0; height: 0; }
+.radial__center { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .9); color: var(--text); font-size: var(--fs-4); cursor: pointer; }
+.radial__option { position: absolute; left: -40px; top: -40px; display: grid; justify-items: center; align-content: center; gap: 1px; width: 80px; min-height: 80px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 50%; background: rgba(16, 13, 20, .94); color: var(--text); font: 600 var(--fs-1)/1.15 var(--font-ui); text-align: center; cursor: pointer; animation: radial-in .16s ease-out both; }
 .radial__option b { max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.radial__option small { color: var(--text-dim); font-size: 10px; }
+.radial__option small { color: var(--text-dim); font-size: var(--fs-1); }
 .radial__option.is-hover, .radial__option:focus-visible { border-color: var(--gold-bright); background: rgba(60, 46, 20, .96); box-shadow: 0 0 16px rgba(246, 210, 140, .4); }
 .radial__option.is-disabled { opacity: .45; }
-.radial__preview { color: var(--gold-bright); font-size: 10px; font-style: normal; white-space: nowrap; }
+.radial__preview { color: var(--gold-bright); font-size: var(--fs-1); font-style: normal; white-space: nowrap; }
 @keyframes radial-in { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
 @media (prefers-reduced-motion: reduce) { .radial__option { animation: none; } }
 
 /* Battle: fast-forward marker */
-.battle-boost { position: absolute; z-index: 6; right: 14px; top: 54px; color: var(--gold-bright); font: 700 28px var(--font-display); pointer-events: none; }
-.battle-commands__who small { display: block; color: var(--text-dim); font-size: 11.5px; font-weight: 400; }
+.battle-boost { position: absolute; z-index: 6; right: 14px; top: 54px; color: var(--gold-bright); font: 700 var(--fs-5) var(--font-display); pointer-events: none; }
+.battle-commands__who small { display: block; color: var(--text-dim); font-size: var(--fs-1); font-weight: 400; }
 
 /* Ghost hand: shown once until the gesture is used */
 .gesture-hint { position: absolute; z-index: 7; inset: 0; display: grid; place-items: center; pointer-events: none; }
-.gesture-hint small { position: absolute; bottom: 38%; padding: 4px 10px; border-radius: 3px; background: rgba(10, 9, 14, .8); color: var(--gold-bright); font-size: 13px; }
-.gesture-hint__hand { position: absolute; font-size: 40px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); animation: ghost-drag 2.2s ease-in-out infinite; }
+.gesture-hint small { position: absolute; bottom: 38%; padding: 4px 10px; border-radius: var(--r-1); background: rgba(10, 9, 14, .8); color: var(--gold-bright); font-size: var(--fs-2); }
+.gesture-hint__hand { position: absolute; font-size: var(--fs-5); filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); animation: ghost-drag 2.2s ease-in-out infinite; }
 @keyframes ghost-drag { 0% { transform: translate(-10vw, 30vh); opacity: 0; } 15% { opacity: 1; } 70% { transform: translate(0, -8vh); opacity: 1; } 100% { transform: translate(0, -8vh); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .gesture-hint__hand { animation: none; } }
 
 /* Two-way choice (settings) */
-.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
-.segmented button { min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: var(--text-dim); font: 600 13px var(--font-ui); cursor: pointer; }
+.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r-1); overflow: hidden; }
+.segmented button { min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: var(--text-dim); font: 600 var(--fs-2) var(--font-ui); cursor: pointer; }
 .segmented button.is-selected { background: rgba(246, 210, 140, .16); color: var(--gold-bright); }
 
 /* Bottom panels: a grab handle; swipe the header down to close. */
 .modal__header { touch-action: none; }
 .modal__grab { display: none; }
 @media (max-width: 759px) {
-  .modal__grab { display: block; position: absolute; top: 6px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px; background: var(--line); }
+  .modal__grab { display: block; position: absolute; top: 6px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: var(--r-1); background: var(--line); }
   .modal__header { position: relative; padding-top: 18px; }
   .modal { transition: transform .12s ease-out; }
   /* Full-screen layers: battles (battle.css), story scenes and ceremonies. */
   .modal-layer:has(.modal--ceremony), .modal-layer:has(.modal--season) { align-items: center; padding: 12px; }
-  .modal-layer:has(.modal--ceremony) .modal, .modal-layer:has(.modal--season) .modal { border-radius: 6px; max-height: 96dvh; }
+  .modal-layer:has(.modal--ceremony) .modal, .modal-layer:has(.modal--season) .modal { border-radius: var(--r-2); max-height: 96dvh; }
 }
 
 /* Exploring: icons on labels, the goal chip (thumb zone, bottom left), peek cards */
 .walk__label svg, .walk__label img { width: 16px; height: 16px; margin-right: 4px; vertical-align: -3px; }
-.quest-chip { position: absolute; z-index: 6; left: max(12px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px; max-width: min(70vw, 340px); min-height: 48px; padding: 6px 14px 6px 8px; border: 1px solid var(--gold-bright); border-radius: 24px; background: rgba(10, 9, 14, .86); color: var(--text); font: 600 13px var(--font-ui); cursor: pointer; }
-.quest-chip b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--gold-bright); color: #1b140a; font-size: 18px; }
-.quest-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .peek-card { position: absolute; z-index: 8; left: 50%; bottom: max(76px, calc(env(safe-area-inset-bottom) + 76px)); display: grid; gap: 6px; width: min(92vw, 360px); padding: 12px 14px; transform: translateX(-50%); }
 .peek-card header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.peek-card header button { width: 44px; height: 44px; border: 0; background: none; color: var(--text); font-size: 22px; cursor: pointer; }
-.peek-card p { margin: 0; color: var(--text-dim); font-size: 13.5px; }
+.peek-card header button { width: 44px; height: 44px; border: 0; background: none; color: var(--text); font-size: var(--fs-4); cursor: pointer; }
+.peek-card p { margin: 0; color: var(--text-dim); font-size: var(--fs-2); }
 .peek-card .button { justify-self: start; min-height: 44px; }
 
 /* Dialogue log (swipe up) */
-.dialogue__log { position: absolute; z-index: 3; left: 50%; bottom: 40%; display: grid; gap: 6px; width: min(94vw, 680px); max-height: 50dvh; overflow: auto; padding: 14px; transform: translateX(-50%); color: var(--text); }
-.dialogue__log p { margin: 0; font-size: 14px; }
-.dialogue__log small { color: var(--text-dim); }
-.dialogue { touch-action: none; }
 
 /* World map: pan and pinch */
 .world-map { touch-action: none; overflow: hidden; }
 .world-map__plane { will-change: transform; }
-.world-map__reset { position: absolute; z-index: 5; right: 10px; top: 10px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .85); color: var(--text); font-size: 20px; cursor: pointer; }
+.world-map__reset { position: absolute; z-index: 5; right: 10px; top: 10px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(10, 9, 14, .85); color: var(--text); font-size: var(--fs-4); cursor: pointer; }
 
 /* Rest dial */
-.rest-dial { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line-soft); border-radius: 3px; background: rgba(10, 9, 14, .6); }
+.rest-dial { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(10, 9, 14, .6); }
 .rest-dial__track { position: relative; padding-top: 26px; }
 .rest-dial__track input[type='range'] { width: 100%; height: 44px; margin: 0; accent-color: var(--gold-bright); touch-action: none; }
 .rest-dial__event { position: absolute; top: 0; transform: translateX(-50%); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(246, 210, 140, .16); pointer-events: none; }
-.rest-dial__scale { display: flex; justify-content: space-between; color: var(--text-faint); font-size: 11px; }
+.rest-dial__scale { display: flex; justify-content: space-between; color: var(--text-faint); font-size: var(--fs-1); }
 .rest-dial__scale span:nth-child(2) { margin-left: 18%; }
 .rest-dial__scale span:nth-child(3) { margin-left: auto; margin-right: 22%; }
 .rest-dial__readout { margin: 0; }
@@ -92,20 +85,20 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 
 /* Hall rooms as drop targets, with who is inside */
 .room-tile-wrap { position: relative; display: grid; }
-.room-tile-wrap.is-drop { border-radius: 3px; }
+.room-tile-wrap.is-drop { border-radius: var(--r-1); }
 .room-tile__heroes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 40px; padding: 4px 8px 8px; }
 .room-tile__hero { min-width: 44px; min-height: 44px; padding: 0; border: 0; background: none; cursor: grab; }
 .war-room__zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-.war-room__zone { display: grid; align-content: start; gap: 6px; min-height: 120px; padding: 10px; border: 1px dashed var(--line); border-radius: 3px; }
+.war-room__zone { display: grid; align-content: start; gap: 6px; min-height: 120px; padding: 10px; border: 1px dashed var(--line); border-radius: var(--r-1); }
 .war-room__zone--party { border-color: var(--gold); }
-.war-room__member { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border: 1px solid var(--line-soft); border-radius: 3px; background: rgba(10, 9, 14, .6); color: var(--text); text-align: left; }
+.war-room__member { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(10, 9, 14, .6); color: var(--text); text-align: left; }
 
 /* Armory: items as chips, heroes as drop targets with a live preview */
 .item-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.item-chip { display: grid; min-width: 96px; min-height: 48px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 3px; background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; }
+.item-chip { display: grid; min-width: 96px; min-height: 48px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(10, 9, 14, .7); color: var(--text); text-align: left; }
 .item-chip small { color: var(--text-dim); }
 .item-chip.is-selected { border-color: var(--gold-bright); box-shadow: 0 0 0 1px var(--gold-bright); }
-.equipment-card__drop { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 6px; border: 1px dashed var(--line); border-radius: 3px; background: none; color: var(--text-dim); text-align: left; }
+.equipment-card__drop { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 6px; border: 1px dashed var(--line); border-radius: var(--r-1); background: none; color: var(--text-dim); text-align: left; }
 .equipment-card__drop.is-armed { border-color: var(--gold); }
 .equipment-card__preview.is-on { color: var(--gold-bright); font-weight: 600; }
 
@@ -114,16 +107,16 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
   .candidate-grid { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
   .candidate-grid > .candidate-card { flex: 0 0 min(86vw, 360px); scroll-snap-align: center; }
 }
-.swipe-hint { color: var(--text-faint); font-size: 12px; text-align: center; }
+.swipe-hint { color: var(--text-faint); font-size: var(--fs-1); text-align: center; }
 
 /* Hero pages: long-press detail */
-.inspect-toast { position: sticky; bottom: 8px; z-index: 5; margin: 8px 0 0; padding: 10px 12px; border: 1px solid var(--gold); border-radius: 3px; background: rgba(10, 9, 14, .95); color: var(--text); font-size: 13.5px; }
+.inspect-toast { position: sticky; bottom: 8px; z-index: 5; margin: 8px 0 0; padding: 10px 12px; border: 1px solid var(--gold); border-radius: var(--r-1); background: rgba(10, 9, 14, .95); color: var(--text); font-size: var(--fs-2); }
 
 /* Top bar: back, then date, location, gold and one rank chip */
-.topbar__back { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--gold-bright); font-size: 18px; cursor: pointer; }
+.topbar__back { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--gold-bright); font-size: var(--fs-4); cursor: pointer; }
 @media (max-width: 759px) {
   .topbar__location { display: flex; align-items: center; max-width: 104px; min-height: 44px; }
-  .topbar__location span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .topbar__location span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); }
   .topbar__identity { display: none; }
 }
 
@@ -131,7 +124,7 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 .why-wrap { display: inline-flex; cursor: help; }
 .why-wrap > .button:disabled { pointer-events: none; }
 .toast { touch-action: pan-y; }
-.gesture-tip { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border: 1px dashed var(--gold); border-radius: 3px; color: var(--gold-bright); font-size: 13px; }
-.gesture-tip__hand { display: inline-block; font-size: 22px; animation: tip-nudge 1.6s ease-in-out infinite; }
+.gesture-tip { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border: 1px dashed var(--gold); border-radius: var(--r-1); color: var(--gold-bright); font-size: var(--fs-2); }
+.gesture-tip__hand { display: inline-block; font-size: var(--fs-4); animation: tip-nudge 1.6s ease-in-out infinite; }
 @keyframes tip-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .gesture-tip__hand { animation: none; } }

@@ -141,6 +141,16 @@ export default function SettingsScreen({ state, actions, slot }) {
           </div>
         </Panel>
 
+        <Panel title="Developer">
+          <label className="switch-row">
+            <span>
+              <strong>Show asset ids</strong>
+              <small>Write each placeholder's id on it (docs/ASSETS.md lists them all).</small>
+            </span>
+            <input type="checkbox" checked={Boolean(state.settings.showAssetIds)} onChange={(event) => actions.updateSettings({ showAssetIds: event.target.checked })} />
+          </label>
+        </Panel>
+
         <Panel title="Save management" eyebrow="Slot and export">
           <div className="save-actions">
             <Button variant="primary" onClick={actions.saveNow}>

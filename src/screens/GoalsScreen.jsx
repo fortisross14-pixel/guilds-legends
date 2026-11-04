@@ -2,6 +2,7 @@ import React from 'react';
 import { TIERS } from '../data/content.js';
 import { getGoalMetric, getPromotionRequirement } from '../game/engine.js';
 import { Badge, Panel, ProgressBar } from '../components/UI.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function GoalsScreen({ state }) {
   const promotion = getPromotionRequirement(state);
@@ -55,7 +56,7 @@ export default function GoalsScreen({ state }) {
                   const displayCurrent = goal.comparator === 'lte' && current === 99 ? 0 : current;
                   return (
                     <article key={goal.id} className={goal.completed ? 'is-complete' : ''}>
-                      <span className="campaign-goal-list__check">{goal.completed ? '✓' : '◇'}</span>
+                      <span className="campaign-goal-list__check">{goal.completed ? <Icon name="check" size={14} tone="plain" /> : <Icon name="dot" size={14} tone="plain" />}</span>
                       <div>
                         <div className="campaign-goal-list__title">
                           <h3>{goal.title}</h3>
@@ -95,7 +96,7 @@ export default function GoalsScreen({ state }) {
                 ['Institutional maturity', promotion.time],
               ].map(([label, item]) => (
                 <div key={label} className={item.met ? 'is-met' : ''}>
-                  <span>{item.met ? '✓' : '◇'}</span>
+                  <span>{item.met ? <Icon name="check" size={14} tone="plain" /> : <Icon name="dot" size={14} tone="plain" />}</span>
                   <div>
                     <strong>{label}</strong>
                     <small>
@@ -118,7 +119,7 @@ export default function GoalsScreen({ state }) {
           <div className="achievement-grid">
             {state.achievements.map((achievement) => (
               <article key={achievement.id} className={achievement.unlocked ? 'is-unlocked' : ''}>
-                <span>{achievement.icon}</span>
+                <span><Icon name={achievement.icon} size={20} /></span>
                 <div>
                   <h3>{achievement.name}</h3>
                   <p>{achievement.description}</p>

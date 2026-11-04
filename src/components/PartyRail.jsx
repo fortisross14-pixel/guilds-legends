@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { HeroPortrait, ProgressBar } from './UI.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
 import DraggableHero from './DraggableHero.jsx';
+import Icon from './Icon.jsx';
 
 // The party bar: every active hero, always visible. Tap a card for the hero
 // status screen; drag it onto a Guild Hall room, the main party or a slot.
@@ -43,14 +44,14 @@ export default function PartyRail({ state, actions, onOpenHero, onOpenQuests }) 
                   <strong>
                     {mainParty.includes(hero.id) ? (
                       <i className="party-rail__main" aria-label="Main party">
-                        ★
+                        <Icon name="star" size={12} tone="plain" />
                       </i>
                     ) : null}
                     {hero.name}
                   </strong>
                   <small>
                     <i className="party-rail__status" aria-hidden="true">
-                      {status.icon}
+                      <Icon name={status.icon} size={12} tone="plain" />
                     </i>{' '}
                     Lv {hero.level} · {status.label}
                   </small>

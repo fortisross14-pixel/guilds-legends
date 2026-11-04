@@ -4,6 +4,7 @@ import { LOCATION_BY_ID } from '../data/world.js';
 import { ambitionMetric, BRANCH_RULES } from '../game/legacy.js';
 import { branchCapacity, getGuildmaster } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, Panel, ProgressBar, Tabs } from '../components/UI.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function LegacyScreen({ state, actions, navigate }) {
   const [tab, setTab] = useState('succession');
@@ -169,7 +170,7 @@ export default function LegacyScreen({ state, actions, navigate }) {
                   const location = LOCATION_BY_ID[branch.locationId];
                   return (
                     <article className="branch-card" key={branch.id}>
-                      <div className="branch-card__seal">{location?.icon || '⌂'}</div>
+                      <div className="branch-card__seal"><Icon name={location?.icon || 'home'} size={22} /></div>
                       <div>
                         <small>
                           Level {branch.level} chapter · founded {branch.foundedYear}
@@ -199,7 +200,7 @@ export default function LegacyScreen({ state, actions, navigate }) {
                       const location = LOCATION_BY_ID[branch.locationId];
                       return (
                         <article className="branch-card is-inactive" key={branch.id}>
-                          <div className="branch-card__seal">{location?.icon || '⌂'}</div>
+                          <div className="branch-card__seal"><Icon name={location?.icon || 'home'} size={22} /></div>
                           <div>
                             <small>Level {branch.level} chapter · dormant</small>
                             <h3>{branch.name}</h3>
@@ -394,7 +395,7 @@ export default function LegacyScreen({ state, actions, navigate }) {
                 const owner = artifact.ownerId ? state.heroes.find((hero) => hero.id === artifact.ownerId) : null;
                 return (
                   <article key={artifact.id}>
-                    <div className="artifact-glyph">✦</div>
+                    <div className="artifact-glyph"><Icon name="star" size={28} tone="brass" /></div>
                     <div>
                       <small>
                         {artifact.prestige} prestige · discovered {artifact.discoveredYear}

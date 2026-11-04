@@ -11,7 +11,7 @@ export function Dialogue({ speaker, text, hero = null }) {
   const [done, setDone] = useState(false);
   useEffect(() => setDone(false), [text]);
   return (
-    <div className={`dialogue ${done ? 'is-done' : ''}`} onClick={() => setDone(true)} role="group" aria-label={`${speaker} says`}>
+    <div className={`dialogue dialogue--card ${done ? 'is-done' : ''}`} onClick={() => setDone(true)} role="group" aria-label={`${speaker} says`}>
       <div className="dialogue__portrait">{hero ? <HeroPortrait hero={hero} size="lg" showStatus={false} /> : <Crest size="lg" />}</div>
       <div className="dialogue__body">
         <span className="dialogue__speaker">{hero ? hero.name : speaker}</span>

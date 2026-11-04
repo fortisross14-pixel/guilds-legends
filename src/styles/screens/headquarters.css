@@ -9,11 +9,11 @@
 .appointment-list button > span > i { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line-soft); color: var(--text-faint); font-style: normal; }
 .appointment-list button > div { display: grid; }
 .appointment-dossier { padding: 12px; }
-.appointment-dossier p { font-size: var(--t-small); }
+.appointment-dossier p { font-size: var(--fs-2); }
 .current-appointee { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 8px; }
 .current-appointee > div { display: grid; }
 .obligation-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
-.obligation-list > span { margin-right: 6px; color: var(--text-dim); font-size: var(--t-label); }
+.obligation-list > span { margin-right: 6px; color: var(--text-dim); font-size: var(--fs-1); }
 
 @media (max-width: 1099px) {
   .dashboard-grid--hq { grid-template-columns: 1fr; }

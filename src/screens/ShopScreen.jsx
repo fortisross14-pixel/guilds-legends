@@ -6,9 +6,9 @@ import { Badge, Button, EmptyState, HeroPortrait, toast } from '../components/UI
 import { useDraggable } from '../components/useDraggable.js';
 import { dragEnabled } from '../components/gestures.js';
 import { itemPreview } from './EquipmentScreen.jsx';
-import PixelIcon from '../components/PixelIcon.jsx';
+import Icon from '../components/Icon.jsx';
 
-const KIND_GLYPHS = { consumable: '✚', weapon: '⚔', armor: '◆', accessory: '◇' };
+const KIND_ICONS = { consumable: 'potion', weapon: 'sword', armor: 'shield', accessory: 'gem' };
 const STAT_ORDER = ['atk', 'def', 'mag', 'spd', 'hp', 'mp'];
 
 function statText(item) {
@@ -98,7 +98,7 @@ export default function ShopScreen({ state, actions }) {
                       aria-pressed={selected?.id === id}
                     >
                       <span className="shop-item__icon" aria-hidden="true">
-                        {KIND_GLYPHS[item.kind] || '◇'}
+                        <Icon name={KIND_ICONS[item.kind] || 'gem'} size={20} />
                       </span>
                       <span className="shop-item__name">
                         {item.name}
@@ -191,7 +191,7 @@ export default function ShopScreen({ state, actions }) {
         <footer className="shop-gold win">
           <span>{mode === 'buy' ? `Gold · chest ${chestUsed(state)}/${chestCapacity(state)}${roomLevel(state, 'armory') ? ' · Armory −10%' : ''}` : 'Shops pay half price'}</span>
           <strong className="num">
-            <PixelIcon name="coin" size={24} />
+            <Icon name="coin" size={24} />
             {state.guild.crowns.toLocaleString()} G
           </strong>
         </footer>

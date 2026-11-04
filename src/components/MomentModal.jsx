@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Badge, Button, CountUp, HeroPortrait, Modal, PrimalBadge, RankChange, RarityBadge, artUrl } from './UI.jsx';
-import PixelIcon from './PixelIcon.jsx';
+import Icon from './Icon.jsx';
 import Asset from './Asset.jsx';
 import { Dialogue } from './EventCardModal.jsx';
 import { SeasonReview } from '../screens/HistoryScreens.jsx';
@@ -48,7 +48,7 @@ export default function MomentModal({ moment, state, onClose }) {
           {moment.grade ? <Badge tone="gold">{moment.grade}</Badge> : null}
           {moment.gold ? (
             <p className="moment__gold num">
-              <PixelIcon name="coin" size={24} />+<CountUp value={moment.gold} /> G
+              <Icon name="coin" size={24} />+<CountUp value={moment.gold} /> G
             </p>
           ) : null}
           {moment.xp?.length ? (
@@ -188,7 +188,7 @@ export default function MomentModal({ moment, state, onClose }) {
         <div className={`moment moment--status ${moment.promoted ? 'moment--status-up' : 'moment--status-down'} ${skipClass}`} onClick={skip}>
           <Ceremony fx={moment.promoted ? 'burst' : null}>
             <span className="moment__fanfare">
-              <PixelIcon name={moment.promoted ? 'crown' : 'pointer'} size={48} />
+              <Icon name={moment.promoted ? 'crown' : 'pointer'} size={48} />
             </span>
           </Ceremony>
           <p className="moment__headline">{moment.promoted ? 'Rank up' : 'Title lost'}</p>
@@ -212,7 +212,7 @@ export default function MomentModal({ moment, state, onClose }) {
         <div className={`moment moment--nemesis ${skipClass}`} onClick={skip}>
           <Ceremony fx={null}>
             <span className="moment__fanfare">
-              <PixelIcon name="swords" size={48} />
+              <Icon name="swords" size={48} />
             </span>
           </Ceremony>
           <p>{moment.text}</p>

@@ -10,6 +10,7 @@ import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBad
 import { CareerTab } from '../screens/HistoryScreens.jsx';
 import { activeRoster, heroStatus, heroWarnings } from './heroStatus.js';
 import { sliceHides } from '../data/slice.js';
+import Icon from './Icon.jsx';
 
 const STAT_HELP = {
   HP: 'hit points. At 0 the hero is knocked out.',
@@ -98,10 +99,10 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
               <Badge tone={hero.status === 'dead' ? 'red' : 'green'}>{own ? status.label : hero.status}</Badge>
               <RarityBadge rarity={hero.rarity || 'Common'} />
               <PrimalBadge primal={hero.primal || 'Fire'} />
-              {inMainParty ? <Badge tone="gold">★ Main party</Badge> : null}
+              {inMainParty ? <Badge tone="gold"><Icon name="star" size={12} tone="plain" /> Main party</Badge> : null}
             </div>
             <p>{CLASSES[classId]?.description}</p>
-            {warnings.length ? <p className="hero-status__warnings">⚠ {warnings.join(' · ')}</p> : null}
+            {warnings.length ? <p className="hero-status__warnings"><Icon name="alert" size={14} tone="plain" /> {warnings.join(' · ')}</p> : null}
             <ProgressBar
               value={hero.level >= 20 ? 1 : hero.xp || 0}
               max={hero.level >= 20 ? 1 : nextXp}

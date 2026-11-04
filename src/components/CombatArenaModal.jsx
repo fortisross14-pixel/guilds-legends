@@ -4,7 +4,7 @@ import { SKILLS, STATUSES, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
 import { Button, HeroSprite, Modal, Motes, useSceneStyle } from './UI.jsx';
 import Asset from './Asset.jsx';
-import PixelIcon from './PixelIcon.jsx';
+import Icon from './Icon.jsx';
 import { playSound } from '../audio/sfx.js';
 import { DRAG_SLOP, LONG_PRESS_MS, dragEnabled, haptic } from './gestures.js';
 
@@ -149,7 +149,7 @@ function StatusIcons({ status }) {
     <span className="status-icons">
       {keys.map((key) => (
         <span key={key} className={`status-icon status-icon--${STATUSES[key].bad ? 'bad' : 'good'}`} title={`${STATUSES[key].label}: ${STATUSES[key].description}`}>
-          {STATUSES[key].icon}
+          <Icon name={STATUSES[key].icon} size={14} tone="plain" />
           <sub>{status[key]}</sub>
         </span>
       ))}
@@ -210,7 +210,7 @@ function PreviewChip({ preview }) {
   return (
     <span className={`target-preview is-selected ${preview.kind === 'heal' || preview.kind === 'revive' ? 'is-heal' : ''}`}>
       <strong>
-        {preview.lethal ? '☠ ' : ''}
+        {preview.lethal ? <Icon name="skull" size={14} tone="plain" /> : null}
         {value}
       </strong>
       {preview.tag ? <em className={`target-preview__tag target-preview__tag--${preview.tag.toLowerCase()}`}>{preview.tag}</em> : null}
@@ -235,6 +235,27 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const turnKey = encounter ? `${encounter.id}:${encounter.turn}:${encounter.status}` : null;
   const replaying = Boolean(replay);
   const lineRef = useRef(null);
+  // The dragged hero's ghost, and where the finger was when the drag began.
+  const ghostRef = useRef(null);
+  const dragFrom = useRef({ x: 0, y: 0 });
+  // The party stands just above the command HUD, whatever its height on this screen.
+  const screenRef = useRef(null);
+  const hudRef = useRef(null);
+  useEffect(() => {
+    if (!hudRef.current || typeof ResizeObserver === 'undefined') return undefined;
+    // The command panel floats above the HUD box, so measure from whichever top is higher.
+    const measure = () => {
+      const screen = screenRef.current?.getBoundingClientRect();
+      if (!screen || !hudRef.current) return;
+      const tops = [hudRef.current, ...hudRef.current.children].filter((element) => getComputedStyle(element).position !== 'fixed').map((element) => element.getBoundingClientRect().top).filter((top) => top > screen.top);
+      screenRef.current.style.setProperty('--battle-hud-h', `${Math.max(0, screen.bottom - Math.min(...tops))}px`);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(hudRef.current);
+    [...hudRef.current.children].forEach((element) => observer.observe(element));
+    measure();
+    return () => observer.disconnect();
+  }, []);
   const press = useRef(null);
   const canDrag = dragEnabled(settings);
 
@@ -324,7 +345,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     const index = document.elementFromPoint(x, y)?.closest?.('[data-radial-index]')?.dataset.radialIndex;
     return index === undefined ? null : Number(index);
   };
-  const onUnitPointerDown = (unit, event) => {
+  const onUnitPointerDown = (unit, event, fromSprite = true) => {
     event.stopPropagation();
     if (event.button > 0) return;
     const state = { unit, x: event.clientX, y: event.clientY, fired: false, drag: false, over: null, dwell: 0 };
@@ -336,7 +357,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     }, LONG_PRESS_MS);
     const startRect = event.currentTarget.getBoundingClientRect();
     const origin = { x: startRect.left + startRect.width / 2, y: startRect.top + startRect.height / 2 };
-    const draggable = canDrag && ready && unit.side === 'party' && !unit.ko;
+    const draggable = fromSprite && canDrag && ready && unit.side === 'party' && !unit.ko;
     const move = (moveEvent) => {
       const { clientX: x, clientY: y } = moveEvent;
       if (!state.drag) {
@@ -344,10 +365,13 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
         window.clearTimeout(long);
         if (!draggable || state.fired) return;
         state.drag = true;
+        dragFrom.current = { x, y };
         setRadial(null);
         setDragging({ actorId: unit.id, overId: null });
       }
       moveEvent.preventDefault();
+      // The hero's ghost follows the finger.
+      if (ghostRef.current) ghostRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       lineRef.current?.setAttribute('x1', origin.x);
       lineRef.current?.setAttribute('y1', origin.y);
       lineRef.current?.setAttribute('x2', x);
@@ -479,9 +503,9 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
       .filter(Boolean)
       .join(' ');
   };
-  const unitHandlers = (unit) => ({
+  const unitHandlers = (unit, fromSprite = true) => ({
     'data-unit-id': unit.id,
-    onPointerDown: (event) => onUnitPointerDown(unit, event),
+    onPointerDown: (event) => onUnitPointerDown(unit, event, fromSprite),
     // Taps are handled on pointer up; the click must not reach the stage (which cancels).
     onClick: (event) => event.stopPropagation(),
     onContextMenu: (event) => event.preventDefault(),
@@ -496,6 +520,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   return (
     <Modal open title={encounter.title || 'Battle'} eyebrow={`${encounter.roundName || 'Battle'} · Round ${encounter.turn}`} preventClose width="wide" className="battle-modal">
       <div
+        ref={screenRef}
         className={`battle-screen battle-screen--${encounter.mode} ${replay?.shake ? 'is-shaking' : ''} ${boosting ? 'is-boosting' : ''}`}
         style={{ '--speed': speed * (boosting ? 4 : 1) }}
         onPointerDown={onStagePointerDown}
@@ -569,7 +594,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                 >
                   {plan && !unit.ko ? (
                     <span className={`intent intent--${plan.icon} ${plan.big ? 'is-big' : ''}`}>
-                      <i aria-hidden="true">{INTENT_ICONS[plan.icon] || '?'}</i>
+                      <i aria-hidden="true">{plan.icon === 'taunt' ? '!' : <Icon name={INTENT_ICONS[plan.icon] || 'question'} size={14} tone="plain" />}</i>
                       {plan.label}
                       {target ? ` → ${target.name.split(' ')[0]}` : ''}
                     </span>
@@ -579,6 +604,26 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                   <strong>{unit.name}</strong>
                   <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
                   <StatusIcons status={unit.status} />
+                  <BeatMarks beat={beat} unitId={unit.id} />
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="battle-allies" aria-label="Your party on the field">
+            {encounter.party.map((raw, index) => {
+              const unit = view(raw);
+              return (
+                <button
+                  key={unit.id}
+                  type="button"
+                  style={{ '--i': index }}
+                  className={`battle-ally ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''} ${canDrag && ready && !unit.ko ? 'is-draggable' : ''} ${dragging?.actorId === unit.id ? 'is-lifted' : ''}`}
+                  {...unitHandlers(unit)}
+                  aria-label={`${unit.name}: drag onto a target`}
+                >
+                  {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
+                  <HeroSprite hero={unit} size="md" />
                   <BeatMarks beat={beat} unitId={unit.id} />
                 </button>
               );
@@ -627,13 +672,13 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
 
           {showHand ? (
             <div className="gesture-hint gesture-hint--battle" aria-hidden="true">
-              <span className="gesture-hint__hand">☝</span>
+              <span className="gesture-hint__hand"><Icon name="hand" size={22} tone="brass" /></span>
               <small>Drag a hero onto an enemy</small>
             </div>
           ) : null}
         </section>
 
-        <div className="battle-hud">
+        <div className="battle-hud" ref={hudRef}>
           {!finished ? (
             <section className="battle-commands panel" aria-label="Commands">
               {replaying ? (
@@ -681,12 +726,10 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                 <button
                   key={unit.id}
                   type="button"
-                  className={`battle-hero ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''} ${canDrag && ready && !unit.ko ? 'is-draggable' : ''}`}
-                  {...unitHandlers(unit)}
+                  className={`battle-hero ${unitClass(unit)} ${actor?.id === unit.id && !finished ? 'is-active' : ''}`}
+                  {...unitHandlers(unit, false)}
                   aria-label={`${unit.name}, ${unit.hp} of ${unit.maxHp} HP`}
                 >
-                  {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
-                  <HeroSprite hero={unit} size="sm" />
                   <span className="battle-hero__info">
                     <strong>{unit.name}</strong>
                     <Meter value={unit.hp} max={unit.maxHp} kind="hp" />
@@ -694,7 +737,6 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                     <StatusIcons status={unit.status} />
                     {!finished && !replaying ? <em className="battle-hero__command">{commandLabel(commands[unit.id], unit)}</em> : null}
                   </span>
-                  <BeatMarks beat={beat} unitId={unit.id} />
                 </button>
               );
             })}
@@ -705,6 +747,11 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
           <svg className="drag-line" aria-hidden="true">
             <line ref={lineRef} />
           </svg>
+        ) : null}
+        {dragging && dragActor ? (
+          <div className="drag-sprite" ref={ghostRef} style={{ transform: `translate3d(${dragFrom.current.x}px, ${dragFrom.current.y}px, 0)` }} aria-hidden="true">
+            <HeroSprite hero={dragActor} size="sm" />
+          </div>
         ) : null}
 
         {radial && radialTarget ? (
@@ -790,7 +837,7 @@ function Radial({ radial, options, hover, previews, onPick, onCancel, onHover })
   return (
     <div className={`radial ${radial.drag ? 'is-dragging' : ''}`} style={{ left: cx, top: cy }} onClick={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
       <button type="button" className="radial__center" onClick={onCancel} aria-label="Cancel">
-        ×
+        <Icon name="close" size={18} tone="plain" />
       </button>
       {options.map((option, index) => {
         const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
@@ -806,7 +853,7 @@ function Radial({ radial, options, hover, previews, onPick, onCancel, onHover })
             onClick={() => onPick(option)}
             aria-label={`${option.label}${option.cost ? `, ${option.cost}` : ''}`}
           >
-            <PixelIcon name={option.icon} size={22} />
+            <Icon name={option.icon} size={22} />
             <b>{option.label}</b>
             {option.cost ? <small>{option.cost}</small> : null}
             {preview ? <PreviewLine preview={preview} /> : null}
@@ -818,10 +865,10 @@ function Radial({ radial, options, hover, previews, onPick, onCancel, onHover })
 }
 
 function PreviewLine({ preview }) {
-  const value = preview.kind === 'damage' ? `${preview.min}–${preview.max}` : preview.kind === 'heal' ? `+${preview.min}` : preview.kind === 'revive' ? `↺${preview.min}` : preview.note || '';
+  const value = preview.kind === 'damage' ? `${preview.min}–${preview.max}` : preview.kind === 'heal' ? `+${preview.min}` : preview.kind === 'revive' ? `Revive ${preview.min}` : preview.note || '';
   return (
     <em className="radial__preview">
-      {preview.lethal ? '☠ ' : ''}
+      {preview.lethal ? <Icon name="skull" size={14} tone="plain" /> : null}
       {value}
       {preview.kind === 'damage' ? ` · ${Math.round((preview.hit ?? 1) * 100)}%` : ''}
       {preview.tag ? ` · ${preview.tag}` : ''}
@@ -837,7 +884,7 @@ function UnitInfo({ unit, intent, onClose }) {
       <header>
         <strong>{unit.name}</strong>
         <button type="button" onClick={onClose} aria-label="Close">
-          ×
+          <Icon name="close" size={18} tone="plain" />
         </button>
       </header>
       <p className="unit-info__line">
@@ -851,7 +898,7 @@ function UnitInfo({ unit, intent, onClose }) {
         <ul className="unit-info__statuses">
           {statuses.map(([key, turns]) => (
             <li key={key}>
-              <span className={`status-icon status-icon--${STATUSES[key].bad ? 'bad' : 'good'}`}>{STATUSES[key].icon}</span>
+              <span className={`status-icon status-icon--${STATUSES[key].bad ? 'bad' : 'good'}`}><Icon name={STATUSES[key].icon} size={14} tone="plain" /></span>
               <b>
                 {STATUSES[key].label} · {turns} turn{turns === 1 ? '' : 's'}
               </b>

@@ -4,6 +4,13 @@ import { loadAsset, peekAsset } from './assetLoader.js';
 /** The resolved asset for an id (null until it loads). */
 export function useAsset(id) {
   const [result, setResult] = useState(() => peekAsset(id));
+  // Placeholders repaint when the 'Show asset ids' setting changes.
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    const repaint = () => setVersion((value) => value + 1);
+    window.addEventListener('gol:assets', repaint);
+    return () => window.removeEventListener('gol:assets', repaint);
+  }, []);
   useEffect(() => {
     let live = true;
     if (peekAsset(id)) setResult(peekAsset(id));
@@ -11,7 +18,7 @@ export function useAsset(id) {
     return () => {
       live = false;
     };
-  }, [id]);
+  }, [id, version]);
   return result?.id === id ? result : peekAsset(id);
 }
 
@@ -20,7 +27,7 @@ export function useAssetUrl(id) {
   return useAsset(id)?.url || null;
 }
 
-/** An <img> for a registered asset; shows the labelled placeholder when the file is missing. */
+/** An <img> for a registered asset; shows a placeholder (silhouette, shape or mood) when the file is missing. */
 export default function Asset({ id, alt = '', className = '', ...rest }) {
   const result = useAsset(id);
   if (!result?.url) return <span className={`asset asset--loading ${className}`} data-asset={id} aria-hidden={alt ? undefined : true} />;

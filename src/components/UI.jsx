@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { normalizeClassId } from '../data/content.js';
 import { PRIMALS, RARITIES } from '../data/world.js';
 import { useAssetUrl } from './Asset.jsx';
+import Icon from './Icon.jsx';
 const CREST_SIZES = { xs: 26, sm: 32, md: 42, lg: 56, xl: 84 };
 
 // The guild crest: an engraved shield with a lantern star, in brass and wine.
@@ -189,7 +190,7 @@ export function PrimalBadge({ primal, compact = false }) {
       style={{ '--primal-color': info.color }}
       title={`${info.id}: strong against ${info.beats || '—'}, weak to ${info.weakTo || '—'}`}
     >
-      <i>{info.icon}</i>
+      <i><Icon name={info.icon} size={14} tone="plain" /></i>
       {compact ? null : <span>{info.id}</span>}
     </span>
   );
@@ -304,10 +305,10 @@ export function Panel({ title = undefined, eyebrow = undefined, action = null, c
   );
 }
 
-export function EmptyState({ icon = '◇', title, text, action = null }) {
+export function EmptyState({ icon = 'gem', title, text, action = null }) {
   return (
     <div className="empty-state">
-      <span className="empty-state__icon">{icon}</span>
+      <span className="empty-state__icon"><Icon name={icon} size={28} /></span>
       <h3>{title}</h3>
       <p>{text}</p>
       {action}
@@ -388,7 +389,7 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
           </div>
           {!preventClose ? (
             <button ref={closeRef} className="icon-button" onClick={onClose} aria-label="Close">
-              ×
+              <Icon name="close" size={18} tone="plain" />
             </button>
           ) : null}
         </header>
@@ -427,7 +428,7 @@ export function Tabs({ items, active, onChange, ariaLabel = 'Sections' }) {
           className={active === item.id ? 'is-active' : ''}
           onClick={() => onChange(item.id)}
         >
-          {item.icon ? <span>{item.icon}</span> : null}
+          {item.icon ? <Icon name={item.icon} size={16} /> : null}
           {item.label}
         </button>
       ))}

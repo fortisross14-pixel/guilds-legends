@@ -169,7 +169,7 @@ export function createNewGame(options = {}) {
     achievements: ACHIEVEMENTS.map((achievement) => ({ ...achievement, unlocked: false, unlockedDate: null })),
     stats: initialStats(),
     notifications: [],
-    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6, joystick: false, battleSpeed: 1, gestures: 'drag', haptics: true, seenHints: {}, questMarker: true },
+    settings: { autosave: true, reducedMotion: false, compactMode: false, difficulty: 'Standard', sound: true, volume: 0.6, joystick: false, battleSpeed: 1, gestures: 'drag', haptics: true, seenHints: {}, questMarker: true, showAssetIds: false },
     legacy: { inheritedAmbitions: [], successionHistory: [], rivalInstitutionEvents: [] },
     flags: {
       oldRoadIntroduced: false,
