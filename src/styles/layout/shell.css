@@ -111,7 +111,6 @@
 .section .section__list .panel__header, .section .section__list .panel__body { padding-left: 0; padding-right: 0; }
 .section .screen-heading, .section .town-header, .section .menu-page__back { display: none; }
 .section .screen { animation: none; }
-.section .party-rail { position: sticky; bottom: -24px; left: auto; right: auto; z-index: 2; margin: 16px -20px -24px; padding: 8px 20px calc(10px + var(--safe-b)); border-top: 1px solid var(--line-soft); background: linear-gradient(180deg, rgba(12, 11, 16, .6), rgba(12, 11, 16, .96) 30%); pointer-events: auto; }
 .view-picker { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
 .view-picker button { min-height: 36px; padding: 0 12px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: none; color: var(--text-dim); font-size: var(--fs-2); font-weight: 600; }
 .view-picker button:hover { color: var(--text); border-color: var(--line); }
@@ -150,23 +149,6 @@
 .has-notice .section__help { visibility: hidden; }
 
 /* Party plates (inside sections that take dropped heroes). */
-.party-rail { display: flex; align-items: flex-end; gap: 10px; }
-.party-rail__title { flex: none; display: grid; gap: 6px; }
-.party-rail__title > span, .party-rail__title > small { display: none; }
-.party-rail__tools { display: grid; gap: 4px; }
-.party-rail__tools button { min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--r-1); background: rgba(12, 11, 16, .82); color: var(--text-dim); font-size: var(--fs-1); font-weight: 600; white-space: nowrap; }
-.party-rail__tools button:hover { color: var(--gold-bright); border-color: var(--gold); }
-.party-rail__members { display: flex; gap: 8px; min-width: 0; overflow-x: auto; padding: 4px 2px 2px; scrollbar-width: none; }
-.party-rail__member { flex: none; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px; width: 200px; padding: 7px 12px 7px 7px; background: var(--panel-bg); text-align: left; transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease), border-color var(--fast) var(--ease); }
-.party-rail__member:hover, .party-rail__member:focus-visible { transform: translateY(-3px); border-color: var(--gold); box-shadow: var(--shadow), 0 0 18px rgba(246, 210, 140, .22); }
-.party-rail__member > span { display: grid; gap: 3px; min-width: 0; }
-.party-rail__member strong { overflow: hidden; font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
-.party-rail__member small { color: var(--text-faint); font-size: var(--fs-1); white-space: nowrap; }
-.party-rail__member .progress__label, .party-rail__member .progress + .progress { display: none; }
-.party-rail__main { margin-right: 4px; color: var(--gold); font-style: normal; }
-.party-rail__status { font-style: normal; }
-.party-rail__warning { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--dmg); box-shadow: 0 0 10px var(--dmg); }
-.party-rail__member--injured .hero-portrait { filter: saturate(.55) brightness(.85); }
 
 /* Fatal error screen. */
 .fatal-screen { min-height: 100dvh; display: grid; place-items: center; align-content: center; gap: var(--s3); padding: var(--s6); text-align: center; }

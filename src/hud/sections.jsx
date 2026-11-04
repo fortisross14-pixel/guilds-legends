@@ -1,7 +1,6 @@
 import React from 'react';
 import Section from './Section.jsx';
 import { Button, SceneBackdrop } from '../components/UI.jsx';
-import PartyRail from '../components/PartyRail.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
 import GuildHallRooms from '../places/GuildHallRooms.jsx';
@@ -50,7 +49,7 @@ const HELP = {
   records: 'Long-press a ladder to see what it measures.',
   system: 'The game saves after every action.',
   inn: 'Rest heals the party travelling with you.',
-  noticeBoard: 'Pick a contract, then drag heroes into the slots.',
+  noticeBoard: 'Tap a contract to see what it takes. You play it in person.',
   arena: 'Sign up at the desk; be here on the start day.',
   shop: 'Drag an item onto a hero to compare.',
 };
@@ -85,7 +84,6 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
   const tab = tabList ? (tabList.some((item) => item.id === section.tab) ? section.tab : tabList[0].id) : section.tab;
   const help = id === 'records' && tab !== 'rankings' ? null : HELP[id] || null;
   const common = { id, title: sectionTitle(state, section), tabs: tabList, tab, onTab: setTab, onBack: close, help };
-  const rail = <PartyRail state={state} actions={actions} onOpenHero={actions.openHero} />;
 
   if (id === 'party') {
     return (
@@ -174,7 +172,6 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
       <SceneBackdrop asset={buildingArt(state, id)} dim={0.5} />
       <Section {...common} backLabel="Leave">
         {body}
-        {id === 'noticeBoard' ? rail : null}
       </Section>
     </>
   );

@@ -51,7 +51,7 @@ export default function MainPartyScreen({ state, actions }) {
           ))}
         </div>
       </Panel>
-      <Panel title="Saved formations" eyebrow="Save them from the Notice Board party builder">
+      <Panel title="Saved formations" eyebrow="Save them when you build a tournament team">
         {Object.keys(FORMATION_TYPES).map((type) => {
           const saved = state.guild.formations?.[type] || [];
           return (

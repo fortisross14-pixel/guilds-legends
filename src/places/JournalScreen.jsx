@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { LOCATION_BY_ID } from '../data/world.js';
 import { STORY_HEROES } from '../data/story.js';
-import { getConnectionsView, getHallView, getHero, getStoryView, hasHall, knownMissions, nextUpgrade } from '../game/engine.js';
+import { activeContracts, contractDaysLeft, contractPlace, contractSteps, firstStep, getConnectionsView, getHallView, getHero, getStoryView, hasHall, knownMissions, nextUpgrade } from '../game/engine.js';
 import { Button, EmptyState, RiskPips } from '../components/UI.jsx';
 import Icon, { STATUS_ICONS } from '../components/Icon.jsx';
 import HireGate from '../hud/HireGate.jsx';
@@ -70,7 +70,7 @@ function NowTab({ state, actions, navigate }) {
   useEffect(() => {
     if (state.newsUnread) actions.markNewsRead();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const away = state.activeMissions || [];
+  const working = activeContracts(state);
   const jobs = state.activeSideJobs || [];
   const injured = state.heroes.filter((hero) => hero.status === 'injured');
   const hall = getHallView(state);
@@ -78,17 +78,21 @@ function NowTab({ state, actions, navigate }) {
   if (hall.expansion) building.push({ id: 'land', name: hall.expansion.land, left: hall.expansion.weeksLeft });
   const tournaments = (state.tournaments || []).filter((item) => item.signup || (item.status === 'active' && item.participants?.some?.((entry) => entry.player)));
   const news = (state.news || []).slice(0, 4);
-  const quiet = !away.length && !jobs.length && !injured.length && !building.length && !tournaments.length;
+  const quiet = !working.length && !jobs.length && !injured.length && !building.length && !tournaments.length;
   return (
     <div className="journal">
       {quiet ? <p className="journal__quiet">All quiet. Everyone is home and well.</p> : null}
-      {away.length || jobs.length ? (
-        <Block title="Away" count={away.length + jobs.length}>
-          {away.map((mission) => (
-            <Row key={mission.id} icon="flag" title={mission.title} meta={`${mission.assignments.map((item) => getHero(state, item.heroId)?.name).filter(Boolean).join(', ')} · ${weeks(mission.remaining)}`}>
+      {working.length ? (
+        <Block title="Contracts" count={working.length}>
+          {working.map((mission) => (
+            <Row key={mission.id} icon={mission.site.status === 'ready' ? 'check' : 'flag'} title={mission.title} meta={firstStep(state, mission)?.text || contractPlace(mission).name}>
               <MapLink locationId={mission.locationId} navigate={navigate} />
             </Row>
           ))}
+        </Block>
+      ) : null}
+      {jobs.length ? (
+        <Block title="Away" count={jobs.length}>
           {jobs.map((job) => (
             <Row key={job.id} icon="hammer" title={job.title} meta={`${job.heroIds.map((id) => getHero(state, id)?.name).filter(Boolean).join(', ')} · 1w`} />
           ))}
@@ -284,17 +288,43 @@ function QuestsTab({ state, actions, navigate }) {
 
 // ---------------------------------------------------------------- Contracts
 
+/** One contract you are working on: its steps (done, now, later, extras), its deadline, and Go. */
+function ContractSteps({ state, mission, navigate }) {
+  const days = contractDaysLeft(state, mission);
+  return (
+    <article className="journal-contract">
+      <header>
+        <strong>{mission.title}</strong>
+        <small>
+          {contractPlace(mission).name}
+          {days !== null ? ` · ${days > 0 ? `${days} day${days === 1 ? '' : 's'} left` : 'last day'}` : ''}
+        </small>
+      </header>
+      <ol className="contract-steps">
+        {contractSteps(state, mission).map((step) => (
+          <li key={step.id} className={`${step.done ? 'is-done' : ''} ${step.open ? 'is-open' : ''} ${step.optional ? 'is-optional' : ''}`}>
+            <Icon name={step.done ? 'check' : step.optional ? 'star' : 'dot'} size={14} />
+            {step.text}
+            {step.optional ? <small> (extra)</small> : null}
+          </li>
+        ))}
+      </ol>
+      <MapLink locationId={mission.locationId} navigate={navigate} />
+    </article>
+  );
+}
+
 function ContractsTab({ state, navigate }) {
-  const field = state.activeMissions || [];
-  const board = knownMissions(state);
+  const working = activeContracts(state);
+  const board = knownMissions(state).filter((mission) => !mission.site);
   const here = state.world?.currentLocationId || 'dunmere';
-  if (!field.length && !board.length) return <EmptyState icon="scroll" title="No contracts" text="Talk to people in town: they have work." />;
+  if (!working.length && !board.length) return <EmptyState icon="scroll" title="No contracts" text="Talk to people in town: they have work." />;
   return (
     <div className="journal">
-      {field.length ? (
-        <Block title="In the field" count={field.length}>
-          {field.map((mission) => (
-            <Row key={mission.id} icon="flag" title={mission.title} meta={`${place(mission.locationId)} · ${weeks(mission.remaining)}`} />
+      {working.length ? (
+        <Block title="Working on" count={working.length}>
+          {working.map((mission) => (
+            <ContractSteps key={mission.id} state={state} mission={mission} navigate={navigate} />
           ))}
         </Block>
       ) : null}

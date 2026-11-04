@@ -24,7 +24,8 @@ function worldZoomFor(map, cssWidth, cssHeight, coarse) {
 
 /** Doors and exits ask first (playtest-1-feedback): a tap opens a bubble, the bubble's tap goes through. */
 export function needsConfirm(target) {
-  return target?.kind === 'door' || target?.kind === 'exit';
+  // Real doors (Enter) and exits; a board or a sign standing in town is simply used.
+  return (target?.kind === 'door' && (target.verb || 'Enter') === 'Enter') || target?.kind === 'exit';
 }
 
 function targetHit(target) {

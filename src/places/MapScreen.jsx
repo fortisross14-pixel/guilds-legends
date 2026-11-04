@@ -2,7 +2,7 @@ import { usePanZoom } from '../components/usePanZoom.js';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
-import { getStoryView, knownMissions, getTravelQuote, getWildAreaView, getWorldKnowledge } from '../game/engine.js';
+import { activeContracts, getStoryView, knownMissions, getTravelQuote, getWildAreaView, getWorldKnowledge } from '../game/engine.js';
 import { WILD_AREAS, WILD_AREA_LIST } from '../data/wilds/index.js';
 import { Badge, Button, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
 import { useAssetUrl } from '../components/Asset.jsx';
@@ -220,6 +220,18 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   <span>{questTitle}</span>
                 </span>
               ) : null}
+              {/* A marker for every contract you are working on: at its wild area, or its town (missions-in-world). */}
+              {activeContracts(state).map((mission) => {
+                const area = mission.site.place.kind === 'wild' ? WILD_AREAS[mission.site.place.id] : null;
+                const spot = area?.map || LOCATION_BY_ID[mission.locationId];
+                if (!spot) return null;
+                return (
+                  <span key={mission.id} className={`map-contract${mission.site.status === 'ready' ? ' is-ready' : ''}`} style={{ left: `${spot.x}%`, top: `${spot.y}%` }}>
+                    <Icon name={mission.site.status === 'ready' ? 'check' : 'flag'} size={16} label={`Contract: ${mission.title}`} />
+                    <span>{mission.title}</span>
+                  </span>
+                );
+              })}
               {pinId && LOCATION_BY_ID[pinId] ? (
                 <span className="map-pin" style={{ left: `${LOCATION_BY_ID[pinId].x}%`, top: `${LOCATION_BY_ID[pinId].y}%` }} title="Contract location">
                   <Icon name="pin" size={24} label="Contract location" />

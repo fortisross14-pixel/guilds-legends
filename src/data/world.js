@@ -306,7 +306,7 @@ export function unlockedLocations(tierIndex) {
 export const BUILDINGS = {
   guildHall: { id: 'guildHall', name: 'Guild Hall', icon: '♜', description: 'Your headquarters: roster, assignments, training, facilities and rest.' },
   tavern: { id: 'tavern', name: 'Tavern', icon: '🍺', description: 'See who is in town looking for work, and hire them.' },
-  noticeBoard: { id: 'noticeBoard', name: 'Notice Board', icon: '📜', description: 'Local contracts and the party builder.' },
+  noticeBoard: { id: 'noticeBoard', name: 'Notice Board', icon: '📜', description: 'Local contracts: take one, then play it in person.' },
   arena: { id: 'arena', name: 'Arena', icon: '⚔', description: 'Tournaments hosted here and the guild championships.' },
   shop: { id: 'shop', name: 'Shop', icon: '⚖', description: 'Buy potions and equipment; sell what you do not need.' },
   herald: { id: 'herald', name: 'Herald', icon: '📯', description: 'Rankings, the guild directory and the almanac.' },

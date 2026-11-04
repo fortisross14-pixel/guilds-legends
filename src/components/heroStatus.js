@@ -9,7 +9,6 @@ const ACTIVITY_STATUS = {
 
 /** Where a hero is and what they are doing. away = cannot change rooms. */
 export function heroStatus(state, hero) {
-  if (hero.status === 'mission') return { key: 'mission', label: 'On mission', icon: '⌖', away: true };
   if (hero.status === 'tournament') return { key: 'tournament', label: 'In tournament', icon: '♛', away: true };
   if (hero.status === 'sidejob') return { key: 'sidejob', label: 'Side job', icon: '✎', away: true };
   if (hero.branchId) return { key: 'branch', label: 'Branch duty', icon: '⚑', away: true };

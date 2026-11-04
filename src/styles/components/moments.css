@@ -198,3 +198,7 @@
 .moment__grade { margin: 4px 0 0; color: var(--gold-bright); font: 700 var(--fs-5) var(--font-display); }
 .moment__giver { margin: 4px 0 0; color: var(--text); font: italic 600 var(--fs-3) var(--font-display); text-align: center; }
 .moment__giver small { display: block; color: var(--text-dim); font: 600 var(--fs-1) var(--font-ui); font-style: normal; }
+/* A road event card: one line of narration, then the choices as rows; it always fits. */
+.road-event { display: grid; gap: 14px; }
+.road-event__line { margin: 0; color: var(--text); font: italic 600 var(--fs-4)/1.4 var(--font-display); }
+.modal--road .decision-options button { width: 100%; }

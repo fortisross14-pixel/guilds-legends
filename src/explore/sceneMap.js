@@ -228,3 +228,46 @@ export function wildMap(area) {
   return map;
 }
 
+
+/** The enemy-group art for a site fight, from who is in it. */
+function siteGroupAsset(enemies = []) {
+  if (enemies.some((id) => /wolf|hound/.test(id))) return 'enemy.group.wolves';
+  if (enemies.some((id) => /hollow|veil|void|mind|dream/.test(id))) return 'enemy.group.hollow';
+  if (enemies.some((id) => /witch|priest/.test(id))) return 'enemy.group.witch';
+  return 'enemy.group.bandits';
+}
+
+const SITE_ICONS = { fight: 'swords', talk: 'alert', inspect: 'search', collect: 'plant', escort: 'boot' };
+
+/**
+ * Contract objectives standing on a walkable map (missions-in-world): fights are
+ * enemy groups (touching one starts it), people stand to be talked to, clues and
+ * finds are tapped, and an escort's destination waits for them. Every one is a
+ * quest beacon, so it stays in view at the screen's edge. `objects` comes from the
+ * engine (siteObjects) with tile slots.
+ */
+export function siteTargets(objects) {
+  return objects
+    .filter((object) => object.slot?.tile)
+    .map(({ missionId, objective, slot, arrive }) => {
+      const { x } = tileCenter(slot.tile);
+      const feet = (slot.tile[1] + 1) * T - 2;
+      const id = `site:${missionId}:${objective.id}${arrive ? ':arrive' : ''}`;
+      const site = { missionId, objectiveId: objective.id, arrive: Boolean(arrive) };
+      if (arrive) return { id, kind: 'poi', name: `Bring ${objective.name} here`, verb: 'Arrive', site, icon: 'flag', x, y: feet, w: 28, h: 28, asset: 'site.marker.destination', approach: { x, y: feet + 18 }, labelAt: { x, y: feet - 44 }, reach: 40, beacon: true };
+      if (objective.kind === 'fight') {
+        const size = objective.boss ? { w: 80, h: 64 } : { w: 56, h: 44 };
+        return { id, kind: 'enemy', name: objective.name, verb: 'Fight', site, icon: objective.boss ? 'skull' : 'swords', x, y: feet, asset: siteGroupAsset(objective.enemies), ...size, bob: true, approach: { x, y: feet + 20 }, labelAt: { x, y: feet - size.h - 20 }, reach: objective.boss ? 40 : 34, auto: true, beacon: true };
+      }
+      if (objective.kind === 'talk' || objective.kind === 'escort')
+        return { id, kind: 'npc', name: objective.name, role: objective.role, verb: 'Talk', site, icon: SITE_ICONS[objective.kind], x, y: feet, asset: 'npc.role.traveller', w: 26, h: 36, bob: true, approach: { x, y: feet + 22 }, labelAt: { x, y: feet - 50 }, reach: 38, beacon: true };
+      return { id, kind: objective.kind === 'collect' ? 'gather' : 'poi', name: objective.name, verb: objective.kind === 'collect' ? 'Collect' : 'Inspect', site, icon: SITE_ICONS[objective.kind], x, y: feet, asset: objective.kind === 'collect' ? 'site.marker.collect' : 'site.marker.inspect', w: 28, h: 28, approach: { x, y: feet + 8 }, labelAt: { x, y: feet - 46 }, reach: 36, beacon: !objective.optional };
+    });
+}
+
+/** A painted contract site's door in town (missions-in-world): "Enter The archive vault". */
+export function siteDoorTarget(site) {
+  const { x } = tileCenter(site.door);
+  const feet = (site.door[1] + 1) * T - 2;
+  return { id: `sitedoor:${site.id}`, kind: 'door', name: site.name, verb: 'Enter', siteId: site.id, icon: 'door', x, y: feet, asset: 'site.marker.door', w: 32, h: 40, approach: { x, y: feet + 18 }, labelAt: { x, y: feet - 56 }, reach: 36, beacon: true };
+}

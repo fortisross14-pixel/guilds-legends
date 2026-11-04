@@ -294,7 +294,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
 
   // A won fight in the wild or on the road: the word "Victory" over the field, then the one
   // victory screen (playtest-1-feedback): no result card in between.
-  const quickWin = Boolean(encounter && encounter.status !== 'active' && !replaying && encounter.result?.playerWon && ['wild', 'road'].includes(encounter.sourceType));
+  const quickWin = Boolean(encounter && encounter.status !== 'active' && !replaying && encounter.result?.playerWon && ['wild', 'road', 'site'].includes(encounter.sourceType));
   const concludeRef = useRef(actions.concludeCombat);
   concludeRef.current = actions.concludeCombat;
   useEffect(() => {
@@ -580,7 +580,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const order = replay?.order || turnOrder(encounter);
   const intent = encounter.enemyIntent;
   const infoUnit = info ? unitById(info) : null;
-  const wildWipe = finished && encounter.sourceType === 'wild' && !encounter.result?.playerWon && encounter.result?.method !== 'withdrew';
+  const wildWipe = finished && ['wild', 'site'].includes(encounter.sourceType) && !encounter.result?.playerWon && encounter.result?.method !== 'withdrew';
 
   const showHand = canDrag && ready && !settings.seenHints?.battleDrag && !dragging && !radial;
 

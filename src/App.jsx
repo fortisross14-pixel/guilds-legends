@@ -2,7 +2,6 @@ import React, { Component, useCallback, useEffect, useMemo, useRef, useState } f
 import {
   acknowledgeCouncilReport,
   acknowledgeReport,
-  autoResolveActiveMissionGame,
   appointHero,
   assignArtifact,
   assignBranchCommander,
@@ -36,9 +35,7 @@ import {
   restAtHall,
   restAtInn,
   performActiveCombatAction,
-  performActiveMissionGameAction,
   getDashboardSummary,
-  getHero,
   getReport,
   getStoryView,
   hasHall,
@@ -48,15 +45,16 @@ import {
   hashString,
   inheritAmbition,
   inspectHero,
-  inspectMission,
+  acceptContract,
+  reportContract,
+  siteAct,
+  retrySiteBattle,
   isGuildDefunct,
-  launchExpedition,
   recruitCandidate,
   refoundGuild,
   releaseHero,
   renameFounderHero,
   renameGuild,
-  resolveDecision,
   saveFormation,
   setHeroMonthlyActivity,
   beginGuildTournamentCombat as startGuildTournamentCombat,
@@ -107,7 +105,7 @@ import { CLASSES } from './data/content.js';
 import { BUILDINGS, LOCATION_BY_ID, PRIMALS, locationBuildings } from './data/world.js';
 import { townFor } from './data/towns/index.js';
 import { WILD_AREAS } from './data/wilds/index.js';
-import { Badge, Button, Crest, HeroPortrait, Modal, SceneBackdrop, useMenuKeys } from './components/UI.jsx';
+import { Button, Crest, HeroPortrait, Modal, SceneBackdrop, useMenuKeys } from './components/UI.jsx';
 import Icon, { IconDefs } from './components/Icon.jsx';
 import MapScreen from './places/MapScreen.jsx';
 import TownScene from './explore/TownScene.jsx';
@@ -116,6 +114,7 @@ import MissionsScreen from './screens/MissionsScreen.jsx';
 import ArenaScreen from './screens/ArenaScreen.jsx';
 import ShopScreen from './screens/ShopScreen.jsx';
 import InteriorScene from './explore/InteriorScene.jsx';
+import SiteScene from './explore/SiteScene.jsx';
 import { INTERIORS } from './data/interiors.js';
 import { resolveRoute } from './places/routes.js';
 import { Ledger, Orb, OrbScrim, PlaceTag } from './hud/Hud.jsx';
@@ -123,7 +122,6 @@ import { SectionView } from './hud/sections.jsx';
 import { dateLine } from './hud/dateLine.js';
 import CouncilReportModal from './components/CouncilReportModal.jsx';
 import CombatArenaModal from './components/CombatArenaModal.jsx';
-import MissionGameModal from './components/MissionGameModal.jsx';
 import RoadEventModal from './components/RoadEventModal.jsx';
 import MomentModal from './components/MomentModal.jsx';
 import EventCardModal from './components/EventCardModal.jsx';
@@ -314,111 +312,6 @@ function RefoundModal({ state, open, onRefound, onReturnHome }) {
           </Button>
           <Button onClick={onReturnHome}>Return to save slots</Button>
         </div>
-      </div>
-    </Modal>
-  );
-}
-
-function DecisionModal({ state, actions }) {
-  const decision = state.pendingDecisions[0];
-  if (!decision) return null;
-  const mission = state.activeMissions.find((item) => item.id === decision.missionId);
-  const combatResolved = Boolean(decision.combatResolved && decision.combatSummary);
-  const missionGameResolved = Boolean(decision.missionGameResolved && decision.missionGameSummary);
-  const lockedResult = combatResolved || missionGameResolved;
-  const heroes = mission?.assignments.map((assignment) => ({ ...assignment, hero: getHero(state, assignment.heroId) })).filter((item) => item.hero) || [];
-  return (
-    <Modal
-      open
-      title={decision.title}
-      eyebrow={
-        lockedResult
-          ? `${combatResolved ? 'Combat' : decision.missionGameSummary.type} resolved · ${decision.forcedGrade} · Choose the aftermath`
-          : 'Critical expedition decision · Time paused'
-      }
-      preventClose
-      width="wide"
-    >
-      <div className="decision-scene">
-        <div className="decision-scene__party">
-          {heroes.map(({ hero, role }) => (
-            <div key={hero.id}>
-              <HeroPortrait hero={hero} size="sm" />
-              <span>
-                <strong>{hero.name}</strong>
-                <small>
-                  {role} · PWR {hero.power}
-                </small>
-              </span>
-            </div>
-          ))}
-        </div>
-        <blockquote>{decision.prompt}</blockquote>
-        {combatResolved ? (
-          <div className="combat-aftermath-callout">
-            <Badge tone={decision.combatSummary.playerWon ? 'green' : 'red'}>{decision.combatSummary.playerWon ? 'Battle won' : 'Battle lost'}</Badge>
-            <div>
-              <strong>The tactical result is locked.</strong>
-              <p>
-                {decision.combatSummary.turns} turns · you left with {decision.combatSummary.playerHpPct}% field strength · opposition{' '}
-                {decision.combatSummary.enemyHpPct}%. Your choice now determines rewards, obligations and what the guild does next—not whether the battle
-                secretly rerolls.
-              </p>
-            </div>
-          </div>
-        ) : null}
-        {missionGameResolved ? (
-          <div className="combat-aftermath-callout">
-            <Badge tone={decision.missionGameSummary.status === 'won' ? 'green' : decision.missionGameSummary.status === 'partial' ? 'gold' : 'red'}>
-              {decision.missionGameSummary.type} {decision.missionGameSummary.status}
-            </Badge>
-            <div>
-              <strong>The playable mission result is locked.</strong>
-              <p>
-                {decision.missionGameSummary.turns} turns · performance {decision.missionGameSummary.performance} · grade {decision.missionGameSummary.grade}.
-                The aftermath can change rewards, relationships and obligations, but it will not reroll the challenge.
-              </p>
-            </div>
-          </div>
-        ) : null}
-        <div className="decision-options" data-menu>
-          {decision.options.map((option, index) => (
-            <button key={option.id} onClick={() => actions.resolveDecision(decision.id, option.id)}>
-              <span className="decision-options__key">{index + 1}</span>
-              <div>
-                <h3>{option.label}</h3>
-                <p>{option.note}</p>
-                <div className="decision-options__effects">
-                  {!lockedResult && option.power ? (
-                    <Badge tone={option.power >= 0 ? 'green' : 'red'}>
-                      {option.power >= 0 ? '+' : ''}
-                      {option.power} mission edge
-                    </Badge>
-                  ) : null}
-                  {option.fame ? (
-                    <Badge tone="gold">
-                      {option.fame >= 0 ? '+' : ''}
-                      {option.fame} narrative fame
-                    </Badge>
-                  ) : null}
-                  {option.reward ? (
-                    <Badge tone="blue">
-                      {option.reward >= 0 ? '+' : ''}
-                      {option.reward} base reward
-                    </Badge>
-                  ) : null}
-                  {option.artifact ? <Badge tone="purple">Artifact possibility</Badge> : null}
-                </div>
-              </div>
-              <span className="decision-options__arrow">›</span>
-            </button>
-          ))}
-        </div>
-        <p className="decision-scene__warning">
-          {lockedResult
-            ? 'The decisive gameplay is over. This choice changes consequences, relationships and rewards.'
-            : 'Important choices alter odds and consequences. They do not reveal the final roll.'}
-        </p>
       </div>
     </Modal>
   );
@@ -785,7 +678,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   const [talking, setTalking] = useState(false);
   // A story scene waits until fights, decisions, reports and reward cards are done.
   const blocked = Boolean(
-    state.activeEncounter || state.activeMissionGame || state.pendingDecisions.length || state.pendingRoadEvent || state.pendingReports?.length || state.moments?.length,
+    state.activeEncounter || state.pendingRoadEvent || state.pendingReports?.length || state.moments?.length,
   );
   useEffect(() => {
     if (!storyScene && !blocked && !talking && state.story?.scene?.conversation) setStoryScene(state.story.scene.conversation);
@@ -904,7 +797,9 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       meetPerson: (id) => applyResult(meetPerson(state, id)),
       talkPerson: (id, choiceId) => {
         const result = talkToPerson(state, id, choiceId);
-        applyResult(result);
+        // "It's done.": the report (and its reward moment) follows on the same state.
+        if (!result.error && result.ui?.report) applyResult(reportContract(result.state, result.ui.report));
+        else applyResult(result);
         return result.error ? null : result;
       },
       askTopic: (id, topicId) => {
@@ -935,8 +830,14 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(result, result.message);
       },
       fightWild: (areaId, groupId, position) => applyResult(startWildBattle(state, areaId, groupId, position)),
-      inspectMission: (id) => commitState(inspectMission(state, id)),
-      launchMission: (id, formationType, assignments) => applyResult(launchExpedition(state, id, formationType, assignments), 'The company has set out.'),
+      // Contracts in the world (missions-in-world spec).
+      acceptContract: (id) => applyResult(acceptContract(state, id), 'Added to your Journal.'),
+      reportContract: (id) => applyResult(reportContract(state, id)),
+      siteAct: (missionId, objectiveId, options) => {
+        const result = siteAct(state, missionId, objectiveId, options);
+        applyResult(result);
+        return result.error ? null : result.result || {};
+      },
       saveFormation: (formationType, assignments) => applyResult(saveFormation(state, formationType, assignments)),
       // Time only moves through actions: travel, contracts the founder joins,
       // camping, inns, and resting at the Guild Hall (which can also wait for a date).
@@ -957,7 +858,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         else window.dispatchEvent(new CustomEvent('gol:drop-hero', { detail: { heroId, kind: target.kind, id: target.id } }));
         haptic('drop', state.settings);
       },
-      resolveDecision: (decisionId, optionId) => applyResult(resolveDecision(state, decisionId, optionId)),
       recruit: (id, negotiation = 'accept', years = 2) => applyResult(recruitCandidate(state, id, negotiation, years), 'A new hero has joined the banner.'),
       resolveTownEvent: (optionId) => applyResult(resolveTownEvent(state, optionId)),
       startSideJob: (jobId, heroIds) => applyResult(startSideJob(state, jobId, heroIds), 'Off they go. Back next week.'),
@@ -1015,10 +915,9 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       unequipItem: (heroId, slot) => applyResult(unequipItem(state, heroId, slot)),
       useItem: (itemId, heroId) => applyResult(useItemOnHero(state, itemId, heroId)),
       acknowledgeMoment: () => commitState(acknowledgeMoment(state)),
-      retryWildBattle: () => applyResult(retryWildBattle(state)),
+      // A lost fight in a wild area or on a contract site: fight the same group again.
+      retryWildBattle: () => applyResult(state.activeEncounter?.sourceType === 'site' ? retrySiteBattle(state) : retryWildBattle(state)),
       acceptDefeat: () => applyResult(acceptDefeat(state)),
-      missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
-      autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
       concludeCombat: () => applyResult(concludeCombatAndContinue(state)),
       travel: (destinationId) => applyResult(travelTo(state, destinationId)),
       continueJourney: () => applyResult(continueJourney(state)),
@@ -1147,7 +1046,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   const goBack = () => {
     if (section?.id === 'hall' && section.tab) setSection({ ...section, tab: null });
     else if (section) setSection(null);
-    else if ((view === 'map' && !traveling) || view === 'interior') setPlaceState({ view: 'scene' });
+    else if ((view === 'map' && !traveling) || view === 'interior' || view === 'site') setPlaceState({ view: 'scene' });
   };
   const edge = useRef(null);
 
@@ -1167,7 +1066,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   const guildItems = [
     { id: 'party', label: 'Party', icon: 'party', badge: injured || null, onSelect: () => navigate('heroes') },
     { id: 'items', label: 'Items', icon: 'bag', onSelect: () => navigate('items') },
-    { id: 'hall', label: hasHall(state) ? 'Guild Hall' : 'Empty lot', icon: 'castle', badge: state.pendingDecisions.length || hallDone || null, onSelect: () => navigate('hall') },
+    { id: 'hall', label: hasHall(state) ? 'Guild Hall' : 'Empty lot', icon: 'castle', badge: hallDone || null, onSelect: () => navigate('hall') },
     { id: 'guild', label: 'Guild', icon: 'banner', onSelect: () => navigate('guild') },
     { id: 'contacts', label: 'Contacts', icon: 'contacts', onSelect: () => navigate('contacts') },
   ];
@@ -1230,10 +1129,12 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <MapScreen {...placeProps} place={place} />
     ) : view === 'interior' && town && !wildArea ? (
       <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
+    ) : view === 'site' && town && !wildArea ? (
+      <SiteScene key={place.site} siteId={place.site} {...placeProps} paused={covered} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} />
     ) : wildArea ? (
       <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} />
     ) : town ? (
-      <TownScene key={town.id} town={town} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} openBuilding={openBuilding} showBuilding={openBuilding} />
+      <TownScene key={town.id} town={town} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} openBuilding={openBuilding} showBuilding={openBuilding} openSite={(id) => setPlaceState({ view: 'site', site: id })} />
     ) : (
       <MapScreen {...placeProps} place={place} />
     );
@@ -1254,11 +1155,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   // story scenes, reward moments, town events and the council report. Never two at once.
   const interruption = state.activeEncounter
     ? 'combat'
-    : state.activeMissionGame
-      ? 'missionGame'
-      : state.pendingDecisions.length
-        ? 'decision'
-        : state.pendingRoadEvent
+    : state.pendingRoadEvent
           ? 'road'
           : talking
             ? null
@@ -1357,8 +1254,6 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
 
       {/* One interruption at a time, in priority order (docs/UX.md). */}
       {interruption === 'combat' ? <CombatArenaModal encounter={state.activeEncounter} actions={actions} locationPrimal={summary.locationPrimal} speed={state.settings.battleSpeed === 2 ? 2 : 1} settings={state.settings} /> : null}
-      {interruption === 'missionGame' ? <MissionGameModal game={state.activeMissionGame} actions={actions} /> : null}
-      {interruption === 'decision' ? <DecisionModal state={state} actions={actions} /> : null}
       {interruption === 'road' ? <RoadEventModal event={state.pendingRoadEvent} onChoose={actions.resolveRoadEvent} /> : null}
       {interruption === 'report' ? <ReportModal report={activeReport} onClose={closeReport} openHero={actions.openHero} /> : null}
       {interruption === 'scene' ? (

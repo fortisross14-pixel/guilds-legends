@@ -30,7 +30,7 @@ export default function CalendarScreen({ state, actions, canAdvance = false }) {
     setSelected(null);
   };
   const monthEntries = entries.filter((entry) => entry.date.year === view.year && entry.date.month === view.month);
-  const paused = state.pendingDecisions.length || state.activeEncounter || state.activeMissionGame || state.pendingRoadEvent;
+  const paused = state.activeEncounter || state.pendingRoadEvent;
 
   return (
     <div className="calendar">

@@ -84,3 +84,9 @@ button.journal-row:hover, button.journal-row:focus-visible { border-color: var(-
 .bestiary-row summary img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
 .bestiary-row.is-defeated summary { opacity: .7; }
 .ladder-row--own { margin-bottom: 8px; border: 1px solid var(--brass); border-radius: var(--r-1); }
+/* A contract being worked on: its steps, with Go. */
+.journal-contract { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line-soft); }
+.journal-contract:first-child { border-top: 0; }
+.journal-contract header { display: grid; }
+.journal-contract header strong { font: 700 var(--fs-3) var(--font-display); }
+.journal-contract header small { color: var(--text-dim); font-size: var(--fs-1); }

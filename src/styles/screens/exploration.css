@@ -158,3 +158,10 @@
 .interior__pan { position: absolute; z-index: 4; top: 50%; display: grid; place-items: center; width: 44px; height: 64px; margin-top: -32px; border: 1px solid rgba(246, 210, 140, .45); background: rgba(12, 10, 15, .62); color: var(--gold-bright); }
 .interior__pan--left { left: calc(var(--safe-l) + 4px); border-radius: 0 var(--r-1) var(--r-1) 0; }
 .interior__pan--right { right: calc(var(--safe-r) + 4px); border-radius: var(--r-1) 0 0 var(--r-1); }
+.dialogue--site { position: fixed; z-index: var(--z-dialogue); }
+.dialogue__check { color: #6a5234; font-weight: 600; }
+.dialogue__text.is-setback { color: #7a2e22; }
+/* A painted contract site: foes stand on the painting with their battle sprite; clues glow faintly. */
+.interior__foe { width: 76px; height: 68px; object-fit: contain; image-rendering: pixelated; transform: scaleX(-1); filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .55)); }
+.interior__person.is-foe .interior__name { border: 1px solid rgba(240, 160, 143, .7); color: #f0a08f; }
+.interior__hotspot.is-objective { border-color: rgba(246, 210, 140, .45); background: rgba(246, 210, 140, .06); }

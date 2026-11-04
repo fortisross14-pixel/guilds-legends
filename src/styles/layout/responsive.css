@@ -15,10 +15,6 @@
   .section__grip-row { position: relative; padding-top: 14px; touch-action: none; }
   .section__foot { padding: 8px 12px calc(10px + var(--safe-b)) 14px; }
   .section__help { font-size: var(--fs-1); }
-  .section .party-rail { margin: 16px -14px -20px; padding-left: 14px; padding-right: 14px; }
-  .party-rail__member { width: auto; grid-template-columns: auto 52px; gap: 6px; padding: 5px 7px 5px 5px; }
-  .party-rail__member > span > small { display: none; }
-  .party-rail__member .hero-portrait { --size: 32px; }
 
   .modal-layer { padding: 0; align-items: end; }
   .modal { width: 100%; max-width: none !important; max-height: 92dvh; border-radius: var(--r-2) var(--r-2) 0 0; animation: sheet-up 340ms var(--ease) both; }

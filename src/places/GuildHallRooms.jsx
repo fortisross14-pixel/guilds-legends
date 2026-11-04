@@ -466,7 +466,7 @@ function RestPanel({ state, hall, actions, onDone = null }) {
   const free = activeRoster(state).filter((hero) => !isHeroAway(state, hero) && !inRoom.has(hero.id) && hero.status === 'available');
   const activities = MONTHLY_ACTIVITIES.filter((activity) => activityAvailable(state, activity.id));
   const taskOf = (hero) => draft[hero.id] || (activityAvailable(state, hero.monthlyActivity || 'Rest') ? hero.monthlyActivity || 'Rest' : 'Rest');
-  const paused = state.pendingDecisions.length || state.activeEncounter || state.activeMissionGame || state.pendingRoadEvent;
+  const paused = state.activeEncounter || state.pendingRoadEvent;
   return (
     <div className="rest-room">
       <RoomOutputs state={state} hall={hall} />
