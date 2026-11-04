@@ -100,7 +100,7 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 
 ### The guild's home (7D)
 
-- **No hall, no hires.** Until story mission 1 rents the Dunmere lot, recruits can be met and interviewed, but "Would you join us?" ends with "Where would I sleep? Come back when you have a hall." The tavern's goal line, Contacts and the quest log's Guild tab say so.
+- **No hall, no hires.** Until story mission 1 rents the Dunmere lot, recruits can be met and interviewed, but "What would it take to sign you?" ends with "Where would I sleep? Come back when you have a hall." The tavern's goal line, Contacts and the quest log's Guild tab say so.
 - **The lot:** rented, 6 slots, a cabin (Bedroom, 2 beds) already built. Each room takes a slot; an empty slot tile opens the build list. A rented lot cannot grow.
 - **Long-term goals** (Guild Hall and Treasury, and the ledger): "Buy the property" (price, savings, "at this rate: about N months"), then "Expand the lot" one step at a time. Buying is a ceremony and a Chronicle entry.
 - **Before renting** the hall door, the Guild orb item and the section all say **Empty lot**: the yard for rent, a button to talk to Gideon Rusk, and the house you live in until then.
@@ -113,17 +113,17 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 **One people model** (`src/game/engine/people.js`): each person has a name, a role, a place (town, building, spot), a look (a silhouette by role or class until art arrives), a memory (met, talks, relationship, interview) and **offers**: `mission`, `hire`, `challenge`. Regulars (keepers, clerks, registrars, referees, Mara Fen) stay; visitors rotate every month (recruits, petitioners, challengers, travellers, a messenger while there is news). Recruits *are* the candidates, petitioners hold the contracts, challengers are candidates who join only after a won bout: nothing is duplicated.
 
 **Discovery through conversation:**
-- Unknown people show **?** over their heads. Talking to them is 1–3 lines that reveal what they offer, then a short menu.
+- Unknown people show **?** over their heads. They speak first: what they want from you, then their name. Then the topics you can ask, in any order; each answer comes back to the topics, asked ones checked, and goodbye gets their farewell. How lines are written: [`docs/DIALOGUE.md`](DIALOGUE.md).
 - Once known, the label shows their offers: **!** (a contract), **coin** (looking for work; a padlock while they want a bout first), **crossed swords** (a bout).
-- People remember you: the second time there is no small talk.
+- People remember you: the second time they greet you like someone they know.
 
 **The questions:**
 
 | Ask | Leads to |
 |---|---|
-| Need anything done? | the contract (title, reward, risk) → **Take** (it is pinned to the notice board) or **Turn down** (a rival takes it, a little regional reputation lost) |
-| Looking for work? | the interview: **Tell me about yourself** (personality, flaw, dream) · **What can you do?** (narrows their stat ranges, like scouting) · **Would you join us?** (fee, monthly wage, 2 years, a free bed; or why not: reputation, charter, no bed, gold, "beat me first") → **Agreed** hires them |
-| Fancy a bout? | a friendly one-on-one with the existing combat; win: +3 fame, more respect, and a challenger agrees to hear your offer; lose: −1 fame |
+| Need anything done? | the petitioner describes the problem, the pay and the danger → **We’ll take it.** (pinned to the notice board) or **Not this one.** (a rival takes it, a little regional reputation lost) |
+| Looking for work? | the interview, in their personality’s voice: **Tell me about yourself.** (dream, flaw) · **What can you do?** (narrows their stat ranges, like scouting) · **What would it take to sign you?** (fee, monthly wage, 2 years, a free bed; or why not: reputation, charter, no bed, gold, "beat me first") → **Deal. Welcome to …** hires them. "Where are you from?" is small talk. |
+| Fancy a friendly bout? | a friendly one-on-one with the existing combat; win: +3 fame, more respect, and a challenger agrees to hear your offer; lose: −1 fame |
 | A keeper's service | Shop: the shop panel slides up (shelves open their category) · Inn: rest 1–3 nights · Registrar: the sign-up desk · Referee: starts the bout during a tournament ("No tournament in progress" otherwise) · Herald's clerk: Records → Rankings · Messenger: the news · Traveller: a rumour puts a new place on the map |
 
 **Each building:**

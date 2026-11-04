@@ -2,6 +2,16 @@
 
 Newest first. Older entries were moved here from the README.
 
+## Unreleased — Dialogue pass
+
+- Conversations now feel like conversations. People speak first, say their name when you meet, and greet you like someone they know when you come back.
+- Ask what you want, in any order. After each answer you come back to the list of things to ask; the ones you already asked are checked. Every conversation ends with a goodbye that fits the person.
+- Everything you say is a choice you pick; nobody puts words in your mouth (except a few story moments).
+- Story scenes let you ask questions before you decide: what the stable costs, who drives the wolves, why Nessa has no guild.
+- Visitors in buildings have voices: a brave recruit talks differently from a cautious one, a watch sergeant differently from a temple acolyte. The hiring interview reads like an interview.
+- Shopkeepers, clerks and referees introduce themselves and have something to say.
+- The long history speeches moved into the Lore codex; people now hint and point.
+
 ## Unreleased — Phase 7D, part 1: lots
 
 - No hall, no hires: until you rent the old stable yard on Banner Plaza, recruits will talk to you but nobody signs.

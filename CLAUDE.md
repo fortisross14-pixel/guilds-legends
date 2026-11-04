@@ -62,7 +62,7 @@ src/components/           UI primitives and scene backdrop (UI.jsx), the icon se
 src/screens/              Building/page content rendered inside places (Missions, Heroes, Rankings + RivalryScreens, HistoryScreens, ArenaScreen + GuildChampionships, LoreCodex, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
   towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
-  dialogue/               Data-driven conversations (variants with conditions, choices with effects); format in dialogue/index.js; story.js and storyAct2.js hold the story scenes
+  dialogue/               Data-driven conversations (opener variants, hub topics, goodbyes; choices with effects); format in dialogue/index.js, style and voices in docs/DIALOGUE.md; story.js and storyAct2.js hold the story scenes
   story.js, lore.js       The Last Banner (docs/STORY.md): missions, steps, gates, evidence, story heroes, the prologue; the Broken Lantern's seven, the official story, the Lore codex
   tiles.js, playerHouse.js  Ground tiles for walkable layouts; the player's house (prologue)
   interiors.js, people.js Building interiors (11×11 rooms: furniture, spots, the doorway); the regulars in each building and visitor name pools
@@ -121,6 +121,7 @@ tests/engine.test.js      Engine regression tests (fast)
 tests/long.test.js        Long seeded simulations
 docs/AUDIT_v1.9.md        Audit and improvement waves
 docs/UX.md                Touch-first UX: gesture language, screens and navigation, flows, glossary (follow it for any UI change)
+docs/DIALOGUE.md          Dialogue style guide: rules, conversation shape, voices, audit (follow it for any line of dialogue)
 ```
 
 ## GameState shape (brief)
