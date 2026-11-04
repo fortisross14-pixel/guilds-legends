@@ -17,9 +17,9 @@ export {
   freeBeds,
   chestCapacity,
   trophyCount,
-  hallStage,
+  hallRooms,
+  roomCount,
   activityAvailable,
-  availableDrills,
   branchCapacity,
   operationalLocationIds,
   getGuildmaster,
@@ -34,7 +34,7 @@ export { getGuildRankings, getGuildRankSummary, getHeroRankings } from './engine
 export { designateSuccessor, assignMentor, foundBranch, assignBranchCommander, upgradeBranch, assignArtifact, inheritAmbition } from './engine/institution.js';
 export { getPromotionRequirement } from './engine/goals.js';
 export { getPatronLoanOffer, takePatronLoan, getTravelQuote, startTravel, upkeepBreakdown, hallUpkeep, savingsRate, propertyGoal } from './engine/economy.js';
-export { getHallView, requirementStatus, nextUpgrade, buyLot, expandLot, nextExpansion, buildRoom } from './engine/hall.js';
+export { getHallView, nextUpgrade, buyLot, expandLot, nextExpansion, buildRoom, upgradeRoom, clearRoom, setRoomEquipment, assignRoom, autoAssignRooms, trophyList, crownFame, awardTrophyInPlace } from './engine/hall.js';
 export { charterOf, charterEffect, patronLevel, patronAtLeast, patronPoints } from './engine/charter.js';
 export { getConnectionsView, getPathScores, giftPatron } from './engine/connections.js';
 export {
@@ -68,7 +68,6 @@ export {
   recruitCandidate,
   releaseHero,
   refoundGuild,
-  setHeroTraining,
   setHeroMonthlyActivity,
   renameGuild,
   renameFounderHero,
@@ -109,7 +108,7 @@ export {
   restAtCamp,
   startWildBattle,
   retryWildBattle,
-  retreatToCamp,
+  acceptDefeat,
 } from './engine/exploration.js';
 export {
   LADDERS,
@@ -138,7 +137,7 @@ export {
   travellingPartyIds,
 } from './engine/core.js';
 export { getCalendarEntries } from './engine/dashboard.js';
-export { MAIN_PARTY_SIZE, isHeroAway, sendIdleHeroesTo, autoAssignRooms, setMainParty, setPartyLead, toggleMainPartyMember } from './engine/recruitment.js';
+export { MAIN_PARTY_SIZE, isHeroAway, setMainParty, setPartyLead, toggleMainPartyMember } from './engine/recruitment.js';
 export {
   CONTRACT_LENGTHS,
   CONTRACT_WARNING_MONTHS,

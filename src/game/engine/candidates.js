@@ -5,6 +5,7 @@ import { RARITIES, unlockedLocations, LOCATION_BY_ID } from '../../data/world.js
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, dateLabel, roomLevel } from './core.js';
 import { patronAtLeast, patronLevel } from './charter.js';
 import { PATRON_LIST } from '../../data/patrons.js';
+import { VISITORS } from '../../data/rooms.js';
 
 // Some recruits refuse guilds whose reputation they dislike, and say why.
 const OBJECTIONS = [
@@ -131,9 +132,10 @@ export function updatePromiseDeadlinesInPlace(state) {
 
 /** A recruit for a town's tavern. `options` can fix the hero (name, classId, primal, rarity, level). */
 export function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere', options = {}) {
-  const scoutLevel = roomLevel(state, 'scouts');
+  // A State of the art Crown Room draws better recruits (visitors).
+  const visitors = roomLevel(state, 'crown') >= 3 ? VISITORS.recruitQuality : 0;
   const spymasterBonus = state.guild.appointments?.Spymaster ? 0.08 : 0;
-  const qualityRoll = rng.next() + scoutLevel * 0.05 + spymasterBonus;
+  const qualityRoll = rng.next() + visitors + spymasterBonus;
   const quality = forcedQuality || (qualityRoll > 1.12 ? 'elite' : qualityRoll > 0.92 ? 'veteran' : 'normal');
   const hero = generateHero(state, rng, quality, { homeLocationId: locationId, recruit: true, ...options });
   const rarityFactor = RARITIES[hero.rarity]?.signing || 1;
@@ -144,7 +146,7 @@ export function makeCandidate(state, rng, forcedQuality, locationId = state.worl
     ...hero,
     status: 'candidate',
     locationId,
-    channel: scoutLevel > 0 && rng.chance(0.35) ? 'Scout network' : rng.pick(['Tavern board', 'Mercenary market', 'Temple recommendation', 'Defector rumor']),
+    channel: roomLevel(state, 'scouts') > 0 && rng.chance(0.35) ? 'Scout network' : rng.pick(['Tavern board', 'Mercenary market', 'Temple recommendation', 'Defector rumor']),
     signingFee,
     buyoutFee: Math.round(signingFee * (hero.rarity === 'Legend' ? 0.65 : hero.rarity === 'Epic' ? 0.5 : 0.35)),
     demand: candidateDemandFor(hero, state, rng),
@@ -163,7 +165,7 @@ export function refreshCandidatesForLocationInPlace(state, rng, locationId = sta
     (candidate) => candidate.expiresYear >= state.date.year && unlockedIds.has(candidate.locationId || 'dunmere'),
   );
   const current = state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === locationId).length;
-  const target = 3 + roomLevel(state, 'scouts');
+  const target = 3;
   for (let i = current; i < target; i += 1) state.candidates.push(makeCandidate(state, rng, null, locationId));
   state.candidates.sort((a, b) => b.rarity.localeCompare(a.rarity) || b.level - a.level || b.potential - a.potential);
   state.candidates = state.candidates.slice(0, 60);

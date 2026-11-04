@@ -5,12 +5,14 @@ import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
 import { chestCapacity, clamp, clone, finalize, hashString, roomLevel, tallySpend } from './core.js';
 import { patronAtLeast } from './charter.js';
+import { ARMORY } from '../../data/rooms.js';
 
 /** Shop price after discounts: the Armory, the Trade House, the Temple (healing) and the Smiths (gear). */
 export function shopPrice(state, itemId) {
   const item = ITEMS[itemId];
   let factor = 1;
-  if (roomLevel(state, 'armory')) factor *= 0.9;
+  // Armory: 5% / 10% / 15% off by tier (data/rooms.js).
+  factor *= 1 - (ARMORY.discount[roomLevel(state, 'armory')] || 0);
   if (patronAtLeast(state, 'trade', 'ally')) factor *= 0.9;
   else if (patronAtLeast(state, 'trade', 'contact')) factor *= 0.95;
   if (item?.battle?.heal && patronAtLeast(state, 'temple', 'contact')) factor *= 0.75;
@@ -81,9 +83,21 @@ export function sellItem(state, itemId, quantity = 1) {
 }
 
 /** Price to take an equipped item one step up its line at the Armory (null when it cannot be upgraded). */
+/** How many steps one upgrade climbs: two with a State of the art Armory, else one. */
+function upgradeSteps(state) {
+  return Math.max(1, ARMORY.upgradeSteps[roomLevel(state, 'armory')] || 0);
+}
+
+/** Where an item ends up after one upgrade (null when it cannot be upgraded). */
+export function gearUpgradeTarget(state, itemId) {
+  let target = itemId;
+  for (let step = 0; step < upgradeSteps(state) && GEAR_UPGRADES[target] && ITEMS[GEAR_UPGRADES[target]]; step += 1) target = GEAR_UPGRADES[target];
+  return target !== itemId && ITEMS[itemId] ? target : null;
+}
+
 export function gearUpgradeCost(state, itemId) {
-  const target = GEAR_UPGRADES[itemId];
-  if (!target || !ITEMS[target] || !ITEMS[itemId]) return null;
+  const target = gearUpgradeTarget(state, itemId);
+  if (!target) return null;
   const cost = Math.max(40, ITEMS[target].price - ITEMS[itemId].price);
   return patronAtLeast(state, 'smiths', 'contact') ? Math.round(cost * 0.8) : cost;
 }
@@ -91,7 +105,7 @@ export function gearUpgradeCost(state, itemId) {
 /** The Armory's smith reforges a hero's equipped item into the next tier of its line. */
 export function upgradeGear(state, heroId, slot) {
   // The Armory's smith, or the Ironford Smiths for a guild they know.
-  if (!roomLevel(state, 'armory') && !patronAtLeast(state, 'smiths', 'contact')) return { state, error: 'Build an Armory (or befriend the Ironford Smiths) to upgrade gear.' };
+  if (roomLevel(state, 'armory') < 2 && !patronAtLeast(state, 'smiths', 'contact')) return { state, error: 'Upgrade the Armory to Advanced (or befriend the Ironford Smiths) to upgrade gear.' };
   const hero = playerHero(state, heroId);
   const itemId = hero?.gear?.[slot];
   const cost = itemId ? gearUpgradeCost(state, itemId) : null;
@@ -100,7 +114,7 @@ export function upgradeGear(state, heroId, slot) {
   const next = clone(state);
   next.guild.crowns -= cost;
   tallySpend(next, 'shop', cost);
-  next.heroes.find((item) => item.id === heroId).gear[slot] = GEAR_UPGRADES[itemId];
+  next.heroes.find((item) => item.id === heroId).gear[slot] = gearUpgradeTarget(state, itemId);
   return { state: finalize(next), error: null };
 }
 

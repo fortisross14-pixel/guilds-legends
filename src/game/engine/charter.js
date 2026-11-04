@@ -4,6 +4,7 @@
 // Rewards that come with patron levels are granted in connections.js.
 import { CHARTERS } from '../../data/charters.js';
 import { PATRONS, PATRON_DELTAS, PATRON_LEVELS } from '../../data/patrons.js';
+import { VISITORS } from '../../data/rooms.js';
 
 /**
  * Founds the guild under a charter (the banner scene, or a skipped tutorial):
@@ -61,12 +62,18 @@ export function patronForFamily(family, locationId = null) {
  * Changes standing with a patron. Gains are scaled by the charter (Free
  * Company warms slowly). Crossing a level adds a notice. Returns the change.
  */
+/** The Crown Room's tier on the headquarters lot (0 when there is none). */
+function crownTier(state) {
+  const rooms = state.guild?.lots?.[state.guild?.hqLotId]?.rooms;
+  return Array.isArray(rooms) ? rooms.reduce((best, room) => (room.type === 'crown' ? Math.max(best, room.tier || 1) : best), 0) : 0;
+}
+
 export function adjustPatronInPlace(state, patronId, delta, reason = '') {
   const patron = PATRONS[patronId];
   if (!patron || !delta) return 0;
   state.patrons ||= {};
   state.patrons[patronId] ||= { points: 0, granted: {} };
-  const scaled = Math.round(delta > 0 ? delta * charterEffect(state, 'patronGain') : delta);
+  const scaled = Math.round(delta > 0 ? delta * charterEffect(state, 'patronGain') * (crownTier(state) >= 3 ? VISITORS.patronGain : 1) : delta);
   if (!scaled) return 0;
   const before = patronLevel(state, patronId);
   state.patrons[patronId].points = Math.max(-60, Math.min(200, state.patrons[patronId].points + scaled));

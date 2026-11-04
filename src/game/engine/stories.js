@@ -2,6 +2,7 @@
 // Regional boss contracts and the shared effect rules for event cards (town
 // events, festivals). The main story lives in story.js.
 import { MISSION_TEMPLATES } from '../../data/content.js';
+import { INJURY } from '../../data/rooms.js';
 import { BOSSES } from '../../data/enemies.js';
 import { LOCATION_BY_ID, unlockedLocations } from '../../data/world.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, getHero, pushNewsInPlace } from './core.js';
@@ -33,8 +34,8 @@ export function applyEventEffectsInPlace(state, effects = {}, ctx = {}) {
     if (effects.injuryWeeks && hero.status === 'available') {
       hero.status = 'injured';
       hero.injury = 'Hurt during an errand';
-      hero.injuryWeeks = effects.injuryWeeks;
-      hero.monthlyActivity = 'Infirmary';
+      // A normal injury: a week (guild-hall-rooms spec).
+      hero.injuryWeeks = INJURY.weeks;
     }
   }
   if (hero && hero2 && effects.relationship) {

@@ -73,18 +73,16 @@ export function IconDefs() {
 export const PLACE_ICONS = { world: 'world', guild: 'castle', chronicle: 'book' };
 export const BUILDING_ICONS = { guildHall: 'castle', tavern: 'mug', noticeBoard: 'notice', arena: 'swords', shop: 'bag', herald: 'horn' };
 export const ROOM_ICONS = {
+  bedroom: 'moon',
   training: 'sword',
   infirmary: 'cross',
-  quarters: 'moon',
-  bunks: 'moon',
-  trophies: 'crown',
-  scouts: 'eye',
-  courtyard: 'star',
-  office: 'crown',
-  war: 'flag',
   treasury: 'coin',
   armory: 'shield',
+  scouts: 'eye',
+  crown: 'crown',
   construction: 'hammer',
+  defeat: 'bandage',
+  hall: 'castle',
 };
 export const PAGE_ICONS = { calendar: 'calendar', news: 'letter', quests: 'quill', settings: 'gear', chronicle: 'book', log: 'scroll', seasons: 'crown', lore: 'book', codex: 'star' };
 export const LADDER_ICONS = { strength: 'sword', legacy: 'scroll', official: 'crown' };

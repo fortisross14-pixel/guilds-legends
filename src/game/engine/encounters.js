@@ -1,6 +1,7 @@
 // @ts-check
 // Active combat and mission-game actions, and concluding them.
 import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
+import { defeatInPlace } from './hall.js';
 import { VITALS } from '../../data/activities.js';
 import { attemptFlee, autoResolveEncounter, missionGradeFromCombat, performCombatRound } from '../combat.js';
 import { autoResolveMissionGame, missionGradeFromMissionGame, performMissionGameAction } from '../missionGames.js';
@@ -139,15 +140,8 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
       tags: ['combat', 'explore'],
     });
   } else {
-    fighters
-      .filter((hero) => (combatResult.knockedOut || []).includes(hero.id))
-      .forEach((hero) => {
-        hero.status = 'injured';
-        hero.injury = `Wounded in ${area.name}`;
-        hero.injuryWeeks = rng.int(1, 3);
-        hero.monthlyActivity = 'Infirmary';
-      });
-    next.notifications.push({ id: `wild-loss-${encounter.id}`, tone: 'red', title: `Pushed back in ${area.name}`, text: `${encounter.title} still holds the ground. Rest at the camp and try again.` });
+    // The defeat rule: the party wakes in the infirmary at home (hall.js).
+    defeatInPlace(next, fighters.map((hero) => hero.id), area.hub);
   }
   commitRng(next, rng);
 }
@@ -173,14 +167,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
   } else {
     const lost = Math.min(Math.max(0, next.guild.crowns), rng.int(40, 100) * tier);
     next.guild.crowns -= lost;
-    fighters
-      .filter((hero) => (combatResult.knockedOut || []).includes(hero.id))
-      .forEach((hero) => {
-        hero.status = 'injured';
-        hero.injury = 'Road wound';
-        hero.injuryWeeks = rng.int(2, 4);
-        hero.monthlyActivity = 'Infirmary';
-      });
+    defeatInPlace(next, fighters.map((hero) => hero.id), next.world?.activeTravel?.fromId || next.world?.currentLocationId);
     addChronicle(next, {
       type: 'travel',
       importance: 1,

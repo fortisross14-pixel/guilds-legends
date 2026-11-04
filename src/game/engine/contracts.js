@@ -97,6 +97,7 @@ export function counterOffer(state, heroId) {
 // ---------------------------------------------------------------- scouting ranges
 
 export function candidateScoutLevel(state, candidate) {
+  if (roomLevel(state, 'scouts') >= 3) return MAX_SCOUT_LEVEL;
   return clamp((candidate.scoutLevel || 0) + Math.min(1, roomLevel(state, 'scouts')), 0, MAX_SCOUT_LEVEL);
 }
 

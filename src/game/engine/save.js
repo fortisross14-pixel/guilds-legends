@@ -5,6 +5,7 @@ import { FORMATION_TYPES, PARTY_ROLES, emptyFormations, formationForMission } fr
 import { LOCATION_BY_ID, LOCATIONS, PRIMALS, PRIMAL_IDS, RARITIES } from '../../data/world.js';
 import { GUILD_BLUEPRINTS } from '../../data/universe.js';
 import { WILD_AREAS } from '../../data/wilds/index.js';
+import { ROOM_BY_ID } from '../../data/rooms.js';
 import { artifactEffectFromPrestige, defaultAmbitionForHero } from '../legacy.js';
 import {
   MAX_CHRONICLE,
@@ -321,8 +322,7 @@ export function migrateGame(raw) {
       hero.potential >= 94 ? 'Legend' : hero.potential >= 88 ? 'Epic' : hero.potential >= 81 ? 'Rare' : hero.potential >= 74 ? 'Uncommon' : 'Common';
     hero.primal ||= PRIMAL_IDS[hashString(hero.id || hero.name || String(index)) % PRIMAL_IDS.length];
     hero.homeLocationId ||= 'dunmere';
-    hero.monthlyActivity ||= hero.status === 'injured' ? 'Infirmary' : 'Training';
-    hero.training ||= 'Fundamentals';
+    hero.monthlyActivity ||= 'Rest';
     hero.relationships ||= [];
     hero.promises ||= [];
     hero.mentorId ||= null;
@@ -477,8 +477,12 @@ export function validateGame(state) {
   if (!state.guild?.lots || typeof state.guild.lots !== 'object') errors.push('Guild lots are missing.');
   if (state.guild?.hqLotId && !state.guild.lots?.[state.guild.hqLotId]) errors.push('The headquarters lot is missing.');
   Object.values(state.guild?.lots || {}).forEach((lot) => {
-    const built = Object.values(lot.rooms || {}).filter((level) => level > 0).length;
-    if (built > lot.slots) errors.push(`Lot ${lot.lotId} has more rooms than slots.`);
+    if (!Array.isArray(lot.rooms)) errors.push(`Lot ${lot.lotId} has no room list.`);
+    if ((lot.rooms || []).length > lot.slots) errors.push(`Lot ${lot.lotId} has more rooms than slots.`);
+    (lot.rooms || []).forEach((room) => {
+      if (!ROOM_BY_ID[room.type] || !(room.tier >= 1 && room.tier <= 3)) errors.push(`Lot ${lot.lotId} has an invalid room: ${room.id}`);
+      if (room.heroId && !state.heroes.some((hero) => hero.id === room.heroId)) errors.push(`Room ${room.id} holds an unknown hero.`);
+    });
   });
   if (!Number.isFinite(state.rngState)) errors.push('RNG state is invalid.');
   if (!state.world || !LOCATION_BY_ID[state.world.currentLocationId]) errors.push('Current guild location is invalid.');
@@ -512,7 +516,7 @@ export function validateGame(state) {
     if (!RARITIES[hero.rarity]) errors.push(`Unknown rarity for ${hero.name}`);
     if (!PRIMALS[hero.primal]) errors.push(`Unknown primal for ${hero.name}`);
     if (!Number.isFinite(hero.age) || hero.age < 0) errors.push(`Invalid age for ${hero.name}`);
-    if (hero.monthlyActivity && !['Training', 'Rest', 'Infirmary', 'Scouting', 'Public Exhibition', 'Guild Duty'].includes(hero.monthlyActivity))
+    if (hero.monthlyActivity && !['Rest', 'Scouting', 'Public Exhibition', 'Guild Duty'].includes(hero.monthlyActivity))
       errors.push(`Unknown monthly activity for ${hero.name}`);
   };
   state.heroes.forEach((hero) => validateHero(hero, 'player hero'));

@@ -1,6 +1,7 @@
 // @ts-check
 // Mission resolution: grades, injuries, relationships, rewards, reports, sagas.
 import { formationForMission } from '../../data/formations.js';
+import { INJURY } from '../../data/rooms.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { artifactEffectFromPrestige } from '../legacy.js';
 import {
@@ -9,12 +10,10 @@ import {
   addHeroHistory,
   appointmentHolder,
   clamp,
-  clearHeroAppointmentInPlace,
   clone,
   commitRng,
   dateLabel,
   earnGoldInPlace,
-  tallyGuild,
   tallyHero,
   finalize,
   getHero,
@@ -25,7 +24,6 @@ import {
   pushMoment,
 } from './core.js';
 import { adjustRelationshipInPlace, applyXpInPlace, partyEstimate, roleRating, xpForNextLevel } from './heroes.js';
-import { offerInheritedAmbitionsInPlace, transferArtifactsFromHeroInPlace } from './institution.js';
 import { evaluateStateInPlace } from './goals.js';
 import { queueDueCombatMissionInPlace, queueDueMissionGameInPlace } from './missions.js';
 import { addItemsInPlace, lootNames, rollLoot } from './inventory.js';
@@ -64,47 +62,16 @@ function gradeMultiplier(grade) {
 
 function injureHero(state, hero, mission, grade, rng, extraRisk = 0) {
   const supportPresent = mission.assignments.some((assignment) => ['Combat Support', 'Field Support', 'Advocate'].includes(assignment.role));
-  // Infirmary level 2 cuts injury and death risk (about −30% with the Master Healer's help).
+  // An Advanced infirmary cuts the injury risk (more with the Master Healer's help).
   const infirmary = (roomLevel(state, 'infirmary') >= 2 ? 2 : 0) + (appointmentHolder(state, 'Master Healer') ? 1 : 0);
   const gradeRisk = { Legendary: 0.01, 'Great Success': 0.02, Success: 0.04, Partial: 0.1, Defeat: 0.2, Catastrophic: 0.34 }[grade];
   const baseRisk = gradeRisk + mission.risk * 0.018 + extraRisk - (supportPresent ? 0.025 : 0) - infirmary * 0.012 + (hero.flaw === 'Injury-prone' ? 0.07 : 0);
-  if (!rng.chance(clamp(baseRisk, 0.005, 0.7))) return { injured: false, died: false };
-
-  const fatalBase = grade === 'Catastrophic' ? 0.025 + mission.risk * 0.009 : grade === 'Defeat' && mission.risk >= 4 ? 0.008 : 0.001;
-  const policyFatalityFactor = 1 + clamp(extraRisk * 4, -0.3, 0.5);
-  const fatality = fatalBase * (1 - infirmary * 0.13) * (supportPresent ? 0.72 : 1) * (hero.health < 65 ? 1.4 : 1) * policyFatalityFactor;
-  if (rng.chance(clamp(fatality, 0, 0.12))) {
-    hero.status = 'dead';
-    clearHeroAppointmentInPlace(state, hero);
-    hero.deathYear = state.date.year;
-    hero.health = 0;
-    hero.legacy += 20 + mission.risk * 6;
-    state.guild.deaths += 1;
-    state.stats.deaths += 1;
-    transferArtifactsFromHeroInPlace(state, hero);
-    offerInheritedAmbitionsInPlace(state, hero);
-    addHeroHistory(hero, state, {
-      type: 'death',
-      title: `Died during ${mission.title}`,
-      text: `The guild recovered ${hero.name}’s name, but not their future.`,
-    });
-    addChronicle(state, {
-      type: 'death',
-      importance: 5,
-      title: `${hero.name} dies beneath the banner`,
-      text: `${hero.name} is killed during ${mission.title}. The guild’s history will divide into before and after this day.`,
-      heroIds: [hero.id],
-      tags: ['death', mission.family],
-    });
-    return { injured: true, died: true };
-  }
-
+  // No deaths from battles or failed missions (guild-hall-rooms spec): an injury, at worst.
+  if (!rng.chance(clamp(baseRisk, 0.005, 0.7))) return { injured: false };
   const injuries = ['Broken ribs', 'Deep blade wound', 'Crushed shoulder', 'Fevered wound', 'Shattered ankle', 'Arcane burn', 'Severe concussion'];
   hero.status = 'injured';
-  hero.monthlyActivity = 'Infirmary';
   hero.injury = rng.pick(injuries);
-  hero.injuryWeeks = rng.int(2, 4 + mission.risk * 2);
-  hero.monthlyActivity = 'Infirmary';
+  hero.injuryWeeks = INJURY.weeks;
   hero.health = clamp(hero.health - rng.int(14, 30), 20, 95);
   hero.career.injuries += 1;
   addHeroHistory(hero, state, {
@@ -112,7 +79,7 @@ function injureHero(state, hero, mission, grade, rng, extraRisk = 0) {
     title: hero.injury,
     text: `Suffered during ${mission.title}; expected recovery ${hero.injuryWeeks} week${hero.injuryWeeks === 1 ? '' : 's'}.`,
   });
-  return { injured: true, died: false };
+  return { injured: true };
 }
 
 function assignmentForLegacyCheck(assignments, roleCheck) {
@@ -278,7 +245,6 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     .filter(Boolean);
 
   const injuries = [];
-  const deaths = [];
   const heroEffects = [];
   const expeditionHeroes = mission.assignments.map((assignment) => getHero(next, assignment.heroId)).filter(Boolean);
   const protectedStar = [...expeditionHeroes].sort((a, b) => b.renown - a.renown)[0];
@@ -329,11 +295,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
       injuries.push(hero.name);
       tallyHero(next, hero.id, 'injuries');
     }
-    if (injury.died) {
-      deaths.push(hero.name);
-      tallyGuild(next, 'deaths');
-    }
-    if (!injury.died && hero.status !== 'injured') hero.status = 'available';
+    if (hero.status !== 'injured') hero.status = 'available';
     addHeroHistory(hero, next, {
       type: 'mission-result',
       title: `${grade}: ${mission.title}`,
@@ -462,7 +424,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     }
   }
 
-  const narrative = resultNarrative(mission, option, grade, reward, fame, injuries, deaths);
+  const narrative = resultNarrative(mission, option, grade, reward, fame, injuries);
   const record = {
     id: `mission-record-${mission.id}`,
     kind: 'mission',
@@ -500,7 +462,6 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
     relationshipChanges,
     heroEffects,
     injuries,
-    deaths,
     artifact: artifactName && cleanSuccess ? artifactName : null,
     loot: lootNames(loot),
     reputationChange,
@@ -527,7 +488,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
 
   addChronicle(next, {
     type: cleanSuccess ? 'victory' : grade === 'Partial' ? 'mixed' : 'defeat',
-    importance: grade === 'Legendary' || deaths.length ? 5 : mission.risk >= 3 ? 3 : 2,
+    importance: grade === 'Legendary' ? 5 : mission.risk >= 3 ? 3 : 2,
     title: `${grade}: ${mission.title}`,
     text: narrative,
     heroIds: mission.assignments.map((assignment) => assignment.heroId),
@@ -553,7 +514,7 @@ export function resolveDecision(state, decisionId, optionId, mutate = false) {
   return { state: finalize(next), error: null, result: record };
 }
 
-function resultNarrative(mission, option, grade, reward, fame, injuries, deaths) {
+function resultNarrative(mission, option, grade, reward, fame, injuries) {
   const opening = {
     Legendary: `The decision to “${option.label}” becomes the version sung in halls far beyond ${mission.region}.`,
     'Great Success': `The party executes “${option.label}” with authority and returns in triumph.`,
@@ -562,11 +523,7 @@ function resultNarrative(mission, option, grade, reward, fame, injuries, deaths)
     Defeat: `The party survives a failed attempt and returns with hard questions.`,
     Catastrophic: `The expedition collapses around the choice to “${option.label}.”`,
   }[grade];
-  const consequence = deaths.length
-    ? ` ${deaths.join(', ')} ${deaths.length === 1 ? 'does' : 'do'} not return.`
-    : injuries.length
-      ? ` ${injuries.join(', ')} return wounded.`
-      : ' Every hero returns alive.';
+  const consequence = injuries.length ? ` ${injuries.join(', ')} return wounded.` : ' Every hero returns unhurt.';
   return `${opening}${consequence} The guild receives ${reward} gold and ${fame} fame.`;
 }
 

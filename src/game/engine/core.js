@@ -3,7 +3,7 @@
 import { MONTHS, TIERS } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { BRANCH_RULES } from '../legacy.js';
-import { HALL_STAGES, HOUSE, STAGE_RULES, trainingDrills } from '../../data/rooms.js';
+import { HOUSE } from '../../data/rooms.js';
 import { patronAtLeast } from './charter.js';
 
 export const SCHEMA_VERSION = 15;
@@ -198,13 +198,25 @@ export function hasHall(state) {
   return Boolean(hqLot(state));
 }
 
-export function roomLevel(state, roomId) {
-  return hqLot(state)?.rooms?.[roomId] || 0;
+/** The rooms standing on the headquarters lot: [{ id, type, tier, equipment, heroId }]. */
+export function hallRooms(state) {
+  const rooms = hqLot(state)?.rooms;
+  return Array.isArray(rooms) ? rooms : [];
+}
+
+/** How many rooms of a type stand in the hall. */
+export function roomCount(state, type) {
+  return hallRooms(state).filter((room) => room.type === type).length;
+}
+
+/** The best tier among the hall's rooms of a type (0 when there is none). */
+export function roomLevel(state, type) {
+  return hallRooms(state).reduce((best, room) => (room.type === type ? Math.max(best, room.tier || 1) : best), 0);
 }
 
 /** Beds are the only roster limit: the founder's bed at home, and two per bedroom level in the hall. */
 export function bedCount(state) {
-  return (state.guild?.houseBeds ?? HOUSE.beds) + roomLevel(state, 'bunks') * 2;
+  return (state.guild?.houseBeds ?? HOUSE.beds) + roomCount(state, 'bedroom') * 2;
 }
 
 export function freeBeds(state) {
@@ -267,40 +279,22 @@ export function earnGoldInPlace(state, amount) {
 
 /** Items the guild chest holds (the armory adds racks and a store). */
 export function chestCapacity(state) {
-  return HOUSE.chest + (roomLevel(state, 'armory') ? 20 : 0) + (patronAtLeast(state, 'smiths', 'partner') ? 10 : 0);
+  return HOUSE.chest + (roomLevel(state, 'armory') ? 10 : 0) + (patronAtLeast(state, 'smiths', 'partner') ? 10 : 0);
 }
 
-/** Titles won, artifacts held and bosses defeated: what the Trophy hall displays. */
+/** Tournament trophies the guild has won (each counted once per win): what the Crown Room shows. */
 export function trophyCount(state) {
-  const wildBosses = Object.values(state.world?.exploration?.wild || {}).reduce((sum, area) => sum + Math.min(1, area.bosses || 0), 0);
-  return (state.stats?.individualTournamentWins || 0) + (state.stats?.guildTournamentWins || 0) + (state.artifacts?.length || 0) + (state.defeatedBosses?.length || 0) + wildBosses;
+  return Object.values(state.guild?.trophies || {}).reduce((sum, trophy) => sum + (trophy.count || 0), 0);
 }
 
 // Monthly activities that need a room. Rest and exhibitions work anywhere; guild duty needs the hall.
-const ACTIVITY_ROOM = { Training: 'training', Infirmary: 'infirmary', Scouting: 'scouts' };
+const ACTIVITY_ROOM = { Scouting: 'scouts' };
 
 /** True when a monthly activity can be chosen: its room is built. */
 export function activityAvailable(state, activity) {
   if (activity === 'Guild Duty') return hasHall(state);
   const room = ACTIVITY_ROOM[activity];
   return room ? roomLevel(state, room) > 0 : ['Rest', 'Public Exhibition'].includes(activity);
-}
-
-/** Training drills the training ground offers at its level. */
-export function availableDrills(state) {
-  return trainingDrills(roomLevel(state, 'training'));
-}
-
-/** Hall stage: your house → empty hall → working hall → renowned hall. */
-export function hallStage(state) {
-  const lot = hqLot(state);
-  if (!lot) return HALL_STAGES[0];
-  const levels = Object.values(lot.rooms || {});
-  const built = levels.filter((level) => level > 0).length;
-  const total = levels.reduce((sum, level) => sum + level, 0);
-  if (built >= STAGE_RULES.renowned.rooms && total >= STAGE_RULES.renowned.levels) return HALL_STAGES[3];
-  if (built >= STAGE_RULES.working.rooms) return HALL_STAGES[2];
-  return HALL_STAGES[1];
 }
 
 export function activeHeroCount(state) {

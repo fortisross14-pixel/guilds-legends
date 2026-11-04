@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { checkCondition, knownMissions, freeBeds, getArenaView, getPlayerRanks, getStoryView, hallStage, storyNpcsHere } from '../game/engine.js';
+import { checkCondition, knownMissions, freeBeds, getArenaView, getPlayerRanks, getStoryView, hasHall, storyNpcsHere } from '../game/engine.js';
+import { HALL_EXTERIOR } from '../data/rooms.js';
 import { BUILDINGS } from '../data/world.js';
 import { REGULARS } from '../data/people.js';
 import { Button } from '../components/UI.jsx';
@@ -16,9 +17,8 @@ import Icon from '../components/Icon.jsx';
  * The position is saved whenever the founder leaves, so returning puts them back.
  */
 export default function TownScene({ town, state, actions, navigate, openBuilding, showBuilding, paused = false, apiRef = null, onTalk = null }) {
-  // The guild's own hall stands in Dunmere and changes with its stage.
-  const stage = hallStage(state);
-  const hall = town.id === 'dunmere' ? { asset: stage.exterior, label: stage.townLabel } : null;
+  // The guild's own hall stands in Dunmere (an empty lot until story mission 1 rents it).
+  const hall = town.id === 'dunmere' ? { asset: HALL_EXTERIOR, label: hasHall(state) ? 'Guild Hall' : 'Empty lot' } : null;
   const map = useMemo(() => townMap(town, hall), [town, hall?.asset, hall?.label]);
   const ownApi = useRef(null);
   const api = apiRef || ownApi;
@@ -57,7 +57,7 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
 
   return (
     <WalkableScene
-      key={`${town.id}-${stage.id}`}
+      key={town.id}
       map={map}
       start={start}
       apiRef={api}

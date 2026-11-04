@@ -99,6 +99,22 @@ export default function MomentModal({ moment, state, onClose }) {
     );
   }
 
+  // A defeat: a calm card, no ceremony (guild-hall-rooms spec).
+  if (moment.type === 'defeat') {
+    return (
+      <Modal open title={moment.heading || 'Defeat'} onClose={onClose} width="medium">
+        <div className="moment moment--defeat">
+          {moment.interior ? <Asset id={moment.interior} className="moment__room-art" alt="" /> : null}
+          <p className="moment__headline">{moment.title}</p>
+          <p className="moment__effect">{moment.effect}</p>
+          <Button variant="primary" onClick={onClose}>
+            Continue
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
+
   if (moment.type === 'construction') {
     return (
       <Modal open title={moment.heading || 'Construction complete'} onClose={onClose} width="medium" className="modal--ceremony">
@@ -106,8 +122,7 @@ export default function MomentModal({ moment, state, onClose }) {
           <Ceremony fx="burst">
             <p className="moment__headline">{moment.title}</p>
           </Ceremony>
-          {moment.interior ? <Asset id={moment.interior} className="moment__room-art" alt="" /> : null}
-          {moment.stage ? <Badge tone="gold">Your hall: {moment.stage}</Badge> : null}
+          {moment.interior ? <Asset id={moment.interior} className={`moment__room-art ${moment.interior.startsWith('hall.room.') ? 'moment__room-art--tile' : ''}`} alt="" /> : null}
           <p className="moment__effect">{moment.effect}</p>
           {moment.unlocked?.length ? (
             <>

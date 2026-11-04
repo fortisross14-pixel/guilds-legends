@@ -10,7 +10,6 @@ import {
   roomLevel,
   tallySpend,
   addChronicle,
-  addHeroHistory,
   appointmentHolder,
   clamp,
   clone,
@@ -19,11 +18,9 @@ import {
   ensureTournamentCareer,
   finalize,
   getCurrentLocation,
-  getHero,
   rngFor,
   atHome,
   campaignDaySerial,
-  campaignWeekSerial,
   dateDaySerial,
   dateLabel,
   travellingPartyIds,
@@ -37,7 +34,7 @@ import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace, retireHeroInPla
 import { evaluateStateInPlace } from './goals.js';
 import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace, upkeepBreakdown } from './economy.js';
 import { closeSeasonInPlace, seasonsMonthlyInPlace } from './seasons.js';
-import { monthlyHallInPlace, progressConstructionInPlace } from './hall.js';
+import { monthlyHallInPlace, weeklyHallInPlace } from './hall.js';
 import { monthlyConnectionsInPlace } from './connections.js';
 import { adjustPatronInPlace, patronAtLeast } from './charter.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
@@ -60,8 +57,6 @@ import {
 } from './townLife.js';
 
 function resolveMonthlyHeroActivities(state, rng) {
-  const trainingLevel = roomLevel(state, 'training');
-  const trainingMaster = appointmentHolder(state, 'Training Master');
   // The Temple of the Dawn at Partner counts as one more Infirmary level.
   const infirmaryLevel = roomLevel(state, 'infirmary') + (appointmentHolder(state, 'Master Healer') ? 1 : 0) + (patronAtLeast(state, 'temple', 'partner') ? 1 : 0);
   const results = [];
@@ -88,8 +83,7 @@ function resolveMonthlyHeroActivities(state, rng) {
       return;
     }
 
-    const requested = hero.monthlyActivity || (hero.status === 'injured' ? 'Infirmary' : 'Training');
-    const wanted = hero.status === 'injured' && !['Infirmary', 'Rest'].includes(requested) ? 'Infirmary' : requested;
+    const wanted = hero.monthlyActivity || 'Rest';
     // A room's activity only works once the room is built; otherwise the hero rests.
     const activity = activityAvailable(state, wanted) ? wanted : 'Rest';
     const before = {
@@ -104,22 +98,15 @@ function resolveMonthlyHeroActivities(state, rng) {
     let summary = '';
 
     if (hero.status === 'injured') {
-      // Injuries count down weekly (weeklyInjuriesInPlace); the month adds care.
-      hero.health = clamp(hero.health + 5 + infirmaryLevel * 3 + (activity === 'Infirmary' ? 5 : 0), 0, 100);
+      // Injuries count down weekly (hall.js, weeklyRecoveryInPlace); the month adds care.
+      hero.health = clamp(hero.health + 5 + infirmaryLevel * 3, 0, 100);
       hero.fatigue = clamp(hero.fatigue - (activity === 'Rest' ? 18 : 14), 0, 100);
-      summary = `${activity === 'Infirmary' ? 'Treated in the infirmary' : 'Rested'}; ${Math.max(1, hero.injuryWeeks || 0)} week${hero.injuryWeeks === 1 ? '' : 's'} of recovery remain.`;
+      summary = `Rested; ${Math.max(1, hero.injuryWeeks || 0)} week${hero.injuryWeeks === 1 ? '' : 's'} of recovery remain.`;
     } else if (activity === 'Rest') {
       hero.fatigue = clamp(hero.fatigue - (24 + infirmaryLevel * 2), 0, 100);
       hero.health = clamp(hero.health + 7 + infirmaryLevel, 0, 100);
       hero.form = clamp(hero.form + 1, 35, 92);
       summary = 'Recovered health and fatigue.';
-    } else if (activity === 'Infirmary') {
-      hero.fatigue = clamp(hero.fatigue - (18 + infirmaryLevel * 2), 0, 100);
-      hero.health = clamp(hero.health + 11 + infirmaryLevel * 3, 0, 100);
-      const xp = Math.max(1, 2 + infirmaryLevel);
-      applyXpInPlace(hero, xp, state, 'rehabilitation');
-      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
-      summary = `Rehabilitated under medical supervision and gained ${xp} XP.`;
     } else if (activity === 'Scouting') {
       scouts += 1 + (['Ranger', 'Rogue'].includes(hero.classId) ? 1 : 0);
       const xp = 4 + roomLevel(state, 'scouts') * 2;
@@ -148,32 +135,13 @@ function resolveMonthlyHeroActivities(state, rng) {
       summary = appointed
         ? `Worked as ${hero.appointment}; loyalty and institutional experience improved.`
         : 'Handled routine guild work and strengthened loyalty.';
-    } else {
-      hero.fatigue = clamp(hero.fatigue - (7 + infirmaryLevel), 0, 100);
-      hero.health = clamp(hero.health + 2 + infirmaryLevel, 0, 100);
-      hero.form = clamp(hero.form + rng.int(-2, 2), 35, 92);
-      const focusBonus = { Fundamentals: 1, 'Role Drills': 2, Sparring: 3, Mentorship: 2, Study: 2 }[hero.training] || 1;
-      const fatiguePenalty = hero.training === 'Sparring' ? 5 : hero.training === 'Role Drills' ? 2 : 1;
-      const mentor = hero.mentorId ? getHero(state, hero.mentorId) : null;
-      const mentorBonus =
-        mentor && !['dead', 'retired', 'mission', 'tournament'].includes(mentor.status)
-          ? Math.max(1, Math.min(4, Math.floor(((mentor.level || 1) - (hero.level || 1)) / 3) + 1))
-          : 0;
-      const xp = Math.max(
-        2,
-        5 + trainingLevel * 2 + focusBonus + (trainingMaster && trainingMaster.id !== hero.id ? 2 : 0) + mentorBonus - Math.floor(hero.level / 8),
-      );
-      applyXpInPlace(hero, xp, state, `${hero.training.toLowerCase()} training`);
-      hero.career.xpEarned = (hero.career.xpEarned || 0) + xp;
-      hero.fatigue = clamp(hero.fatigue + fatiguePenalty, 0, 100);
-      summary = `${hero.training} training produced ${xp} XP${mentorBonus ? `, including ${mentorBonus} from ${mentor.name}'s mentorship` : ''}.`;
     }
 
     results.push({
       heroId: hero.id,
       name: hero.name,
       activity,
-      icon: { Training: '⚔', Rest: '☾', Infirmary: '✚', Scouting: '⌖', 'Public Exhibition': '✦', 'Guild Duty': '♜' }[activity] || '◆',
+      icon: { Rest: '☾', Scouting: '⌖', 'Public Exhibition': '✦', 'Guild Duty': '♜' }[activity] || '◆',
       summary,
       levelBefore: before.level,
       levelAfter: hero.level,
@@ -357,29 +325,6 @@ function pauseReason(state) {
   return null;
 }
 
-/** Injuries heal one week at a time; the Infirmary heals twice as fast. */
-function weeklyInjuriesInPlace(state) {
-  state.heroes
-    .filter((hero) => hero.status === 'injured')
-    .forEach((hero) => {
-      // Temple contacts tend the injured: one extra week of healing at the start of each month.
-      const templeCare = patronAtLeast(state, 'temple', 'contact') && state.date.week === 0 ? 1 : 0;
-      hero.injuryWeeks = (hero.injuryWeeks || 1) - (hero.monthlyActivity === 'Infirmary' && roomLevel(state, 'infirmary') > 0 ? 2 : 1) - templeCare;
-      if (hero.injuryWeeks > 0) return;
-      hero.injuryWeeks = 0;
-      hero.status = 'available';
-      hero.injury = null;
-      hero.health = Math.max(hero.health, 72);
-      if (hero.monthlyActivity === 'Infirmary') hero.monthlyActivity = activityAvailable(state, 'Training') ? 'Training' : 'Rest';
-      state.notifications.push({
-        id: `recover-${hero.id}-${campaignWeekSerial(state)}`,
-        tone: 'green',
-        title: `${hero.name} returns`,
-        text: 'Recovery is complete and the hero is available again.',
-      });
-      addHeroHistory(hero, state, { type: 'recovery', title: 'Returned from injury', text: 'Cleared by the guild infirmary.' });
-    });
-}
 
 /** Everything that happens once a month (on week 1). */
 function runMonthInPlace(next, rng) {
@@ -438,8 +383,7 @@ function runMonthInPlace(next, rng) {
 
 /** Everything that happens once a week, when a new week starts. */
 function runWeekInPlace(next, rng, summary) {
-  weeklyInjuriesInPlace(next);
-  progressConstructionInPlace(next);
+  weeklyHallInPlace(next);
   expireChallengeInPlace(next);
   progressSideJobsInPlace(next, rng);
   expireWagerInPlace(next);
@@ -490,9 +434,12 @@ function updateMissionClocksInPlace(state) {
 /** Every day, heroes at home recover a little HP and all their MP (battle-hiring spec). */
 function recoverDailyInPlace(state) {
   const away = new Set(travellingPartyIds(state));
+  // Better bedrooms mean better rest (Advanced: faster; State of the art: an extra rest day a week).
+  const bedroom = roomLevel(state, 'bedroom');
+  const heal = VITALS.dailyHeal + (bedroom >= 2 ? 2 : 0) + (bedroom >= 3 ? 2 : 0);
   state.heroes.forEach((hero) => {
     if (!['available', 'injured'].includes(hero.status) || away.has(hero.id)) return;
-    hero.health = clamp((hero.health ?? 100) + VITALS.dailyHeal, 1, 100);
+    hero.health = clamp((hero.health ?? 100) + heal, 1, 100);
     hero.mana = 100;
   });
 }

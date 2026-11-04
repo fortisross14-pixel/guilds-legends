@@ -201,7 +201,7 @@ export default function ShopScreen({ state, actions, kind = null }) {
         </section>
 
         <footer className="shop-gold win">
-          <span>{mode === 'buy' ? `Gold · chest ${chestUsed(state)}/${chestCapacity(state)}${roomLevel(state, 'armory') ? ' · Armory −10%' : ''}` : 'Shops pay half price'}</span>
+          <span>{mode === 'buy' ? `Gold · chest ${chestUsed(state)}/${chestCapacity(state)}${roomLevel(state, 'armory') ? ` · Armory −${[0, 5, 10, 15][roomLevel(state, 'armory')]}%` : ''}` : 'Shops pay half price'}</span>
           <strong className="num">
             <Icon name="coin" size={24} />
             {state.guild.crowns.toLocaleString()} G

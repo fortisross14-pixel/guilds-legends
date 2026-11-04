@@ -15,6 +15,7 @@ import {
   updateGuildTitleRecordInPlace,
 } from './tournaments.js';
 import { pushRankingsMomentInPlace, recordOfficialResultsInPlace } from './rankings.js';
+import { awardTrophyInPlace } from './hall.js';
 import { afterTournamentInPlace } from './seasons.js';
 
 function buildGuildTournamentField(state, tournament) {
@@ -193,13 +194,15 @@ function finishPlayerGuildTournamentInPlace(state, tournament, actualFinish) {
     }
   });
   const profileProxy = { renown: state.guild.fame, career: { tournamentFame: state.guild.legacy * 0.1 } };
-  const fameDelta = tournamentFameDelta(profileProxy, tournament, tournament.expectedFinish, actualFinish, tournament.playerBoutWins || 0, 0);
+  // A win's fame comes from showing the trophy in the Crown Room (hall.js), not at once.
+  const fameDelta = actualFinish === 1 ? 0 : tournamentFameDelta(profileProxy, tournament, tournament.expectedFinish, actualFinish, tournament.playerBoutWins || 0, 0);
   const prize = placementPrize(tournament, actualFinish);
   state.guild.fame = Math.max(0, state.guild.fame + fameDelta);
   state.guild.crowns += prize;
   state.guild.legacy += actualFinish === 1 ? Math.round(tournament.prestige * 0.5) : Math.max(0, Math.round(fameDelta * 0.25));
   state.stats.tournamentBest = Math.min(state.stats.tournamentBest, actualFinish);
   if (actualFinish === 1) {
+    awardTrophyInPlace(state, tournament.definitionId || tournament.id, tournament.trophy || tournament.name);
     state.stats.tournamentsWon += 1;
     state.stats.guildTournamentWins = (state.stats.guildTournamentWins || 0) + 1;
     state.stats.signatureFeats += 1;

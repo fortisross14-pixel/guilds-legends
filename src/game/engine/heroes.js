@@ -161,7 +161,6 @@ export function createHeroFromBase(base, state, rng, options = {}) {
     joinedYear: options.joinedYear ?? state.date.year,
     guildId: options.guildId || 'player',
     appointment: null,
-    training: 'Fundamentals',
     monthlyActivity: 'Rest',
     roleExperience: Object.fromEntries(PARTY_ROLES.map((role) => [role.id, 0])),
     career: {

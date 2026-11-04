@@ -703,13 +703,13 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
               </ul>
               {wildWipe ? (
                 <>
-                  <p className="battle-result__note">The party falls. Retry, or carry the wounded back to camp.</p>
+                  <p className="battle-result__note">The party falls. Retry, or be carried home to recover.</p>
                   <div className="battle-result__actions">
                     <Button variant="primary" size="lg" onClick={actions.retryWildBattle}>
                       Retry battle
                     </Button>
-                    <Button size="lg" onClick={actions.retreatToCamp}>
-                      Retreat to camp
+                    <Button size="lg" onClick={actions.acceptDefeat}>
+                      Accept defeat
                     </Button>
                   </div>
                 </>

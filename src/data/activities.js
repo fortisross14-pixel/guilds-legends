@@ -1,21 +1,11 @@
+// Monthly tasks for heroes who are not in a Guild Hall room (training rooms and
+// the infirmary hold heroes themselves: src/data/rooms.js).
 export const MONTHLY_ACTIVITIES = [
-  {
-    id: 'Training',
-    label: 'Train',
-    icon: '⚔',
-    description: 'Gain XP. Needs a Training ground; the drill sets the focus.',
-  },
   {
     id: 'Rest',
     label: 'Rest',
     icon: '☾',
     description: 'Recover fatigue and health with almost no development.',
-  },
-  {
-    id: 'Infirmary',
-    label: 'Infirmary',
-    icon: '✚',
-    description: 'Prioritize recovery. Needs an Infirmary; injured heroes heal twice as fast there.',
   },
   {
     id: 'Scouting',
@@ -37,18 +27,7 @@ export const MONTHLY_ACTIVITIES = [
   },
 ];
 
-// Every drill. Which ones a hero can pick depends on the Training ground level (src/data/rooms.js).
-export const TRAINING_FOCI = ['Fundamentals', 'Role Drills', 'Sparring', 'Mentorship', 'Study'];
-
 export const ACTIVITY_BY_ID = Object.fromEntries(MONTHLY_ACTIVITIES.map((activity) => [activity.id, activity]));
-
-// Places in the hall that exist without building anything. Built rooms
-// (training ground, infirmary, war room…) come from src/data/rooms.js.
-export const HALL_ROOMS = [
-  { id: 'quarters', name: 'Quarters', icon: '☾', activity: 'Rest', bulk: true, description: 'Where everyone sleeps. Resting heroes shed fatigue.' },
-  { id: 'courtyard', name: 'Town square', icon: '✦', activity: 'Public Exhibition', description: 'Public exhibitions in town build fame.' },
-  { id: 'office', name: 'Office', icon: '♜', activity: 'Guild Duty', needsHall: true, description: 'Guild duty, appointments and doctrine.' },
-];
 
 /** HP and MP between battles (battle-hiring spec). Heroes start a fight with what they have
  * (hero.health and hero.mana are percents). Every day at home: +dailyHeal health and full MP.

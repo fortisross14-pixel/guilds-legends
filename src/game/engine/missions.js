@@ -17,7 +17,6 @@ import {
   hashString,
   operationalLocationIds,
   partyCapacity,
-  roomLevel,
   campaignDaySerial,
   DAYS_PER_WEEK,
   tallyFamily,
@@ -43,7 +42,6 @@ export function inspectMission(state, missionId) {
 }
 
 export function saveFormation(state, formationType, assignments) {
-  if (!roomLevel(state, 'war')) return { state, error: 'Build a War room to save formations.' };
   const next = clone(state);
   if (!FORMATION_TYPES[formationType]) return { state, error: 'Unknown arrangement type.' };
   const availableIds = new Set(next.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).map((hero) => hero.id));

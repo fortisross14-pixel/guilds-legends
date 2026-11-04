@@ -101,7 +101,7 @@ export default function EquipmentScreen({ state, actions }) {
               </button>
               {GEAR_SLOTS.map((slot) => {
                 const current = hero.gear?.[slot] || null;
-                const cost = current && (roomLevel(state, 'armory') || patronAtLeast(state, 'smiths', 'contact')) ? gearUpgradeCost(state, current) : null;
+                const cost = current && (roomLevel(state, 'armory') >= 2 || patronAtLeast(state, 'smiths', 'contact')) ? gearUpgradeCost(state, current) : null;
                 return (
                   <div key={slot} className="equipment-slot">
                     <span className="equipment-slot__name">{slot}</span>

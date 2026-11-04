@@ -483,7 +483,7 @@ export function releaseHeroInPlace(state, hero, { title, text, chronicleText }) 
   });
   hero.status = 'free-agent';
   hero.guildId = null;
-  hero.monthlyActivity = 'Training';
+  hero.monthlyActivity = 'Rest';
   ensureTournamentCareer(hero);
   state.heroes = state.heroes.filter((item) => item.id !== hero.id);
   state.freeAgents ||= [];

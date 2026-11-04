@@ -13,7 +13,6 @@ import {
   getCurrentLocation,
   getHero,
   activityAvailable,
-  availableDrills,
   freeBeds,
   hasHall,
   roomLevel,
@@ -238,16 +237,8 @@ export function releaseHero(state, heroId) {
   return { state: finalize(next), error: null };
 }
 
-export function setHeroTraining(state, heroId, training) {
-  const next = clone(state);
-  const hero = getHero(next, heroId);
-  if (!hero || ['dead', 'retired'].includes(hero.status) || !availableDrills(next).includes(training)) return next;
-  hero.training = training;
-  return finalize(next);
-}
-
 export function setHeroMonthlyActivity(state, heroId, activity) {
-  const allowed = ['Training', 'Rest', 'Infirmary', 'Scouting', 'Public Exhibition', 'Guild Duty'];
+  const allowed = ['Rest', 'Scouting', 'Public Exhibition', 'Guild Duty'];
   const next = clone(state);
   const hero = getHero(next, heroId);
   if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status) || !allowed.includes(activity) || !activityAvailable(next, activity)) return next;
@@ -333,40 +324,12 @@ export function inspectHero(state, heroId) {
 // ---------------------------------------------------------------- rooms and main party
 
 export const MAIN_PARTY_SIZE = 4;
-const BASIC_ROOMS = ['Training', 'Rest', 'Infirmary'];
 
 /** Away heroes (mission, tournament, branch duty, or travelling with you) can't change rooms. */
 export function isHeroAway(state, hero) {
   return ['mission', 'tournament', 'sidejob'].includes(hero.status) || Boolean(hero.branchId) || travellingPartyIds(state).includes(hero.id);
 }
 
-function homeHeroes(state) {
-  return state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status) && !isHeroAway(state, hero));
-}
-
-/** "Send all idle heroes here": moves heroes from the basic rooms (training, barracks, infirmary). */
-export function sendIdleHeroesTo(state, activity) {
-  if (!BASIC_ROOMS.includes(activity)) return { state, error: 'Only the Training ground, Quarters and Infirmary take everyone.' };
-  if (!activityAvailable(state, activity)) return { state, error: 'Build that room first.' };
-  const next = clone(state);
-  homeHeroes(next)
-    .filter((hero) => BASIC_ROOMS.includes(hero.monthlyActivity || 'Training'))
-    .filter((hero) => !(hero.status === 'injured' && activity !== 'Infirmary'))
-    .forEach((hero) => {
-      hero.monthlyActivity = activity;
-    });
-  return { state: finalize(next), error: null };
-}
-
-/** Injured to the Infirmary, fatigue over 60 to the Barracks, everyone else to training. */
-export function autoAssignRooms(state) {
-  const next = clone(state);
-  homeHeroes(next).forEach((hero) => {
-    const wanted = hero.status === 'injured' ? 'Infirmary' : (hero.fatigue || 0) > 60 ? 'Rest' : 'Training';
-    hero.monthlyActivity = activityAvailable(next, wanted) ? wanted : 'Rest';
-  });
-  return { state: finalize(next), error: null };
-}
 
 /**
  * The main party: a lead (the first id) and up to three companions. Anyone can
@@ -436,8 +399,7 @@ export function makeOffer(state, heroId) {
   target.status = 'available';
   target.guildId = 'player';
   target.joinedYear = next.date.year;
-  target.monthlyActivity = 'Training';
-  target.training ||= 'Fundamentals';
+  target.monthlyActivity = 'Rest';
   target.promises = [];
   target.loyalty = Math.max(target.loyalty ?? 50, 55);
   target.gear ||= { weapon: null, armor: null, accessory: null };

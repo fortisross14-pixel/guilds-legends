@@ -26,7 +26,7 @@ import {
   restAtCamp,
   startWildBattle,
   retryWildBattle,
-  retreatToCamp,
+  acceptDefeat,
   createNewGame,
   designateSuccessor,
   dismissNotification,
@@ -59,7 +59,6 @@ import {
   resolveDecision,
   saveFormation,
   setHeroMonthlyActivity,
-  setHeroTraining,
   beginGuildTournamentCombat as startGuildTournamentCombat,
   beginHeroTournamentCombat as startHeroTournamentCombat,
   travelTo,
@@ -76,7 +75,6 @@ import {
   continueJourney,
   resolveRoadEvent,
   advanceToDate,
-  sendIdleHeroesTo,
   autoAssignRooms,
   toggleMainPartyMember,
   setPartyLead,
@@ -97,6 +95,10 @@ import {
   buyLot,
   expandLot,
   buildRoom,
+  upgradeRoom,
+  clearRoom,
+  setRoomEquipment,
+  assignRoom,
   upgradeGear,
   validateGame,
 } from './game/engine.js';
@@ -941,7 +943,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       restAtHall: (days, tasks) => applyResult(restAtHall(state, days, tasks), `${days} day${days === 1 ? '' : 's'} pass at the hall.`),
       restAtInn: (nights) => applyResult(restAtInn(state, nights), 'Rested at the inn.'),
       advanceToDate: (date) => applyResult(advanceToDate(state, date)),
-      sendIdleHeroesTo: (activity) => applyResult(sendIdleHeroesTo(state, activity)),
       autoAssignRooms: () => applyResult(autoAssignRooms(state), 'Heroes assigned to rooms.'),
       toggleMainParty: (heroId) => applyResult(toggleMainPartyMember(state, heroId)),
       makeLead: (heroId) => applyResult(setPartyLead(state, heroId), 'A new party lead.'),
@@ -949,11 +950,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       // the hero, the main party adds or removes them; other drops go to the open screen.
       dropHero: (heroId, target) => {
         const inParty = (state.guild.mainParty || []).includes(heroId);
-        if (target.kind === 'room') {
-          const next = setHeroMonthlyActivity(state, heroId, target.id);
-          // The room-drag hint has done its job once a hero is dropped on a room.
-          commitState(next.settings?.seenHints?.roomDrag ? next : { ...next, settings: { ...next.settings, seenHints: { ...(next.settings.seenHints || {}), roomDrag: true } } });
-        }
+        // A Guild Hall room (training, infirmary), or the yard ('out') to take the hero out.
+        if (target.kind === 'room') applyResult(assignRoom(state, heroId, target.id === 'out' ? null : target.id));
         else if (target.kind === 'party' && !inParty) applyResult(toggleMainPartyMember(state, heroId));
         else if (target.kind === 'bench' && inParty) applyResult(toggleMainPartyMember(state, heroId));
         else window.dispatchEvent(new CustomEvent('gol:drop-hero', { detail: { heroId, kind: target.kind, id: target.id } }));
@@ -977,7 +975,6 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         const result = makeOffer(state, heroId);
         applyResult(result, result.accepted ? 'The offer was accepted.' : null);
       },
-      setTraining: (id, training) => commitState(setHeroTraining(state, id, training)),
       setMonthlyActivity: (id, activity) => commitState(setHeroMonthlyActivity(state, id, activity)),
       acknowledgeCouncilReport: () => commitState(acknowledgeCouncilReport(state)),
       renameGuild: (name) => applyResult(renameGuild(state, name), 'Guild identity updated.'),
@@ -994,7 +991,11 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(inheritAmbition(state, legacyAmbitionId, heroId), 'An unfinished ambition has found a new bearer.'),
       buyLot: () => applyResult(buyLot(state), 'The deed is yours.'),
       expandLot: () => applyResult(expandLot(state), 'The land next door is yours. Work begins.'),
-      buildRoom: (roomId) => applyResult(buildRoom(state, roomId), 'The builders arrive.'),
+      buildRoom: (type, equipment) => applyResult(buildRoom(state, type, equipment), 'The builders arrive.'),
+      upgradeRoom: (roomId) => applyResult(upgradeRoom(state, roomId), 'The builders arrive.'),
+      clearRoom: (roomId) => applyResult(clearRoom(state, roomId), 'The builders start clearing the slot.'),
+      setRoomEquipment: (roomId, kind) => applyResult(setRoomEquipment(state, roomId, kind), 'New equipment in the room.'),
+      assignRoom: (heroId, roomId) => applyResult(assignRoom(state, heroId, roomId)),
       upgradeGear: (heroId, slot) => applyResult(upgradeGear(state, heroId, slot), 'The smith hands it back, sharper.'),
       giftPatron: (patronId) => applyResult(giftPatron(state, patronId), 'A gift is sent with your compliments.'),
       signUpForTournament: (tournamentId, heroId) => applyResult(signUpForTournament(state, tournamentId, heroId), 'Signed up. Be here on the start day.'),
@@ -1015,7 +1016,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       useItem: (itemId, heroId) => applyResult(useItemOnHero(state, itemId, heroId)),
       acknowledgeMoment: () => commitState(acknowledgeMoment(state)),
       retryWildBattle: () => applyResult(retryWildBattle(state)),
-      retreatToCamp: () => applyResult(retreatToCamp(state), 'The party falls back to the camp.'),
+      acceptDefeat: () => applyResult(acceptDefeat(state)),
       missionGameAction: (actionId, leadHeroId) => applyResult(performActiveMissionGameAction(state, actionId, leadHeroId)),
       autoResolveMissionGame: () => applyResult(autoResolveActiveMissionGame(state)),
       concludeCombat: () => applyResult(concludeCombatAndContinue(state)),

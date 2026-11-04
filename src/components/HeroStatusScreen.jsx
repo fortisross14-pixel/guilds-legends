@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { LONG_PRESS_MS, useSwipe } from './gestures.js';
 import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, APPOINTMENTS, normalizeClassId } from '../data/content.js';
-import { MONTHLY_ACTIVITIES, TRAINING_FOCI, HALL_ROOMS } from '../data/activities.js';
+import { MONTHLY_ACTIVITIES } from '../data/activities.js';
+import { EQUIPMENT_BY_ID, TIER_NAMES } from '../data/rooms.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
 import { CLASS_SKILLS, skillLabel } from '../data/skills.js';
-import { MAIN_PARTY_SIZE, contractMonthsLeft, getHero, offerTerms, renewalTerms, xpForNextLevel } from '../game/engine.js';
+import { MAIN_PARTY_SIZE, activityAvailable, contractMonthsLeft, getHero, hallRooms, offerTerms, renewalTerms, xpForNextLevel } from '../game/engine.js';
 import { heroBattleStats } from '../game/combat.js';
 import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge, Tabs } from './UI.jsx';
 import { CareerTab } from '../screens/HistoryScreens.jsx';
@@ -29,7 +30,6 @@ function gearName(state, id) {
   return ITEMS[id]?.name || id;
 }
 
-const roomName = (activity) => HALL_ROOMS.find((room) => room.activity === activity)?.name || activity;
 
 // JRPG-style status screen for one hero. Opens from anywhere; Prev/Next flip
 // through the active roster. Non-roster heroes (rivals, legends) are read-only.
@@ -287,24 +287,28 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
                   <div className="room-hero__controls">
                     <label>
                       Room
-                      <select value={hero.monthlyActivity || 'Training'} onChange={(event) => actions.setMonthlyActivity(hero.id, event.target.value)}>
-                        {MONTHLY_ACTIVITIES.map((activity) => (
+                      <select value={hallRooms(state).find((room) => room.heroId === hero.id)?.id || ''} onChange={(event) => actions.assignRoom(hero.id, event.target.value || null)}>
+                        <option value="">None</option>
+                        {hallRooms(state)
+                          .filter((room) => (hero.status === 'injured' ? room.type === 'infirmary' : room.type === 'training'))
+                          .map((room) => (
+                            <option key={room.id} value={room.id}>
+                              {room.type === 'training' ? `${EQUIPMENT_BY_ID[room.equipment || 'dummy'].stat} training (${TIER_NAMES[room.tier - 1]})` : `Infirmary (${TIER_NAMES[room.tier - 1]})`}
+                              {room.heroId && room.heroId !== hero.id ? ` · ${state.heroes.find((item) => item.id === room.heroId)?.name}` : ''}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    <label>
+                      Task
+                      <select value={hero.monthlyActivity || 'Rest'} onChange={(event) => actions.setMonthlyActivity(hero.id, event.target.value)}>
+                        {MONTHLY_ACTIVITIES.filter((activity) => activityAvailable(state, activity.id)).map((activity) => (
                           <option key={activity.id} value={activity.id}>
-                            {roomName(activity.id)}
+                            {activity.label}
                           </option>
                         ))}
                       </select>
                     </label>
-                    {(hero.monthlyActivity || 'Training') === 'Training' ? (
-                      <label>
-                        Focus
-                        <select value={hero.training} onChange={(event) => actions.setTraining(hero.id, event.target.value)}>
-                          {TRAINING_FOCI.map((item) => (
-                            <option key={item}>{item}</option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : null}
                   </div>
                 )}
               </section>

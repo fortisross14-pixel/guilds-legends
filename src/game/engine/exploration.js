@@ -479,17 +479,10 @@ export function retryWildBattle(state) {
   return { state: finalize(next), error: null };
 }
 
-/** After a party wipe in the wild: the fallen are carried back to the camp (they are injured as usual). */
-export function retreatToCamp(state) {
-  if (!wipedInTheWild(state)) return { state, error: 'There is no lost battle to retreat from.' };
-  const area = WILD_AREAS[state.activeEncounter.sourceMeta?.areaId];
-  const result = concludeActiveCombat(state);
-  if (result.error || !area) return result;
-  const next = clone(result.state);
-  const [col, row] = area.camp.at;
-  const [w, h] = area.camp.size;
-  explorationInPlace(next).positions[area.id] = { x: Math.round((col + w / 2) * TILE_SIZE), y: Math.round((row + h) * TILE_SIZE + 18) };
-  return { state: finalize(next), error: null };
+/** After a party wipe in the wild: accept the defeat (the party wakes in the infirmary at home). */
+export function acceptDefeat(state) {
+  if (!wipedInTheWild(state)) return { state, error: 'There is no lost battle here.' };
+  return concludeActiveCombat(state);
 }
 
 export { checkCondition };

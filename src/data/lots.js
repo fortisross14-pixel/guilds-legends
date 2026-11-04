@@ -9,7 +9,7 @@
 //
 // A lot: { id, locationId, name, owner, slots, rent (gold a month while rented),
 //   deposit (paid when renting), price (to buy it outright), starter (rooms
-//   already standing: { roomId: level }), expansions: [{ slots, cost, weeks, land }] }
+//   already standing: [{ type, tier }]), expansions: [{ slots, cost, weeks, land }] }
 
 export const LOTS = [
   {
@@ -23,7 +23,7 @@ export const LOTS = [
     // Several years of a young guild's savings.
     price: 6000,
     // A small cabin in the middle of the yard: one bedroom with two beds.
-    starter: { bunks: 1 },
+    starter: [{ type: 'bedroom', tier: 1 }],
     expansions: [
       { slots: 8, cost: 3500, weeks: 6, land: 'the cooper’s yard next door' },
       { slots: 10, cost: 6500, weeks: 10, land: 'the old tannery lot behind the yard' },

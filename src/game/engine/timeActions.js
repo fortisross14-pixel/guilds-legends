@@ -3,6 +3,7 @@
 // events, continuing a journey, resting at the Guild Hall or an inn, and
 // sending companies out (time passes for the player only if the founder goes).
 import { ROAD_EVENTS } from '../../data/roadEvents.js';
+import { INJURY } from '../../data/rooms.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
 import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone, commitRng, finalize, hashString, rngFor, tallySpend, travellingPartyIds, uid } from './core.js';
@@ -66,12 +67,11 @@ function travellers(state) {
   return state.heroes.filter((hero) => hero.status === 'available' && (party.length ? party.includes(hero.id) : !hero.branchId));
 }
 
-function woundInPlace(hero, rng) {
+function woundInPlace(hero) {
   hero.status = 'injured';
   hero.injury = 'Road wound';
-  hero.injuryWeeks = rng.int(2, 4);
+  hero.injuryWeeks = INJURY.weeks;
   hero.health = clamp((hero.health ?? 100) - 20, 1, 100);
-  hero.monthlyActivity = 'Infirmary';
 }
 
 /** Applies the chosen road-event option, then continues the journey. */
@@ -160,7 +160,7 @@ export function resolveRoadEvent(state, optionId) {
       hero.fatigue = clamp(hero.fatigue + 15, 0, 100);
     });
     const hurt = party.length && rng.chance(0.2) ? rng.pick(party) : null;
-    if (hurt) woundInPlace(hurt, rng);
+    if (hurt) woundInPlace(hurt);
     result = `You push through the storm.${hurt ? ` ${hurt.name} is hurt on the way.` : ''}`;
   }
 

@@ -10,6 +10,7 @@ import {
   clamp,
   clone,
   finalize,
+  hallRooms,
   roomLevel,
   spanLabel,
   travellingPartyIds,
@@ -137,9 +138,7 @@ export function progressTravelInPlace(state, rng) {
 export function hallUpkeep(state) {
   const lots = Object.values(state.guild.lots || {});
   const lease = lots.filter((lot) => lot.status === 'rented').reduce((sum, lot) => sum + (LOT_BY_ID[lot.lotId]?.rent || 0), 0);
-  const rooms = Object.entries(state.guild.lots?.[state.guild.hqLotId]?.rooms || {})
-    .filter(([, level]) => level > 0)
-    .map(([id, level]) => ({ id, name: ROOM_BY_ID[id]?.name || id, level, upkeep: ROOM_BY_ID[id]?.levels[level - 1]?.upkeep || 0 }));
+  const rooms = hallRooms(state).map((room) => ({ id: room.id, type: room.type, name: ROOM_BY_ID[room.type]?.name || room.type, level: room.tier, upkeep: ROOM_BY_ID[room.type]?.tiers[(room.tier || 1) - 1]?.upkeep || 0 }));
   const roomTotal = rooms.reduce((sum, room) => sum + room.upkeep, 0);
   return { lease, rooms, roomTotal, total: lease + roomTotal };
 }
@@ -162,9 +161,9 @@ export function getPatronLoanOffer(state) {
   const upkeep = monthlyUpkeep(state);
   const crowns = state.guild.crowns;
   const distressed = crowns < Math.max(100, upkeep * 2);
-  // A level 2 Treasury convinces patrons to lend half as much again.
-  const amount = Math.ceil(((300 + upkeep * 2 + Math.max(0, -crowns)) * (roomLevel(state, "treasury") >= 2 ? 1.5 : 1)) / 10) * 10;
-  const repayment = Math.round(amount * (1 + LOAN_INTEREST));
+  // A Treasury convinces patrons to lend half as much again; at State of the art its loans are cheaper.
+  const amount = Math.ceil(((300 + upkeep * 2 + Math.max(0, -crowns)) * (roomLevel(state, 'treasury') ? 1.5 : 1)) / 10) * 10;
+  const repayment = Math.round(amount * (1 + LOAN_INTEREST * (roomLevel(state, 'treasury') >= 3 ? 0.5 : 1)));
   const remaining = (state.guild.loan?.remaining || 0) + repayment;
   // Free Company: no patron lends to a guild that answers to no one.
   if (charterEffect(state, 'noLoans', false)) return { available: false, amount: 0, repayment: 0, installment: 0, months: LOAN_TERM_MONTHS, outstanding: state.guild.loan?.remaining || 0, reason: 'A Free Company takes no patron’s money.' };

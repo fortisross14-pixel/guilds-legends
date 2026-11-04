@@ -3,7 +3,7 @@
 import { GUILD_TOURNAMENT_DEFINITIONS, INDIVIDUAL_TOURNAMENT_DEFINITIONS } from '../../data/universe.js';
 import { TIERS } from '../../data/content.js';
 import { LOCATIONS, LOCATION_BY_ID, travelDays } from '../../data/world.js';
-import { ROOM_BY_ID } from '../../data/rooms.js';
+import { ROOM_BY_ID, TIER_NAMES } from '../../data/rooms.js';
 import { tournamentRequirements } from './tournaments.js';
 import { WEEKS_PER_MONTH, hqLot, campaignDaySerial, campaignWeekSerial, dateFromDaySerial, dateFromWeekSerial, dateWeekSerial, hashString } from './core.js';
 import {
@@ -464,8 +464,8 @@ export function getCalendarEntries(state, months = 12) {
   if (work) {
     add({
       kind: 'construction',
-      id: `construction-${work.roomId}`,
-      title: `${ROOM_BY_ID[work.roomId]?.name || 'Room'}${work.level > 1 ? ` level ${work.level}` : ''} complete`,
+      id: `construction-${work.kind}-${work.roomId || work.type}`,
+      title: `${ROOM_BY_ID[work.type]?.name || 'Room'} ${work.kind === 'clear' ? 'cleared' : work.kind === 'upgrade' ? `${TIER_NAMES[work.tier - 1]} ready` : 'built'}`,
       date: dateFromWeekSerial(now + work.weeksLeft),
       detail: 'Guild Hall construction',
     });

@@ -6,7 +6,7 @@
 import { TILES, TILE_SIZE } from './tiles.js';
 import { TOWNS } from './towns/index.js';
 import { WILD_AREA_LIST } from './wilds/index.js';
-import { HALL_STAGES, ROOMS, roomInterior } from './rooms.js';
+import { EQUIPMENT, HALL_EXTERIOR, LOT_DIORAMA, ROOMS, TIER_NAMES, equipmentArt, roomTileArt } from './rooms.js';
 import { CHARTER_LIST } from './charters.js';
 import { PATRON_LIST } from './patrons.js';
 import { INTERIORS, ROOM } from './interiors.js';
@@ -47,16 +47,21 @@ const LIST = [
   { id: 'bg.town.default', group: 'bg', path: 'art/bg/town-default.png', borrow: scene(7), ...SCENE, use: 'Any other town directory' },
 
   // Building interiors (art-backed menu scenes).
-  // The Guild Hall grows in four stages (src/data/rooms.js): exterior in walkable Dunmere, interior behind the hall screen.
-  // The outside looks the same whatever is built: one exterior for every stage (Phase 7D).
-  { id: HALL_STAGES[0].exterior, group: 'building', path: 'art/walk/buildings/dunmere-guildhall-stage1.png', w: 160, h: 160, use: 'Dunmere: the Guild Hall building on its lot (the same at every stage)' },
-  ...HALL_STAGES.flatMap((stage) => [
-    { id: stage.interior, group: 'interior', path: `art/interiors/guildhall-stage${stage.id}.png`, borrow: stage.id === 1 ? scene(8) : scene(9), ...SCENE, use: `Guild Hall interior, stage ${stage.id} (${stage.name})` },
-  ]),
-  // Every built room has its own interior per level.
+  // The Guild Hall (docs/specs/guild-hall-rooms.md): one exterior in walkable Dunmere,
+  // and inside, the lot diorama with a tile per room type and tier.
+  { id: HALL_EXTERIOR, group: 'building', path: 'art/walk/buildings/dunmere-guildhall-stage1.png', w: 160, h: 160, use: 'Dunmere: the Guild Hall building on its lot' },
+  { id: LOT_DIORAMA, group: 'interior', path: 'art/hall/lot.png', borrow: 'art/interiors/guildhall-stage1.png', w: 1080, h: 1080, use: 'Guild Hall: the lot seen from above (the cabin, the slots, the yard)' },
   ...ROOMS.flatMap((room) =>
-    room.levels.map((_, index) => ({ id: roomInterior(room.id, index + 1), group: 'interior', path: `art/interiors/rooms/${room.id}-${index + 1}.png`, ...SCENE, use: `${room.name}, level ${index + 1}` })),
+    TIER_NAMES.map((tierName, index) => ({ id: roomTileArt(room.id, index + 1), group: 'prop', path: `art/hall/rooms/${room.id}-${index + 1}.png`, w: 256, h: 256, use: `Guild Hall slot tile: ${room.name}, ${tierName}` })),
   ),
+  ...EQUIPMENT.flatMap((piece) =>
+    TIER_NAMES.map((tierName, index) => ({ id: equipmentArt(piece.id, index + 1), group: 'prop', path: `art/hall/equipment/${piece.id}-${index + 1}.png`, w: 128, h: 128, use: `Training equipment: ${piece.name} (${piece.stat}), ${tierName}` })),
+  ),
+  { id: 'hall.crown.case', group: 'prop', path: 'art/hall/crown-case.png', w: 128, h: 128, use: 'Crown Room: a trophy case (one per trophy, with its count)' },
+  { id: 'hall.pose.patient', group: 'char', path: 'art/hall/pose-patient.png', w: 96, h: 96, use: 'Guild Hall: a hero lying in an infirmary bed (silhouette)' },
+  { id: 'hall.pose.sleeping', group: 'char', path: 'art/hall/pose-sleeping.png', w: 96, h: 96, use: 'Guild Hall: a hero asleep in a bedroom (silhouette)' },
+  { id: 'hall.pose.training', group: 'char', path: 'art/hall/pose-training.png', w: 96, h: 96, use: 'Guild Hall: a hero at the training equipment (silhouette)' },
+  { id: 'scene.defeat', group: 'interior', path: 'art/scenes/defeat.png', ...SCENE, use: 'Defeat: the party wakes in the infirmary (or the founder’s house)' },
   { id: 'interior.tavern', group: 'interior', path: 'art/interiors/tavern.png', borrow: scene(8), ...SCENE, use: 'Tavern (recruits)' },
   { id: 'interior.shop', group: 'interior', path: 'art/interiors/shop.png', borrow: scene(1), ...SCENE, use: 'Shop' },
   { id: 'interior.arena', group: 'interior', path: 'art/interiors/arena.png', borrow: scene(2), ...SCENE, use: 'Arena (tournaments)' },

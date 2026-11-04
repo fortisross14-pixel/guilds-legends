@@ -4,7 +4,8 @@ import { Button, SceneBackdrop } from '../components/UI.jsx';
 import PartyRail from '../components/PartyRail.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
-import GuildHallRooms, { WarRoom } from '../places/GuildHallRooms.jsx';
+import GuildHallRooms from '../places/GuildHallRooms.jsx';
+import MainPartyScreen from '../screens/MainPartyScreen.jsx';
 import JournalScreen, { JOURNAL_TABS } from '../places/JournalScreen.jsx';
 import RankingsScreen, { HallOfFameTab, RecordBookTab } from '../screens/RankingsScreen.jsx';
 import { MissionLog, SeasonReviewsPage } from '../screens/HistoryScreens.jsx';
@@ -14,9 +15,9 @@ import SettingsScreen from '../screens/SettingsScreen.jsx';
 import CreditsScreen from './CreditsScreen.jsx';
 import ContactsScreen from './ContactsScreen.jsx';
 import { BUILDINGS } from '../data/world.js';
-import { ROOM_BY_ID, roomInterior } from '../data/rooms.js';
+import { LOT_DIORAMA } from '../data/rooms.js';
 import { firstAsset } from '../data/assets.js';
-import { HOME_LOCATION_ID, atHome, hallStage, hasHall, roomLevel } from '../game/engine.js';
+import { HOME_LOCATION_ID, atHome, hasHall } from '../game/engine.js';
 
 // Every screen outside the walkable world is a section in the one template
 // (Section.jsx). This file says which tabs each section has and what each tab shows.
@@ -43,7 +44,7 @@ export const SECTION_TABS = {
 const HELP = {
   party: 'Tap a hero for their page.',
   items: 'Drag an item onto a hero, or tap the item, then the hero.',
-  hall: 'Drag a hero from the bar onto a room.',
+  hall: 'Tap a slot to build or manage a room.',
   journal: 'Swipe sideways to change tab.',
   contacts: 'Tap a person to see where they are.',
   records: 'Long-press a ladder to see what it measures.',
@@ -67,10 +68,6 @@ export function sectionTitle(state, section) {
   const titles = { party: 'Party', items: 'Items', guild: 'Guild', journal: 'Journal', contacts: 'Contacts', records: 'Records', system: 'System' };
   if (titles[id]) return titles[id];
   if (id === 'hall') {
-    const room = section.tab;
-    if (room === 'build') return 'Build a room';
-    if (room === 'rest') return 'Rest at the hall';
-    if (room && ROOM_BY_ID[room]) return ROOM_BY_ID[room].name;
     return hasHall(state) ? 'Guild Hall' : 'Empty lot';
   }
   if (id === 'inn') return 'A room for the night';
@@ -94,7 +91,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
     return (
       <Section {...common}>
         {tab === 'roster' ? <HeroesScreen {...props} tabs={['roster']} /> : null}
-        {tab === 'main' ? <WarRoom state={state} actions={actions} /> : null}
+        {tab === 'main' ? <MainPartyScreen state={state} actions={actions} /> : null}
         {tab === 'legends' ? <HeroesScreen {...props} tabs={['legends']} /> : null}
       </Section>
     );
@@ -107,15 +104,12 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
     );
   }
   if (id === 'hall') {
-    // The Guild Hall keeps its Phase 3 rooms until 7D rebuilds it.
-    const room = section.tab || null;
-    const art = room && ROOM_BY_ID[room] && roomLevel(state, room) ? roomInterior(room, roomLevel(state, room)) : hallStage(state).interior;
+    // The Guild Hall: the lot diorama (docs/specs/guild-hall-rooms.md).
     return (
       <>
-        <SceneBackdrop asset={art} dim={0.5} />
-        <Section {...common} tabs={null} onBack={() => (room ? setTab(null) : close())} backLabel={room ? 'Hall' : 'Leave'}>
-          <GuildHallRooms {...props} room={room} setRoom={setTab} />
-          {rail}
+        <SceneBackdrop asset={LOT_DIORAMA} dim={0.6} />
+        <Section {...common} tabs={null}>
+          <GuildHallRooms {...props} initial={section.tab} />
         </Section>
       </>
     );
