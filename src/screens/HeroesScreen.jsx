@@ -1,44 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, normalizeClassId } from '../data/content.js';
-import { LOCATION_BY_ID, PRIMALS, RARITIES } from '../data/world.js';
-import {
-  activeHeroCount,
-  bedCount,
-  freeBeds,
-  getHallView,
-  recruitObjection,
-  operationalLocationIds,
-  xpForNextLevel,
-  CONTRACT_LENGTHS,
-  candidateRanges,
-  contractSalary,
-  offerTerms,
-} from '../game/engine.js';
+import { CLASSES, normalizeClassId } from '../data/content.js';
+import { PRIMALS, RARITIES } from '../data/world.js';
+import { xpForNextLevel } from '../game/engine.js';
 import { MONTHLY_ACTIVITIES, TRAINING_FOCI } from '../data/activities.js';
-import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, Tabs } from '../components/UI.jsx';
+import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge } from '../components/UI.jsx';
 
-function candidateValue(candidate) {
-  return candidate.level * 70 + candidate.power * 4 + candidate.potential * 2;
-}
-
-// tabs: which sections to show. The Tavern shows ['recruit', 'roster'];
-// the Guild Hall shows ['roster', 'legends'].
-export default function HeroesScreen({ state, actions, navigate, tabs = ['roster', 'recruit', 'legends'] }) {
-  const [tab, setTab] = useState(tabs[0]);
-  // The Tavern shows only who is in town tonight: no tabs, intro text or side panels.
-  const inTavern = tabs.length === 1 && tabs[0] === 'recruit';
-  const [contractYears, setContractYears] = useState({});
-  const yearsFor = (id) => contractYears[id] || 2;
-  const rangeText = ([low, high]) => (low === high ? String(low) : `${low}–${high}`);
-  const townAgents = (state.freeAgents || []).filter((hero) => hero.homeLocationId === (state.world?.currentLocationId || 'dunmere')).slice(0, 6);
+// The guild's heroes (Guild orb → Party). tabs is ['roster'] or ['legends'];
+// recruits are met in person in the taverns and arenas (people.js).
+export default function HeroesScreen({ state, actions, tabs = ['roster'] }) {
+  const tab = tabs[0];
   const [sort, setSort] = useState('level');
   const [classFilter, setClassFilter] = useState('All');
   const [primalFilter, setPrimalFilter] = useState('All');
-  const currentLocationId = state.world?.currentLocationId || 'dunmere';
-  const operationalIds = [...operationalLocationIds(state)];
-  const [marketLocationId, setMarketLocationId] = useState(currentLocationId);
-  const activeMarketId = operationalIds.includes(marketLocationId) ? marketLocationId : currentLocationId;
-  const currentLocation = LOCATION_BY_ID[activeMarketId];
 
   const roster = useMemo(
     () =>
@@ -56,10 +29,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
     [state.heroes, classFilter, primalFilter, sort],
   );
 
-  const localCandidates = useMemo(
-    () => state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === activeMarketId).sort((a, b) => candidateValue(b) - candidateValue(a)),
-    [state.candidates, activeMarketId],
-  );
   const legends = useMemo(
     () => [...state.heroes.filter((hero) => ['retired', 'dead'].includes(hero.status)), ...state.historicHeroes].sort((a, b) => b.legacy - a.legacy),
     [state.heroes, state.historicHeroes],
@@ -67,44 +36,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
 
   return (
     <div className="screen screen--heroes">
-      {inTavern ? (
-        <header className="tavern-heading">
-          <span className="muted">
-            {localCandidates.length + townAgents.length} looking for work · {activeHeroCount(state)}/{bedCount(state)} roster slots
-          </span>
-        </header>
-      ) : (
-        <header className="screen-heading">
-        <div>
-          <span className="eyebrow">Level · rarity · class · primal</span>
-          <h1>Heroes of the Banner</h1>
-          <p>
-            Every hero grows from level 1 to 20. Missions award the most experience; training creates slow, dependable progress while the guild waits for its
-            next great opportunity.
-          </p>
-        </div>
-        <div className="heading-metrics">
-          <Badge tone="green">
-            {activeHeroCount(state)}/{bedCount(state)} active
-          </Badge>
-          <Badge tone="gold">{localCandidates.length} local candidates</Badge>
-          <PrimalBadge primal={currentLocation?.primal} />
-        </div>
-      </header>
-      )}
-
-      {tabs.length > 1 ? (
-      <Tabs
-        active={tab}
-        onChange={setTab}
-        items={[
-          { id: 'roster', label: tabs[0] === 'recruit' ? 'Your company' : 'Active roster', icon: '♟' },
-          { id: 'recruit', label: 'Recruits in town', icon: '✦' },
-          { id: 'legends', label: 'Retired & fallen', icon: '▤' },
-        ].filter((item) => tabs.includes(item.id))}
-      />
-      ) : null}
-
       {tab === 'roster' ? (
         <>
           <div className="filter-bar">
@@ -278,205 +209,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
         </>
       ) : null}
 
-      {tab === 'recruit' ? (
-        <div className="recruit-layout recruit-layout--solo">
-          <Panel title={inTavern ? `Tonight in ${currentLocation?.name}` : `The market in ${currentLocation?.name}`}>
-            {operationalIds.length > 1 ? (
-              <label className="market-switcher">
-                Operating market
-                <select value={activeMarketId} onChange={(event) => setMarketLocationId(event.target.value)}>
-                  {operationalIds.map((id) => (
-                    <option key={id} value={id}>
-                      {LOCATION_BY_ID[id]?.name}
-                      {id === currentLocationId ? ' · HQ' : ' · Branch'}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-            {localCandidates.length > 1 ? <p className="swipe-hint">Swipe through {localCandidates.length} candidates</p> : null}
-            <div className="candidate-grid">
-              {localCandidates.map((candidate) => (
-                <article
-                  className="candidate-card"
-                  key={candidate.id}
-                  style={{ '--rarity': RARITIES[candidate.rarity]?.color, '--primal': PRIMALS[candidate.primal]?.color }}
-                >
-                  <div className="candidate-card__top">
-                    <div className="hero-card__portrait-stack">
-                      <HeroPortrait hero={candidate} size="md" showStatus={false} />
-                      <LevelBadge hero={candidate} />
-                    </div>
-                    <div>
-                      <h3>{candidate.name}</h3>
-                      <div className="candidate-card__taxonomy">
-                        <RarityBadge rarity={candidate.rarity} />
-                        <PrimalBadge primal={candidate.primal} />
-                      </div>
-                      <p>
-                        {normalizeClassId(candidate.classId)} · Age {candidate.age}
-                      </p>
-                      <Badge tone={candidate.channel === 'Academy' ? 'purple' : candidate.channel === 'Scout network' ? 'blue' : 'neutral'}>
-                        {candidate.channel}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="candidate-card__ratings">
-                    <span>
-                      <small>Power</small>
-                      <strong>{rangeText(candidateRanges(state, candidate).power)}</strong>
-                    </span>
-                    <span>
-                      <small>Potential</small>
-                      <strong>{rangeText(candidateRanges(state, candidate).potential)}</strong>
-                    </span>
-                    <span>
-                      <small>Scouted</small>
-                      <strong>{candidateRanges(state, candidate).level}/3</strong>
-                    </span>
-                    <span>
-                      <small>Interest</small>
-                      <strong>{candidate.interest}%</strong>
-                    </span>
-                  </div>
-                  <p className="candidate-card__hook">{candidate.hook}</p>
-                  <div className="candidate-card__conditions candidate-card__conditions--personality">
-                    <span>
-                      <b>Personality · {candidate.personality}</b>
-                      {PERSONALITY_PROFILES[candidate.personality] || 'Personality affects field decisions.'}
-                    </span>
-                    <span>
-                      <b>Flaw · {candidate.flaw}</b>
-                      {FLAW_PROFILES[candidate.flaw] || candidate.flaw}
-                    </span>
-                    <span>
-                      <b>Dream</b>
-                      {candidate.dream}
-                    </span>
-                    <span>
-                      <b>Contract</b>
-                      <select
-                        className="contract-length"
-                        value={yearsFor(candidate.id)}
-                        onChange={(event) => setContractYears({ ...contractYears, [candidate.id]: Number(event.target.value) })}
-                      >
-                        {CONTRACT_LENGTHS.map((years) => (
-                          <option key={years} value={years}>
-                            {years} year{years === 1 ? '' : 's'} · {contractSalary(candidate.salary, years)}/month
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </div>
-                  {candidate.demand ? (
-                    <div className="candidate-demand">
-                      <Badge tone="gold">Contract demand</Badge>
-                      <div>
-                        <strong>{candidate.demand.label}</strong>
-                        <p>{candidate.demand.description}</p>
-                        <small>Promise deadline: {candidate.demand.dueLabel}</small>
-                      </div>
-                    </div>
-                  ) : null}
-                  <div className="candidate-card__contract">
-                    <span>
-                      Signing fee<strong>{candidate.signingFee.toLocaleString()}</strong>
-                    </span>
-                    <span>
-                      First-year commitment
-                      <strong>{(candidate.signingFee + contractSalary(candidate.salary, yearsFor(candidate.id)) * 12).toLocaleString()}</strong>
-                    </span>
-                    {candidate.demand ? (
-                      <span>
-                        Unconditional buyout<strong>{(candidate.signingFee + (candidate.buyoutFee || 0)).toLocaleString()}</strong>
-                      </span>
-                    ) : null}
-                  </div>
-                  {recruitObjection(state, candidate) ? (
-                    <p className="candidate-refusal">
-                      <b>Won’t join:</b> “{recruitObjection(state, candidate)}”
-                    </p>
-                  ) : freeBeds(state) <= 0 ? (
-                    <NoFreeBed state={state} navigate={navigate} />
-                  ) : null}
-                  <div className="candidate-card__actions" hidden={freeBeds(state) <= 0 || Boolean(recruitObjection(state, candidate))}>
-                    <Button
-                      variant="primary"
-                      onClick={() => actions.recruit(candidate.id, 'accept', yearsFor(candidate.id))}
-                      disabled={freeBeds(state) <= 0 || state.guild.crowns < candidate.signingFee}
-                      why={freeBeds(state) <= 0 ? 'No free bed: build bunks in the Guild Hall.' : `The fee is ${candidate.signingFee} gold.`}
-                    >
-                      {candidate.signingFee === 0
-                        ? 'Choose as founding companion'
-                        : state.guild.crowns < candidate.signingFee
-                          ? `Need ${candidate.signingFee - state.guild.crowns} more gold`
-                          : candidate.demand
-                            ? `Sign & promise · ${candidate.signingFee}`
-                            : `Offer ${candidate.signingFee} gold`}
-                    </Button>
-                    {candidate.demand ? (
-                      <Button
-                        onClick={() => actions.recruit(candidate.id, 'buyout', yearsFor(candidate.id))}
-                        disabled={freeBeds(state) <= 0 || state.guild.crowns < candidate.signingFee + (candidate.buyoutFee || 0)}
-                      >
-                        Buy out demand · {(candidate.signingFee + (candidate.buyoutFee || 0)).toLocaleString()}
-                      </Button>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-              {activeMarketId === currentLocationId
-                ? townAgents.map((hero) => {
-                    const terms = offerTerms(state, hero.id);
-                    return (
-                      <article
-                        className="candidate-card candidate-card--agent"
-                        key={hero.id}
-                        style={{ '--rarity': RARITIES[hero.rarity]?.color, '--primal': PRIMALS[hero.primal]?.color }}
-                      >
-                        <div className="candidate-card__top">
-                          <button className="hero-card__portrait-stack" onClick={() => actions.openHero(hero.id)} aria-label={`Inspect ${hero.name}`}>
-                            <HeroPortrait hero={hero} size="md" showStatus={false} />
-                            <LevelBadge hero={hero} />
-                          </button>
-                          <div>
-                            <h3>{hero.name}</h3>
-                            <div className="candidate-card__taxonomy">
-                              <RarityBadge rarity={hero.rarity} />
-                              <PrimalBadge primal={hero.primal} />
-                            </div>
-                            <p>
-                              {normalizeClassId(hero.classId)} · Age {hero.age} · experienced, between guilds
-                            </p>
-                          </div>
-                        </div>
-                        <div className="candidate-card__actions">
-                          <Button
-                            variant="primary"
-                            disabled={!terms.available || state.guild.crowns < terms.fee || freeBeds(state) <= 0}
-                            onClick={() => actions.makeOffer(hero.id)}
-                            title={terms.reason || ''}
-                          >
-                            Make an offer · {terms.fee.toLocaleString()} ({Math.round((terms.chance || 0) * 100)}% to accept)
-                          </Button>
-                        </div>
-                      </article>
-                    );
-                  })
-                : null}
-              {!localCandidates.length && !(activeMarketId === currentLocationId && townAgents.length) ? (
-                <EmptyState
-                  icon="✦"
-                  title="The local market is empty"
-                  text="Advance into a new year or travel to another settlement to meet different classes and primals."
-                  action={<Button onClick={() => navigate('world')}>Open world map</Button>}
-                />
-              ) : null}
-            </div>
-          </Panel>
-        </div>
-      ) : null}
-
       {tab === 'legends' ? (
         <Panel title="Careers that no longer move" eyebrow="Institutional memory">
           {legends.length ? (
@@ -507,25 +239,6 @@ export default function HeroesScreen({ state, actions, navigate, tabs = ['roster
           )}
         </Panel>
       ) : null}
-    </div>
-  );
-}
-
-/** Shown instead of the hire button when every bed is taken, with a shortcut to make room. */
-function NoFreeBed({ state, navigate }) {
-  const hall = getHallView(state);
-  return (
-    <div className="no-free-bed">
-      <strong>No free bed</strong>
-      {hall.owned ? (
-        <Button size="sm" variant="primary" onClick={() => navigate({ view: 'town', building: 'guildHall', tab: hall.rooms.some((room) => room.id === 'bunks' && room.built) ? 'bunks' : 'build' })}>
-          Build bunks
-        </Button>
-      ) : (
-        <Button size="sm" variant="primary" onClick={() => navigate('hall')}>
-          See the old hall
-        </Button>
-      )}
     </div>
   );
 }

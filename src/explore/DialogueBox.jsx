@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { freeBeds, getDialogueReply, getDialogueView, getHallView, recruitObjection } from '../game/engine.js';
+import { getDialogueReply, getDialogueView } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
-import { Button } from '../components/UI.jsx';
 import Icon from '../components/Icon.jsx';
 
 const AUTO_MS = 2600;
@@ -27,7 +26,6 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   const logSwipe = useRef(null);
   const seen = useRef([]);
   const press = useRef(null);
-  const [recruit, setRecruit] = useState(false);
   const followUp = useRef({});
   const started = useRef(false);
 
@@ -40,11 +38,6 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
 
   const finish = () => {
     const next = followUp.current;
-    if (next.recruit) {
-      setRecruit(true);
-      setPhase('recruit');
-      return;
-    }
     onClose();
     if (next.open) onOpenBuilding?.(next.open);
   };
@@ -84,8 +77,6 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   if (!view) return null;
   const line = lines[index] || { speaker: view.speaker, portrait: view.portrait, text: '' };
   if (line.text && seen.current.at(-1) !== line) seen.current.push(line);
-  const here = state.world?.currentLocationId || 'dunmere';
-  const recruits = recruit ? state.candidates.filter((candidate) => (candidate.locationId || 'dunmere') === here).slice(0, 3) : [];
 
   return (
     <section
@@ -159,49 +150,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
         </div>
         <div className="dialogue__body">
           <span className="dialogue__speaker">{line.speaker}</span>
-          {phase === 'recruit' ? (
-            <div className="dialogue__recruits">
-              <p>{recruits.length ? 'They point out who is looking for work:' : 'Nobody here is looking for work right now.'}</p>
-              {recruits.length && freeBeds(state) <= 0 ? (
-                <p className="dialogue__note">
-                  Every bed is taken.{' '}
-                  {getHallView(state).owned ? 'Build bunks in the Guild Hall first.' : 'Rent the old stable on Banner Plaza first.'}
-                </p>
-              ) : null}
-              {recruits.map((candidate) => (
-                <div key={candidate.id} className="dialogue__recruit">
-                  <span>
-                    <strong>{candidate.name}</strong>
-                    <small>
-                      {candidate.classId} · {candidate.primal} · fee {candidate.signingFee} gold
-                    </small>
-                    {recruitObjection(state, candidate) ? <small className="dialogue__refusal">“{recruitObjection(state, candidate)}”</small> : null}
-                  </span>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    disabled={state.guild.crowns < candidate.signingFee || freeBeds(state) <= 0 || Boolean(recruitObjection(state, candidate))}
-                    onClick={() => {
-                      actions.recruit(candidate.id);
-                      onClose();
-                    }}
-                  >
-                    Invite
-                  </Button>
-                </div>
-              ))}
-              <div className="dialogue__choices">
-                <button type="button" onClick={() => onOpenBuilding?.('tavern')}>
-                  Meet them at the tavern
-                </button>
-                <button type="button" onClick={onClose}>
-                  Leave
-                </button>
-              </div>
-            </div>
-          ) : (
-            <p className="dialogue__text">{line.text}</p>
-          )}
+          <p className="dialogue__text">{line.text}</p>
           {phase === 'choices' ? (
             <div className="dialogue__choices">
               {view.choices.map((choice) => (

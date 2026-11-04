@@ -2,7 +2,7 @@ import { usePanZoom } from '../components/usePanZoom.js';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BUILDINGS, LOCATIONS, LOCATION_BY_ID, PRIMALS, locationBuildings } from '../data/world.js';
-import { getStoryView, getTravelQuote, getWildAreaView, getWorldKnowledge } from '../game/engine.js';
+import { getStoryView, knownMissions, getTravelQuote, getWildAreaView, getWorldKnowledge } from '../game/engine.js';
 import { WILD_AREAS, WILD_AREA_LIST } from '../data/wilds/index.js';
 import { Badge, Button, PrimalBadge, ProgressBar, RiskPips } from '../components/UI.jsx';
 import { useAssetUrl } from '../components/Asset.jsx';
@@ -53,7 +53,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const quote = getTravelQuote(state, selected.id);
   const current = LOCATION_BY_ID[currentLocationId];
   const travel = state.world?.activeTravel;
-  const locationMissions = state.missions.filter((mission) => mission.locationId === selected.id);
+  const locationMissions = knownMissions(state).filter((mission) => mission.locationId === selected.id);
   const locationCandidates = state.candidates.filter((candidate) => candidate.locationId === selected.id);
   const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id);
   const selectedBranch = (state.guild.branches || []).find((branch) => branch.active !== false && branch.locationId === selected.id);
@@ -282,7 +282,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <p className="region-dossier__identity">{selected.description}</p>
               <div className="location-economy-grid">
                 <div>
-                  <span>Open missions</span>
+                  <span>Known contracts</span>
                   <strong>{locationMissions.length}</strong>
                 </div>
                 <div>

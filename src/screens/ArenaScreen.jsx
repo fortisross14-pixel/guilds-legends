@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { locationBuildings } from '../data/world.js';
 import { sliceHides } from '../data/slice.js';
@@ -231,9 +231,14 @@ function HistoryBoard({ state, view, actions, navigate }) {
   );
 }
 
-export default function ArenaScreen({ state, actions, navigate, locationId }) {
+/** The arena's three places. `initialSpot` opens one (the registrar, referee or history board was tapped). */
+export default function ArenaScreen({ state, actions, navigate, locationId, initialSpot = null }) {
   const view = getArenaView(state, locationId);
-  const [spot, setSpot] = useState(view.active ? 'ground' : null);
+  const [spot, setSpot] = useState(initialSpot || (view.active ? 'ground' : null));
+  useEffect(() => {
+    if (initialSpot === 'board') actions.readHistoryBoard(view.history.map((item) => TOURNAMENT_LORE[item.definition.id]).filter(Boolean));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="arena-room">
       <nav className="arena-spots" aria-label={`${view.location.name} arena`}>

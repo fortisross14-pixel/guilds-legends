@@ -305,6 +305,14 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
                   tabIndex={-1}
                   aria-label={`${target.verb}: ${target.name}`}
                 >
+                  {target.unknown ? (
+                    <b className="walk__unknown" aria-label="Someone you have not met">
+                      ?
+                    </b>
+                  ) : null}
+                  {(target.badges || []).map((badge, index) => (
+                    <Icon key={`${badge}-${index}`} name={badge} size={14} tone="plain" className={`walk__offer walk__offer--${badge}`} />
+                  ))}
                   {target.icon ? <Icon name={target.icon} size={16} /> : null}
                   {target.labelText || target.name}
                 </button>

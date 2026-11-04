@@ -87,3 +87,10 @@
   .dialogue__text { font-size: var(--fs-3); }
 }
 .walk__label[data-under-hud='1'] { opacity: 0; pointer-events: none; }
+/* People in buildings: "?" over people you have not met; offer icons over those you know. */
+.walk__unknown { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 4px; border-radius: 50%; background: var(--gold); color: #1d150b; font: 800 var(--fs-1)/1 var(--font-ui); }
+.walk__offer { margin-right: 3px; color: var(--gold-bright); }
+.walk__offer--swords { color: #f0a08f; }
+.walk__offer--lock { color: var(--text-dim); }
+.interior-scene .walk__stage { background: radial-gradient(ellipse at center, #1a1520, #08080c 75%); }
+.dialogue__speaker small { color: rgba(246, 220, 154, .7); font: 600 var(--fs-1) var(--font-ui); }

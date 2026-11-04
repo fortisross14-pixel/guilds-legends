@@ -9,6 +9,9 @@ import { WILD_AREA_LIST } from './wilds/index.js';
 import { HALL_STAGES, ROOMS, roomInterior } from './rooms.js';
 import { CHARTER_LIST } from './charters.js';
 import { PATRON_LIST } from './patrons.js';
+import { INTERIORS, ROOM } from './interiors.js';
+import { REGULARS } from './people.js';
+import { CLASSES } from './content.js';
 
 /** Placeholder colors per group (background, ink). */
 export const ASSET_GROUPS = {
@@ -180,6 +183,32 @@ Object.values(TOWNS).forEach((town) => {
     add({ id: `portrait.${town.id}.${npc.id}`, group: 'portrait', path: `art/portraits/npcs/${town.id}-${npc.id}.png`, w: 160, h: 160, use: `${town.name}: ${npc.name}, ${npc.role} (dialogue portrait)` });
   });
 });
+// Building interiors (Phase 7C): the room floors, the furniture, and the people
+// standing in them (regulars, and silhouettes by role or class for visitors).
+const ROOM_PX = ROOM.w * TILE_SIZE;
+Object.values(INTERIORS).forEach((room) => {
+  add({ id: room.floor, group: 'room', path: `art/walk/rooms/${room.id}.png`, w: ROOM_PX, h: ROOM_PX, use: `Interior (walkable): the ${room.id} room, floor and walls, seen from above (${ROOM.w}×${ROOM.h} tiles)` });
+  room.furniture.forEach((piece) =>
+    add({ id: piece.asset, group: 'prop', path: `art/walk/furniture/${slug(piece.asset)}.png`, w: piece.size[0] * TILE_SIZE, h: (piece.size[1] + 1) * TILE_SIZE, use: `Interior furniture: ${piece.poi?.name || piece.id} (${room.id})` }),
+  );
+});
+REGULARS.forEach((person) => {
+  const role = person.role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const sprite = person.sprite || `npc.role.${role}`;
+  const portrait = person.portrait || `portrait.role.${role}`;
+  add({ id: sprite, group: 'npc', path: person.sprite ? `art/walk/npcs/${slug(sprite)}.png` : `art/walk/npcs/role-${role}.png`, w: 26, h: 36, use: `${person.name}, ${person.role} (${person.locationId}, ${person.building})` });
+  add({ id: portrait, group: 'portrait', path: person.portrait ? `art/portraits/npcs/${slug(portrait)}.png` : `art/portraits/roles/${role}.png`, w: 160, h: 160, use: `Dialogue portrait: ${person.role}` });
+});
+['council-steward', 'watch-sergeant', 'temple-acolyte', 'trader', 'traveller', 'messenger'].forEach((role) => {
+  add({ id: `npc.role.${role}`, group: 'npc', path: `art/walk/npcs/role-${role}.png`, w: 26, h: 36, use: `Visitor silhouette by role: ${role.replace(/-/g, ' ')} (petitioners, travellers, messengers)` });
+  add({ id: `portrait.role.${role}`, group: 'portrait', path: `art/portraits/roles/${role}.png`, w: 160, h: 160, use: `Dialogue portrait by role: ${role.replace(/-/g, ' ')}` });
+});
+Object.keys(CLASSES).forEach((classId) => {
+  const key = classId.toLowerCase();
+  add({ id: `char.class.${key}`, group: 'char', path: `art/walk/chars/class-${key}.png`, borrow: `art/sprites/${key}.png`, w: 30, h: 40, use: `Recruits and challengers in buildings: ${classId} (walk sprite)` });
+  add({ id: `portrait.class.${key}`, group: 'portrait', path: `art/portraits/classes/${key}.png`, borrow: `art/portraits/${key}.png`, w: 160, h: 160, use: `Dialogue portrait for a ${classId} recruit` });
+});
+
 [...Object.values(TOWNS), ...WILD_AREA_LIST].forEach((place) => {
   (place.props || []).forEach((prop) =>
     add({ id: prop.asset, group: 'prop', path: `art/walk/props/${slug(prop.asset)}.png`, w: prop.size[0] * TILE_SIZE, h: (prop.size[1] + 1) * TILE_SIZE, use: `${place.name}: ${prop.poi?.name || prop.id}` }),

@@ -80,7 +80,7 @@
 .game:has(.dialogue, .section-layer, .modal-layer, .peek-card, .walk-card, .battle-modal, .story-scene) .orb { opacity: 0; transform: translateY(16px); pointer-events: none; }
 
 /* --------------------------------------------- the one screen template */
-.section-layer { position: fixed; inset: 0; z-index: var(--z-panel); display: grid; place-items: center; padding: calc(var(--safe-t) + 12px) calc(var(--safe-r) + 12px) calc(var(--safe-b) + 12px) calc(var(--safe-l) + 12px); background: radial-gradient(ellipse at center, rgba(8, 8, 12, .4), rgba(4, 4, 8, .78)); animation: fade-in var(--med) var(--ease) both; }
+.section-layer { position: fixed; inset: 0; z-index: var(--z-panel); display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; padding: calc(var(--safe-t) + 12px) calc(var(--safe-r) + 12px) calc(var(--safe-b) + 12px) calc(var(--safe-l) + 12px); background: radial-gradient(ellipse at center, rgba(8, 8, 12, .4), rgba(4, 4, 8, .78)); animation: fade-in var(--med) var(--ease) both; }
 .section { position: relative; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; width: min(1180px, 100%); height: 100%; max-height: 900px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--orn-tl) left 3px top 3px / 18px no-repeat, var(--orn-tr) right 3px top 3px / 18px no-repeat, var(--orn-bl) left 3px bottom 3px / 18px no-repeat, var(--orn-br) right 3px bottom 3px / 18px no-repeat, var(--panel-bg); box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 240, 210, .06); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); animation: rise-in var(--med) var(--ease) both; }
 .section__head { display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 8px 16px 4px 8px; }
 .section__back { display: inline-flex; align-items: center; gap: 4px; min-width: var(--tap); min-height: var(--tap); padding: 0 12px 0 8px; border: 0; border-radius: var(--r-1); background: none; color: var(--text-dim); font-size: var(--fs-2); font-weight: 600; }
@@ -180,3 +180,13 @@
 .fatal-screen { min-height: 100dvh; display: grid; place-items: center; align-content: center; gap: var(--s3); padding: var(--s6); text-align: center; }
 .fatal-screen p { max-width: 60ch; }
 .fatal-screen > div { display: flex; gap: var(--s2); }
+.contact-row.is-gone { opacity: .6; }
+.contact-row__offers { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; }
+.contact-row__offer { display: inline-flex; align-items: center; gap: 4px; color: var(--text-dim); font-size: var(--fs-1); }
+.contact-row__offer .icon { color: var(--gold); }
+.contact-row__offer--feeling { color: var(--text-faint); }
+.board-elsewhere { display: grid; gap: 0; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.board-elsewhere h2 { margin: 0 0 6px; font-size: var(--fs-4); }
+.board-elsewhere__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.board-elsewhere__row > span { display: grid; min-width: 0; }
+.board-elsewhere__row small { color: var(--text-dim); font-size: var(--fs-1); }

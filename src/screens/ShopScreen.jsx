@@ -47,8 +47,10 @@ function DraggableItem({ state, id, onPick, className, children, ...rest }) {
 
 // Town shop, classic layout: item list on the left, details and stat comparison
 // on the right, gold at the bottom. Buy from the town's stock, sell at half price.
-export default function ShopScreen({ state, actions }) {
-  const stock = shopStock(state.world?.currentLocationId);
+/** The shop. `kind` starts on one shelf (potions, weapons, armor or charms). */
+export default function ShopScreen({ state, actions, kind = null }) {
+  const [shelf, setShelf] = useState(kind);
+  const stock = shopStock(state.world?.currentLocationId).filter((id) => !shelf || ITEMS[id]?.kind === shelf);
   const owned = Object.entries(state.inventory || {}).filter(([id, count]) => ITEMS[id] && count > 0);
   const [mode, setMode] = useState('buy');
   const [selectedId, setSelectedId] = useState(null);
@@ -63,6 +65,16 @@ export default function ShopScreen({ state, actions }) {
 
   return (
     <div className="shop">
+      {shelf ? (
+        <div className="view-picker" role="group" aria-label="Shelf">
+          <button type="button" className="is-active" aria-pressed="true">
+            {{ consumable: 'Potions', weapon: 'Weapons', armor: 'Armor', accessory: 'Charms' }[shelf]}
+          </button>
+          <button type="button" onClick={() => setShelf(null)}>
+            All items
+          </button>
+        </div>
+      ) : null}
       <div className="shop-layout">
         <section className="shop-list" aria-label={mode === 'buy' ? 'Items for sale' : 'Your items'}>
           <div className="tabs" role="tablist" aria-label="Shop mode">

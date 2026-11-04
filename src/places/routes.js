@@ -13,11 +13,14 @@ export const ROUTES = {
   heroes: { section: 'party', tab: 'roster' },
   equipment: { section: 'items' },
   items: { section: 'items' },
-  tavern: { section: 'tavern' },
+  // Buildings with an interior are walked into (people.js, src/data/interiors.js).
+  tavern: { view: 'interior', building: 'tavern' },
+  shop: { view: 'interior', building: 'shop' },
+  tournaments: { view: 'interior', building: 'arena' },
+  arena: { view: 'interior', building: 'arena' },
+  herald: { view: 'interior', building: 'herald' },
+  inn: { section: 'inn' },
   missions: { section: 'noticeBoard' },
-  tournaments: { section: 'arena' },
-  shop: { section: 'shop' },
-  herald: { section: 'herald' },
   rankings: { section: 'records', tab: 'rankings' },
   reputation: { section: 'records', tab: 'rankings', view: 'reputation' },
   menu: { section: 'system', tab: 'game' },
@@ -37,7 +40,7 @@ export const ROUTES = {
 export function resolveRoute(target) {
   if (target && typeof target === 'object') {
     if (target.section) return target;
-    if (target.building) return { section: target.building, tab: target.tab || null };
+    if (target.building) return ROUTES[target.building === 'noticeBoard' ? 'missions' : target.building] || { section: target.building, tab: target.tab || null };
     if (target.view === 'town') return { view: 'scene' };
     if (target.view === 'menu') return ROUTES[target.page] || ROUTES.menu;
     return target;

@@ -15,6 +15,8 @@ import {
   startStoryDuel,
   readHistoryBoard,
   talkTo,
+  meetPerson,
+  talkToPerson,
   chooseDialogueOption,
   saveScenePosition,
   recordSceneVisit,
@@ -99,7 +101,7 @@ import {
 } from './game/engine.js';
 import { deleteGame, exportGame, importGame, listSaveSlots, loadGame, saveGame } from './game/storage.js';
 import { CLASSES } from './data/content.js';
-import { LOCATION_BY_ID, PRIMALS, locationBuildings } from './data/world.js';
+import { BUILDINGS, LOCATION_BY_ID, PRIMALS, locationBuildings } from './data/world.js';
 import { townFor } from './data/towns/index.js';
 import { WILD_AREAS } from './data/wilds/index.js';
 import { Badge, Button, Crest, HeroPortrait, Modal, SceneBackdrop, useMenuKeys } from './components/UI.jsx';
@@ -107,11 +109,11 @@ import Icon, { IconDefs } from './components/Icon.jsx';
 import MapScreen from './places/MapScreen.jsx';
 import TownScene from './explore/TownScene.jsx';
 import WildScene from './explore/WildScene.jsx';
-import HeroesScreen from './screens/HeroesScreen.jsx';
 import MissionsScreen from './screens/MissionsScreen.jsx';
 import ArenaScreen from './screens/ArenaScreen.jsx';
 import ShopScreen from './screens/ShopScreen.jsx';
-import RankingsScreen from './screens/RankingsScreen.jsx';
+import InteriorScene from './explore/InteriorScene.jsx';
+import { INTERIORS } from './data/interiors.js';
 import { resolveRoute } from './places/routes.js';
 import { Ledger, Orb, OrbScrim, PlaceTag } from './hud/Hud.jsx';
 import { SectionView } from './hud/sections.jsx';
@@ -918,6 +920,12 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
     window.addEventListener('gol:toast', show);
     return () => window.removeEventListener('gol:toast', show);
   }, []);
+  // Messages step aside after a few seconds (errors stay a little longer).
+  useEffect(() => {
+    if (!message) return undefined;
+    const timer = window.setTimeout(() => setMessage(null), message.tone === 'red' ? 7000 : 4500);
+    return () => window.clearTimeout(timer);
+  }, [message]);
   const [saveStatus, setSaveStatus] = useState('saved');
   const autosaveTimer = useRef(null);
   const summary = getDashboardSummary(state);
@@ -1018,6 +1026,13 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         const result = talkTo(state, id, visit);
         applyResult(result);
         return result.error ? null : result.ui || {};
+      },
+      // People in buildings (engine people.js): meeting them, and each step of a conversation.
+      meetPerson: (id) => applyResult(meetPerson(state, id)),
+      talkPerson: (id, choiceId) => {
+        const result = talkToPerson(state, id, choiceId);
+        applyResult(result);
+        return result.error ? null : result;
       },
       chooseDialogue: (id, variantIndex, choiceIndex) => {
         const result = chooseDialogueOption(state, id, variantIndex, choiceIndex);
@@ -1206,6 +1221,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   // Where the player is: the walkable scene (town or wild area) or the world map.
   // Everything else is a section in the one template, opened over the place.
   const traveling = Boolean(state.world?.activeTravel);
+  const locationId = state.world?.currentLocationId || HOME_LOCATION_ID;
   const view = traveling ? 'map' : place.view;
   const sceneApi = useRef(null);
   const sceneId = state.world?.wildAreaId || state.world?.currentLocationId;
@@ -1226,16 +1242,36 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       if (route.section === 'records' && route.tab === 'goals' && !state.flags.goalsInspected) actions.inspectGoals();
       return;
     }
+    if (route.view === 'interior') {
+      if (!INTERIORS[route.building] || !townFor(locationId)?.buildings.some((item) => item.building === route.building)) {
+        setMessage({ tone: 'blue', text: `There is no ${BUILDINGS[route.building]?.name.toLowerCase() || 'such place'} in ${LOCATION_BY_ID[locationId]?.name || 'this town'}.` });
+        return;
+      }
+      if (view === 'scene') keepPosition();
+      setSectionState(null);
+      setPlaceState({ view: 'interior', building: route.building });
+      return;
+    }
     if (route.view === 'map' && view === 'scene') keepPosition();
     setSectionState(null);
     setPlaceState({ view: route.view === 'map' ? 'map' : 'scene', pin: route.pin || null });
+  };
+  // A person's service or a piece of furniture inside a building opens its panel.
+  const openFromInterior = (ui) => {
+    if (ui.open === 'shop') setSection({ id: 'shop', tab: ui.kind || null });
+    else if (ui.open === 'inn') setSection({ id: 'inn', tab: null });
+    else if (ui.open === 'arena') setSection({ id: 'arena', tab: ui.tab || null });
+    else if (ui.open === 'records') navigate({ section: 'records', tab: ui.tab || 'rankings' });
+    else if (ui.open === 'news') navigate('news');
+    else if (ui.open === 'noticeBoard') navigate('missions');
+    else if (ui.open) navigate(ui.open);
   };
 
   // One back behavior everywhere: the section's back button, Esc, or a swipe from the left edge.
   const goBack = () => {
     if (section?.id === 'hall' && section.tab) setSection({ ...section, tab: null });
     else if (section) setSection(null);
-    else if (view === 'map' && !traveling) setPlaceState({ view: 'scene' });
+    else if ((view === 'map' && !traveling) || view === 'interior') setPlaceState({ view: 'scene' });
   };
   const edge = useRef(null);
 
@@ -1307,14 +1343,16 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
   });
 
   const placeProps = { state, actions, navigate, slot };
-  const locationId = state.world?.currentLocationId || HOME_LOCATION_ID;
   const town = townFor(locationId);
   const wildArea = WILD_AREAS[state.world?.wildAreaId];
   const covered = Boolean(section);
-  const openBuilding = (id) => setSection({ id, tab: null });
+  // Doors: a building with an interior is walked into; the Guild Hall and the notice board open as sections.
+  const openBuilding = (id) => (INTERIORS[id] ? navigate({ view: 'interior', building: id }) : navigate(id === 'noticeBoard' ? 'missions' : { section: id, tab: null }));
   const placeLayer =
     view === 'map' ? (
       <MapScreen {...placeProps} place={place} />
+    ) : view === 'interior' && town && !wildArea ? (
+      <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} apiRef={sceneApi} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
     ) : wildArea ? (
       <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} />
     ) : town ? (
@@ -1323,18 +1361,12 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <MapScreen {...placeProps} place={place} />
     );
   const innHere = locationId !== HOME_LOCATION_ID && locationBuildings(locationId).includes('tavern');
-  const renderBuilding = (id) => {
-    if (id === 'tavern')
-      return (
-        <>
-          {innHere ? <InnRest state={state} actions={actions} /> : null}
-          <HeroesScreen {...placeProps} tabs={['recruit']} />
-        </>
-      );
+  // Panels opened from a building (a keeper's service, a shelf, a board) or the notice board.
+  const renderBuilding = (id, tab) => {
+    if (id === 'inn') return <InnRest state={state} actions={actions} />;
     if (id === 'noticeBoard') return <MissionsScreen {...placeProps} />;
-    if (id === 'arena') return <ArenaScreen {...placeProps} locationId={locationId} />;
-    if (id === 'shop') return <ShopScreen {...placeProps} />;
-    if (id === 'herald') return <RankingsScreen {...placeProps} views={['guilds', 'heroLadders', 'rivals', 'directory']} />;
+    if (id === 'arena') return <ArenaScreen key={tab || 'arena'} {...placeProps} locationId={locationId} initialSpot={tab} />;
+    if (id === 'shop') return <ShopScreen key={tab || 'all'} {...placeProps} kind={tab} />;
     return null;
   };
 
@@ -1443,7 +1475,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               actions.finishStoryScene(storyScene);
               setStoryScene(null);
             }}
-            onOpenBuilding={(building) => navigate({ section: building, tab: null })}
+            onOpenBuilding={(building) => openBuilding(building)}
           />
         </div>
       ) : null}

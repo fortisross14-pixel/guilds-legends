@@ -16,7 +16,7 @@ import GoalsScreen from '../screens/GoalsScreen.jsx';
 import SettingsScreen from '../screens/SettingsScreen.jsx';
 import CreditsScreen from './CreditsScreen.jsx';
 import ContactsScreen from './ContactsScreen.jsx';
-import { BUILDINGS, LOCATION_BY_ID } from '../data/world.js';
+import { BUILDINGS } from '../data/world.js';
 import { ROOM_BY_ID, roomInterior } from '../data/rooms.js';
 import { firstAsset } from '../data/assets.js';
 import { HOME_LOCATION_ID, atHome, hallStage, roomLevel } from '../game/engine.js';
@@ -53,18 +53,17 @@ const HELP = {
   calendar: 'Time passes only when you act. Rest at the Guild Hall or an inn.',
   records: 'Swipe sideways to change tab.',
   system: 'The game saves itself after every action.',
-  tavern: 'Swipe through the recruits. A hire needs a free bed.',
-  noticeBoard: 'Pick a contract, then drag heroes into the slots.',
+  inn: 'Resting heals the travelling party; the heroes at home keep to their tasks.',
+  noticeBoard: 'Contracts people gave you. Pick one here, then drag heroes into the slots.',
   arena: 'Sign up at the desk; be here on the start day.',
   shop: 'Drag an item onto a hero to compare.',
-  herald: 'The three ladders: Strength, Legacy and Official.',
 };
 
-const BUILDING_ART = { herald: 'interior.herald', shop: 'interior.shop', tavern: 'interior.tavern', noticeBoard: 'interior.noticeboard' };
+const BUILDING_ART = { shop: 'interior.shop', noticeBoard: 'interior.noticeboard' };
 function buildingArt(state, id) {
   const here = state.world?.currentLocationId || HOME_LOCATION_ID;
   if (id === 'arena') return firstAsset(`interior.arena.${here}`, 'interior.arena');
-  if (id === 'tavern' && here !== HOME_LOCATION_ID) return firstAsset(`interior.inn.${here}`, 'interior.tavern');
+  if (id === 'inn') return firstAsset(`interior.inn.${here}`, 'interior.tavern');
   return BUILDING_ART[id];
 }
 
@@ -79,7 +78,8 @@ export function sectionTitle(state, section) {
     if (room && ROOM_BY_ID[room]) return ROOM_BY_ID[room].name;
     return hallStage(state).key === 'house' ? 'Your house' : 'Guild Hall';
   }
-  if (id === 'tavern' && (state.world?.currentLocationId || HOME_LOCATION_ID) !== HOME_LOCATION_ID) return `${LOCATION_BY_ID[state.world.currentLocationId]?.name || ''} inn`;
+  if (id === 'inn') return 'A room for the night';
+  if (id === 'noticeBoard') return 'Notice board';
   return BUILDINGS[id]?.name || 'Guild';
 }
 
@@ -145,7 +145,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
         Rest at the hall
       </Button>
     ) : extras?.innHere ? (
-      <Button variant="primary" onClick={() => navigate('tavern')}>
+      <Button variant="primary" onClick={() => navigate('inn')}>
         Rest at the inn
       </Button>
     ) : null;
@@ -180,7 +180,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
     );
   }
   // Buildings (Part 1: art-backed screens in the template).
-  const body = extras?.renderBuilding?.(id);
+  const body = extras?.renderBuilding?.(id, section.tab);
   return (
     <>
       <SceneBackdrop asset={buildingArt(state, id)} dim={0.5} />

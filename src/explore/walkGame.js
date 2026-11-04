@@ -11,8 +11,12 @@ import { buildGrid, findPath, isFree } from './pathfinding.js';
 const SPEED = 190; // world px per second
 const ARRIVE = 4;
 
-/** Camera zoom in CSS px per world px: fill the screen, a little closer on touch. */
+/**
+ * Camera zoom in CSS px per world px: fill the screen, a little closer on touch.
+ * Rooms (`fit: 'contain'`) fit whole on one screen instead, leaving room for the HUD.
+ */
 function worldZoomFor(map, cssWidth, cssHeight, coarse) {
+  if (map.fit === 'contain') return Math.min(2.6, Math.max(0.6, Math.min(cssWidth / map.size.width, (cssHeight - 150) / map.size.height) * 0.96));
   const fill = Math.max(cssWidth / map.size.width, cssHeight / map.size.height);
   const comfort = coarse ? 1.2 : 1;
   return Math.min(2.2, Math.max(fill, map.zoom ? map.zoom * comfort : comfort));
@@ -88,9 +92,14 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       const spawn = isFree(grid, start.x, start.y) ? start : findPath(grid, start, start)[0] || map.spawn;
       this.player = this.add.image(spawn.x, spawn.y, map.player.asset).setOrigin(0.5, 1).setDisplaySize(map.player.w, map.player.h).setDepth(spawn.y);
       this.marker = this.add.circle(0, 0, 9).setStrokeStyle(2, 0xf6d28c, 0.9).setVisible(false).setDepth(-9000);
-      this.cameras.main.setBounds(0, 0, map.size.width, map.size.height).startFollow(this.player, true, 0.14, 0.14);
-      applyZoom();
-      this.cameras.main.centerOn(spawn.x, spawn.y);
+      if (map.fit === 'contain') {
+        applyZoom();
+        this.cameras.main.centerOn(map.size.width / 2, map.size.height / 2 - 12);
+      } else {
+        this.cameras.main.setBounds(0, 0, map.size.width, map.size.height).startFollow(this.player, true, 0.14, 0.14);
+        applyZoom();
+        this.cameras.main.centerOn(spawn.x, spawn.y);
+      }
       this.syncTargets();
     }
 
@@ -211,6 +220,7 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     const { width, height } = size();
     state.worldZoom = worldZoomFor(map, width, height, coarse);
     scene.cameras.main.setZoom(state.worldZoom * dpr);
+    if (map.fit === 'contain') scene.cameras.main.centerOn(map.size.width / 2, map.size.height / 2 - 12);
   }
 
   const initial = size();

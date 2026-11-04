@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { FORMATION_TYPES, formationForMission } from '../data/formations.js';
 import { LOCATION_BY_ID, PRIMALS } from '../data/world.js';
-import { operationalLocationIds, partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
+import { knownMissions, operationalLocationIds, partyCapacity, partyEstimate, roleRating } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, LevelBadge, Panel, PrimalBadge, ProgressBar, RarityBadge, RiskPips } from '../components/UI.jsx';
 import SideJobsPanel from './SideJobsPanel.jsx';
 import Icon, { FORMATION_ICONS } from '../components/Icon.jsx';
@@ -71,9 +71,11 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const currentLocation = LOCATION_BY_ID[activeLocationId];
   // Story contracts first.
   const localMissions = useMemo(
-    () => state.missions.filter((mission) => mission.locationId === activeLocationId).sort((a, b) => Number(Boolean(b.story)) - Number(Boolean(a.story))),
+    () => knownMissions(state).filter((mission) => mission.locationId === activeLocationId).sort((a, b) => Number(Boolean(b.story)) - Number(Boolean(a.story))),
     [state.missions, activeLocationId],
   );
+  // Contracts you know of in other towns: travel there to take them on.
+  const elsewhere = knownMissions(state).filter((mission) => mission.locationId !== activeLocationId);
   const [selectedId, setSelectedId] = useState(localMissions[0]?.id || null);
   const [formationType, setFormationType] = useState('Combat');
   const [assignments, setAssignments] = useState([]);
@@ -90,8 +92,6 @@ export default function MissionsScreen({ state, actions, navigate }) {
   const families = ['All', ...new Set(localMissions.map((mission) => mission.family))];
   const availableHeroes = state.heroes.filter((hero) => hero.status === 'available');
   const traveling = Boolean(state.world?.activeTravel);
-  const oldRoadKnown = Boolean(state.flags?.oldRoadIntroduced);
-  const oldRoadComplete = state.missionHistory.some((mission) => mission.templateId === 'wolves-old-road');
 
   useEffect(() => {
     if (selected && selected.id !== selectedId) setSelectedId(selected.id);
@@ -207,24 +207,8 @@ export default function MissionsScreen({ state, actions, navigate }) {
             ))}
           </select>
         </label>
-        <span className="filter-bar__hint">
-          <b>{currentLocation?.primal} territory:</b> local patrons prefer {currentLocation?.primal} delegates, while combat enemies frequently share the local
-          primal. Travel to recruit counters before returning for dangerous hunts.
-        </span>
-        <Button size="sm" onClick={() => navigate('world')}>
-          Change region
-        </Button>
       </div>
 
-      {oldRoadKnown && !oldRoadComplete ? (
-        <section className="first-contract-callout">
-          <span>BRAM HALLOW’S REQUEST</span>
-          <div>
-            <strong>Wolves on the Old Road</strong>
-            <p>The merchant needs a company to make the road safe again. Build a two-hero Combat arrangement, then send it out.</p>
-          </div>
-        </section>
-      ) : null}
 
       <div className="mission-layout">
         <div className="mission-board" data-menu>
@@ -276,10 +260,27 @@ export default function MissionsScreen({ state, actions, navigate }) {
           {!filtered.length ? (
             <EmptyState
               icon="⌖"
-              title={traveling ? 'No board while traveling' : 'No local contracts match'}
-              text={traveling ? 'Finish the journey before accepting new work.' : 'Change the family filter, rest at the hall, or travel to another settlement.'}
-              action={<Button onClick={() => navigate('world')}>Open world map</Button>}
+              title={traveling ? 'No board while traveling' : 'No contracts here yet'}
+              text={traveling ? 'Finish the journey before accepting new work.' : 'Talk to people in the tavern, the shop and the arena: when you take a job, it is pinned here.'}
             />
+          ) : null}
+          {elsewhere.length ? (
+            <section className="board-elsewhere" aria-label="Contracts in other towns">
+              <h2>In other towns</h2>
+              {elsewhere.map((mission) => (
+                <div key={mission.id} className="board-elsewhere__row">
+                  <span>
+                    <strong>{mission.title}</strong>
+                    <small>
+                      {mission.locationName} · {mission.accepted ? 'accepted' : 'open'} · {mission.reward} gold · risk {mission.risk}/5
+                    </small>
+                  </span>
+                  <Button size="sm" onClick={() => navigate({ view: 'map', pin: mission.locationId })}>
+                    Show on map
+                  </Button>
+                </div>
+              ))}
+            </section>
           ) : null}
         </div>
 

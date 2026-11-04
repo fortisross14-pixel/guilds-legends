@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { checkCondition, freeBeds, getArenaView, getPlayerRanks, getStoryView, hallStage, storyNpcsHere } from '../game/engine.js';
+import { checkCondition, knownMissions, freeBeds, getArenaView, getPlayerRanks, getStoryView, hallStage, storyNpcsHere } from '../game/engine.js';
 import { BUILDINGS } from '../data/world.js';
+import { REGULARS } from '../data/people.js';
 import { Button } from '../components/UI.jsx';
 import { townMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
@@ -27,7 +28,9 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
   const active = map.targets.filter((target) => !target.if || checkCondition(state, target.if)).map((target) => target.id);
   // The main quest marker sits on whoever holds the current story scene (hidden with the Quest Log toggle).
   const questNpcs = state.settings?.questMarker === false ? [] : storyNpcsHere(state);
-  const beacons = map.targets.filter((target) => target.kind === 'npc' && questNpcs.includes(target.dialogue)).map((target) => target.id);
+  // A quest person standing inside a building puts the marker on its door.
+  const inside = REGULARS.filter((person) => person.locationId === town.id && person.dialogue && questNpcs.includes(person.dialogue)).map((person) => `door:${person.building}`);
+  const beacons = [...map.targets.filter((target) => target.kind === 'npc' && questNpcs.includes(target.dialogue)).map((target) => target.id), ...inside];
   const saved = state.world?.exploration?.positions?.[town.id];
   const start = saved && Number.isFinite(saved.x) ? saved : map.spawn;
 
@@ -126,7 +129,7 @@ function PeekCard({ state, town, target, onClose, onGo }) {
     } else if (building === 'shop') {
       lines.push('Potions, weapons, armor, charms.');
     } else if (building === 'noticeBoard') {
-      const contracts = state.missions.filter((mission) => mission.locationId === town.id);
+      const contracts = knownMissions(state).filter((mission) => mission.locationId === town.id);
       lines.push(`${contracts.length} contracts${contracts[0] ? ` · ${contracts[0].title}` : ''}`);
     }
     if (!lines.length) lines.push(BUILDINGS[building]?.description || '');
