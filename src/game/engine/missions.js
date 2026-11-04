@@ -28,7 +28,8 @@ import { evaluateStateInPlace } from './goals.js';
 import { battleItems } from './inventory.js';
 import { DECLINE_PENALTY, adjustRegionReputationInPlace, familyLevel } from './reputation.js';
 import { rivalTakesContractInPlace } from './rivalry.js';
-import { regionRoster } from '../../data/enemies.js';
+import { ENEMY_TYPES, regionRoster } from '../../data/enemies.js';
+import { MISSION_TEMPLATES } from '../../data/content.js';
 import { bossForMission } from './stories.js';
 
 export function inspectMission(state, missionId) {
@@ -174,6 +175,16 @@ function missionOpponentName(mission) {
   return 'Hostile force';
 }
 
+/**
+ * Who a contract fights: the template's own enemies when it names them (wolves
+ * for a wolf hunt), else the roster of the region around it (the Blackwood has its own).
+ */
+function contractEnemies(mission) {
+  const named = (MISSION_TEMPLATES.find((template) => template.id === mission.templateId)?.enemies || []).map((id) => ENEMY_TYPES[id]).filter(Boolean);
+  if (named.length) return named;
+  return regionRoster(/blackwood/i.test(`${mission.title} ${mission.stakes || ''}`) ? 'The Far Veil' : mission.region);
+}
+
 export function createMissionCombatEncounterInPlace(state, mission) {
   const playerHeroes = mission.assignments
     .map((assignment) => ({ hero: getHero(state, assignment.heroId), role: assignment.role }))
@@ -204,8 +215,7 @@ export function createMissionCombatEncounterInPlace(state, mission) {
     // Low-risk contracts field weaker enemies than high-risk ones.
     strength: scripted ? 0.6 : (0.65 + mission.risk * 0.09) * (familyLevel(state, 'Combat') >= 4 ? 0.9 : 1),
     guaranteed: scripted,
-    // Contracts use the same rosters as the wild areas around them; the Blackwood has its own.
-    enemyTypes: regionRoster(/blackwood/i.test(`${mission.title} ${mission.stakes || ''}`) ? 'The Far Veil' : mission.region),
+    enemyTypes: contractEnemies(mission),
     boss: bossForMission(mission),
     items: battleItems(state),
   });

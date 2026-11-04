@@ -136,6 +136,8 @@ export const MISSION_TEMPLATES = [
     reward: [180, 260],
     fame: [5, 9],
     roles: ['Scout', 'Vanguard'],
+    // Who the fight fields (src/data/enemies.js): the pack, and the handler driving it.
+    enemies: ['grey-wolf', 'grey-wolf', 'road-bandit'],
     brief: 'Carters refuse the north road after a pack began attacking in daylight. The tracks are too organized for ordinary wolves.',
     stakes: 'Reopen Dunmere’s main trade road before food prices rise.',
     choice: {
