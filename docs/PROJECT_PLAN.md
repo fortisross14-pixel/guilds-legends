@@ -344,6 +344,9 @@ Own pass: an empty lot with a small cabin that grows into a full compound (bedro
 - **Founding moved to the banner:** a new game asks only the founder's name and class (the founder is Fire-born, from Dunmere); the guild's name, motto and charter are chosen on the founding card when Rook's banner is in your hands (end of the prologue). Skipping the tutorial shows the same card first. The charter's starting gift is applied then (`applyCharterInPlace`).
 - **Choices to review:** prices, rent and expansion costs are first guesses (balance comes in Phase 8); the savings rate averages up to the last six months; Gideon's lines in mission 1 now describe the yard and the cabin (docs/STORY.md says "a disused stable or guild office", which still fits).
 
+### Phase 8A — Full Chapter 1 playthrough: audit and fix everything
+The one pass where everything gets caught: play the prologue, the tutorial and the first towns end to end like a player (touch, phone and desktop), log every bug, layout problem, unclear screen and balance problem in docs/PLAYTEST_CH1.md, fix all of it, build the waiting specs in docs/specs/, and replay to prove it. Playing, screenshots, engine scripts and `npm run sim` are allowed in this phase.
+
 ### Phase 8 — Polish, balance and testing
 - Turn the safety net back on: restore the full testing policy, put `npm test` back in `.github/workflows/deploy-pages.yml` (removed after Phase 3), add tests for the new systems, and run `npm run sim` for balance (the slice should take 2–3 hours; promotion near the end).
 - Touch QA on phone and tablet sizes, performance (60 fps in walkable scenes on a mid-range phone), save stability.
