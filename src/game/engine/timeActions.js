@@ -188,7 +188,7 @@ export function launchExpedition(state, missionId, formationType, assignments) {
   // Story mission 3: a guaranteed easy road event on the way to the first contract.
   if (mission?.story === 'm3.contract' && !launched.state.flags.openingPeddler) {
     launched.state.flags.openingPeddler = true;
-    launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', day: 0, scripted: true, toId: mission.locationId };
+    launched.state.pendingRoadEvent = { id: 'opening-peddler', type: 'peddler', day: 0, scripted: true, toId: mission.locationId, where: 'Setting out: ' + mission.title };
     return launched;
   }
   const founderGoes = (assignments || []).some((assignment) => assignment.heroId === launched.state.guild.founderHeroId);

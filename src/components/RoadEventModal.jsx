@@ -11,7 +11,7 @@ export default function RoadEventModal({ event, onChoose }) {
   if (!definition) return null;
   const destination = LOCATION_BY_ID[event.toId]?.name || 'the next town';
   return (
-    <Modal open title={definition.title} eyebrow={`On the road to ${destination}`} preventClose width="medium" className="modal--story">
+    <Modal open title={definition.title} eyebrow={event.where || `On the road to ${destination}`} preventClose width="medium" className="modal--story">
       <div className="decision-scene road-event">
         <Dialogue speaker="On the road" text={definition.text} />
         <div className="decision-options" data-menu>

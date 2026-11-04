@@ -523,7 +523,7 @@ function resultNarrative(mission, option, grade, reward, fame, injuries) {
     Defeat: `The party survives a failed attempt and returns with hard questions.`,
     Catastrophic: `The expedition collapses around the choice to “${option.label}.”`,
   }[grade];
-  const consequence = injuries.length ? ` ${injuries.join(', ')} return wounded.` : ' Every hero returns unhurt.';
+  const consequence = injuries.length ? ` ${injuries.join(', ')} ${injuries.length === 1 ? 'returns' : 'return'} wounded.` : ' Every hero returns unhurt.';
   return `${opening}${consequence} The guild receives ${reward} gold and ${fame} fame.`;
 }
 
