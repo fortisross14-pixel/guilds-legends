@@ -31,13 +31,13 @@ export function grantPatronRewardsInPlace(state) {
     state.candidates.push(candidate);
     commitRng(state, rng);
     temple.granted.recruit = true;
-    pushMoment(state, { type: 'construction', roomId: 'patron', title: 'The Temple sends a friend', effect: `${candidate.name}, a ${candidate.rarity} Cleric, waits for you in the Greenhollow tavern. No fee.`, unlocked: ['Sister Maelle can join'] });
+    pushMoment(state, { type: 'construction', roomId: 'patron', heading: 'A patron’s gift', title: 'The Temple sends a friend', effect: `${candidate.name}, a ${candidate.rarity} Cleric, waits for you in the Greenhollow tavern. No fee.`, unlocked: ['Sister Maelle can join'] });
   }
   const smiths = patronStateInPlace(state, 'smiths');
   if (patronAtLeast(state, 'smiths', 'ally') && !smiths.granted.weapon) {
     addItemsInPlace(state, { [SMITHS_WEAPON]: 1 });
     smiths.granted.weapon = true;
-    pushMoment(state, { type: 'construction', roomId: 'patron', title: 'Forged in Ironford', effect: `The Smiths' Guild gives you the ${ITEMS[SMITHS_WEAPON].name}. It waits in your chest.`, unlocked: [ITEMS[SMITHS_WEAPON].name] });
+    pushMoment(state, { type: 'construction', roomId: 'patron', heading: 'A patron’s gift', title: 'Forged in Ironford', effect: `The Smiths' Guild gives you the ${ITEMS[SMITHS_WEAPON].name}. It waits in your chest.`, unlocked: [ITEMS[SMITHS_WEAPON].name] });
     addChronicle(state, { type: 'facility', importance: 2, title: 'The Oathblade', text: 'Ironford’s smiths forge a blade for the guild, and every foundry hears about it.', tags: ['patron'] });
   }
 }

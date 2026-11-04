@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { checkCondition, knownMissions, freeBeds, getArenaView, getPlayerRanks, getStoryView, hallStage, storyNpcsHere } from '../game/engine.js';
 import { BUILDINGS } from '../data/world.js';
 import { REGULARS } from '../data/people.js';
@@ -15,7 +15,7 @@ import Icon from '../components/Icon.jsx';
  * landmarks talk through the dialogue system, exits lead to wild areas.
  * The position is saved whenever the founder leaves, so returning puts them back.
  */
-export default function TownScene({ town, state, actions, navigate, openBuilding, showBuilding, paused = false, apiRef = null }) {
+export default function TownScene({ town, state, actions, navigate, openBuilding, showBuilding, paused = false, apiRef = null, onTalk = null }) {
   // The guild's own hall stands in Dunmere and changes with its stage.
   const stage = hallStage(state);
   const hall = town.id === 'dunmere' ? { asset: stage.exterior, label: stage.townLabel } : null;
@@ -23,6 +23,11 @@ export default function TownScene({ town, state, actions, navigate, openBuilding
   const ownApi = useRef(null);
   const api = apiRef || ownApi;
   const [talk, setTalk] = useState(null);
+  // An open conversation holds back queued cards (App.jsx, the interruption queue).
+  useEffect(() => {
+    onTalk?.(Boolean(talk));
+  }, [talk, onTalk]);
+  useEffect(() => () => onTalk?.(false), [onTalk]);
   const [peek, setPeek] = useState(null);
   // Conditional people (an NPC with `if`) appear only while their condition holds.
   const active = map.targets.filter((target) => !target.if || checkCondition(state, target.if)).map((target) => target.id);

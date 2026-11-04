@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getWildAreaView } from '../game/engine.js';
 import { wildMap } from './sceneMap.js';
 import WalkableScene from './WalkableScene.jsx';
@@ -12,11 +12,16 @@ import { Button } from '../components/UI.jsx';
  * walking into one or tapping it starts a battle. Gathering spots give items
  * or gold, a night at the camp heals the party (one day passes), the exit leads back to town.
  */
-export default function WildScene({ area, state, actions, paused = false, apiRef = null }) {
+export default function WildScene({ area, state, actions, paused = false, apiRef = null, onTalk = null }) {
   const map = useMemo(() => wildMap(area), [area]);
   const ownApi = useRef(null);
   const api = apiRef || ownApi;
   const [talk, setTalk] = useState(null);
+  // An open conversation holds back queued cards (App.jsx, the interruption queue).
+  useEffect(() => {
+    onTalk?.(Boolean(talk));
+  }, [talk, onTalk]);
+  useEffect(() => () => onTalk?.(false), [onTalk]);
   const [camp, setCamp] = useState(false);
   const view = getWildAreaView(state, area.id);
   const saved = state.world?.exploration?.positions?.[area.id];

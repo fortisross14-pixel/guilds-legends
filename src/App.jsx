@@ -779,13 +779,15 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   }, [arrivalKey, state.world?.activeTravel]);
   const [heroModalId, setHeroModalId] = useState(null);
   const [storyScene, setStoryScene] = useState(null);
+  // A conversation open in the scene: queued cards wait until it closes.
+  const [talking, setTalking] = useState(false);
   // A story scene waits until fights, decisions, reports and reward cards are done.
   const blocked = Boolean(
     state.activeEncounter || state.activeMissionGame || state.pendingDecisions.length || state.pendingRoadEvent || state.pendingReports?.length || state.moments?.length,
   );
   useEffect(() => {
-    if (!storyScene && !blocked && state.story?.scene?.conversation) setStoryScene(state.story.scene.conversation);
-  }, [storyScene, blocked, state.story?.scene?.conversation]);
+    if (!storyScene && !blocked && !talking && state.story?.scene?.conversation) setStoryScene(state.story.scene.conversation);
+  }, [storyScene, blocked, talking, state.story?.scene?.conversation]);
   const [reportModalRef, setReportModalRef] = useState(null);
   const [message, setMessage] = useState(null);
   // Short messages from anywhere (a disabled button saying why, src/components/UI.jsx toast).
@@ -1226,11 +1228,11 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     view === 'map' ? (
       <MapScreen {...placeProps} place={place} />
     ) : view === 'interior' && town && !wildArea ? (
-      <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} apiRef={sceneApi} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
+      <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
     ) : wildArea ? (
-      <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} />
+      <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} />
     ) : town ? (
-      <TownScene key={town.id} town={town} {...placeProps} paused={covered} apiRef={sceneApi} openBuilding={openBuilding} showBuilding={openBuilding} />
+      <TownScene key={town.id} town={town} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} openBuilding={openBuilding} showBuilding={openBuilding} />
     ) : (
       <MapScreen {...placeProps} place={place} />
     );
@@ -1257,7 +1259,9 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
         ? 'decision'
         : state.pendingRoadEvent
           ? 'road'
-          : activeReport
+          : talking
+            ? null
+            : activeReport
             ? 'report'
             : storyScene
               ? 'scene'
@@ -1276,6 +1280,30 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
     if (isPending) actions.acknowledgeReport(activeReportReference);
     else setReportModalRef(null);
   };
+
+  // Test hook (playthroughs, docs/PLAYTEST_CH1.md): the game state as short text.
+  // The walkable scene adds its own window.render_game_to_text.
+  useEffect(() => {
+    window.gol_state_text = () =>
+      JSON.stringify({
+        view,
+        section: section ? `${section.id}:${section.tab || ''}` : null,
+        interruption,
+        location: state.world?.currentLocationId,
+        wild: state.world?.wildAreaId || null,
+        travel: state.world?.activeTravel ? state.world.activeTravel.daysRemaining : null,
+        date: state.date,
+        gold: state.guild.crowns,
+        fame: state.guild.fame,
+        hall: hasHall(state),
+        heroes: state.heroes.map((hero) => `${hero.name}|${hero.level}|${hero.status}|hp${hero.health ?? '-'}`),
+        story: story.active ? `${story.active.id}:${story.active.current?.text || ''}` : story.next ? `next:${story.next.id}` : 'done',
+        notices: state.notifications.length,
+      });
+    return () => {
+      delete window.gol_state_text;
+    };
+  });
 
   if (state.story?.prologue !== 'done') {
     return <Prologue state={state} onComplete={actions.completePrologue} />;

@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { hasHall, peopleIn, storyNpcsHere } from '../game/engine.js';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getStoryView, hasHall, peopleIn, storyNpcsHere } from '../game/engine.js';
+import Icon from '../components/Icon.jsx';
 import { INTERIORS } from '../data/interiors.js';
 import { townFor } from '../data/towns/index.js';
 import { interiorMap } from './sceneMap.js';
@@ -15,7 +16,7 @@ import { dateLine } from '../hud/dateLine.js';
  * furniture (shelves, boards) to use it; tap the doorway to leave.
  * The room is rebuilt when someone arrives or leaves (`peopleKey`).
  */
-export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, apiRef = null }) {
+export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, apiRef = null, onTalk = null }) {
   const locationId = state.world?.currentLocationId || 'dunmere';
   const town = townFor(locationId);
   const room = INTERIORS[building];
@@ -30,9 +31,25 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
   const ownApi = useRef(null);
   const api = apiRef || ownApi;
   const [talk, setTalk] = useState(null);
+  // An open conversation holds back queued cards (App.jsx, the interruption queue).
+  useEffect(() => {
+    onTalk?.(Boolean(talk));
+  }, [talk, onTalk]);
+  useEffect(() => () => onTalk?.(false), [onTalk]);
   // The main quest marker sits on a regular who holds the current story scene.
   const questNpcs = state.settings?.questMarker === false ? [] : storyNpcsHere(state);
   const beacons = map.targets.filter((target) => target.dialogue && questNpcs.includes(target.dialogue)).map((target) => target.id);
+
+  // The goal line, as in town: walk to the story person here, or head out when the step is elsewhere.
+  const step = state.settings?.questMarker === false ? null : getStoryView(state).active?.current;
+  const goalLine = step ? (
+    <button type="button" className="goal-line" onClick={() => (beacons[0] ? api.current?.goTo(beacons[0]) : onLeave())} aria-label={`Goal: ${step.text}`}>
+      <Icon name="alert" size={14} tone="plain" />
+      <span>{step.text}</span>
+    </button>
+  ) : building === 'tavern' && !hasHall(state) ? (
+    <p className="goal-line goal-line--status">No hall, no hires.</p>
+  ) : null;
 
   const interact = (target) => {
     if (target.kind === 'exit') onLeave();
@@ -56,7 +73,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
       className={`interior-scene interior-scene--${building}`}
       label={`Inside ${label}`}
     >
-      <PlaceTag title={label} sub={dateLine(state.date)} goal={building === 'tavern' && !hasHall(state) ? <p className="goal-line goal-line--status">No hall, no hires.</p> : null} />
+      <PlaceTag title={label} sub={dateLine(state.date)} goal={goalLine} />
       {talk?.dialogue ? (
         <DialogueBox
           key={talk.person}

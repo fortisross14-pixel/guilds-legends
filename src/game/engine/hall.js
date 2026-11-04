@@ -149,11 +149,12 @@ export function rentLotInPlace(state, lotId = HOME_LOT_ID, deposit = LOT_BY_ID[l
   pushMoment(state, {
     type: 'construction',
     roomId: 'hall',
+    heading: 'A home for the banner',
     title: `${data.name}: yours to build on`,
     effect: `A small cabin with one bedroom (2 beds) and ${empty} empty slots to build rooms in. Rent is ${data.rent} gold a month.`,
     unlocked: ['Hiring', 'Room building', 'Guild duty (Office)', `${bedCount(state)} beds in total`],
-    stage: hallStage(state).name,
-    interior: hallStage(state).interior,
+    stage: null,
+    interior: 'town.dunmere.guildhall.stage1',
   });
   addChronicle(state, { type: 'facility', importance: 3, title: `${state.guild.name} rents ${data.name}`, text: 'An empty yard, a cabin in the middle and a drafty fence. The banner goes up over the gate on Banner Plaza.', tags: ['hall'] });
   return true;
@@ -184,6 +185,7 @@ export function buyLot(state, lotId = state.guild.hqLotId) {
   pushMoment(next, {
     type: 'construction',
     roomId: 'hall',
+    heading: 'Milestone',
     title: 'The deed is yours',
     effect: `${data.owner} signs ${data.name} over to ${next.guild.name}. No more rent, and nobody can take the hall away.`,
     unlocked: ['No more rent', data.expansions.length ? `Expansion: ${data.expansions[0].land}` : 'The lot is complete'],
@@ -280,7 +282,8 @@ function progressExpansionsInPlace(state) {
     pushMoment(state, {
       type: 'construction',
       roomId: 'hall',
-      title: `The lot now has ${lot.slots} slots`,
+      heading: 'The hall grows',
+    title: `The lot now has ${lot.slots} slots`,
       effect: `${work.land[0].toUpperCase()}${work.land.slice(1)} is part of the hall grounds now.`,
       unlocked: [`${lot.slots - Object.values(lot.rooms || {}).filter((level) => level > 0).length} empty slots to build in`],
       stage: null,

@@ -101,13 +101,13 @@ export default function MomentModal({ moment, state, onClose }) {
 
   if (moment.type === 'construction') {
     return (
-      <Modal open title={moment.title} eyebrow="Construction complete" onClose={onClose} width="medium" className="modal--ceremony">
+      <Modal open title={moment.heading || 'Construction complete'} onClose={onClose} width="medium" className="modal--ceremony">
         <div className={`moment moment--construction ${skipClass}`} onClick={skip}>
           <Ceremony fx="burst">
             <p className="moment__headline">{moment.title}</p>
           </Ceremony>
           {moment.interior ? <Asset id={moment.interior} className="moment__room-art" alt="" /> : null}
-          {moment.stage ? <Badge tone="gold">The guild home is now a {moment.stage.toLowerCase()}</Badge> : null}
+          {moment.stage ? <Badge tone="gold">Your hall: {moment.stage}</Badge> : null}
           <p className="moment__effect">{moment.effect}</p>
           {moment.unlocked?.length ? (
             <>
