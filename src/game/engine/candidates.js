@@ -150,6 +150,9 @@ export function makeCandidate(state, rng, forcedQuality, locationId = state.worl
     demand: candidateDemandFor(hero, state, rng),
     objection: rng.chance(0.2) ? rng.pick(OBJECTIONS).id : null,
     expiresYear: state.date.year + 1,
+    // When they arrived (people.js rotates visitors monthly) and where they wait.
+    postedSerial: campaignMonthSerial(state),
+    venue: 'tavern',
     interest: clamp(63 + state.guild.tierIndex * 10 + Math.round(state.guild.fame / 110) - hero.level * 1.6 - (hero.rarity === 'Legend' ? 12 : 0), 20, 98),
   };
 }

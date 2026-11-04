@@ -29,6 +29,7 @@ import {
 } from './story.js';
 import { leaseHallInPlace } from './hall.js';
 import { advanceDays } from './time.js';
+import { introduceInPlace } from './people.js';
 
 
 /** Pixel centre of a tile, for saved positions. */
@@ -160,7 +161,11 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     }
     if (effect.event) knowledge.events[effect.event.id] = { source: context.speaker || 'Town talk', note: effect.event.note };
     if (effect.open) ui.open = effect.open;
-    if (effect.recruit) ui.recruit = true;
+    // A keeper's introduction: everyone looking for work in the tavern becomes known, and the tavern opens.
+    if (effect.recruit) {
+      introduceInPlace(state, state.world?.currentLocationId || 'dunmere');
+      ui.open = 'tavern';
+    }
   });
   if (effects.some((effect) => effect.patron || effect.patronGift)) grantPatronRewardsInPlace(state);
   return ui;

@@ -40,7 +40,7 @@
 //   { route: name } (the mission's contract route), { storyRecruit: heroId }, { leaseHall: deposit },
 //   { passDays: n }, { fame: n }, { legacy: n }, { heroLoyalty: { id, amount } } (a story hero),
 //   { wait: true } (keep a story scene open)
-//   { recruit: true }                       UI: shows a recruit offer from this town
+//   { recruit: true }                       a keeper's introduction: the tavern's recruits become known, the tavern opens
 //   { patron: { id, amount } }              standing with a patron (src/data/patrons.js)
 //   { patronGift: patronId }                50 gold for standing, once a month
 import dunmere from './dunmere.js';

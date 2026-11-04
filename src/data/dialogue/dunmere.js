@@ -21,30 +21,20 @@ export default {
         if: { charter: 'shield', talked: false },
         lines: [
           'Shield of the People? Then half of Dunmere likes you already. The other half will, once you earn it.',
-          'Come in when you are ready to meet Dunmere’s strays and strivers.',
+          'Dunmere’s strays and strivers drink here. Some of them are looking for a banner.',
         ],
-        choices: [
-          { text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }] },
-          { text: 'Go inside', effects: [{ open: 'tavern' }] },
-        ],
+        choices: [{ text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }], reply: ['She nods at the tables. “Them. Talk to them yourself; I only pour.”'] }],
       },
       {
         if: { talked: true },
         lines: ['The Wayfarer keeps a chair open for {guild}. You are becoming the sort of name people save a seat for.'],
-        choices: [
-          { text: 'Who is looking for work?', if: { candidateHere: true }, effects: [{ recruit: true }] },
-          { text: 'Go inside', effects: [{ open: 'tavern' }] },
-        ],
+        choices: [{ text: 'Who is looking for work?', if: { candidateHere: true }, effects: [{ recruit: true }], reply: ['“The usual faces, and a few new ones. Ask them yourself.”'] }],
       },
       {
         lines: [
-          'A new banner is a promise, not a company. The right person might be inside. Listen before you hire.',
-          'Come in when you are ready to meet Dunmere’s strays and strivers.',
+          'A new banner is a promise, not a company. The right person might be at one of these tables. Listen before you hire.',
         ],
-        choices: [
-          { text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }] },
-          { text: 'Go inside', effects: [{ open: 'tavern' }] },
-        ],
+        choices: [{ text: 'Introduce me to someone', if: { candidateHere: true }, effects: [{ recruit: true }], reply: ['She nods at the tables. “Them. Talk to them yourself; I only pour.”'] }],
       },
     ],
   },

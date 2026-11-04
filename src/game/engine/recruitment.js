@@ -138,6 +138,8 @@ export function recruitCandidate(state, candidateId, negotiation = 'accept', yea
   const index = next.candidates.findIndex((candidate) => candidate.id === candidateId);
   if (index < 0) return { state, error: 'This candidate has left the region.' };
   const candidate = next.candidates[index];
+  // Challengers join only after the guild beats them in a bout (people.js).
+  if (candidate.boutFirst && !candidate.boutWon) return { state, error: `${candidate.name} wants a bout first.` };
   const currentLocationId = next.world?.currentLocationId || 'dunmere';
   if (!operationalLocationIds(next).has(candidate.locationId || 'dunmere')) {
     const location = LOCATION_BY_ID[candidate.locationId];

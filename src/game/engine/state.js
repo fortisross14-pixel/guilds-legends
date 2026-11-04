@@ -9,6 +9,7 @@ import { SCHEMA_VERSION, commitRng, hashString, makeRng } from './core.js';
 import { createHeroFromBase } from './heroes.js';
 import { refreshCandidatesForLocationInPlace } from './candidates.js';
 import { createUniverseInPlace, refreshMissionsInPlace } from './universe.js';
+import { seedVisitorsInPlace } from './people.js';
 import { evaluateStateInPlace } from './goals.js';
 import { createTournamentsInPlace } from './guildTournaments.js';
 import { refreshSideJobsInPlace } from './townLife.js';
@@ -221,6 +222,9 @@ export function createNewGame(options = {}) {
   createTournamentsInPlace(state, rng);
   refreshSideJobsInPlace(state, rng);
   commitRng(state, rng);
+  // Everyone standing in the towns' buildings (people.js).
+  state.people = {};
+  seedVisitorsInPlace(state);
 
   // "Skip tutorial": no prologue, and Act I starts at the Harvest Melee.
   if (options.skipTutorial) {

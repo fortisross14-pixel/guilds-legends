@@ -63,7 +63,6 @@ export default {
     { id: 'warden', name: 'Warden Tamsin', role: 'Forest warden', at: [16, 2], dialogue: 'greenhollow.warden' },
     { id: 'storyteller', name: 'Old Fen', role: 'Storyteller', at: [21, 14], dialogue: 'greenhollow.storyteller' },
     { id: 'stablehand', name: 'Kit', role: 'Stablehand', at: [6, 19], dialogue: 'greenhollow.stablehand' },
-    { id: 'innkeeper', name: 'Rowe Fallow', role: 'Innkeeper', at: [26, 8], dialogue: 'greenhollow.innkeeper' },
     { id: 'cleric', name: 'Brother Alder', role: 'Grove cleric', at: [35, 13], dialogue: 'greenhollow.cleric' },
   ],
   exits: [{ id: 'exit-thornwood', area: 'thornwood-edge', name: 'Thornwood edge', at: [14, 0], size: [2, 1] }],

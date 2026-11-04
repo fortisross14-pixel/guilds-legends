@@ -83,19 +83,6 @@ export default {
       },
     ],
   },
-  'greenhollow.innkeeper': {
-    speaker: 'Rowe Fallow',
-    portrait: P('innkeeper'),
-    variants: [
-      {
-        lines: ['Welcome to the Mossy Kettle. The tea is mostly moss and the stew is mostly kettle. People stay for the company.'],
-        choices: [
-          { text: 'Anyone looking for work?', if: { candidateHere: true }, effects: [{ recruit: true }] },
-          { text: 'Go inside', effects: [{ open: 'tavern' }] },
-        ],
-      },
-    ],
-  },
   'greenhollow.cleric': {
     speaker: 'Brother Alder',
     portrait: P('cleric'),

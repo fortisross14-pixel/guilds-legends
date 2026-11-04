@@ -24,6 +24,7 @@ import { completeIndividualTournamentInPlace, resolveIndividualRoundInPlace } fr
 import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guildTournaments.js';
 import { missionDecision } from './missions.js';
 import { recordRivalryInPlace, settleChallengeInPlace } from './rivalry.js';
+import { personBoutResultInPlace } from './people.js';
 
 function concludeMissionGameInPlace(state) {
   const game = state.activeMissionGame;
@@ -214,6 +215,13 @@ export function concludeActiveCombat(state, mutate = false) {
     next.activeEncounter = null;
     evaluateStateInPlace(next);
     return { state: finalize(next), error: null, result: { kind: 'challenge', combat: combatResult } };
+  }
+
+  if (encounter.sourceType === 'person-bout') {
+    personBoutResultInPlace(next, encounter.sourceId, combatResult.playerWon);
+    next.activeEncounter = null;
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'person-bout', combat: combatResult } };
   }
 
   if (encounter.sourceType === 'story-duel') {

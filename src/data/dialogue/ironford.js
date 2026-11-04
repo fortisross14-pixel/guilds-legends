@@ -99,19 +99,6 @@ export default {
       },
     ],
   },
-  'ironford.barkeep': {
-    speaker: 'Mags',
-    portrait: P('barkeep'),
-    variants: [
-      {
-        lines: ['The Quenched Anvil. We quench anvils, smiths and the occasional argument. Sit.'],
-        choices: [
-          { text: 'Anyone looking for work?', if: { candidateHere: true }, effects: [{ recruit: true }] },
-          { text: 'Go inside', effects: [{ open: 'tavern' }] },
-        ],
-      },
-    ],
-  },
 
   'ironford.forge': {
     speaker: 'The Great Forge',

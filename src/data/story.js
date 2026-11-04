@@ -133,8 +133,8 @@ export const STORY_MISSIONS = [
     gate: { text: 'Rent the hall (mission 1)', if: { storyDone: 'm1' } },
     alternatives: [{ text: 'Skipping the tutorial hires Nessa for you', if: { tutorialSkipped: true } }],
     steps: [
-      { id: 'mara', kind: 'scene', scene: 'story.m2.mara', at: 'dunmere', npc: 'dunmere.innkeeper', text: 'Meet Mara Fen at the Wayfarer.', hint: 'Mara stands outside the Wayfarer tavern. Tap her.', screen: 'town' },
-      { id: 'nessa', kind: 'scene', scene: 'story.m2.nessa', at: 'dunmere', npc: 'dunmere.nessa', text: 'Talk to the young hunter Mara pointed out.', hint: 'Nessa waits by the tavern. Ask her to join: she is free, and she needs a bed in your hall.', screen: 'town' },
+      { id: 'mara', kind: 'scene', scene: 'story.m2.mara', at: 'dunmere', npc: 'dunmere.innkeeper', text: 'Meet Mara Fen at the Wayfarer.', hint: 'Mara keeps the bar inside the Wayfarer. Go in and tap her.', screen: 'town' },
+      { id: 'nessa', kind: 'scene', scene: 'story.m2.nessa', at: 'dunmere', npc: 'dunmere.nessa', text: 'Talk to the young hunter Mara pointed out.', hint: 'Nessa waits outside the tavern. Ask her to join: she is free, and she needs a bed in your hall.', screen: 'town' },
     ],
     rewards: { codex: ['mara-fen', 'nessa-thornfield'] },
   },

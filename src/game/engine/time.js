@@ -49,6 +49,7 @@ import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace
 import { EXPIRE_PENALTY, adjustRegionReputationInPlace } from './reputation.js';
 import { expireChallengeInPlace, maybeIssueChallengeInPlace, nemesisBidsInPlace, rivalTakesContractInPlace, updateNemesesInPlace } from './rivalry.js';
 import { checkBossesInPlace } from './stories.js';
+import { rotateVisitorsInPlace } from './people.js';
 import {
   expireWagerInPlace,
   maybeFriendlyChallengeInPlace,
@@ -421,6 +422,8 @@ function runMonthInPlace(next, rng) {
       });
     }
   });
+  // Visitors in the towns' buildings rotate (people.js); regulars stay.
+  rotateVisitorsInPlace(next, rng);
   updateNemesesInPlace(next);
   refreshSideJobsInPlace(next, rng);
   checkBossesInPlace(next, rng);

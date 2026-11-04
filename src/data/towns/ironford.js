@@ -67,7 +67,6 @@ export default {
     { id: 'smith', name: 'Corr Anvilson', role: 'Smith', at: [30, 9], dialogue: 'ironford.smith' },
     { id: 'guard', name: 'Ysolde Marr', role: 'Caravan guard', at: [16, 22], dialogue: 'ironford.guard' },
     { id: 'scholar', name: 'Venn Ashby', role: 'Visiting scholar', at: [34, 22], dialogue: 'ironford.scholar' },
-    { id: 'barkeep', name: 'Mags', role: 'Barkeep', at: [10, 20], dialogue: 'ironford.barkeep' },
     // The former Argent Crown quartermaster (story mission 6).
     { id: 'archivist', name: 'Oswin Tull', role: 'Archive keeper', at: [17, 7], dialogue: 'ironford.archivist' },
   ],
