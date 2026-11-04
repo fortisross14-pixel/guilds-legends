@@ -9,14 +9,25 @@ Screenshots: `docs/screenshots/8a/` (issues and verification) and `docs/screensh
 | Step | Status |
 |---|---|
 | Spec: clarity-navigation | **done** (session 1) |
-| Stage 1: play and log | in progress: tutorial path on the phone, up to mission 3 (see the P- entries) |
-| Spec: battle-hiring | not started |
+| Stage 1: play and log | in progress: tutorial path on the phone through mission 3's contract (P-1…P-17). Blockers on the way were fixed at once so play could go on |
+| Spec: battle-hiring | not started (owns P-14, P-17) |
 | Spec: guild-hall-rooms | not started |
-| Autoplay update and balance | not started |
-| Stage 2: fix the log | not started |
+| Spec: missions-in-world | not started (owns P-9, P-12, P-15, the mission-game modals, decision cards and reports) |
+| Spec: tournaments-circuits | not started |
+| Autoplay update and balance | not started (owns P-16) |
+| Stage 2: fix the log | ongoing (fixes land as they are found) |
 | Stage 3: replay and verify | not started |
 
+**Order of work** (each spec changes what the playthrough sees, so build before replaying):
+1. Finish Stage 1 for what no spec replaces: every town, building, NPC and conversation; hiring; Party, Items, the hero page; the hall and resting; travel; the wild areas; the arena sign-up; menus and save/load; the desktop size.
+2. battle-hiring → guild-hall-rooms (rooms, infirmary, the defeat rule) → missions-in-world (needs the defeat rule) → tournaments-circuits.
+3. Autoplay that plays like a person, then balance with data only.
+4. Stage 3: replay both paths at both sizes; verify every entry.
+
+**Play driver** (scratch, not committed): Playwright scripts with helpers for a new game, the prologue, the goal line, dialogue (ask every topic, then decide), cards, fights (Auto) and the board. They read `window.gol_state_text()` (App.jsx, a test hook with the place, the open section, the interruption, the date, gold, heroes and the story step) and the scene's `window.render_game_to_text()`. Note: tapping the dialogue box needs a forced click (Playwright never sees the full-screen layer as stable).
+
 ### Session notes
+- **Session 2 (2026-11-04):** Stage 1 on the phone, tutorial path: the prologue, missions 1–3 up to the first report. Fixed on the way: P-4, P-5, P-6, P-7, P-8, P-10, P-11, and P-3 (labels by priority). Two new specs arrived (missions-in-world, tournaments-circuits); see the order of work above.
 - **Session 1 (2026-11-04):** built the clarity-navigation spec (it was in hand when 8A started). Before and after screenshots and word counts in `docs/screenshots/clarity/` (`before-*`, `after-*`; three review loops). `view` = words inside the 390×844 viewport, `all` = every word in the panel including scrolled text. **Next session:** Stage 1, play and log (both paths, phone and desktop), starting from a new game.
 
 ### Word counts, first view at 390×844 (clarity spec)
@@ -62,7 +73,7 @@ Stage 1 (playthrough) entries, tutorial path on the phone (`8a/phone-s1-*`, `8a/
 |---|---|---|---|---|---|---|
 | P-1 | minor | Prologue | Knock lines, then tap the front door | The door is off screen; the founder walks ~7.5 s to it, the first thing the player does → the door closer to the start, or a faster first walk | 8a/phone-s1-005-after-door-tap.png | open |
 | P-2 | minor | Founding card | Raise the banner | Four long charter cards (pitch, 3 modifiers, path) on one scroll; the banner relic is a placeholder → compact cards, details on tap | 8a/phone-s1-007-founding-card.png | open |
-| P-3 | major | Dunmere | Arrive in town | Edge labels overlap: Gideon Rusk's pointer label sits on Orren Pike's | 8a/phone-s1-009-town-arrival.png | open |
+| P-3 | major | Dunmere | Arrive in town | Edge labels overlap: Gideon Rusk's pointer label sits on Orren Pike's → labels are placed by priority (quest beacons, the near target, the rest); one that would overlap a placed label fades, like labels under the HUD | 8a/phone-s1-009-town-arrival.png | fixed |
 | P-4 | major | Moments | Mission 1: pay the rent | The card said "Construction complete", repeated its title, showed the grand-hall art, read "now a empty hall", and its Continue button was cut off → its own heading, the cabin art, no stage badge, a smaller headline and art on phones | 8a/phone-s2-002-story-m2.png → phone-s2-003-interruption-moment.png | fixed |
 | P-5 | major | Interruptions | Any choice that queues a card while a conversation is open | The card opened over the open dialogue, hiding its reply → while a conversation is open, queued cards (moments, events, reports, story scenes) wait; fights and decisions can still interrupt | 8a/phone-s2-002-story-m2.png | fixed |
 | P-6 | major | Interiors | Mission 2: enter the Wayfarer | No goal line inside buildings (Mara has a "!", nothing says to talk to her) → the goal line shows inside too: tap to walk to the story person, or to head out when the step is elsewhere | 8a/phone-s2-004-stuck.png | fixed |
