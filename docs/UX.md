@@ -92,6 +92,22 @@ In priority order: **dialogue**, then **battle commands**, then **bottom panels*
 | Notice board | the contracts people gave you, in the template |
 | Overlays | battle (full screen), story scenes and ceremonies (full screen), everything else as a bottom panel |
 
+### The battle screen (battle-hiring spec)
+
+- **The bodies are the interface.** Heroes stand on the left facing right, enemies on the right facing left, on one ground line and at one scale (`--unit` in battle.css; bosses a little larger). Up to two per row; extra units stand in a back row.
+- **Under every unit, a plate:** first name, level, a slim HP bar (and MP for heroes), status icons, on a dark plate that stays readable on any backdrop. A check on a hero's plate means their command is chosen.
+- **Drag from the body:** press a hero and drag; a ghost of the sprite follows the finger with a line from the hero, valid targets glow, and the target shows a preview (damage range and hit chance, heal, ☠ for a kill). Rest the finger on a target for a moment (it must be still, so passing over a unit does nothing) and the radial menu opens under the thumb; release on an action. Release on a target without resting: the same menu opens there. The dragged hero's own menu opens only by dropping on them.
+- **Tap fallback:** tap a hero, then a target: the same radial menu. Long-press any unit or turn-order icon for its details.
+- **The bar at the bottom:** the items (icon and ×count; tap one, then a hero, or drag it onto the hero) on the left; Undo, Auto, Speed and Flee as small icons on the right. No instruction text.
+- **Top:** the turn order, centred; the tell right under it. Enemy intent is one small icon above the enemy (long-press for what it means).
+- **First battle:** a ghost hand drags from the first hero to the first enemy, once (`settings.seenHints.battleDrag`).
+- **HP and MP carry over** between battles (`hero.health` and `hero.mana`, percents). Heroes at home get +6 health a day and full MP; camping, inns and the hall restore MP. A hero knocked out in a battle the party wins ends at 1 HP and injured for a week. The victory card shows every hero's HP after the fight and marks the injured.
+- **Images never start a native drag** (`img { -webkit-user-drag: none }`): every drag in the game is ours.
+
+### Hiring: the recruit's ID card
+
+From a recruit's first line, a card sits right above the conversation: portrait, name, class (icon and name), level, age, rarity, primal, and the stats as ranges. "What can you do?" and scouting narrow the ranges; the card updates at once.
+
 ### Rules
 
 - **Max 3 taps** to common destinations: a hero's page (2: Guild orb → Party, then the hero), quests (2: World orb → Journal, or **Q**), what is happening now (2: Journal), rankings (2: World orb → Records, or the ledger), money (2: the ledger → Gold), the calendar (3), the Guild Hall (2), settings (3), the current goal (1: the goal line).

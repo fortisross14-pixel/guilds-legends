@@ -10,7 +10,7 @@ Screenshots: `docs/screenshots/8a/` (issues and verification) and `docs/screensh
 |---|---|
 | Spec: clarity-navigation | **done** (session 1) |
 | Stage 1: play and log | in progress: tutorial path on the phone through mission 3's contract (P-1…P-17). Blockers on the way were fixed at once so play could go on |
-| Spec: battle-hiring | not started (owns P-14, P-17) |
+| Spec: battle-hiring | **done** (session 2; proof in `docs/screenshots/8a/battle-hiring/`) |
 | Spec: guild-hall-rooms | not started |
 | Spec: missions-in-world | not started (owns P-9, P-12, P-15, the mission-game modals, decision cards and reports) |
 | Spec: tournaments-circuits | not started |
@@ -84,12 +84,19 @@ Stage 1 (playthrough) entries, tutorial path on the phone (`8a/phone-s1-*`, `8a/
 | P-11 | minor | Party bar | Notice board → party bar | A "Quest log" button with no action (dead) → removed | 8a/phone-s2-008-section-noticeBoard-.png | fixed |
 | P-12 | minor | Road events | Send the Old Road contract | "On the road to Dunmere" while leaving Dunmere; "Use them in battle with the Item command" (no such command now) | 8a/phone-s2-010-interruption-road.png | open |
 | P-13 | major | Battle | Mission 3 fight | "Wolves on the Old Road" fields a boar called "Renegade Priest A" and a skeleton "Shield Thug B"; the hint says "Drag a hero onto a wolf" → wolves, named as wolves | 8a/phone-s2-012-battle-start.png | open |
-| P-14 | major | Battle | Any fight on the phone | The first-fight hint box covers the turn order and the tell; heroes are small at the bottom; instruction text in the command panel; big name cards → the battle-hiring spec | 8a/phone-s2-012-battle-start.png | open (spec) |
+| P-14 | major | Battle | Any fight on the phone | The first-fight hint box covers the turn order and the tell; heroes are small at the bottom; instruction text in the command panel; big name cards → the battle-hiring spec | 8a/phone-s2-012-battle-start.png | fixed |
 | P-15 | minor | Reports | Mission 3 report | "Nessa Thornfield return wounded" (grammar); "Legendary" for a risk-1 job; a long report → fix the verb; shorter report | 8a/phone-s2-016-interruption-report.png | open |
 | P-16 | major | Balance | Mission 3 | The first contract pays 498 gold (560 → 1003) for one week → the balance pass | 8a/phone-s2-016-interruption-report.png | open (balance) |
-| P-17 | minor | Combat | Mission 3, won at 97% | Nessa ends the fight hurt and comes back injured after a 3-round win | 8a/phone-s2-013-battle-result.png | open (spec: HP between battles) |
+| P-17 | minor | Combat | Mission 3, won at 97% | Nessa ends the fight hurt and comes back injured after a 3-round win | 8a/phone-s2-013-battle-result.png | fixed: HP and MP now carry over; a knockout in a won fight is 1 HP and 1 week injured (the random mission injury goes with missions-in-world) |
+| P-18 | major | Old Road | Tap "Bandit lookouts" (desktop and phone) | No route to the group: the founder never moves and no fight starts → check the layout (group at [24,4]) in the wild-area pass | 8a/battle-hiring/desktop.log | open |
+| P-19 | blocker | Battle | Press a hero and drag (mouse, and touch where the image takes the gesture) | The browser started a native drag of the sprite image and swallowed the rest of the gesture, so dragging from the body did nothing → images never start a native drag (global `img` rule) | 8a/battle-hiring/phone-002-2-drag-ghost-line.png | fixed |
+| P-20 | major | Battle | Drag a hero slowly across its own body or an ally | The rest timer opened the radial on whatever unit the finger passed (even the dragged hero) → it opens only when the finger rests still for 260 ms on another unit | 8a/battle-hiring/phone-004-4-radial-under-thumb.png | fixed |
+| P-21 | major | Battle | Win any fight on the phone | The victory card was pushed off the right edge (its entrance animation replaced the centring transform) → its own animation keeps the centring | 8a/battle-hiring/phone-007-7-victory-hp.png | fixed |
+| P-22 | minor | Battle | Drag onto an ally at full HP | "+0" heal previews → hidden | 8a/battle-hiring/desktop-004-4-radial-under-thumb.png | fixed |
+| P-23 | minor | Recruits | The recruit card | Ranges with decimals ("57.25–87.25"); some recruits show potential below power (e.g. 72–80 power, 70–78 potential) → rounded; the potential oddity goes to the balance step | 8a/battle-hiring/phone-010-12-recruit-card-after-skills.png | fixed (rounding); open (data) |
 
 **Spec notes:**
+- battle-hiring: "Knocked out in a battle the party wins: 1 HP and injured (1 week)". A hero knocked out in a lost fight also ends at 1 HP; what happens next is the defeat rule in guild-hall-rooms.md. HP recovery: +6 health a day at home and full MP (data: `VITALS` in src/data/activities.js); camps, inns and the hall rest also restore MP. The big name cards are gone entirely (the plates under the units carry HP, MP and statuses).
 - The spec asks for "guild name" on the new game screen; the founding moved to the banner on purpose (earlier user decision), so the new game screen keeps name, class, Begin and the skip box. Not changed.
 - Records' first view counts 94 words: almost all are the 13 guild names of the ladder (a list, one line each).
 
