@@ -6,7 +6,8 @@ function heroInText(heroes = [], text = '') {
   return heroes.find((hero) => !['dead', 'retired'].includes(hero.status) && hero.name && text.includes(hero.name)) || null;
 }
 
-/** A parchment dialogue box: portrait, speaker plate, typed text (click to finish). */
+/** A parchment dialogue box: portrait, speaker plate, typed text (click to finish). The plate names
+ * who tells it (the town crier for a town event); a hero in the story only lends the portrait. */
 export function Dialogue({ speaker, text, hero = null }) {
   const [done, setDone] = useState(false);
   useEffect(() => setDone(false), [text]);
@@ -14,7 +15,7 @@ export function Dialogue({ speaker, text, hero = null }) {
     <div className={`quote-card ${done ? 'is-done' : ''}`} onClick={() => setDone(true)} role="group" aria-label={`${speaker} says`}>
       <div className="quote-card__portrait">{hero ? <HeroPortrait hero={hero} size="lg" showStatus={false} /> : <Crest size="lg" />}</div>
       <div className="quote-card__body">
-        <span className="quote-card__speaker">{hero ? hero.name : speaker}</span>
+        <span className="quote-card__speaker">{speaker}</span>
         <blockquote>
           <TypeText text={text} done={done} />
         </blockquote>

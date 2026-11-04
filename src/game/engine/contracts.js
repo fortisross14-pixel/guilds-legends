@@ -110,11 +110,16 @@ export function candidateRanges(state, candidate) {
     const low = value - (hashString(`${candidate.id}:${key}`) % (2 * width + 1));
     return [Math.max(1, low), low + 2 * width];
   };
+  // Potential is always at least power + 3, so its range never shows below power's
+  // (both ranges still hold the true values).
+  const power = range('power', candidate.power);
+  const rawPotential = range('potential', candidate.potential);
+  const potential = width ? [Math.max(rawPotential[0], Math.min(candidate.potential, power[0] + 3)), Math.max(rawPotential[1], power[1] + 3)] : rawPotential;
   return {
     level,
     exact: width === 0,
-    power: range('power', candidate.power),
-    potential: range('potential', candidate.potential),
+    power,
+    potential,
     attributes: Object.fromEntries(Object.entries(candidate.attributes || {}).map(([key, value]) => [key, range(key, value)])),
   };
 }
