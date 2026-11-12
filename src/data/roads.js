@@ -11,6 +11,10 @@ export const ROADS = [
   { id: 'thornwood-road', name: 'The Thornwood road', ends: ['dunmere', 'greenhollow'], area: 'thornwood-edge', gate: { storyDone: 'temple' }, lockedText: 'The Greenhollow wardens keep the Thornwood road shut to unknown banners. Bring down the Ash Abbot at Dawnwatch Temple first.' },
   { id: 'iron-road', name: 'The Iron Road', ends: ['greenhollow', 'ironford'], days: 2 },
   { id: 'cliff-road', name: 'The cliff road', ends: ['ironford', 'windmere'], days: 2 },
+  // Windmere back to Dunmere along the coast: the loop Dunmere, Greenhollow, Ironford, Windmere.
+  { id: 'coast-road', name: 'The coast road', ends: ['windmere', 'dunmere'], days: 3, gate: { storyDone: 'temple' }, lockedText: 'The coast road waits on the same wardens as the Thornwood road. Bring down the Ash Abbot first.' },
+  // Ironford's third road, east to Mooncourt: Chapter 2 (Champion status).
+  { id: 'moon-road', name: 'The Moon Road', ends: ['ironford', 'mooncourt'], days: 4, gate: { chapterAtLeast: 2 }, lockedText: 'The Moon Road to Mooncourt opens in Chapter 2.' },
   { id: 'blackwood-track', name: 'The Blackwood track', ends: ['dunmere', null], area: 'blackwood' },
 ];
 

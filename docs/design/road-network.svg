@@ -6,12 +6,12 @@
 
   <!-- later chapters (dim) -->
   <g opacity="0.45" stroke="#7a6a55" stroke-width="2" stroke-dasharray="6 6" fill="none">
-    <path d="M400 610 L700 640"/><path d="M700 640 L860 540"/><path d="M860 540 L800 360"/><path d="M800 360 L720 170"/><path d="M720 170 L950 250"/><path d="M640 420 L800 360"/>
+    <path d="M400 610 L700 640"/><path d="M700 640 L860 540"/><path d="M860 540 L800 360"/><path d="M800 360 L720 170"/><path d="M720 170 L950 250"/>
   </g>
   <g opacity="0.55" font-size="14" fill="#5a4630" text-anchor="middle">
     <circle cx="700" cy="640" r="9" fill="#bfae90"/><text x="700" y="666">Tidecross</text>
     <circle cx="860" cy="540" r="9" fill="#bfae90"/><text x="860" y="566">Sunspire</text>
-    <circle cx="800" cy="360" r="9" fill="#bfae90"/><text x="800" y="386">Mooncourt</text>
+    <circle cx="800" cy="360" r="11" fill="#bfae90" stroke="#3b2412" stroke-width="2"/><text x="812" y="340" font-weight="bold">Mooncourt</text>
     <circle cx="720" cy="170" r="9" fill="#bfae90"/><text x="720" y="196">Thornwatch</text>
     <circle cx="950" cy="250" r="9" fill="#bfae90"/><text x="950" y="276">Skyreach</text>
     <text x="920" y="690" font-size="15" font-style="italic">Chapter 2 and later (Champion status):</text>
@@ -29,6 +29,11 @@
     <path d="M605 430 L520 525"/><path d="M520 525 L415 600"/>
   </g>
 
+  <g stroke="#6b4a2b" stroke-width="4" fill="none" stroke-dasharray="10 7">
+    <path d="M390 598 L270 520"/><path d="M270 520 L292 422"/>
+    <path d="M640 412 L715 385"/><path d="M715 385 L790 362"/>
+  </g>
+
   <!-- day labels -->
   <g font-size="15" font-weight="bold" fill="#3b2412" text-anchor="middle">
     <rect x="226" y="382" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="243" y="398">1d</text>
@@ -41,6 +46,10 @@
     <rect x="574" y="336" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="591" y="352">2d</text>
     <rect x="547" y="466" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="564" y="482">1d</text>
     <rect x="452" y="552" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="469" y="568">2d</text>
+    <rect x="312" y="556" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="329" y="572">2d</text>
+    <rect x="252" y="456" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="269" y="472">1d</text>
+    <rect x="652" y="374" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="669" y="390">2d</text>
+    <rect x="740" y="352" width="34" height="22" rx="4" fill="#fff8e6" stroke="#6b4a2b"/><text x="757" y="368">2d</text>
   </g>
 
   <!-- roads (pills) -->
@@ -55,6 +64,10 @@
     <text x="560" y="290" font-weight="bold">The Iron Road</text>
     <rect x="465" y="508" width="110" height="34" rx="17" fill="#ece0c4" stroke="#6b4a2b" stroke-width="2.5" stroke-dasharray="6 4"/>
     <text x="520" y="530" font-weight="bold">The cliff road</text>
+    <rect x="215" y="503" width="110" height="34" rx="17" fill="#ece0c4" stroke="#6b4a2b" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <text x="270" y="525" font-weight="bold">The coast road</text>
+    <rect x="660" y="368" width="110" height="34" rx="17" fill="#ece0c4" stroke="#6b4a2b" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <text x="715" y="390" font-weight="bold">The Moon Road</text>
   </g>
 
   <!-- places -->
@@ -64,7 +77,7 @@
     <circle cx="470" cy="150" r="17" fill="#2f6b3a" stroke="#3b2412" stroke-width="3"/>
     <text x="470" y="122" font-size="18" font-weight="bold">Greenhollow</text>
     <circle cx="620" cy="420" r="20" fill="#6b4a2b" stroke="#3b2412" stroke-width="3"/>
-    <text x="668" y="426" font-size="18" font-weight="bold" text-anchor="start">Ironford</text><text x="645" y="446" font-size="13" fill="#5a4630" text-anchor="start">city</text>
+    <text x="620" y="462" font-size="18" font-weight="bold">Ironford</text><text x="620" y="480" font-size="13" fill="#5a4630">city · three roads</text>
     <circle cx="405" cy="610" r="17" fill="#244c8f" stroke="#3b2412" stroke-width="3"/>
     <text x="405" y="646" font-size="18" font-weight="bold">Windmere</text>
     <rect x="58" y="386" width="30" height="30" fill="#e4e1d8" stroke="#3b2412" stroke-width="3" transform="rotate(45 73 401)"/>
@@ -78,6 +91,8 @@
     <text x="128" y="372">locked until mission 2 (a companion)</text>
     <text x="150" y="303">locked until mission 5 (end of Act I)</text>
     <text x="372" y="240">locked until mission 4 (the Ash Abbot)</text>
+    <text x="120" y="560">locked until mission 4</text>
+    <text x="660" y="420">locked until Chapter 2</text>
   </g>
 
   <!-- legend -->
@@ -90,8 +105,9 @@
     <rect x="61" y="702" width="14" height="14" fill="#e4e1d8" stroke="#3b2412" stroke-width="2" transform="rotate(45 68 709)"/><text x="100" y="714">site at a road's end</text>
   </g>
   <g font-size="14" fill="#2a1d12">
-    <rect x="360" y="680" width="420" height="50" rx="8" fill="#fff8e6" stroke="#8a6a3c"/>
-    <text x="375" y="702">Dunmere → Greenhollow: 2d + 1d = 3 days</text>
-    <text x="375" y="722">Dunmere → Ironford: 3 + 2 + 2 = 7 days (via Greenhollow)</text>
+    <rect x="360" y="680" width="480" height="62" rx="8" fill="#fff8e6" stroke="#8a6a3c"/>
+    <text x="375" y="700">Dunmere → Greenhollow: 2d + 1d = 3 days</text>
+    <text x="375" y="718">Dunmere → Ironford: 3 + 4 = 7 days (via Greenhollow) or 3 + 3 = 6 (via Windmere)</text>
+    <text x="375" y="736">The loop: Dunmere · Greenhollow · Ironford · Windmere · Dunmere</text>
   </g>
 </svg>

@@ -10,6 +10,8 @@ import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
+import { checkCondition } from './story.js';
+import { roadBetween } from '../../data/roads.js';
 import { concludeActiveCombat } from './encounters.js';
 import { advanceDays } from './time.js';
 import { charterEffect } from './charter.js';
@@ -42,6 +44,9 @@ function keepTravellingInPlace(next) {
 
 /** Departs for a town and lets the journey's days pass (pausing for events). */
 export function travelTo(state, destinationId) {
+  // A road's gate (story progress, src/data/roads.js) must hold.
+  const road = roadBetween(state.world?.currentLocationId || HOME_LOCATION_ID, destinationId);
+  if (road?.gate && !checkCondition(state, road.gate)) return { state, error: road.lockedText || `${road.name} is closed for now.` };
   const started = startTravel(state, destinationId);
   if (started.error) return started;
   const next = started.state;
