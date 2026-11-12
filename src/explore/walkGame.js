@@ -10,6 +10,12 @@ import { buildGrid, findPath, isFree } from './pathfinding.js';
 
 const SPEED = 190; // world px per second
 const ARRIVE = 4;
+// Rows of a walker sheet (3 frames each, the middle one standing).
+const FACE = { down: 0, left: 1, right: 2, up: 3 };
+
+function isSheet(scene, key) {
+  return Boolean(key && scene.textures.exists(key) && scene.textures.get(key).frameTotal > 2);
+}
 
 /**
  * Camera zoom in CSS px per world px: fill the screen, a little closer on touch.
@@ -72,7 +78,9 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       scene = this;
       loaded.forEach((result) => {
         if (this.textures.exists(result.id)) return;
-        if (result.image) this.textures.addImage(result.id, result.image);
+        // Sprite sheets (asset.sheet: frame size): walkers turn and step, doors open.
+        if (result.image && result.asset?.sheet) this.textures.addSpriteSheet(result.id, result.image, result.asset.sheet);
+        else if (result.image) this.textures.addImage(result.id, result.image);
         else if (result.canvas) this.textures.addCanvas(result.id, result.canvas);
       });
       this.cameras.main.setBackgroundColor(map.background || '#0b0c12');
@@ -89,14 +97,30 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       this.sprites = {};
       map.targets.forEach((target) => {
         if (!target.asset) return;
-        const sprite = this.add.image(target.x, target.y, target.asset).setOrigin(0.5, 1).setDisplaySize(target.w, target.h).setDepth(target.y);
+        const sheet = isSheet(this, target.asset);
+        const sprite = (sheet ? this.add.sprite(target.x, target.y, target.asset, target.opens ? 0 : FACE.down * 3 + 1) : this.add.image(target.x, target.y, target.asset))
+          .setOrigin(0.5, 1)
+          .setDisplaySize(target.w, target.h)
+          .setDepth(target.y + (target.depthBias || 0));
         if (target.bob && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
           this.tweens.add({ targets: sprite, y: target.y - 3, duration: 900 + (target.x % 380), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         }
         this.sprites[target.id] = sprite;
       });
       const spawn = isFree(grid, start.x, start.y) ? start : findPath(grid, start, start)[0] || map.spawn;
-      this.player = this.add.image(spawn.x, spawn.y, map.player.asset).setOrigin(0.5, 1).setDisplaySize(map.player.w, map.player.h).setDepth(spawn.y);
+      this.walker = isSheet(this, map.player.asset);
+      this.player = (this.walker ? this.add.sprite(spawn.x, spawn.y, map.player.asset, FACE.down * 3 + 1) : this.add.image(spawn.x, spawn.y, map.player.asset))
+        .setOrigin(0.5, 1)
+        .setDisplaySize(map.player.w, map.player.h)
+        .setDepth(spawn.y);
+      if (this.walker) {
+        Object.entries(FACE).forEach(([name, row]) => {
+          const key = `${map.player.asset}:walk-${name}`;
+          if (!this.anims.exists(key)) this.anims.create({ key, frames: [0, 1, 2, 1].map((frame) => ({ key: map.player.asset, frame: row * 3 + frame })), frameRate: 8, repeat: -1 });
+        });
+        this.facing = 'down';
+        this.last = { x: spawn.x, y: spawn.y };
+      }
       this.marker = this.add.circle(0, 0, 9).setStrokeStyle(2, 0xf6d28c, 0.9).setVisible(false).setDepth(-9000);
       if (map.fit === 'contain') {
         applyZoom();
@@ -138,8 +162,33 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
         } else moveBy(player, (dx / distance) * step, (dy / distance) * step);
       }
       player.setDepth(player.y);
+      if (this.walker) animateWalker(this, player);
       updateNear();
     }
+  }
+
+  function animateWalker(walkScene, player) {
+    const dx = player.x - walkScene.last.x;
+    const dy = player.y - walkScene.last.y;
+    walkScene.last = { x: player.x, y: player.y };
+    if (Math.abs(dx) + Math.abs(dy) > 0.05) {
+      walkScene.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
+      const key = `${map.player.asset}:walk-${walkScene.facing}`;
+      if (player.anims.currentAnim?.key !== key || !player.anims.isPlaying) player.play(key);
+    } else if (player.anims.isPlaying) {
+      player.stop();
+      player.setFrame(FACE[walkScene.facing] * 3 + 1);
+    }
+  }
+
+  /** A townsperson turns toward the walker when they come close. */
+  function faceWalker(target) {
+    const sprite = scene?.sprites?.[target.id];
+    if (!target.faceWalker || !sprite?.setFrame || !scene.player) return;
+    const dx = scene.player.x - target.x;
+    const dy = scene.player.y - target.y;
+    const facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
+    sprite.setFrame(FACE[facing] * 3 + 1);
   }
 
   function moveBy(player, dx, dy) {
@@ -193,6 +242,7 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     const id = near?.id || null;
     if (id !== state.nearId) {
       state.nearId = id;
+      if (near) faceWalker(near);
       if (!dead) bridge.current?.onNear?.(near);
     }
   }
@@ -209,7 +259,20 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     state.pendingTarget = null;
     scene?.marker?.setVisible(false);
     if (target.auto) state.autoLock.add(target.id);
-    if (!dead) bridge.current?.onInteract?.(target, { x: Math.round(scene.player.x), y: Math.round(scene.player.y) });
+    const at = { x: Math.round(scene.player.x), y: Math.round(scene.player.y) };
+    const doorSprite = target.opens ? scene?.sprites?.[target.id] : null;
+    if (doorSprite?.setFrame) {
+      // The door swings open (4 frames), then the building opens.
+      state.paused = true;
+      [1, 2, 3].forEach((frame, index) => scene.time.delayedCall(70 * (index + 1), () => doorSprite.setFrame(frame)));
+      scene.time.delayedCall(300, () => {
+        state.paused = false;
+        if (!dead) bridge.current?.onInteract?.(target, at);
+        scene.time.delayedCall(400, () => doorSprite.setFrame(0));
+      });
+      return;
+    }
+    if (!dead) bridge.current?.onInteract?.(target, at);
   }
 
   function walkTo(point, target = null) {
@@ -225,6 +288,8 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     if (!scene) return;
     const { width, height } = size();
     state.worldZoom = worldZoomFor(map, width, height, coarse);
+    // Pixel art stays crisp at whole device pixels per art pixel (the art is drawn at 2x).
+    if (map.pixelArt) state.worldZoom = Math.max(1, Math.round(state.worldZoom * dpr * 2)) / (dpr * 2);
     scene.cameras.main.setZoom(state.worldZoom * dpr);
     if (map.fit === 'contain') scene.cameras.main.centerOn(map.size.width / 2, map.size.height / 2 - 12);
   }
@@ -239,7 +304,7 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     banner: false,
     audio: { noAudio: true },
     input: { keyboard: false, mouse: false, touch: false, gamepad: false },
-    render: { antialias: true, roundPixels: true },
+    render: map.pixelArt ? { antialias: false, pixelArt: true, roundPixels: true } : { antialias: true, roundPixels: true },
     scale: { mode: Phaser.Scale.NONE, zoom: 1 / dpr },
     scene: [WalkScene],
   });
