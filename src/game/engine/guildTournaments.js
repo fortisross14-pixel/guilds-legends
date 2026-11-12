@@ -290,11 +290,11 @@ export function completeGuildTournamentInPlace(state, tournament, rng, playerFin
   return recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult);
 }
 
-/** Tournaments whose week has passed without the player resolve on their own. */
+/** Tournaments whose two-week sign-up passed without the player resolve on their own. */
 export function simulateScheduledCompetitionsInPlace(state, rng) {
   (state.tournaments || []).forEach((tournament) => {
     if (tournament.status !== 'registration') return;
-    const hasPassed = campaignWeekSerial(state) > dateWeekSerial({ year: tournament.year, month: tournament.month, week: tournament.week || 0 });
+    const hasPassed = campaignWeekSerial(state) >= dateWeekSerial({ year: tournament.year, month: tournament.month, week: tournament.week || 0 }) + 2;
     if (hasPassed) completeGuildTournamentInPlace(state, tournament, rng, null);
   });
 }

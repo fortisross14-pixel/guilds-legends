@@ -16,7 +16,7 @@ From the author. Replaces the current mix of individual and guild tournaments.
 
 ## 2. Who can enter
 - A guild enters tournaments of its **current status tier or lower:** an Initiation guild enters Initiation only; a Champion guild enters Initiation and Champion; an Elite guild enters all three.
-- Existing fame and combat-win requirements stay per tournament. Sign up at that town's arena, as today (registrar, fee, be there on the day).
+- Existing fame and combat-win requirements stay per tournament. Sign up at that town's arena (registrar, fee). Sign-up is open for two weeks from the tournament's date, so one is almost always open somewhere; signing up with a fit team starts the tournament at once. A window that closes without the guild plays out on its own.
 
 ## 3. Names
 - Rename the circuits everywhere: **Initiation tournaments, Champion tournaments, Elite tournaments.**

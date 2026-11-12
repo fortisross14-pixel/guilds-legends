@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { locationBuildings } from '../data/world.js';
 import { TOURNAMENT_LORE } from '../data/lore.js';
-import { getArenaView, getHero, getStoryView } from '../game/engine.js';
+import { getArenaView, getStoryView } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, Panel } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import { CIRCUITS, CIRCUIT_BY_TIER } from '../data/tournaments.js';
@@ -86,7 +86,7 @@ function FightingGround({ state, view, actions }) {
           ? `“No tournament in progress. The next one is the ${view.next.definition.name} ${inWeeks(view.next.days)}.”`
           : '“No tournaments are held here this season.”'}
       </p>
-      {view.next?.signup ? <p className="muted">Your guild is signed up. Be here on {when(view.next.date)}, day 1.</p> : null}
+      {view.next?.openNow ? <p className="muted">Sign-up is open at the registrar for {view.next.closesIn} more day{view.next.closesIn === 1 ? '' : 's'}.</p> : null}
     </Panel>
   );
 }
@@ -106,19 +106,14 @@ function Registrar({ state, view, actions }) {
       : !team.length
         ? 'Pick at least one fit hero.'
         : `Entry costs ${open?.entryFee} gold.`;
-  const signedNames = (open?.signup?.heroIds || []).map((id) => getHero(state, id)?.name).filter(Boolean);
   return (
     <>
       <Panel title="Sign-up desk" eyebrow={open ? `Registrar · ${CIRCUITS[open.circuit]?.label || ''}` : 'Registrar'}>
         {open ? (
-          open.signup ? (
-            <p className="arena-line">
-              “You're on the list: {signedNames.join(', ') || 'your team'} fight in the {open.name}. Be here on {when({ year: open.year, month: open.month, week: open.week || 0 })}. If you're not, the name is struck and the fee is kept.”
-            </p>
-          ) : (
+          (
             <>
               <p className="arena-line">
-                “The {open.name} starts {inWeeks(view.next.days)} ({when(view.next.date)}). Teams of up to {cap}. Entry is {open.entryFee} gold; the purse is {open.purse} gold.”
+                “The {open.name} is taking names for {view.next.closesIn} more day{view.next.closesIn === 1 ? '' : 's'}. Sign up and you fight today. Teams of up to {cap}. Entry is {open.entryFee} gold; the purse is {open.purse} gold.”
               </p>
               <p>
                 <b>Entry rules:</b> {view.next.rules.join(' · ')}
@@ -158,12 +153,12 @@ function Registrar({ state, view, actions }) {
               >
                 {state.guild.crowns < open.entryFee ? `Entry costs ${open.entryFee} G` : `Sign up ${team.length} (${open.entryFee} G)`}
               </Button>
-              <p className="muted">The team must be fit and the guild in {view.location.name} on the start day, or it's a forfeit.</p>
+              <p className="muted">Only fit heroes can fight. The tournament starts as soon as you sign up.</p>
             </>
           )
         ) : (
           <p className="arena-line">
-            {view.next ? `“Sign-ups for the ${view.next.definition.name} open when the ${view.next.date.year} calendar is published.”` : '“Nothing to sign up for here at your status.”'}
+            {view.next ? `“The ${view.next.definition.name} opens for sign-up ${inWeeks(view.next.days)} (${when(view.next.date)}), for two weeks.”` : '“Nothing to sign up for here at your status.”'}
           </p>
         )}
       </Panel>
@@ -173,12 +168,10 @@ function Registrar({ state, view, actions }) {
             <li key={item.definition.id}>
               <strong>{item.definition.name}</strong>
               <small>
-                {item.definition.circuit} · {item.town} · {when(item.date)} ({inWeeks(item.days)}) · {item.rules.join(' · ')}
+                {item.definition.circuit} · {item.town} · {item.openNow ? `open now, ${item.closesIn} day${item.closesIn === 1 ? '' : 's'} left` : `opens ${when(item.date)} (${inWeeks(item.days)})`} · {item.rules.join(' · ')}
               </small>
-              {item.signup ? (
-                <Badge tone="gold">
-                  Signed up · {item.travelDays ? `${item.travelDays} day${item.travelDays === 1 ? '' : 's'} from here` : 'you are there'}
-                </Badge>
+              {item.openNow ? (
+                <Badge tone="gold">Open · {item.travelDays ? `${item.travelDays} day${item.travelDays === 1 ? '' : 's'} away` : 'here'}</Badge>
               ) : (
                 <em>Sign up at the arena in {item.town}.</em>
               )}

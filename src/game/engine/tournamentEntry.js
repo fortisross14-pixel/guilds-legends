@@ -1,24 +1,38 @@
 // @ts-check
 // Arena sign-up and start days, the arena read model, and tournament bouts
-// (tournaments-circuits spec). Sign a team up at the registrar of the hosting
-// town (up to the circuit's team size, fewer is fine), then be there on the
-// start day. Present and ready: the tournament begins at the arena, and each
-// round is a team battle against another guild. Away or unfit: a forfeit.
+// (tournaments-circuits spec). Each tournament is open for sign-up for two
+// weeks from its date (REGISTRATION_WEEKS), so somewhere in the world one is
+// almost always open. Sign a fit team up at the registrar of the hosting town
+// (up to the circuit's team size, fewer is fine) during that window and the
+// tournament begins at once; each round is a team battle against another guild.
+// When the window closes without the guild, it plays out on its own.
 import { LOCATION_BY_ID, travelDays } from '../../data/world.js';
 import { CIRCUITS, TOURNAMENTS } from '../../data/tournaments.js';
 import { inSlice } from '../../data/slice.js';
 import { createPartyEncounter } from '../combat.js';
-import { addChronicle, campaignDaySerial, clamp, clone, campaignWeekSerial, dateDaySerial, dateWeekSerial, ensureTournamentCareer, finalize, getHero, hashString, tallySpend } from './core.js';
+import { addChronicle, campaignDaySerial, clamp, clone, dateDaySerial, ensureTournamentCareer, finalize, getHero, hashString, tallySpend } from './core.js';
 import { fulfillPromisesInPlace } from './candidates.js';
 import { expectedFinishForSeed, getTournamentAccess, guildTournamentRating, seedEntrants, tournamentRequirements } from './tournaments.js';
 import { tournamentTeamEstimate } from './guildTournaments.js';
 import { battleItems } from './inventory.js';
 
-const FORFEIT_FAME = 5;
+/** How long sign-up stays open, in weeks from a tournament's date. */
+export const REGISTRATION_WEEKS = 2;
 
-/** The day a tournament starts: day 1 of its week. */
+/** The day sign-up opens: day 1 of the tournament's week. */
 export function tournamentStartDay(tournament) {
   return dateDaySerial({ year: tournament.year, month: tournament.month, week: tournament.week || 0, day: 0 });
+}
+
+/** The first day sign-up is closed (two weeks after it opens). */
+export function tournamentCloseDay(tournament) {
+  return tournamentStartDay(tournament) + REGISTRATION_WEEKS * 7;
+}
+
+/** Open for sign-up today. */
+function registrationOpen(state, tournament) {
+  const today = campaignDaySerial(state);
+  return tournament?.status === 'registration' && today >= tournamentStartDay(tournament) && today < tournamentCloseDay(tournament);
 }
 
 function presentAt(state, locationId) {
@@ -60,13 +74,15 @@ export function signUpForTournament(state, tournamentId, heroIds) {
   const tournament = state.tournaments.find((item) => item.id === tournamentId);
   if (!tournament || tournament.status !== 'registration') return { state, error: 'Registration for this tournament is closed.' };
   if (!presentAt(state, tournament.locationId)) return { state, error: `Sign up at the arena in ${tournament.location}.` };
-  if (campaignDaySerial(state) >= tournamentStartDay(tournament)) return { state, error: 'The tournament has already begun.' };
-  if (tournament.signup) return { state, error: 'The guild is already signed up for this tournament.' };
+  if (campaignDaySerial(state) < tournamentStartDay(tournament)) return { state, error: 'Sign-up has not opened yet.' };
+  if (campaignDaySerial(state) >= tournamentCloseDay(tournament)) return { state, error: 'Sign-up has closed.' };
+  if ((state.tournaments || []).some((item) => item.status === 'active' && item.assignments?.length)) return { state, error: 'The guild is already fighting in a tournament.' };
   const ids = [...new Set(Array.isArray(heroIds) ? heroIds : [heroIds])].filter(Boolean);
   if (!ids.length) return { state, error: 'Choose who fights for the guild.' };
   if (ids.length > tournament.teamSize) return { state, error: `Teams of up to ${tournament.teamSize} in the ${CIRCUITS[tournament.circuit]?.label || 'circuit'}.` };
   const heroes = ids.map((id) => state.heroes.find((hero) => hero.id === id));
   if (heroes.some((hero) => !hero || ['dead', 'retired'].includes(hero.status))) return { state, error: 'Choose your own heroes.' };
+  if (heroes.some((hero) => hero.status !== 'available')) return { state, error: 'Everyone on the team must be fit and free to fight.' };
   const access = getTournamentAccess(state, tournament);
   if (!access.unlocked) return { state, error: 'The guild does not meet the entry rules yet.' };
   if (state.guild.crowns < tournament.entryFee) return { state, error: `Entry costs ${tournament.entryFee} gold.` };
@@ -74,42 +90,19 @@ export function signUpForTournament(state, tournamentId, heroIds) {
   const entry = next.tournaments.find((item) => item.id === tournamentId);
   next.guild.crowns -= entry.entryFee;
   tallySpend(next, 'tournaments', entry.entryFee);
-  entry.signup = { heroIds: ids, fee: entry.entryFee, day: campaignDaySerial(next) };
-  next.notifications.push({
-    id: `signup-${entry.id}`,
-    tone: 'blue',
-    title: `Signed up: ${entry.name}`,
-    text: `${heroes.map((hero) => hero.name).join(' and ')} fight for the guild. Be in ${entry.location} on the start day, or forfeit the entry.`,
-  });
+  // Signing up starts it: the team is seated and the referee waits at the fighting ground.
+  seatTeamInPlace(next, entry, ids.map((id) => getHero(next, id)));
+  next.notifications.push({ id: `begins-${entry.id}`, tone: 'gold', title: `The ${entry.name} begins`, text: `${heroes.map((hero) => hero.name).join(' and ')} fight for the guild. The referee is waiting at the fighting ground.` });
   return { state: finalize(next), error: null };
 }
 
-/** On each tournament's start day: begin it if the guild is there and its team fit, else forfeit. */
-export function startScheduledTournamentsInPlace(state) {
-  const today = campaignDaySerial(state);
-  (state.tournaments || []).forEach((tournament) => {
-    if (tournament.status !== 'registration' || !tournament.signup || today < tournamentStartDay(tournament)) return;
-    const heroes = tournament.signup.heroIds.map((id) => state.heroes.find((hero) => hero.id === id));
-    const fit = heroes.filter((hero) => hero?.status === 'available');
-    const present = presentAt(state, tournament.locationId);
-    if (present && fit.length && !state.tournaments.some((item) => item.status === 'active')) {
-      seatTeamInPlace(state, tournament, fit);
-      tournament.signup = null;
-      state.notifications.push({ id: `begins-${tournament.id}`, tone: 'gold', title: `The ${tournament.name} begins`, text: 'Go to the arena: the referee is waiting.' });
-      return;
-    }
-    const reason = !present ? `the guild was not in ${tournament.location}` : 'nobody on the team was fit to fight';
-    tournament.signup = null;
-    state.guild.fame = Math.max(0, state.guild.fame - FORFEIT_FAME);
-    addChronicle(state, { type: 'tournament', importance: 1, title: `Forfeit at the ${tournament.name}`, text: `The guild's name was called and nobody answered: ${reason}. The entry fee is lost.`, tags: ['tournament', 'forfeit'] });
-    state.notifications.push({ id: `forfeit-${tournament.id}`, tone: 'red', title: `Forfeit: ${tournament.name}`, text: `${reason[0].toUpperCase()}${reason.slice(1)}. −${FORFEIT_FAME} fame, fee lost.` });
-  });
-}
+/** Sign-up starts a tournament at once; there is no start day to check any more. */
+export function startScheduledTournamentsInPlace() {}
 
 function upcomingDate(state, definition) {
   const thisYear = (state.tournaments || []).find((item) => item.definitionId === definition.id);
   // An event whose week has gone by (it resolves on its own at the next rollover) points to next year.
-  const gone = thisYear && thisYear.status === 'registration' && campaignWeekSerial(state) > dateWeekSerial({ year: thisYear.year, month: thisYear.month, week: thisYear.week || 0 });
+  const gone = thisYear && thisYear.status === 'registration' && campaignDaySerial(state) >= tournamentCloseDay(thisYear);
   if (thisYear && thisYear.status !== 'completed' && !gone) return { tournament: thisYear, date: { year: thisYear.year, month: thisYear.month, week: thisYear.week || 0 } };
   return { tournament: null, date: { year: state.date.year + 1, month: definition.month, week: definition.week } };
 }
@@ -152,6 +145,9 @@ export function getArenaView(state, locationId) {
       teamSize: definition.teamSize,
       rules: [`teams of ${definition.teamSize}`, requirements.fame ? `${requirements.fame} fame` : null, requirements.combatWins ? `${requirements.combatWins} battles won` : null, `fee ${(tournament || definition).entryFee} G`].filter(Boolean),
       signup: tournament?.signup || null,
+      // Open now (sign-up is a two-week window), and the days left in it.
+      openNow: Boolean(tournament && registrationOpen(state, tournament)),
+      closesIn: tournament ? tournamentCloseDay(tournament) - today : null,
     };
   };
   const local = open.filter((definition) => definition.locationId === locationId).map(event).sort((x, y) => x.days - y.days);
@@ -159,7 +155,7 @@ export function getArenaView(state, locationId) {
   const active = (state.tournaments || []).find((item) => item.status === 'active' && item.locationId === locationId && item.assignments?.length) || null;
   const team = active ? active.assignments.map((assignment) => getHero(state, assignment.heroId)).filter(Boolean) : [];
   const opponentGuild = active ? state.rivals.find((guild) => guild.id === mirroredOpponentId(active.activeEntrants, 'player')) || null : null;
-  const registration = next?.tournament && next.tournament.status === 'registration' && today < tournamentStartDay(next.tournament) ? next.tournament : null;
+  const registration = next?.tournament && registrationOpen(state, next.tournament) ? next.tournament : null;
   const access = registration ? getTournamentAccess(state, registration) : null;
   const heroes = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).map((hero) => ({ hero, fit: hero.status === 'available' }));
   const definitions = TOURNAMENTS.filter((definition) => definition.locationId === locationId);
