@@ -24,7 +24,6 @@ import SiteCard from './SiteCard.jsx';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
-import { dateLine } from '../hud/dateLine.js';
 import Icon from '../components/Icon.jsx';
 
 /**
@@ -153,7 +152,7 @@ export default function TownScene({
       >
         <PlaceTag
           title={town.name}
-          sub={dateLine(state.date)}
+          sub={null}
           goal={
             <QuestChip
               state={state}

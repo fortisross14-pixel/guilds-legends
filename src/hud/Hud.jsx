@@ -265,11 +265,11 @@ export function PlaceTag({ title, sub, goal = null }) {
   }, [title, sub]);
   return (
     <div className="place-tag">
-      <button type="button" className={`place-tag__name${shown ? '' : ' is-faded'}`} onClick={reveal} aria-label={`${title}, ${sub}`}>
+      <button type="button" className={`place-tag__name${shown ? '' : ' is-faded'}`} onClick={reveal} aria-label={sub ? `${title}, ${sub}` : title}>
         <Icon name="pin" size={16} />
         <span>
           <strong>{title}</strong>
-          <small>{sub}</small>
+          {sub ? <small>{sub}</small> : null}
         </span>
       </button>
       {goal}

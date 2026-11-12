@@ -5,7 +5,6 @@ import SiteCard from './SiteCard.jsx';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
-import { dateLine } from '../hud/dateLine.js';
 import { Button } from '../components/UI.jsx';
 
 /**
@@ -80,7 +79,7 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
       >
         <PlaceTag
           title={area.name}
-          sub={dateLine(state.date)}
+          sub={null}
           goal={
             step ? (
               <p className="goal-line goal-line--status">

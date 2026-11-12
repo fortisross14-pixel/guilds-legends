@@ -8,7 +8,6 @@ import Asset from '../components/Asset.jsx';
 import PaintedScene, { at, box } from './PaintedScene.jsx';
 import SiteCard from './SiteCard.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
-import { dateLine } from '../hud/dateLine.js';
 
 /**
  * A painted contract site behind a door in town (missions-in-world): the archive
@@ -46,7 +45,7 @@ export default function SiteScene({ siteId, state, actions, onLeave, paused = fa
         <>
           <PlaceTag
             title={site.name}
-            sub={dateLine(state.date)}
+            sub={null}
             goal={
               step ? (
                 <p className="goal-line goal-line--status">

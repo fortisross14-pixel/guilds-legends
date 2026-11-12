@@ -1,3 +1,4 @@
+import Calendar from './hud/Calendar.jsx';
 import GuildBanner from './components/GuildBanner.jsx';
 import React, { Component, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -119,7 +120,6 @@ import { INTERIORS } from './data/interiors.js';
 import { resolveRoute } from './places/routes.js';
 import { Ledger, Orb, OrbScrim, PlaceTag } from './hud/Hud.jsx';
 import { SectionView } from './hud/sections.jsx';
-import { dateLine } from './hud/dateLine.js';
 import CouncilReportModal from './components/CouncilReportModal.jsx';
 import CombatArenaModal from './components/CombatArenaModal.jsx';
 import RoadEventModal from './components/RoadEventModal.jsx';
@@ -1249,7 +1249,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       {/* The HUD. The bottom corners belong to the orbs only while nothing else owns the bottom. */}
       {!interruption ? (
         <div className="hud">
-          {view === 'map' && !section ? <PlaceTag title={traveling ? 'On the road' : 'World map'} sub={dateLine(state.date)} /> : null}
+          {view === 'map' && !section ? <PlaceTag title={traveling ? 'On the road' : 'World map'} /> : null}
           <Ledger
             gold={summary.crowns}
             crest={state.guild.banner ? <GuildBanner banner={state.guild.banner} size={22} title={state.guild.name} /> : <Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="ledger__charter" />}
@@ -1260,6 +1260,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               setLedgerOpen(open);
             }}
           />
+          {!section && state.story?.prologue === 'done' ? <Calendar state={state} navigate={navigate} /> : null}
           {orb ? <OrbScrim onClose={() => setOrb(null)} /> : null}
           {!section ? (
             <>

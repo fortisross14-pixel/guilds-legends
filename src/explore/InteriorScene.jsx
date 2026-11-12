@@ -10,7 +10,6 @@ import { townFor } from '../data/towns/index.js';
 import DialogueBox from './DialogueBox.jsx';
 import PersonDialogue from './PersonDialogue.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
-import { dateLine } from '../hud/dateLine.js';
 
 const offerIcon = (offer) => (offer.type === 'hire' ? (offer.locked ? 'lock' : 'coin') : offer.type === 'mission' ? 'alert' : 'swords');
 
@@ -96,7 +95,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
   );
   const overlay = (
     <>
-      <PlaceTag title={label} sub={dateLine(state.date)} goal={goalLine} />
+      <PlaceTag title={label} sub={null} goal={goalLine} />
       {talk?.dialogue ? (
         <DialogueBox
           key={talk.person}
