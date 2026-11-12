@@ -515,7 +515,7 @@ function Sheet({ title, icon, onClose, children }) {
       <header className="hall-sheet__head">
         <Icon name={icon} size={22} />
         <strong>{title}</strong>
-        <button type="button" className="hall-sheet__close" onClick={onClose} aria-label="Close">
+        <button type="button" className="close-button close-button--small" onClick={onClose} aria-label="Close">
           <Icon name="close" size={18} tone="plain" />
         </button>
       </header>

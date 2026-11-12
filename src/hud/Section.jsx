@@ -10,8 +10,9 @@ import { Tabs } from '../components/UI.jsx';
  *   3. a details area: a side panel on wide screens, a bottom panel on phones
  *   4. a portrait at the top of the details where it helps
  *   5. one help line at the bottom
- * Back sits at the top left (a left-edge swipe also goes back); the primary
- * action sits at the bottom right.
+ * Close is the round ✕ at the top right, the same button as every modal and
+ * panel (Esc and a left-edge swipe close too); the primary action sits at the
+ * bottom right.
  */
 export default function Section({
   id,
@@ -99,11 +100,10 @@ export default function Section({
     <div className={`section-layer section-layer--${id}`} role="presentation">
       <section className={`section section--${id} ${detail ? 'has-detail' : ''} ${className}`} role="dialog" aria-modal="false" aria-label={title}>
         <header className="section__head">
-          <button type="button" className="section__back" onClick={onBack} aria-label={backLabel}>
-            <Icon name="back" size={20} tone="plain" />
-            <span>{backLabel}</span>
-          </button>
           <h1 className="section__title">{title}</h1>
+          <button type="button" className="close-button" onClick={onBack} aria-label={backLabel === 'Back' ? `Close ${title}` : backLabel}>
+            <Icon name="close" size={18} tone="plain" />
+          </button>
         </header>
         {tabs && tabs.length > 1 ? (
           <div className="section__tabs">
@@ -120,7 +120,7 @@ export default function Section({
                 <i className="section__grip" aria-hidden="true" />
                 {detailTitle ? <h2>{detailTitle}</h2> : null}
                 {onCloseDetail ? (
-                  <button type="button" className="section__close" onClick={onCloseDetail} aria-label="Close details">
+                  <button type="button" className="close-button close-button--small" onClick={onCloseDetail} aria-label="Close details">
                     <Icon name="close" size={18} tone="plain" />
                   </button>
                 ) : null}

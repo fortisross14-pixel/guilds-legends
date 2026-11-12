@@ -157,3 +157,20 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .hero-portrait__art--bust { object-fit: cover; object-position: 50% 30%; image-rendering: auto; }
 /* Heroes in battle: their HeroEditor figure, a little taller than the old sprites' frame. */
 .hero-sprite:has(.hero-sprite__figure) { aspect-ratio: 4 / 5; }
+
+/* One way to close (docs/UX.md): the round ✕ at the top right of every section, modal,
+   detail panel and card. Same size, same place, same look everywhere. */
+.close-button { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin-left: auto; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #4a4166, #241f36 70%); box-shadow: 0 0 0 2px var(--kit-ink), inset 0 0 0 1px rgba(255, 255, 255, .18), 0 3px 8px rgba(0, 0, 0, .4); color: #f6f2ff; cursor: pointer; }
+.close-button:hover, .close-button:focus-visible { color: var(--gold-bright); box-shadow: 0 0 0 2px var(--kit-ink), inset 0 0 0 1px rgba(255, 224, 122, .6), 0 0 14px rgba(255, 224, 122, .35); outline: none; }
+.close-button:active { transform: scale(.94); }
+.close-button--small { width: 36px; height: 36px; }
+.section__head { display: flex; align-items: center; gap: 10px; padding: 4px 4px 6px 8px; }
+.section__title { flex: 1 1 auto; min-width: 0; }
+.modal__header { display: flex; align-items: flex-start; gap: 10px; padding-right: 0; }
+.modal__header > div { flex: 1 1 auto; min-width: 0; }
+
+/* Cinzel is for screen titles only. Inside a screen (lists, cards, rankings, the map's
+   places, details) names and headings use the calligraphic sans, so they stay readable. */
+.section__main, .section__foot, .modal__body, .world-layout, .region-dossier, .locked-dossier, .location-mobile-list, .walk-card, .dialogue__body { --font-display: 'Alegreya Sans', 'Manrope', system-ui, sans-serif; }
+.section__main :is(h1, h2, h3, h4), .modal__body :is(h1, h2, h3, h4) { font-weight: 800; letter-spacing: .01em; text-transform: none; text-shadow: none; }
+.location-mobile-list strong { text-transform: none; font-weight: 800; }

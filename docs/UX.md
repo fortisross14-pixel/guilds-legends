@@ -73,7 +73,7 @@ Every section and building screen (`src/hud/Section.jsx`) has the same parts in 
 4. **A portrait** at the top of the details where it helps.
 5. **One help line** at the bottom.
 
-**Back** is always at the top left (also a swipe from the left edge, or Esc); the **primary action** is always at the bottom right.
+**Close** is always the round ✕ at the top right, the same button on every section, modal, details panel, sheet and card (also a swipe from the left edge, or Esc); never a "Back" text button that closes. The **primary action** is always at the bottom right. Only the list, the details body and a modal body scroll; the page never does.
 
 ### The bottom of the screen has one owner
 

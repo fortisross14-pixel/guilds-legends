@@ -967,7 +967,7 @@ function UnitInfo({ unit, intent, onClose }) {
     <aside className="unit-info panel" onClick={(event) => event.stopPropagation()} aria-label={`${unit.name} details`}>
       <header>
         <strong>{unit.name}</strong>
-        <button type="button" onClick={onClose} aria-label="Close">
+        <button type="button" className="close-button close-button--small" onClick={onClose} aria-label="Close">
           <Icon name="close" size={18} tone="plain" />
         </button>
       </header>

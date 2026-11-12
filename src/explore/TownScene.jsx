@@ -225,7 +225,7 @@ function PeekCard({ state, town, target, onClose, onGo }) {
     <aside className="peek-card panel" role="dialog" aria-label={target.name}>
       <header>
         <strong>{target.name}</strong>
-        <button type="button" onClick={onClose} aria-label="Close">
+        <button type="button" className="close-button close-button--small" onClick={onClose} aria-label="Close">
           <Icon name="close" size={18} tone="plain" />
         </button>
       </header>

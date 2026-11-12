@@ -15,6 +15,12 @@ A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation
 - If a spec or audit item looks wrong or unclear, write it down and skip it. Don't guess.
 - UI changes follow [`docs/UX.md`](docs/UX.md): tap / drag / long-press / swipe / hold, a tap fallback for every drag, one interruption at a time, the HUD (orbs, ledger, place tag), the one screen template, one owner for the bottom of the screen, "gold" and the rest of the glossary. Icons only through `<Icon name>`; no emoji.
 
+## Project skills (load them)
+
+- `.claude/skills/game-ui`: before any screen, menu, modal, HUD, font or touch-control change.
+- `.claude/skills/engine-practice`: before changing game logic or data.
+- `.claude/skills/art-pipeline`: before adding or changing any art, or when new art packs arrive.
+
 ## The UI → engine pattern
 
 ```js

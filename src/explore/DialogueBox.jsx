@@ -163,7 +163,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
             }}
           >
             <strong>So far</strong>
-            <button type="button" className="section__close" onClick={() => setLog(false)} aria-label="Close the log">
+            <button type="button" className="close-button close-button--small" onClick={() => setLog(false)} aria-label="Close the log">
               <Icon name="close" size={18} tone="plain" />
             </button>
           </div>

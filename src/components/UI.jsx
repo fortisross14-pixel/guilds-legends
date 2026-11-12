@@ -402,7 +402,7 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
             {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
           </div>
           {!preventClose ? (
-            <button ref={closeRef} className="icon-button" onClick={onClose} aria-label="Close">
+            <button ref={closeRef} className="close-button" onClick={onClose} aria-label="Close">
               <Icon name="close" size={18} tone="plain" />
             </button>
           ) : null}
