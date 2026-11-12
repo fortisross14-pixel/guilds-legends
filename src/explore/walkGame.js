@@ -190,6 +190,24 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       }
       player.setDepth(player.y);
       if (this.walker) animateWalker(this, player);
+      // Off the road in a wild area: every so often a band jumps the party (src/explore/WildScene.jsx).
+      if (map.offRoad && !state.paused) {
+        const moved = Math.hypot(player.x - (this.wanderFrom?.x ?? player.x), player.y - (this.wanderFrom?.y ?? player.y));
+        this.wanderFrom = { x: player.x, y: player.y };
+        const col = Math.floor(player.x / map.offRoad.tile);
+        const row = Math.floor(player.y / map.offRoad.tile);
+        if (moved > 0 && map.offRoad.rows[row]?.[col] === '1') {
+          this.wandered = (this.wandered || 0) + moved;
+          this.wanderAt ||= map.offRoad.tile * (10 + Math.random() * 14);
+          if (this.wandered >= this.wanderAt) {
+            this.wandered = 0;
+            this.wanderAt = 0;
+            state.path = [];
+            this.marker?.setVisible(false);
+            bridge.current?.onWander?.({ x: Math.round(player.x), y: Math.round(player.y) });
+          }
+        }
+      }
       this.trees.forEach(({ image, prop }) => {
         const behind = player.x > prop.x + 8 && player.x < prop.x + prop.w - 8 && player.y < prop.y + prop.h - 4 && player.y > prop.y + 10;
         const alpha = behind ? 0.45 : 1;

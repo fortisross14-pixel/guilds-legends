@@ -7,7 +7,7 @@
 import { DIALOGUES, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { TILE_SIZE } from '../../data/tiles.js';
-import { WILD_AREAS, WILD_RESPAWN, areaGroups, areaLinks } from '../../data/wilds/index.js';
+import { WILD_AREAS, WILD_RESPAWN, areaGroups, areaLinks, findWildGroup } from '../../data/wilds/index.js';
 import { roadForArea } from '../../data/roads.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
 import { createPartyEncounter } from '../combat.js';
@@ -465,6 +465,27 @@ export function startWildBattle(state, areaId, groupId, position = null) {
   return { state: finalize(next), error: null };
 }
 
+/**
+ * An ambush off the road (the walk engine calls this after enough steps off it):
+ * a band from the area's `ambushes` attacks. Picked by the seeded RNG.
+ */
+export function ambushInWild(state, areaId, position = null) {
+  const area = WILD_AREAS[areaId];
+  if (!area || state.world?.wildAreaId !== areaId) return { state, error: null };
+  if (state.activeEncounter || state.pendingEvent || state.pendingRoadEvent) return { state, error: null };
+  const pool = (area.ambushes || []).filter((item) => checkCondition(state, item.if));
+  if (!pool.length || !wildFighters(state).length) return { state, error: null };
+  const next = clone(state);
+  const exploration = explorationInPlace(next);
+  exploration.ambushes = (exploration.ambushes || 0) + 1;
+  const rng = rngFor(next, `ambush:${areaId}:${exploration.ambushes}`);
+  const pick = pool[rng.int(0, pool.length - 1)];
+  commitRng(next, rng);
+  wildEncounterInPlace(next, area, { ...pick, id: `ambush:${pick.id}`, ambush: true }, exploration.ambushes);
+  if (position && Number.isFinite(position.x)) exploration.positions[areaId] = { x: Math.round(position.x), y: Math.round(position.y) };
+  return { state: finalize(next), error: null };
+}
+
 /** Builds the battle against a wild group. `attempt` changes the seed on a retry. */
 function wildEncounterInPlace(next, area, group, attempt) {
   const areaId = area.id;
@@ -479,7 +500,7 @@ function wildEncounterInPlace(next, area, group, attempt) {
     sourceId: groupId,
     title: group.isBoss ? group.boss.name : group.name,
     roundName: area.name,
-    objective: group.isBoss ? 'Bring down whoever rules this place.' : 'Drive them off the road.',
+    objective: group.isBoss ? 'Bring down whoever rules this place.' : group.ambush ? 'They jumped you off the road. Fight them off.' : 'Drive them off the road.',
     playerHeroes: fighters.map((hero) => ({ hero, role: 'Fighter' })),
     opponentName: group.name,
     opponentPrimal: area.primal,
@@ -507,7 +528,7 @@ export function retryWildBattle(state) {
   if (!wipedInTheWild(state)) return { state, error: 'There is no lost battle to retry.' };
   const { areaId, groupId } = state.activeEncounter.sourceMeta || {};
   const area = WILD_AREAS[areaId];
-  const group = areaGroups(area).find((item) => item.id === groupId);
+  const group = findWildGroup(area, groupId);
   if (!area || !group) return { state, error: 'That fight can no longer be found.' };
   const next = clone(state);
   settleBattleItemsInPlace(next, next.activeEncounter.result.itemsUsed);

@@ -27,6 +27,20 @@ export function areaGroups(area) {
   return [...area.enemies, ...bosses.map((boss) => ({ ...boss, isBoss: true }))];
 }
 
+/**
+ * Off the road, bands of an area's `ambushes` jump the party (like wild encounters):
+ * the walk engine counts steps off the road and the engine picks who attacks.
+ * Ambush groups have ids `ambush:<id>`; they never stay cleared.
+ */
+export function findWildGroup(area, groupId) {
+  if (!area) return null;
+  if (String(groupId).startsWith('ambush:')) {
+    const found = (area.ambushes || []).find((item) => `ambush:${item.id}` === groupId);
+    return found ? { ...found, id: groupId, ambush: true } : null;
+  }
+  return areaGroups(area).find((item) => item.id === groupId) || null;
+}
+
 /** A wild area's buildings that open as interiors (Dawnwatch Temple on the Old Road), for its hub town. */
 export function wildBuildings(hubId) {
   return WILD_AREA_LIST.filter((area) => area.hub === hubId).flatMap((area) => (area.buildings || []).map((building) => ({ ...building, areaId: area.id })));

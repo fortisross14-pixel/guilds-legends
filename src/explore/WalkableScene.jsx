@@ -45,7 +45,7 @@ export function useCoarsePointer() {
  * The game is created once per mount: `map` and `start` are read only then.
  * Changing props (`activeTargets`, `paused`, `onInteract`) never rebuilds it.
  */
-export default function WalkableScene({ map, start, activeTargets, beacons = [], paused = false, joystick = false, onInteract, onPeek = null, className = '', label, apiRef = null, children }) {
+export default function WalkableScene({ map, start, activeTargets, beacons = [], paused = false, joystick = false, onInteract, onPeek = null, onWander = null, className = '', label, apiRef = null, children }) {
   // Long-press a label to peek (who is inside, what is for sale…) without walking there.
   const peekTimer = useRef(0);
   const peeked = useRef(false);
@@ -95,6 +95,8 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
     onNear: (target) => setNear(target || null),
     onConfirm: (target) => setAsk(target),
     onInteract: (target, position) => onInteract?.(target, position),
+    // Enough steps off the road (map.offRoad): something jumps the party (wild areas).
+    onWander: (position) => onWander?.(position),
     onFrame: (project) => {
       const { width, height } = viewport.current;
       // Place labels by priority (quest beacons, then the near target, then the rest);

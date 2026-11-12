@@ -51,9 +51,11 @@ export default {
     { id: 'warden', asset: 'prop.hollowwarden', at: [26, 9], size: [1, 1], poi: { name: 'The Hollow Warden', verb: 'Approach', dialogue: 'wild.blackwood.warden' } },
     { id: 'lantern', asset: 'prop.brokenlantern', at: [26, 3], size: [1, 1], poi: { name: 'Broken lantern', verb: 'Inspect', dialogue: 'wild.blackwood.lantern' } },
   ],
-  enemies: [
-    { id: 'shades', name: 'Veil wraiths', at: [27, 7], asset: 'enemy.group.wraiths', types: ['veil-wraith', 'mind-thief'], count: 3, level: 5, power: 58, reward: { gold: [55, 85], xp: 48 } },
-    { id: 'hulks', name: 'Void juggernauts', at: [28, 13], asset: 'enemy.group.hollow', types: ['void-juggernaut', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
+  // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
+  enemies: [],
+  ambushes: [
+    { id: 'shades', name: 'Veil wraiths', types: ['veil-wraith', 'mind-thief'], count: 3, level: 5, power: 58, reward: { gold: [55, 85], xp: 48 } },
+    { id: 'hulks', name: 'Void juggernauts', types: ['void-juggernaut', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
   ],
   boss: {
     id: 'lantern-brood',

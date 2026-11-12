@@ -72,6 +72,9 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
         paused={Boolean(paused || talk || site || camp || barred || state.activeEncounter || state.pendingEvent)}
         joystick={Boolean(state.settings?.joystick)}
         onInteract={interact}
+        onWander={(position) => {
+          if (!paused && !talk && !site && !camp && !barred && !state.activeEncounter && fit > 0) actions.ambush(area.id, position);
+        }}
         className={`wild-scene wild-scene--${area.id}`}
         label={`Explore ${area.name}`}
       >

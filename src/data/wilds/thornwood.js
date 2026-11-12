@@ -51,11 +51,13 @@ export default {
   ],
   camp: { at: [5, 4], size: [2, 2], name: 'Mossy clearing' },
   props: [{ id: 'ward-marker', asset: 'prop.wardstone', at: [19, 14], size: [1, 1], poi: { name: 'Fallen ward marker', verb: 'Inspect', dialogue: 'wild.thornwood.marker' } }],
-  enemies: [
-    { id: 'stalkers', name: 'Thorn stalkers', at: [14, 12], asset: 'enemy.group.stalkers', types: ['thorn-stalker'], count: 2, level: 3, power: 46, reward: { gold: [24, 40], xp: 30 } },
-    { id: 'spores', name: 'Spore callers and a mender', at: [21, 8], asset: 'enemy.group.spores', types: ['spore-caller', 'grove-mender'], count: 3, level: 3, power: 48, reward: { gold: [26, 44], xp: 32 } },
-    { id: 'barkhides', name: 'Barkhide brutes', at: [30, 11], asset: 'enemy.group.barkhides', types: ['bark-brute', 'moss-warden'], count: 3, level: 4, power: 50, reward: { gold: [36, 60], xp: 36 } },
-    { id: 'bandit-scouts', name: 'Bandit scouts', at: [11, 18], asset: 'enemy.group.bandits', types: ['thorn-stalker', 'bark-brute', 'grove-mender'], count: 3, level: 4, power: 50, reward: { gold: [40, 66], xp: 38, items: { potion: 1 } } },
+  // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
+  enemies: [],
+  ambushes: [
+    { id: 'stalkers', name: 'Thorn stalkers', types: ['thorn-stalker'], count: 2, level: 3, power: 46, reward: { gold: [24, 40], xp: 30 } },
+    { id: 'spores', name: 'Spore callers and a mender', types: ['spore-caller', 'grove-mender'], count: 3, level: 3, power: 48, reward: { gold: [26, 44], xp: 32 } },
+    { id: 'barkhides', name: 'Barkhide brutes', types: ['bark-brute', 'moss-warden'], count: 3, level: 4, power: 50, reward: { gold: [36, 60], xp: 36 } },
+    { id: 'bandit-scouts', name: 'Bandit scouts', types: ['thorn-stalker', 'bark-brute', 'grove-mender'], count: 3, level: 4, power: 50, reward: { gold: [40, 66], xp: 38, items: { potion: 1 } } },
   ],
   boss: {
     id: 'bandit-captain',

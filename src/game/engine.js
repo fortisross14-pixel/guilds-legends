@@ -106,6 +106,7 @@ export {
   gatherAtSpot,
   restAtCamp,
   startWildBattle,
+  ambushInWild,
   retryWildBattle,
   acceptDefeat,
 } from './engine/exploration.js';

@@ -24,6 +24,7 @@ import {
   gatherAtSpot,
   restAtCamp,
   startWildBattle,
+  ambushInWild,
   retryWildBattle,
   acceptDefeat,
   createNewGame,
@@ -828,6 +829,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(result, result.message);
       },
       fightWild: (areaId, groupId, position) => applyResult(startWildBattle(state, areaId, groupId, position)),
+      ambush: (areaId, position) => applyResult(ambushInWild(state, areaId, position)),
       // Contracts in the world (missions-in-world spec).
       acceptContract: (id) => applyResult(acceptContract(state, id), 'Added to your Journal.'),
       reportContract: (id) => applyResult(reportContract(state, id)),

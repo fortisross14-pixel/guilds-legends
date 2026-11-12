@@ -323,6 +323,11 @@ export function wildMap(area) {
   const links = areaLinks(area).map((link) => exitTarget({ at: link.at, size: link.size, name: link.name }, { id: link.town === area.hub ? 'exit' : `exit:${link.town}`, hub: area.hub, town: link.town }));
   map.targets = [camp, ...buildings.doors, ...props.targets, ...groups, ...gathers, ...links];
   map.props = [...clearOfTrees(treeProps(area), map, WILD_ANCHORS[area.id]), ...map.props];
+  // Where ambushes can happen: walkable ground that is not the road ('1'), for the walk engine.
+  if (area.ambushes?.length) {
+    const road = new Set([':', '=', 'b', '#']);
+    map.offRoad = { tile: T, rows: area.tiles.map((line) => [...line].map((char) => (road.has(char) ? '0' : '1')).join('')) };
+  }
   map.spawn = tileCenter(area.arrive);
   return map;
 }

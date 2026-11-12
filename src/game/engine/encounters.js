@@ -1,6 +1,6 @@
 // @ts-check
 // Active combat actions, and concluding a battle (wild areas, roads, contract sites, tournaments, duels).
-import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
+import { WILD_AREAS, WILD_RESPAWN, findWildGroup } from '../../data/wilds/index.js';
 import { defeatInPlace } from './hall.js';
 import { VITALS } from '../../data/activities.js';
 import { attemptFlee, autoResolveEncounter, performCombatRound } from '../combat.js';
@@ -47,7 +47,7 @@ export function fleeActiveCombat(state) {
 function concludeWildCombatInPlace(next, encounter, combatResult) {
   const { areaId, groupId } = encounter.sourceMeta || {};
   const area = WILD_AREAS[areaId];
-  const group = areaGroups(area).find((item) => item.id === groupId);
+  const group = findWildGroup(area, groupId);
   if (!area || !group) return;
   const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
   const rng = rngFor(next, `wild-combat:${encounter.id}`);
@@ -62,10 +62,10 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     const loot = { ...(reward.items || {}) };
     if (group.isBoss) Object.entries(rollLoot(rng, next.guild.tierIndex, 1)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
     addItemsInPlace(next, loot);
-    wild.cleared[groupId] = campaignWeekSerial(next) + (group.respawnWeeks || WILD_RESPAWN.enemies);
+    if (!group.ambush) wild.cleared[groupId] = campaignWeekSerial(next) + (group.respawnWeeks || WILD_RESPAWN.enemies);
     if (group.isBoss) wild.bosses = (wild.bosses || 0) + 1;
     wild.beaten = { ...(wild.beaten || {}), [groupId]: true };
-    pushMoment(next, { type: 'victory', title: `${encounter.title} defeated`, gold, xp, loot: lootList(loot) });
+    pushMoment(next, { type: 'victory', title: group.ambush ? `${encounter.title} driven off` : `${encounter.title} defeated`, gold, xp, loot: lootList(loot) });
     addChronicle(next, {
       type: 'combat-victory',
       importance: group.isBoss ? 3 : 1,
