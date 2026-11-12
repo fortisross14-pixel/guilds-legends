@@ -360,3 +360,8 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
 ## After the final wave
 
 Turn the safety net back on: restore the full testing policy in `CLAUDE.md`, add tests for the new systems (combat, items, rankings, opening), and run the balance (`npm run sim`), performance and visual (e2e) passes. Then do the Impeccable design pass.
+
+## The road network and Act I gates (new)
+
+- The world is not walked end to end. Places are joined by roads (`src/data/roads.js`). A road with a walkable area is walked: leave a town by that road's gate, walk to the far end, arrive in the next town. Roads without one are travelled from the world map, in days, only between neighbours.
+- Dunmere has two gates. The Old Road (west, to Dawnwatch Temple) opens once the guild has hired a companion (mission 2, which needs the hall). The Thornwood road (east, to Greenhollow) opens once Brother Malric, the Ash Abbot, falls (mission 4, guided: level up, buy gear, beat him).

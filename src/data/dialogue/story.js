@@ -142,6 +142,39 @@ export default {
     leave: false,
   },
 
+  // Orren Pike, the herald: dry, precise, quietly worried.
+  'story.temple.orren': {
+    speaker: 'Orren Pike',
+    portrait: 'portrait.dunmere.herald',
+    decide: true,
+    leave: 'Another time.',
+    variants: [
+      {
+        lines: [
+          'The Old Road ends at Dawnwatch Temple. It used to be the first stop for pilgrims heading east.',
+          'Now a priest called Malric holds its gate and sells passage. The Greenhollow wardens shut the Thornwood road because of him.',
+          'He will not be cheap to beat. Get stronger, buy some proper steel, then go.',
+        ],
+        choices: [{ text: 'We’ll deal with Malric.', reply: ['“Then I’ll start writing your name in the good ledger. In pencil, for now.”'] }],
+      },
+    ],
+    topics: [
+      { id: 'who', text: 'Who is Malric?', lines: ['A brother of the Dawn who found that pilgrims pay more to pass than to pray. He calls himself an abbot now.'] },
+      { id: 'how', text: 'How do we get stronger?', lines: ['Spar at the arena; the fighters there take anyone. Or walk off the road: the woods are never empty.'] },
+    ],
+  },
+  'story.temple.thanks': {
+    speaker: 'Orren Pike',
+    portrait: 'portrait.dunmere.herald',
+    variants: [
+      {
+        lines: ['Malric, gone. The wardens are opening the Thornwood road as we speak.', 'Greenhollow is east, past the gate on Arena Lane’s far end. Go and be famous somewhere new.'],
+        choices: [{ text: 'We will.', reply: ['“I’ll ink your name. Properly, this time.”'] }],
+      },
+    ],
+    leave: false,
+  },
+
   // Bram Calder: cocky, competitive.
   'story.m4.bram': {
     speaker: 'Bram Calder',

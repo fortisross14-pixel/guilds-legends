@@ -33,8 +33,8 @@ export default {
     ['~~~......=', '=....#####', '######....', '==.......T'],
     ['~~~......=', '=....#####', '######....', '==.......T'],
     ['~~~......=', '=....#####', '######....', '==.......T'],
-    ['bbb=======', '==========', '==========', '=========T'],
-    ['bbb=======', '==========', '==========', '=========T'],
+    ['bbb=======', '==========', '==========', '=========='],
+    ['bbb=======', '==========', '==========', '=========='],
     ['~~~......=', '=.........', '..........', '==.......T'],
     ['~~~..T...=', '=.........', '..........', '==.......T'],
     ['~~~......=', '=.........', '..........', '==.......T'],
@@ -79,5 +79,9 @@ export default {
     { id: 'lamplighter', name: 'Pip', role: 'Lamplighter', at: [27, 10], dialogue: 'dunmere.lamplighter' },
   ],
   // Walking onto an exit leaves town for a wild area.
-  exits: [{ id: 'exit-old-road', area: 'old-road', name: 'The Old Road', at: [0, 15], size: [1, 2] }],
+  // Gates (src/data/roads.js): the Old Road west to Dawnwatch Temple, the Thornwood road east to Greenhollow.
+  exits: [
+    { id: 'exit-old-road', area: 'old-road', name: 'The Old Road', at: [0, 15], size: [1, 2] },
+    { id: 'exit-thornwood', area: 'thornwood-edge', name: 'The Thornwood road', at: [39, 15], size: [1, 2] },
+  ],
 };

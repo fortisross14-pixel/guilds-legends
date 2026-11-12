@@ -7,7 +7,8 @@
 import { DIALOGUES, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { TILE_SIZE } from '../../data/tiles.js';
-import { WILD_AREAS, WILD_RESPAWN, areaGroups } from '../../data/wilds/index.js';
+import { WILD_AREAS, WILD_RESPAWN, areaGroups, areaLinks } from '../../data/wilds/index.js';
+import { roadForArea } from '../../data/roads.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
 import { createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
@@ -315,6 +316,7 @@ export function getWildAreaView(state, areaId) {
     activeTargets: [
       'camp',
       'exit',
+      ...areaLinks(area).map((item) => `exit:${item.town}`),
       ...(area.buildings || []).map((building) => `door:${building.building}`),
       ...(area.props || []).filter((prop) => prop.poi).map((prop) => `poi:${prop.id}`),
       ...groups.filter((group) => group.available).map((group) => `enemy:${group.id}`),
@@ -328,29 +330,60 @@ export function enterWildArea(state, areaId, fromPosition = null) {
   const area = WILD_AREAS[areaId];
   if (!area) return { state, error: 'Unknown place.' };
   if (state.world?.activeTravel) return { state, error: 'The guild is on the road.' };
-  if (state.world?.currentLocationId !== area.hub) return { state, error: `${area.name} is reached from ${TOWNS[area.hub]?.name || area.hub}.` };
+  const from = state.world?.currentLocationId;
+  const link = areaLinks(area).find((item) => item.town === from);
+  if (!link) return { state, error: `${area.name} is reached from ${areaLinks(area).map((item) => TOWNS[item.town]?.name || item.town).join(' or ')}.` };
   if (!checkCondition(state, area.unlock)) return { state, error: area.lockedText || `${area.name} is closed for now.` };
+  // The road's gate (story progress), src/data/roads.js.
+  const road = roadForArea(areaId);
+  if (road?.gate && !checkCondition(state, road.gate)) return { state, error: road.lockedText || `${road.name} is closed for now.` };
   if (state.activeEncounter) return { state, error: 'Finish what is in front of you first.' };
   const next = clone(state);
   const wild = wildStateInPlace(next, areaId);
   const exploration = explorationInPlace(next);
   if (!wild.visited) {
     wild.visited = true;
-    addChronicle(next, { type: 'travel', importance: 1, title: `Into ${area.name}`, text: `${next.guild.name} sets out from ${TOWNS[area.hub]?.name} into ${area.name}.`, tags: ['explore'] });
+    addChronicle(next, { type: 'travel', importance: 1, title: `Into ${area.name}`, text: `${next.guild.name} sets out from ${TOWNS[from]?.name} into ${area.name}.`, tags: ['explore'] });
   }
-  exploration.positions[areaId] = tilePoint(area.arrive);
-  if (fromPosition && Number.isFinite(fromPosition.x)) exploration.positions[area.hub] = { x: Math.round(fromPosition.x), y: Math.round(fromPosition.y) };
+  // You start at the end of the road you came in by.
+  exploration.positions[areaId] = tilePoint(link.arrive);
+  if (fromPosition && Number.isFinite(fromPosition.x)) exploration.positions[from] = { x: Math.round(fromPosition.x), y: Math.round(fromPosition.y) };
   next.world.wildAreaId = areaId;
   return { state: finalize(next), error: null };
 }
 
-/** Returns from a wild area to its hub town. */
-export function leaveWildArea(state, position = null) {
+/**
+ * Leaves a wild area by one of its ends (`toTown`; by default the town you came
+ * from). Walking a road to its far end arrives in the town there, at that town's
+ * gate for the road.
+ */
+export function leaveWildArea(state, position = null, toTown = null) {
   const areaId = state.world?.wildAreaId;
   if (!areaId) return { state, error: null };
+  const area = WILD_AREAS[areaId];
+  const from = state.world.currentLocationId;
+  const to = toTown || from;
+  if (!areaLinks(area).some((item) => item.town === to)) return { state, error: 'This way does not lead out.' };
   const next = clone(state);
-  if (position && Number.isFinite(position.x)) explorationInPlace(next).positions[areaId] = { x: Math.round(position.x), y: Math.round(position.y) };
+  const exploration = explorationInPlace(next);
+  if (position && Number.isFinite(position.x)) exploration.positions[areaId] = { x: Math.round(position.x), y: Math.round(position.y) };
   next.world.wildAreaId = null;
+  if (to !== from) {
+    next.world.currentLocationId = to;
+    next.world.visitedLocationIds = [...new Set([...(next.world.visitedLocationIds || []), to])];
+    next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
+    next.world.knowledge.locations ||= {};
+    next.world.knowledge.locations[to] = 'visited';
+    // Step in through the town's gate for this road.
+    const gate = (TOWNS[to]?.exits || []).find((item) => item.area === areaId);
+    if (gate) {
+      const [col, row] = gate.at;
+      const [w, h] = gate.size || [1, 1];
+      const inward = { x: col === 0 ? 1.5 : col + w >= (TOWNS[to].width || 40) ? -1 : 0, y: row === 0 ? 1.5 : 0 };
+      exploration.positions[to] = { x: Math.round((col + w / 2 + inward.x) * TILE_SIZE), y: Math.round((row + h / 2 + 0.5 + inward.y) * TILE_SIZE) };
+    } else delete exploration.positions[to];
+    addChronicle(next, { type: 'travel', importance: 1, title: `Arrived in ${TOWNS[to]?.name || to}`, text: `${next.guild.name} walks ${area.name} from ${TOWNS[from]?.name || from} to ${TOWNS[to]?.name || to}.`, tags: ['travel'] });
+  }
   return { state: finalize(next), error: null };
 }
 

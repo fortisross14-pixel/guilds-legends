@@ -1,14 +1,14 @@
 import { rows } from '../tiles.js';
 import { AREA_BOSSES } from '../enemies.js';
 
-// The Thornwood edge, north of Greenhollow. One lane climbs from the town into
-// the trees and forks: west to a mossy clearing (camp), east to the brutes'
-// meadow. Captain Vask's bandits hold the north thicket.
+// The Thornwood edge: the road between Dunmere (the track from the west) and
+// Greenhollow (the lane from the south). The lane forks: west to a mossy clearing
+// (camp), east to the brutes' meadow. Captain Vask's bandits hold the north thicket.
 export default {
   id: 'thornwood-edge',
   kind: 'wild',
   name: 'Thornwood edge',
-  tagline: 'North of Greenhollow · stalkers and bandits',
+  tagline: 'The road between Dunmere and Greenhollow',
   hub: 'greenhollow',
   region: 'Verdant Marches',
   primal: 'Plant',
@@ -25,7 +25,7 @@ export default {
     ['TTT"""""..', '...TTTT...', '...."""..T', 'TTTTTT'],
     ['TT""",,,..', '..........', '.......""T', 'TTTTTT'],
     ['TT"",,,,,.', '..........', '.........T', 'TTTTTT'],
-    ['T..,,,,,,.', '.:::::::::', '::::::::..', 'TTTTTT'],
+    ['::::::::::', '::::::::::', '::::::::..', 'TTTTTT'],
     ['T...,,,,..', '.:.....:..', '.......:..', '..TTTT'],
     ['TT.......:', '::.....:..', '..TT...:..', '...TTT'],
     ['TTT.....""', '.......:..', '..TT...:..', '....TT'],
@@ -44,6 +44,11 @@ export default {
     ['TTTTTTTTTT', 'TTTTTTT:TT', 'TTTTTTTTTT', 'TTTTTT'],
   ),
   exit: { at: [17, 21], size: [1, 1], name: 'Back to Greenhollow' },
+  // The Thornwood road: Greenhollow's lane in the south, Dunmere's track in the west.
+  links: [
+    { town: 'greenhollow', at: [17, 21], size: [1, 1], name: 'To Greenhollow', arrive: [17, 19] },
+    { town: 'dunmere', at: [0, 5], size: [1, 1], name: 'To Dunmere', arrive: [2, 5] },
+  ],
   camp: { at: [5, 4], size: [2, 2], name: 'Mossy clearing' },
   props: [{ id: 'ward-marker', asset: 'prop.wardstone', at: [19, 14], size: [1, 1], poi: { name: 'Fallen ward marker', verb: 'Inspect', dialogue: 'wild.thornwood.marker' } }],
   enemies: [

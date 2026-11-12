@@ -3,7 +3,8 @@
 // drawn props and interactive targets. Coordinates in the data are tiles; the
 // map is in world pixels.
 import { TILE_BY_CHAR, TILE_SIZE as T } from '../data/tiles.js';
-import { areaGroups } from '../data/wilds/index.js';
+import { areaGroups, areaLinks } from '../data/wilds/index.js';
+import { roadForArea } from '../data/roads.js';
 import { ASSETS } from '../data/assets.js';
 import ROOMS from '../data/myart/rooms.json';
 import { TOWN_ANCHORS, WILD_ANCHORS } from '../data/missions/places.js';
@@ -223,7 +224,7 @@ export function townMap(town, hall = null) {
   const npcs = town.npcs.map((npc) => npcTarget(town.id, npc));
   map.blocks.push(...props.blocks);
   map.props = [...props.drawn, ...buildings.drawn];
-  map.targets = [...buildings.doors, ...props.targets, ...npcs, ...(town.exits || []).map((exit) => exitTarget(exit, { area: exit.area }))];
+  map.targets = [...buildings.doors, ...props.targets, ...npcs, ...(town.exits || []).map((exit) => exitTarget(exit, { area: exit.area, road: roadForArea(exit.area)?.id || null }))];
   map.props = [...clearOfTrees(treeProps(town), map, TOWN_ANCHORS[town.id]), ...map.props];
   map.spawn = tileCenter(town.spawn);
   return map;
@@ -318,7 +319,9 @@ export function wildMap(area) {
       hideWhenInactive: true,
     };
   });
-  map.targets = [camp, ...buildings.doors, ...props.targets, ...groups, ...gathers, exitTarget(area.exit, { id: 'exit', hub: area.hub })];
+  // One exit per end of the road: back the way you came, or on to the next town.
+  const links = areaLinks(area).map((link) => exitTarget({ at: link.at, size: link.size, name: link.name }, { id: link.town === area.hub ? 'exit' : `exit:${link.town}`, hub: area.hub, town: link.town }));
+  map.targets = [camp, ...buildings.doors, ...props.targets, ...groups, ...gathers, ...links];
   map.props = [...clearOfTrees(treeProps(area), map, WILD_ANCHORS[area.id]), ...map.props];
   map.spawn = tileCenter(area.arrive);
   return map;

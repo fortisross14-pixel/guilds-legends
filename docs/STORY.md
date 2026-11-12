@@ -114,7 +114,8 @@ Intimate and grounded. The player knows nothing about running a guild. The great
 | 1 | **A Banner Without a Hall** | The player finds a disused stable or guild office in Dunmere and persuades its owner to rent it, by completing a small job or negotiating terms. This becomes the first Guild Hall. |
 | 2 | **The Tavern at the Crossroads** | The player meets potential companions through dialogue. The first recruit is free but has a personal motivation. Introduces recruitment and relationships. |
 | 3 | **Wolfskins on the Old Road** | A merchant asks for protection. The first real contract and tactical battle. Returning to the merchant creates the guild's first local reputation. |
-| 4 | **The Dunmere Harvest Melee** | A local fighter invites the player into their first tournament. The player experiences the competition system and sees how powerful established guilds are. |
+| 4 | **The Ash Abbot** | Orren Pike, the herald, asks the guild to free Dawnwatch Temple at the end of the Old Road, where Brother Malric (the Ash Abbot) holds the gate and sells passage. Guided: get a hero to level 3 (spar at the arena or fight off the road), buy and equip gear at Mira's Supply, then beat Malric. Beating him opens the Thornwood road to Greenhollow. |
+| 5 | **The Dunmere Harvest Melee** | A local fighter invites the player into their first tournament. The player experiences the competition system and sees how powerful established guilds are. |
 
 ### Characters introduced
 

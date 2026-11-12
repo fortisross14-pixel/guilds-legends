@@ -818,7 +818,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         if (next !== state) commitState(next);
       },
       enterWild: (areaId, fromPosition) => applyResult(enterWildArea(state, areaId, fromPosition)),
-      leaveWild: (position) => applyResult(leaveWildArea(state, position)),
+      leaveWild: (position, toTown) => applyResult(leaveWildArea(state, position, toTown)),
       gather: (areaId, spotId) => {
         const result = gatherAtSpot(state, areaId, spotId);
         applyResult(result, result.message);

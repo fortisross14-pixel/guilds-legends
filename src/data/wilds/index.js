@@ -10,6 +10,16 @@ export const WILD_AREA_LIST = Object.values(WILD_AREAS);
 /** Weeks before a defeated group or used gathering spot comes back. */
 export const WILD_RESPAWN = { enemies: 6, gathers: 4 };
 
+/**
+ * The ends of a wild area: each { town, at, size, name, arrive } is an exit to that
+ * town and where you arrive coming from it. A road (src/data/roads.js) has two ends;
+ * a dead end (the Old Road, ending at Dawnwatch Temple) has one.
+ */
+export function areaLinks(area) {
+  if (!area) return [];
+  return area.links || [{ town: area.hub, at: area.exit.at, size: area.exit.size, name: area.exit.name, arrive: area.arrive }];
+}
+
 /** Every enemy group of an area, the bosses last (`boss`, then any in `bosses`). */
 export function areaGroups(area) {
   if (!area) return [];

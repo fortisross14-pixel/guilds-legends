@@ -153,7 +153,7 @@ export function getNextAction(state) {
   const story = getStoryView(state);
   if (story.tutorial === 'active' && story.active?.act === 1 && story.active.current) {
     const step = story.active.current;
-    return { kind: 'tutorial', title: `${story.active.number}. ${story.active.title}`, body: `${step.text} ${step.hint || ''}`.trim(), screen: step.screen || 'town', step: story.active.number, total: 4, missionId: story.active.id, canTalk: step.canTalk };
+    return { kind: 'tutorial', title: `${story.active.number}. ${story.active.title}`, body: `${step.text} ${step.hint || ''}`.trim(), screen: step.screen || 'town', step: story.active.number, total: 5, missionId: story.active.id, canTalk: step.canTalk };
   }
   if (state.pendingReports?.length) {
     const report = getReport(state, state.pendingReports[0]);

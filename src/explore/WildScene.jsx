@@ -52,7 +52,7 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
     else if (target.kind === 'enemy') actions.fightWild(area.id, target.group, position);
     else if (target.kind === 'gather') actions.gather(area.id, target.spot);
     else if (target.kind === 'camp') setCamp(true);
-    else if (target.kind === 'exit') actions.leaveWild(position);
+    else if (target.kind === 'exit') actions.leaveWild(position, target.town);
     else if (target.kind === 'door' && view.gates?.[target.building]) setBarred(target.name);
     else if (target.kind === 'door') openBuilding?.(target.building);
     else if (target.dialogue) setTalk({ id: target.dialogue, visit: { sceneId: area.id, targetId: target.id, position } });

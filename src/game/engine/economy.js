@@ -5,6 +5,7 @@ import { statusName } from '../../data/tournaments.js';
 import { LOT_BY_ID } from '../../data/lots.js';
 import { charterEffect } from './charter.js';
 import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
+import { roadBetween, roadsFrom } from '../../data/roads.js';
 import {
   addChronicle,
   appointmentHolder,
@@ -38,10 +39,14 @@ export function getTravelQuote(state, destinationId) {
   const fromId = state.world?.currentLocationId || 'dunmere';
   const destination = LOCATION_BY_ID[destinationId];
   const unlocked = unlockedLocations(state.guild.tierIndex).some((location) => location.id === destinationId);
-  const days = destination ? travelDays(fromId, destinationId) : 0;
+  const road = roadBetween(fromId, destinationId);
+  const days = destination ? road?.days || travelDays(fromId, destinationId) : 0;
   const party = Math.max(1, travellingPartyIds(state, true).length);
   const cost = Math.round((12 + days * (4 + party * 2)) * (appointmentHolder(state, 'Quartermaster') ? 0.86 : 1));
-  return { destination, unlocked, days, label: spanLabel(days), cost, same: fromId === destinationId };
+  // Travel follows the roads (src/data/roads.js): only to a neighbour, and a walkable road is walked.
+  const walk = road?.area || null;
+  const via = !road && destination ? roadsFrom(fromId).map((item) => item.ends.find((end) => end && end !== fromId)).filter(Boolean) : [];
+  return { destination, unlocked, days, label: spanLabel(days), cost, same: fromId === destinationId, road, walk, neighbour: Boolean(road), via };
 }
 
 export function startTravel(state, destinationId) {
@@ -54,6 +59,8 @@ export function startTravel(state, destinationId) {
   if (!quote.destination) return { state, error: 'Unknown destination.' };
   if (!quote.unlocked) return { state, error: `${quote.destination.name} requires ${statusName(quote.destination.tier)} status.` };
   if (quote.same) return { state, error: `The guild is already in ${quote.destination.name}.` };
+  if (!quote.road) return { state, error: `No road leads straight to ${quote.destination.name}. Roads from here go to ${quote.via.map((id) => LOCATION_BY_ID[id]?.name || id).join(', ') || 'nowhere yet'}.` };
+  if (quote.walk) return { state, error: `${quote.road.name} is walked: leave by its gate in town.` };
   if (next.guild.crowns < quote.cost) return { state, error: `Travel requires ${quote.cost} gold.` };
   next.guild.crowns -= quote.cost;
   tallySpend(next, 'travel', quote.cost);

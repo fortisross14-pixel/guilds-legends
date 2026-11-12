@@ -64,6 +64,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     addItemsInPlace(next, loot);
     wild.cleared[groupId] = campaignWeekSerial(next) + (group.respawnWeeks || WILD_RESPAWN.enemies);
     if (group.isBoss) wild.bosses = (wild.bosses || 0) + 1;
+    wild.beaten = { ...(wild.beaten || {}), [groupId]: true };
     pushMoment(next, { type: 'victory', title: `${encounter.title} defeated`, gold, xp, loot: lootList(loot) });
     addChronicle(next, {
       type: 'combat-victory',

@@ -36,7 +36,8 @@
 //   season: 'spring' | 'summer' | 'autumn' | 'winter' (or a list)
 //   flag: name, notFlag: name  (state.flags.dialogue)
 //   candidateHere: bool      a recruit is in this town
-//   visitedArea: id, bossDefeated: area id
+//   visitedArea: id, bossDefeated: area id, wildBeaten: 'areaId:groupId',
+//   levelAtLeast: n (any hero), gearEquipped: bool (any hero wears a gear item)
 //   charter: id (or list)    the founding charter (src/data/charters.js)
 //   patronAtLeast: { patronId: 'contact'|'partner'|'ally' }, patronBelow: { … }
 //   patronRival: patronId, patronGiftReady: patronId (no gift this month and 50 gold)

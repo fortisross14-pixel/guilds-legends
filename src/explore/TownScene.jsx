@@ -1,3 +1,4 @@
+import { ROADS } from '../data/roads.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   activeContracts,
@@ -50,11 +51,18 @@ export default function TownScene({
   const siteKey = [...objects.map((object) => `${object.missionId}:${object.objective.id}:${object.arrive ? 1 : 0}`), ...doors.map((door) => door.id)].join(
     '|',
   );
+  // A road whose gate is shut (story progress, src/data/roads.js) shows a lock on its exit.
+  const shut = (town.exits || []).filter((exit) => {
+    const road = ROADS.find((item) => item.area === exit.area);
+    return road?.gate && !checkCondition(state, road.gate);
+  }).map((exit) => exit.id).join('|');
   const map = useMemo(() => {
     const built = townMap(town, hall);
-    built.targets = [...built.targets, ...siteTargets(objects), ...doors.map(siteDoorTarget)];
+    built.targets = [...built.targets, ...siteTargets(objects), ...doors.map(siteDoorTarget)].map((target) =>
+      target.kind === 'exit' && shut.split('|').includes(target.id) ? { ...target, icon: 'lock', beacon: false } : target,
+    );
     return built;
-  }, [town, hall?.asset, hall?.label, siteKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [town, hall?.asset, hall?.label, siteKey, shut]); // eslint-disable-line react-hooks/exhaustive-deps
   const [site, setSite] = useState(null);
   const ownApi = useRef(null);
   const api = apiRef || ownApi;

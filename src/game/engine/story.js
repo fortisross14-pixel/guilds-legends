@@ -123,6 +123,15 @@ export function checkCondition(state, condition, context = {}) {
         return Boolean(exploration.wild?.[value]?.visited);
       case 'bossDefeated':
         return (exploration.wild?.[value]?.bosses || 0) > 0;
+      case 'wildBeaten': {
+        // 'areaId:groupId': that group (a boss) has been beaten at least once.
+        const [areaId, groupId] = String(value).split(':');
+        return Boolean(exploration.wild?.[areaId]?.beaten?.[groupId]);
+      }
+      case 'levelAtLeast':
+        return state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status) && hero.level >= value);
+      case 'gearEquipped':
+        return state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status) && Object.values(hero.gear || {}).some(Boolean)) === value;
       case 'charter':
         return list(value).includes(state.guild?.charter);
       case 'patronAtLeast':
@@ -633,7 +642,7 @@ export function skipTutorialInPlace(state, guildName) {
   foundGuildInPlace(state, guildName);
   rentLotInPlace(state, undefined, 0);
   storyRecruitInPlace(state, 'nessa');
-  ['m1', 'm2', 'm3'].forEach((id) => {
+  ['m1', 'm2', 'm3', 'temple'].forEach((id) => {
     const record = missionState(story, id);
     record.status = 'done';
     record.step = STORY_MISSION_BY_ID[id].steps.length;
