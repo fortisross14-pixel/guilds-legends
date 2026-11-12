@@ -9,6 +9,8 @@
    others is on screen (the :has() rule below). */
 
 .game { position: fixed; inset: 0; height: 100dvh; overflow: hidden; isolation: isolate; background: var(--ground); }
+/* The world map is drawn on the page itself, behind the game layer (MapScreen portals it to <body> at z-index -1): the game layer must be see-through there. */
+.game--map { background: transparent; }
 .game__place { position: absolute; inset: 0; z-index: var(--z-scene); overflow: hidden auto; overscroll-behavior: contain; }
 .game--map .game__place { padding: calc(var(--hud-top) + 56px) calc(var(--safe-r) + var(--gutter)) calc(var(--hud-bottom) + 84px) calc(var(--safe-l) + var(--gutter)); }
 

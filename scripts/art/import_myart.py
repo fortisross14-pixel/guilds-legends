@@ -374,6 +374,23 @@ GUI_FILES = {
 }
 
 
+def warm(path, hue=0.075, value=1.04):
+    """Shifts a kit image's cool purples and greys to warm wood browns (golds and reds stay)."""
+    import colorsys
+    im = Image.open(path).convert('RGBA')
+    px = []
+    for r, g, b, a in im.getdata():
+        h, s_, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        cool = 0.55 < h < 0.95 or s_ < 0.18  # purples, blues and greys
+        if a and cool:
+            nr, ng, nb = colorsys.hsv_to_rgb(hue, min(1, 0.32 + s_ * 0.5), min(1, v * value))
+            px.append((int(nr * 255), int(ng * 255), int(nb * 255), a))
+        else:
+            px.append((r, g, b, a))
+    im.putdata(px)
+    im.save(path)
+
+
 def interface():
     import glob
     for name, rel in GUI_FILES.items():
@@ -383,6 +400,10 @@ def interface():
             print('missing', rel)
             continue
         shutil.copyfile(source, out(f'gui/{name}'))
+    # The kit's purple-grey frames, cards and dark buttons, recoloured as wood and leather
+    # (warm browns with the gold trim kept), to fit a medieval RPG.
+    for name in ['panel.png', 'popup.png', 'card.png', 'btn-dark.png', 'btn-slate.png', 'btn-gray.png', 'btn-square.png', 'orb-dark.png', 'stick-base.png']:
+        warm(out(f'gui/{name}'), value=0.62 if name == 'btn-slate.png' else 1.04)
     for font in ['JosefinSans-Bold.ttf']:
         shutil.copyfile(os.path.join(GUI, 'Font', font), out(f'fonts/{font}'))
 

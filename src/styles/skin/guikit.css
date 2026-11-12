@@ -174,3 +174,40 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .section__main, .section__foot, .modal__body, .world-layout, .region-dossier, .locked-dossier, .location-mobile-list, .walk-card, .dialogue__body { --font-display: 'Alegreya Sans', 'Manrope', system-ui, sans-serif; }
 .section__main :is(h1, h2, h3, h4), .modal__body :is(h1, h2, h3, h4) { font-weight: 800; letter-spacing: .01em; text-transform: none; text-shadow: none; }
 .location-mobile-list strong { text-transform: none; font-weight: 800; }
+
+/* ----------------------------------------------------------------------------------
+   Medieval pass: wood, leather, parchment and gold instead of the kit's purple.
+   The kit's frames and dark buttons are recoloured to browns by scripts/art/import_myart.py
+   (warm); these tokens warm everything drawn in CSS to match. Reading text is Alegreya
+   (a calligraphic serif); buttons, labels and small print stay in Alegreya Sans. */
+:root {
+  --text: #f4e8cc;
+  --text-dim: #d2bd96;
+  --text-faint: #a89272;
+  --line: rgba(214, 170, 100, .38);
+  --line-soft: rgba(214, 170, 100, .16);
+  --panel-solid: #2b1f16;
+  --panel-bg: linear-gradient(180deg, #33251a 0%, #221810 100%);
+  --kit-ink: #140d08;
+  --kit-dark: rgba(30, 20, 12, .88);
+  --kit-glass: rgba(34, 24, 15, .82);
+  --ground: #120c08;
+  --font-ui: 'Alegreya', 'Cormorant Garamond', Georgia, serif;
+  --font-label: 'Alegreya Sans', 'Manrope', system-ui, sans-serif;
+}
+.section__main, .section__foot, .modal__body, .world-layout, .region-dossier, .locked-dossier, .location-mobile-list, .walk-card, .dialogue__body, .world-map { --font-display: 'Alegreya', 'Cormorant Garamond', Georgia, serif; }
+.button, .tabs button, .filter-pills button, .badge, .walk__label, .orb__item-label, .ledger, .place-tag small, small, .eyebrow { font-family: var(--font-label); }
+.button--secondary, .dialogue__choices button { color: var(--text); }
+.close-button { background: radial-gradient(circle at 50% 35%, #6a4c32, #2a1c12 70%); box-shadow: 0 0 0 2px var(--kit-ink), inset 0 0 0 1px rgba(255, 220, 160, .25), 0 3px 8px rgba(0, 0, 0, .45); color: var(--text); }
+.panel { background: rgba(26, 17, 10, .35); }
+.section__detail { background: rgba(22, 14, 8, .4); }
+.tabs, .filter-pills { background: rgba(20, 13, 8, .7); }
+.unit-plate, .turn-order, .battle-tell { background: var(--kit-dark); }
+/* World map names: readable, never cut. */
+.world-map strong, .location-node strong { font-family: var(--font-label); text-transform: none; max-width: none; white-space: nowrap; overflow: visible; }
+
+/* On a laptop or a wide tablet, menus are a book-like column, not the whole screen. */
+@media (min-width: 900px) {
+  .section { width: min(860px, 100%); }
+  .section.has-detail { width: min(1180px, 100%); }
+}
