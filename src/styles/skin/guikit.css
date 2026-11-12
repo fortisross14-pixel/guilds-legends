@@ -4,13 +4,13 @@
    Imported last, so it restyles the components without changing their layout.
    Nine-slice pieces use border-image: corners stay sharp, the middle stretches. */
 
-@font-face { font-family: 'Alata'; src: url('/art/packs/myart/fonts/Alata-Regular.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'Josefin Sans'; font-weight: 700; src: url('/art/packs/myart/fonts/JosefinSans-Bold.ttf') format('truetype'); font-display: swap; }
 
 :root {
-  --font-display: 'Alata', 'Manrope', system-ui, sans-serif;
-  --font-ui: 'Alata', 'Manrope', system-ui, sans-serif;
-  --font-label: 'Alata', 'Manrope', system-ui, sans-serif;
+  /* Medieval faces: Cinzel (carved capitals) for titles and names, Alegreya Sans (calligraphic, readable) for the rest. */
+  --font-display: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+  --font-ui: 'Alegreya Sans', 'Manrope', system-ui, sans-serif;
+  --font-label: 'Alegreya Sans', 'Manrope', system-ui, sans-serif;
   --text: #f6f2ff;
   --text-dim: #c4bcd8;
   --text-faint: #958cab;
@@ -26,17 +26,18 @@
   --kit-glass: rgba(30, 25, 44, .78);
 }
 
-/* Words: one rounded game face; titles bolder, with the kit's dark outline. */
-body { font-family: var(--font-ui); }
-h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family: var(--font-display); font-weight: 400; letter-spacing: .01em; text-shadow: 0 2px 0 var(--kit-ink), 0 0 1px var(--kit-ink); }
+/* Words: carved capitals for titles, a calligraphic sans for reading. */
+body { font-family: var(--font-ui); font-size: 16px; }
+h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: .03em; text-shadow: 0 2px 0 var(--kit-ink); }
 
 /* Frames: sections, modals, panels, the bottom sheets. */
 .section,
 .modal {
-  border: 0;
-  border-radius: 22px;
+  /* The frame is a real border, so nothing inside runs into it. */
+  border: 14px solid transparent;
+  border-radius: 0;
   background: none;
-  border-image: url('/art/packs/myart/gui/panel.png') 44 fill / 22px / 0 stretch;
+  border-image: url('/art/packs/myart/gui/panel.png') 44 fill / 14px / 0 stretch;
   box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -46,9 +47,10 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .section__detail { border-left: 2px solid rgba(0, 0, 0, .35); background: rgba(16, 13, 26, .35); }
 .section__head, .modal__header { position: relative; }
 
-/* Titles sit on a ribbon. */
-.section__title { flex: 0 1 auto; padding: 6px 34px 12px; color: #fff; font-size: clamp(20px, 2.4vw, 28px); border-image: url('/art/packs/myart/gui/ribbon-blue.png') 0 60 fill / 0 30px / 0 stretch; }
-.modal__header h2 { display: inline-block; padding: 6px 34px 12px; color: #fff; border-image: url('/art/packs/myart/gui/ribbon-purple.png') 0 110 fill / 0 30px / 0 stretch; }
+/* Titles: gold carved capitals over a thin gold rule. */
+.section__title, .modal__header h2 { color: var(--gold-bright); font-size: clamp(19px, 2.3vw, 26px); line-height: 1.15; padding-bottom: 6px; background: linear-gradient(90deg, rgba(255, 201, 60, .7), rgba(255, 201, 60, 0)) left bottom / 100% 1px no-repeat; }
+.section__head { padding: 6px 10px 4px 4px; }
+.modal__header { padding-right: 52px; }
 
 /* Buttons: the kit's bevelled bars. Primary gold, secondary slate, danger red. */
 .button {
@@ -58,7 +60,7 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
   border-image: url('/art/packs/myart/gui/btn-slate.png') 34 fill / 12px / 0 stretch;
   color: #fff;
   font-family: var(--font-ui);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: .02em;
   text-shadow: 0 1px 0 rgba(0, 0, 0, .55);
   box-shadow: none;
@@ -100,13 +102,13 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .orb__button:hover, .orb__button:focus-visible { box-shadow: 0 8px 18px rgba(0, 0, 0, .45), 0 0 18px rgba(255, 224, 122, .5); }
 .orb__fan button, .orb__fan a { border-radius: 999px; background: url('/art/packs/myart/gui/orb-dark.png') center / 100% 100% no-repeat; border-color: transparent; }
 .place-tag__name { border-radius: 999px; background: var(--kit-glass); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
-.place-tag__name strong { font-family: var(--font-display); font-weight: 400; font-size: 18px; }
+.place-tag__name strong { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
 .ledger__rows button, .ledger__book { border-radius: 999px; background: var(--kit-glass); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
 
 /* Touch controls: the kit's joystick; names and the door bubble as game labels. */
 .walk__stick { width: 120px; height: 120px; margin: -60px 0 0 -60px; border: 0; background: url('/art/packs/myart/gui/stick-base.png') center / contain no-repeat; }
 .walk__stick span { width: 54px; height: 54px; margin: -27px 0 0 -27px; background: url('/art/packs/myart/gui/stick-knob.png') center / contain no-repeat; box-shadow: 0 4px 10px rgba(0, 0, 0, .45); }
-.walk__label { border-radius: 999px; background: var(--kit-glass); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 2px 6px rgba(0, 0, 0, .35); font-family: var(--font-ui); font-weight: 400; letter-spacing: .02em; text-transform: none; }
+.walk__label { border-radius: 999px; background: var(--kit-glass); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 2px 6px rgba(0, 0, 0, .35); font-family: var(--font-ui); font-weight: 700; letter-spacing: .02em; text-transform: none; }
 .walk__confirm { border: 0; border-radius: 12px; background: none; border-image: url('/art/packs/myart/gui/btn-gold.png') 34 fill / 12px / 0 stretch; color: #4a2c06; text-shadow: 0 1px 0 rgba(255, 240, 190, .6); }
 
 /* Battle GUI (the fighters stay as they are): tools and items on the kit's square
@@ -127,10 +129,10 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
    choices and controls as kit buttons. */
 .dialogue__box { border-top: 0; background: none; color: var(--text); border-image: url('/art/packs/myart/gui/panel.png') 44 fill / 22px / 0 stretch; }
 .dialogue__portrait { border: 0; border-radius: 14px; background: #3a3156; box-shadow: 0 0 0 3px var(--kit-ink), 0 0 0 5px #8b7fb0, 0 8px 18px rgba(0, 0, 0, .45); }
-.dialogue__speaker { padding: 4px 26px 9px; border: 0; border-radius: 0; background: none; color: #fff; font: 400 var(--fs-3) var(--font-display); box-shadow: none; text-shadow: 0 2px 0 var(--kit-ink); border-image: url('/art/packs/myart/gui/ribbon-blue.png') 0 60 fill / 0 24px / 0 stretch; }
-.dialogue__text { color: var(--text); font: 400 var(--fs-4)/1.4 var(--font-ui); }
+.dialogue__speaker { padding: 0 0 4px; border: 0; border-radius: 0; background: linear-gradient(90deg, rgba(255, 201, 60, .7), rgba(255, 201, 60, 0)) left bottom / 100% 1px no-repeat; color: var(--gold-bright); font: 700 var(--fs-3) var(--font-display); box-shadow: none; text-shadow: 0 2px 0 var(--kit-ink); }
+.dialogue__text { color: var(--text); font: 500 19px/1.4 var(--font-ui); }
 .dialogue__hint, .dialogue__check { color: var(--text-dim); }
-.dialogue__choices button { border: 0; border-radius: 10px; background: none; color: #fff; font: 400 var(--fs-3)/1.3 var(--font-ui); text-shadow: 0 1px 0 rgba(0, 0, 0, .55); border-image: url('/art/packs/myart/gui/btn-slate.png') 34 fill / 12px / 0 stretch; }
+.dialogue__choices button { border: 0; border-radius: 10px; background: none; color: #fff; font: 700 var(--fs-3)/1.3 var(--font-ui); text-shadow: 0 1px 0 rgba(0, 0, 0, .55); border-image: url('/art/packs/myart/gui/btn-slate.png') 34 fill / 12px / 0 stretch; }
 .dialogue__choices button:hover, .dialogue__choices button:focus-visible { background: none; outline: 2px solid var(--gold); outline-offset: 2px; filter: brightness(1.1); }
 .dialogue__choices button:last-child { background: none; border-image-source: url('/art/packs/myart/gui/btn-dark.png'); }
 .dialogue__controls button { border: 0; border-radius: 10px; background: none; color: #fff; font-family: var(--font-ui); font-weight: 400; border-image: url('/art/packs/myart/gui/btn-dark.png') 34 fill / 10px / 0 stretch; }
@@ -142,3 +144,11 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 /* People in the hand-painted rooms stand at the room's scale (one tile is --tile, PaintedScene). */
 .interior__sprite { width: calc(var(--tile, 64px) * 1.05); height: calc(var(--tile, 64px) * 1.13); image-rendering: auto; }
 .interior__person { min-width: calc(var(--tile, 64px) * 1.05); }
+
+/* Ceremony cards: art shown whole, the headline readable, the unlocks wrap inside the card. */
+.moment__room-art { width: auto; max-width: min(100%, 420px); max-height: min(30dvh, 240px); aspect-ratio: auto; object-fit: contain; border: 0; }
+.moment__headline { font-family: var(--font-display); font-size: clamp(20px, 5vw, 30px); line-height: 1.15; text-transform: none; letter-spacing: .02em; }
+.moment__loot-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 100%; }
+/* Tab rows scroll sideways rather than cut their last tab. */
+.tabs, .filter-pills { overflow-x: auto; scrollbar-width: none; }
+.tabs button, .filter-pills button { flex: 0 0 auto; }

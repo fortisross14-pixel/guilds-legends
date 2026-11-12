@@ -22,7 +22,7 @@ Both are loaded from Google Fonts.
 
 ## Art test pack
 
-- **2D Hand Painted - Town Tileset** and **2D Hand Painted - Interior Tileset** (Unity Asset Store): the ground, buildings and props in `public/art/packs/myart/` (tiles, buildings, props). **GUI PRO Kit - Fantasy RPG** by Layer Lab (Unity Asset Store): buttons, frames, bars, the joystick, the Alata and Josefin Sans fonts (SIL OFL) in `public/art/packs/myart/gui` and `fonts`. **HeroEditor / Fantasy Heroes** by Hippo (Unity Asset Store): the walking characters in `public/art/packs/myart/chars`, assembled from its body parts and equipment. All three under the Unity Asset Store EULA (Standard): used inside this game, not redistributed; the repository is private for that reason. Imported by `scripts/art/import_myart.py` from the private art repository.
+- **2D Hand Painted - Town Tileset** and **2D Hand Painted - Interior Tileset** (Unity Asset Store): the ground, buildings, props and rooms in `public/art/packs/myart/`; **2D Hand Painted - Grassland Tileset** and **Extra Objects**: the wild ground, trees, rocks, camps. **GUI PRO Kit - Fantasy RPG** by Layer Lab (Unity Asset Store): buttons, frames, bars, the joystick, the Josefin Sans font (SIL OFL; titles and text use Cinzel and Alegreya Sans from Google Fonts) in `public/art/packs/myart/gui` and `fonts`. **HeroEditor / Fantasy Heroes** by Hippo (Unity Asset Store): the walking characters in `public/art/packs/myart/chars`, assembled from its body parts and equipment. All three under the Unity Asset Store EULA (Standard): used inside this game, not redistributed; the repository is private for that reason. Imported by `scripts/art/import_myart.py` from the private art repository.
 
 ## Code
 
