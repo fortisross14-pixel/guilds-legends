@@ -26,7 +26,7 @@ npm run build      # outputs dist/
 npm run preview    # serve the built dist/
 ```
 
-Pushing to `main` runs lint, tests and the build, then deploys to GitHub Pages (`.github/workflows/deploy-pages.yml`). `vite.config.js` uses `base: './'`, so the site works under a repository subpath.
+The game is hosted on **Vercel**: every push to `main` is built and deployed there (Vite preset: `npm run build`, output `dist/`). On GitHub, the "Build" workflow (`.github/workflows/build.yml`) runs lint and the build as a check. `vite.config.js` uses `base: './'`, so the site also works under a subpath.
 
 ## File map
 

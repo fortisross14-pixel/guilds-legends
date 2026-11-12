@@ -70,7 +70,7 @@ The seven pillars, and how the slice delivers each one:
 
 ## 4. Phases
 
-One phase per agent session. Each phase ends with a playable build pushed to `main` and a short summary. **Until Phase 8 the only checks are: `npm run build` succeeds, and the GitHub Pages deploy succeeds.** No tests, playthroughs, device checks or screenshots (see `CLAUDE.md`).
+One phase per agent session. Each phase ends with a playable build pushed to `main` and a short summary. **Until Phase 8 the only checks are: `npm run build` succeeds, and the "Build" workflow and the Vercel deployment succeed.** No tests, playthroughs, device checks or screenshots (see `CLAUDE.md`).
 
 ### Phase 0 — Foundations and touch ✅ Done (2026-11-03)
 
@@ -364,7 +364,7 @@ Phase 0 → Phase 1 → Phase 2 ┐
 Phases 2–5 can run in any order after Phase 1. Phase 6 needs the towns, combat and growth in place. Phase 7B (assets) can be updated continuously but is finalized last.
 
 ## 6. Rules for every phase
-- Testing: only `npm run build` and a successful GitHub Pages deploy until Phase 8. No playthroughs or screenshots, except in visual phases (7C, 7D, 8), which take screenshots to review layout.
+- Testing: only `npm run build` and a successful deploy (the "Build" workflow plus the Vercel deployment) until Phase 8. No playthroughs or screenshots, except in visual phases (7C, 7D, 8), which take screenshots to review layout.
 - Touch first: design every interaction for a thumb on a 390px phone, then check tablet and desktop.
 - No keyboard-only actions and no hover-only information.
 - Placeholders through the asset registry, never hard-coded colors standing in for art.

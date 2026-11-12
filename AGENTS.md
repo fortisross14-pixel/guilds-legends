@@ -31,7 +31,7 @@ The game is an early prototype and changes completely between phases. Tests writ
 
 - **The only checks:**
   1. `npm run build` succeeds.
-  2. After pushing to `main`, the "Deploy to GitHub Pages" workflow run succeeds.
+  2. After pushing to `main`, the "Build" workflow run succeeds and Vercel deploys the commit (the game is hosted on Vercel; Vercel reports each deployment on the commit in GitHub).
 - **Do NOT** write tests, run test suites (including `test:fast`), simulations, balance or performance checks, Playwright, browser or device playthroughs, or take screenshots. This includes "quick" phone or touch runs.
 - If old tests or lint rules break because of an intended change, leave the tests alone; they get rebuilt in Phase 8. Fix lint only if it blocks the build or deploy.
 - Exception: visual phases (7C, 7D, 8) take screenshots to review layout.
