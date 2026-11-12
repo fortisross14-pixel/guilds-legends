@@ -98,7 +98,7 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       if (atlas?.image) {
         const key = `ground:${map.id}`;
         if (this.textures.exists(key)) this.textures.remove(key);
-        this.textures.addCanvas(key, paintGround({ image: atlas.image, atlas: atlas.asset, rows: map.groundPaint.rows, tileSize: map.groundPaint.tileSize, tone: map.groundPaint.tone }));
+        this.textures.addCanvas(key, paintGround({ image: atlas.image, atlas: atlas.asset, rows: map.groundPaint.rows, tileSize: map.groundPaint.tileSize, tone: map.groundPaint.tone, wild: map.groundPaint.wild }));
         this.add.image(0, 0, key).setOrigin(0).setDisplaySize(map.size.width, map.size.height).setDepth(-10000);
       }
       if (map.ground) this.add.image(0, 0, map.ground).setOrigin(0).setDisplaySize(map.size.width, map.size.height).setDepth(-10000);

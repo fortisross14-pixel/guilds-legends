@@ -118,34 +118,80 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `hall.equipment.podium.2` | `art/hall/equipment/podium-2.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), Advanced |
 | `hall.equipment.podium.3` | `art/hall/equipment/podium-3.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), State of the art |
 | `hall.crown.case` | `art/hall/crown-case.png` | 128×128 | — | placeholder | Crown Room: a trophy case (one per trophy, with its count) |
-| `prop.campfire` | `art/walk/props/campfire.png` | 64×64 | — | placeholder | Wild-area camp: rest spot |
+| `prop.campfire` | `art/packs/myart/props/prop-campfire.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.signpost` | `art/walk/props/signpost.png` | 32×48 | — | placeholder | Exit from a town or wild area |
-| `prop.gather.herb` | `art/walk/props/gather-herb.png` | 28×28 | — | placeholder | Gathering spot: herbs |
-| `prop.gather.ore` | `art/walk/props/gather-ore.png` | 28×28 | — | placeholder | Gathering spot: ore and shards |
-| `prop.gather.coin` | `art/walk/props/gather-coin.png` | 28×28 | — | placeholder | Gathering spot: coin pouches |
+| `prop.gather.herb` | `art/packs/myart/props/prop-gather-herb.png` | 57×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.gather.ore` | `art/packs/myart/props/prop-gather-ore.png` | 58×53 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.gather.coin` | `art/packs/myart/props/prop-gather-coin.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `site.marker.inspect` | `art/sites/marker-inspect.png` | 28×28 | — | placeholder | Contract objective on a walkable map: something to inspect (tracks, a clue, a lock) |
 | `site.marker.collect` | `art/sites/marker-collect.png` | 28×28 | — | placeholder | Contract objective on a walkable map: something to collect (herbs, ore, evidence, a cache) |
 | `site.marker.destination` | `art/sites/marker-destination.png` | 28×28 | — | placeholder | Contract objective on a walkable map: where an escort ends |
 | `site.marker.door` | `art/sites/marker-door.png` | 32×40 | — | placeholder | A door in town to a painted contract site |
 | `prop.fountain` | `art/packs/myart/props/fountain.png` | 192×192 | — | ready | Fountain basin |
-| `prop.noticeboard` | `art/packs/myart/props/noticeboard.png` | 126×98 | — | ready | Notice board (notes pinned to a wooden board) |
+| `prop.noticeboard` | `art/packs/myart/props/prop-noticeboard.png` | 123×113 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.well` | `art/packs/myart/props/well.png` | 127×166 | — | ready | Well (blue roof) |
 | `prop.kiln` | `art/packs/myart/props/kiln.png` | 64×127 | — | ready | Kiln chimney |
 | `prop.stall` | `art/packs/myart/props/stall.png` | 192×181 | — | ready | Market stall (striped awning) |
 | `prop.lamp` | `art/packs/myart/props/lamp.png` | 61×256 | — | ready | Street lamp |
-| `prop.elderoak` | `art/walk/props/elderoak.png` | 96×128 | — | placeholder | Greenhollow: The Elder Oak |
-| `prop.wardstone` | `art/walk/props/wardstone.png` | 32×96 | — | placeholder | Greenhollow: Ward stone |
-| `prop.herbcart` | `art/walk/props/herbcart.png` | 64×64 | — | placeholder | Greenhollow: herb-cart |
+| `prop.elderoak` | `art/packs/myart/props/prop-elderoak.png` | 229×316 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.wardstone` | `art/packs/myart/props/prop-wardstone.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.herbcart` | `art/packs/myart/props/prop-herbcart.png` | 96×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.beehives` | `art/walk/props/beehives.png` | 64×64 | — | placeholder | Greenhollow: beehives |
-| `prop.forge` | `art/walk/props/forge.png` | 64×96 | — | placeholder | Ironford: The Great Forge |
-| `prop.plaque` | `art/walk/props/plaque.png` | 32×64 | — | placeholder | Ironford: Bridge plaque |
-| `prop.statue` | `art/walk/props/statue.png` | 32×96 | — | placeholder | Ironford: Statue of the First Smith |
-| `prop.anvil` | `art/walk/props/anvil.png` | 32×64 | — | placeholder | Ironford: anvil |
+| `prop.forge` | `art/packs/myart/props/prop-forge.png` | 61×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.plaque` | `art/packs/myart/props/prop-plaque.png` | 114×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.statue` | `art/packs/myart/props/prop-statue.png` | 62×115 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.anvil` | `art/packs/myart/props/prop-anvil.png` | 62×50 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.crates` | `art/packs/myart/props/crates.png` | 124×63 | — | ready | Crate and barrel |
 | `prop.windbell` | `art/walk/props/windbell.png` | 64×96 | — | placeholder | Windmere: The wind bell |
-| `prop.milestone` | `art/walk/props/milestone.png` | 32×64 | — | placeholder | The Old Road: Old milestone |
+| `prop.milestone` | `art/packs/myart/props/prop-milestone.png` | 94×121 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.tent` | `art/packs/myart/props/deco-tent.png` | 192×256 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.log` | `art/packs/myart/props/deco-log.png` | 176×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.spit` | `art/packs/myart/props/deco-spit.png` | 123×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.sacks` | `art/packs/myart/props/deco-sacks.png` | 64×89 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.cart` | `art/packs/myart/props/deco-cart.png` | 96×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.log-pile` | `art/packs/myart/props/deco-log-pile.png` | 128×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.signpost` | `art/packs/myart/props/deco-signpost.png` | 64×125 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.rock-big` | `art/packs/myart/props/deco-rock-big.png` | 117×119 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.stump` | `art/packs/myart/props/deco-stump.png` | 55×62 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.rocks` | `art/packs/myart/props/deco-rocks.png` | 63×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.standing-stone` | `art/packs/myart/props/deco-standing-stone.png` | 94×121 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.log-hollow` | `art/packs/myart/props/deco-log-hollow.png` | 60×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.stump-moss` | `art/packs/myart/props/deco-stump-moss.png` | 62×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.rock-tall` | `art/packs/myart/props/deco-rock-tall.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.banner` | `art/packs/myart/props/deco-banner.png` | 64×128 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.skull-pike` | `art/packs/myart/props/deco-skull-pike.png` | 34×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.campfire` | `art/packs/myart/props/deco-campfire.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.crate` | `art/packs/myart/props/deco-crate.png` | 126×77 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.barrel` | `art/packs/myart/props/deco-barrel.png` | 62×61 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.firewood` | `art/packs/myart/props/deco-firewood.png` | 52×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.grave-cross` | `art/packs/myart/props/deco-grave-cross.png` | 61×94 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.ruin-column` | `art/packs/myart/props/deco-ruin-column.png` | 62×115 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.flowers-pink` | `art/packs/myart/props/deco-flowers-pink.png` | 44×57 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.flowers-white` | `art/packs/myart/props/deco-flowers-white.png` | 57×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.flowers-red` | `art/packs/myart/props/deco-flowers-red.png` | 53×63 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.fern` | `art/packs/myart/props/deco-fern.png` | 51×49 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.fern-2` | `art/packs/myart/props/deco-fern-2.png` | 60×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.mushrooms` | `art/packs/myart/props/deco-mushrooms.png` | 115×125 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.reeds` | `art/packs/myart/props/deco-reeds.png` | 63×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.pebbles` | `art/packs/myart/props/deco-pebbles.png` | 59×53 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.bush` | `art/packs/myart/props/deco-bush.png` | 64×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.hollowwarden` | `art/walk/props/hollowwarden.png` | 32×64 | — | placeholder | The Blackwood: The Hollow Warden |
 | `prop.brokenlantern` | `art/walk/props/brokenlantern.png` | 32×64 | — | placeholder | The Blackwood: Broken lantern |
+| `deco.tree-oak` | `art/packs/myart/props/deco-tree-oak.png` | 191×298 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.tree-pine` | `art/packs/myart/props/deco-tree-pine.png` | 186×311 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.tree-dead` | `art/packs/myart/props/deco-tree-dead.png` | 117×302 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.tree-broad` | `art/packs/myart/props/deco-tree-broad.png` | 229×316 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.tree-dead-small` | `art/packs/myart/props/deco-tree-dead-small.png` | 47×116 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.bush-dead` | `art/packs/myart/props/deco-bush-dead.png` | 118×111 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.rock-flat` | `art/packs/myart/props/deco-rock-flat.png` | 120×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.stump-big` | `art/packs/myart/props/deco-stump-big.png` | 116×127 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.haystack` | `art/packs/myart/props/deco-haystack.png` | 125×109 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.signpost-2` | `art/packs/myart/props/deco-signpost-2.png` | 64×82 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.bench` | `art/packs/myart/props/deco-bench.png` | 127×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.fence` | `art/packs/myart/props/deco-fence.png` | 171×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.stocks` | `art/packs/myart/props/deco-stocks.png` | 114×83 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.grave` | `art/packs/myart/props/deco-grave.png` | 60×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.crystals` | `art/packs/myart/props/deco-crystals.png` | 59×111 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 
 ## Character sprite (`char`, placeholder #8a6a23)
 
@@ -230,7 +276,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `tiles.ground` | `art/walk/tiles/ground.png` | 384×32 | — | placeholder | Ground tiles for towns and wild areas, one row of 32 px tiles in src/data/tiles.js order |
-| `tiles.handpainted` | `art/packs/myart/tiles/ground-atlas.png` | 512×256 | — | ready | Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js |
+| `tiles.handpainted` | `art/packs/myart/tiles/ground-atlas.png` | 512×512 | — | ready | Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js |
 
 ## Portrait (`portrait`, placeholder #6a4a5e)
 
@@ -295,6 +341,9 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.class.mage` | `art/portraits/classes/mage.png` | 160×160 | `art/portraits/mage.png` | borrowed | Dialogue portrait for a Mage recruit |
 | `portrait.class.scholar` | `art/portraits/classes/scholar.png` | 160×160 | `art/portraits/scholar.png` | borrowed | Dialogue portrait for a Scholar recruit |
 | `portrait.class.artificer` | `art/portraits/classes/artificer.png` | 160×160 | `art/portraits/artificer.png` | borrowed | Dialogue portrait for a Artificer recruit |
+| `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-innkeeper-still.png` | borrowed | Dialogue portrait (its walking character until painted) |
+| `portrait.role.registrar` | `art/portraits/npcs/role-registrar.png` | 160×160 | `art/packs/myart/chars/npc-role-registrar-still.png` | borrowed | Dialogue portrait (its walking character until painted) |
+| `portrait.role.referee` | `art/portraits/npcs/role-referee.png` | 160×160 | `art/packs/myart/chars/npc-role-referee-still.png` | borrowed | Dialogue portrait (its walking character until painted) |
 
 ## Battle effect (`fx`, placeholder #5a2a6a)
 

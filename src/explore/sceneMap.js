@@ -24,6 +24,12 @@ export function personSize(asset, fallback = { w: 26, h: 36 }) {
 function placed(asset, box, { maxH = Infinity } = {}) {
   const art = ASSETS[asset];
   if (!art?.aspect) return { asset, ...box };
+  if (art.natural) {
+    // Grassland objects keep their painted size: half the 64 px sheet, standing on the footprint.
+    const w = art.w * art.scale;
+    const h = art.h * art.scale;
+    return { asset, x: box.x + (box.w - w) / 2, y: box.y + box.h - h, w, h, depth: box.y + box.h };
+  }
   let w = art.scale && art.group === 'building' ? art.w * BUILDING_SCALE : box.w;
   let h = (w * art.h) / art.w;
   if (h > maxH) {
@@ -114,6 +120,32 @@ function exitTarget(exit, extra = {}) {
   };
 }
 
+// The woods ('T' tiles) grow trees: one on every other tile, staggered row by row,
+// so their crowns overlap. Each place has its own kinds (Blackwood is dead wood).
+const TREES = { blackwood: ['deco.tree-dead', 'deco.tree-dead', 'deco.tree-pine'], 'thornwood-edge': ['deco.tree-pine', 'deco.tree-pine', 'deco.tree-oak'], default: ['deco.tree-oak', 'deco.tree-oak', 'deco.tree-pine', 'deco.tree-broad'] };
+function treeProps(place) {
+  if (!ASSETS['deco.tree-oak']) return [];
+  const kinds = TREES[place.id] || TREES.default;
+  const trees = [];
+  place.tiles.forEach((line, row) => {
+    [...line].forEach((char, col) => {
+      if (char !== 'T') return;
+      // Deep woods get a tree every other tile; small clumps and lone trees get one on every tile.
+      const around = [line[col - 1], line[col + 1], place.tiles[row - 1]?.[col], place.tiles[row + 1]?.[col]].filter((c) => c === 'T').length;
+      if ((col + row) % 2 && around >= 3) return;
+      const roll = Math.abs((col * 73856093) ^ (row * 19349663));
+      const art = ASSETS[kinds[roll % kinds.length]];
+      const w = art.w * art.scale;
+      const h = art.h * art.scale;
+      const jitter = ((roll >> 3) % 9) - 4;
+      const x = (col + 0.5) * T - w / 2 + jitter;
+      const y = (row + 1) * T - h + ((roll >> 6) % 5);
+      trees.push({ asset: art.id, x, y, w, h, depth: y + h });
+    });
+  });
+  return trees;
+}
+
 function base(place) {
   const { data, blocks } = tileGrid(place);
   // The hand-painted ground, when imported, is painted from the tile rows (groundPaint.js).
@@ -123,7 +155,7 @@ function base(place) {
     size: { width: place.width * T, height: place.height * T },
     background: '#16191c',
     ...(painted
-      ? { groundPaint: { asset: 'tiles.handpainted', rows: place.tiles, tileSize: T, tone: place.kind === 'wild' ? 'rgba(20, 30, 40, .18)' : null } }
+      ? { groundPaint: { asset: 'tiles.handpainted', rows: place.tiles, tileSize: T, wild: place.kind === 'wild', tone: place.id === 'blackwood' ? 'rgba(30, 20, 50, .34)' : null } }
       : { tiles: { asset: 'tiles.ground', size: T, data } }),
     player: { asset: 'char.founder', ...personSize('char.founder') },
     pad: 9,
@@ -168,7 +200,7 @@ export function townMap(town, hall = null) {
   });
   const npcs = town.npcs.map((npc) => npcTarget(town.id, npc));
   map.blocks.push(...props.blocks);
-  map.props = [...props.drawn, ...buildingProps];
+  map.props = [...treeProps(town), ...props.drawn, ...buildingProps];
   map.targets = [...doors, ...props.targets, ...npcs, ...(town.exits || []).map((exit) => exitTarget(exit, { area: exit.area }))];
   map.spawn = tileCenter(town.spawn);
   return map;
@@ -207,7 +239,7 @@ export function wildMap(area) {
   const [cw, ch] = area.camp.size;
   const campX = (cc + cw / 2) * T;
   map.blocks.push(...props.blocks, rect(cc, cr, cw, ch));
-  map.props = [...props.drawn, { asset: 'prop.campfire', x: cc * T, y: cr * T, w: cw * T, h: ch * T }];
+  map.props = [...treeProps(area), ...props.drawn, placed('prop.campfire', { x: cc * T, y: cr * T, w: cw * T, h: ch * T })];
   const camp = {
     id: 'camp',
     kind: 'camp',

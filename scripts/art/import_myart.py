@@ -23,6 +23,8 @@ OUT = os.path.join(GAME, 'public', 'art', 'packs', 'myart')
 REL = 'art/packs/myart'
 sys.path.insert(0, HERE)
 
+GRASS = os.path.join(SRC, '2D Hand Painted Tilesets', '2D Hand Painted - Grassland Tileset', 'Sprites', 'Tilesets 64x64')
+EXTRA = os.path.join(SRC, '2D Hand Painted Tilesets', '2D Hand Painted - Extra Objects', 'Sprites', 'Tilesets 64x64')
 TOWN = os.path.join(SRC, '2D Hand Painted Tilesets', '2D Hand Painted - Town Tileset', 'Sprites', 'Tilesets 64x64')
 INTERIOR = os.path.join(SRC, '2D Hand Painted Tilesets', '2D Hand Painted - Interior Tileset', 'Sprites', 'Tilesets 64x64')
 GUI = os.path.join(SRC, 'GUI PRO Kit - Fantasy RPG')
@@ -83,6 +85,9 @@ def ground():
         ('cobble0', town, 12, 10), ('cobble1', town, 11, 10), ('bushTop', town, 7, 12), ('bushBottom', town, 7, 13),
         ('hedge0', moss, 0, 13), ('hedge1', moss, 1, 13), ('hedge2', moss, 2, 14), ('hedge3', moss, 4, 14),
     ]
+    from wilds import GROUND
+    grass = sheet('Grassland', GRASS)
+    picks += [(name, grass, c, r) for name, (_, c, r) in GROUND.items()]
     cols = 8
     atlas = Image.new('RGBA', (cols * TS, ((len(picks) + cols - 1) // cols) * TS))
     for i, (name, im, c, r) in enumerate(picks):
@@ -91,6 +96,19 @@ def ground():
     atlas.save(out('tiles/ground-atlas.png'))
     assets.append({'id': 'tiles.handpainted', 'group': 'tileset', 'path': f'{REL}/tiles/ground-atlas.png', 'w': atlas.width, 'h': atlas.height, 'tile': TS, 'cols': cols, 'cells': cells,
                    'use': 'Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js'})
+
+
+# --- Wild things (Grassland, Extra Objects): trees, rocks, camps, and props the places name ---
+def wild_things():
+    from wilds import DECO, PROPS
+    sheets = {'ExtraObjects': sheet('ExtraObjects', EXTRA), 'Grassland': sheet('Grassland', GRASS)}
+    for key, spec in [*((f'deco.{name}', spec) for name, spec in DECO.items()), *PROPS.items()]:
+        name, c, r, w, h, *rest = spec
+        image = trim(tiles(sheets[name], c, r, w, h, skip=rest[0] if rest else ()))
+        path = f"props/{key.replace('.', '-')}.png"
+        image.save(out(path))
+        assets.append({'id': key, 'group': 'prop', 'path': f'{REL}/{path}', 'w': image.width, 'h': image.height, 'aspect': True, 'natural': True, 'scale': WT / TS,
+                       'use': 'Hand-painted grassland object (scripts/art/wilds.py)'})
 
 
 # --- Buildings ---------------------------------------------------------------
@@ -182,11 +200,6 @@ def props():
     crates.alpha_composite(tiles(town, 5, 10), (0, 0))
     crates.alpha_composite(tiles(town, 6, 10), (TS, 0))
     prop('prop.crates', trim(crates), 'Crate and barrel')
-    board = tiles(inner2, 9, 4, 2, 2)
-    note = trim(tiles(inner2, 14, 2))
-    board.alpha_composite(note, (22, 18))
-    board.alpha_composite(note.rotate(-8, expand=True), (TS + 4, 22))
-    prop('prop.noticeboard', trim(board), 'Notice board (notes pinned to a wooden board)')
 
 
 # --- Characters --------------------------------------------------------------
@@ -296,7 +309,7 @@ def interface():
             print('missing', rel)
             continue
         shutil.copyfile(source, out(f'gui/{name}'))
-    for font in ['Alata-Regular.ttf', 'JosefinSans-Bold.ttf']:
+    for font in ['JosefinSans-Bold.ttf']:
         shutil.copyfile(os.path.join(GUI, 'Font', font), out(f'fonts/{font}'))
 
 
@@ -306,6 +319,7 @@ def main():
     ground()
     buildings()
     props()
+    wild_things()
     interiors()
     interface()
     if '--no-characters' not in sys.argv:

@@ -24,7 +24,7 @@ function hash(col, row) {
  * Returns a canvas of the whole place at `scale` canvas px per world px (one tile
  * is `tileSize` world px). `image` is the loaded atlas, `atlas` its registry entry.
  */
-export function paintGround({ image, atlas, rows, tileSize = 32, tone = null }) {
+export function paintGround({ image, atlas, rows, tileSize = 32, tone = null, wild = false }) {
   const height = rows.length;
   const width = Math.max(...rows.map((line) => line.length));
   const S = atlas.tile; // source tile size
@@ -60,13 +60,16 @@ export function paintGround({ image, atlas, rows, tileSize = 32, tone = null }) 
     for (let col = 0; col < width; col += 1) {
       const char = at(col, row);
       const roll = hash(col, row) % 100;
-      const name = char === ',' ? (roll < 35 ? 'flowers' : 'grass2') : roll < 4 ? 'flowers' : roll < 30 ? 'grass2' : 'grass';
+      let name = char === ',' ? (roll < 35 ? 'flowers' : 'grass2') : roll < 4 ? 'flowers' : roll < 30 ? 'grass2' : 'grass';
+      if (wild && cell('wgrass') !== undefined) name = char === ',' && roll < 30 ? 'flowers' : roll < 40 ? 'wgrass2' : roll < 60 ? 'wgrass3' : 'wgrass';
       draw(name, col, row);
     }
   }
 
   // 2. Shapes on the grass: water, paths, the plaza (each autotiled), then the bridge.
-  ['water', 'path'].forEach((setId) => {
+  if (wild && cell('road-c0') !== undefined) {
+    paintWildShapes();
+  } else ['water', 'path'].forEach((setId) => {
     const set = SETS[setId];
     const same = (col, row) => set.chars.includes(at(col, row));
     for (let row = 0; row < height; row += 1) {
@@ -92,23 +95,56 @@ export function paintGround({ image, atlas, rows, tileSize = 32, tone = null }) 
       }
     }
   });
+  // Wild areas: the grassland's dirt road (outer ring and inner corners) and its natural pond.
+  function paintWildShapes() {
+    const shape = (chars, pieces) => {
+      const same = (col, row) => chars.includes(at(col, row));
+      for (let row = 0; row < height; row += 1) {
+        for (let col = 0; col < width; col += 1) {
+          if (!same(col, row)) continue;
+          [0, 1].forEach((qy) =>
+            [0, 1].forEach((qx) => {
+              const sx = qx ? 1 : -1;
+              const sy = qy ? 1 : -1;
+              const h = same(col + sx, row);
+              const v = same(col, row + sy);
+              const d = same(col + sx, row + sy);
+              draw(pieces({ h, v, d, qx, qy, roll: hash(col, row) }), col, row, { quarter: [qx, qy] });
+            }),
+          );
+          if (TINT[at(col, row)]) {
+            context.fillStyle = TINT[at(col, row)];
+            context.fillRect(col * D, row * D, D + 0.5, D + 0.5);
+          }
+        }
+      }
+    };
+    shape('~b', ({ h, v, qx, qy }) => `pond${h && v ? 4 : h ? (qy ? 7 : 1) : v ? (qx ? 5 : 3) : qy ? (qx ? 8 : 6) : qx ? 2 : 0}`);
+    shape('=:mb', ({ h, v, d, qx, qy, roll }) => {
+      if (h && v && d) return `road-c${roll % 4}`;
+      if (h && v) return qy ? (qx ? 'road-in-br' : 'road-in-bl') : qx ? 'road-in-tr' : 'road-in-tl';
+      if (h) return qy ? 'road-b' : 'road-t';
+      if (v) return qx ? 'road-r' : 'road-l';
+      return qy ? (qx ? 'road-br' : 'road-bl') : qx ? 'road-tr' : 'road-tl';
+    });
+  }
+
   for (let row = 0; row < height; row += 1) {
     for (let col = 0; col < width; col += 1) {
       const char = at(col, row);
-      if (char === 'b') draw('planks', col, row);
+      if (char === 'b') draw(wild && cell('wplanks') !== undefined ? 'wplanks' : 'planks', col, row);
       else if (char === 'W') draw('stone', col, row);
-      else if (char === 'T' && ['T', 'x'].filter((c) => [at(col - 1, row), at(col + 1, row), at(col, row - 1), at(col, row + 1)].includes(c)).length === 0) {
-        // A lone tree in town: a bush in its planter (standing a tile tall).
-        draw('bushBottom', col, row);
-        if (row > 0) draw('bushTop', col, row - 1);
-      } else if (char === 'T' || char === 'x') {
-        // Woods and deadwood: a dense canopy (the hand-painted pack has no trees yet).
-        draw('hedge0', col, row);
-        context.fillStyle = char === 'x' ? 'rgba(30, 20, 40, .5)' : `rgba(10, 30, 15, ${0.26 + (hash(col, row) % 5) * 0.03})`;
+      else if (char === 'T' || char === 'x') {
+        // The forest floor under the trees (sceneMap draws the trees).
+        context.fillStyle = char === 'x' ? 'rgba(30, 20, 40, .4)' : `rgba(12, 32, 14, ${0.22 + (hash(col, row) % 5) * 0.03})`;
         context.fillRect(col * D, row * D, D + 0.5, D + 0.5);
       } else if (char === '"') {
-        context.fillStyle = 'rgba(20, 45, 20, .3)';
-        context.fillRect(col * D, row * D, D + 0.5, D + 0.5);
+        // Undergrowth: tufted grass (wild), or a light shade in town.
+        if (wild && cell('wgrass3') !== undefined) draw('wgrass3', col, row);
+        else {
+          context.fillStyle = 'rgba(20, 45, 20, .18)';
+          context.fillRect(col * D, row * D, D + 0.5, D + 0.5);
+        }
       }
     }
   }
