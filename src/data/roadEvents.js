@@ -4,7 +4,7 @@ export const ROAD_EVENTS = {
   // Scripted: happens on the first contract.
   peddler: {
     title: 'A friendly peddler',
-    text: 'On the Old Road, an old peddler waves you down. “Wolves ahead. Take these, and come back alive.”',
+    text: 'On the Old Road, an old peddler waves you down. “Wolfskins ahead. Take these, and come back alive.”',
     options: [
       { id: 'accept', label: 'Accept two potions', note: 'Free. Use them in battle from the item bar.' },
       { id: 'decline', label: 'Thank her and move on', note: 'Nothing happens.' },

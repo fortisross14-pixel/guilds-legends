@@ -14,7 +14,7 @@ the older art). Re-run it after changing a recipe here or in characters.py.
 Needs Pillow. Takes about a minute (the characters).
 """
 import json, os, shutil, sys
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageOps
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GAME = os.path.dirname(os.path.dirname(HERE))
@@ -205,6 +205,32 @@ def characters():
                        'use': 'Walking character (HeroEditor parts, scripts/art/characters.py)'})
 
 
+# --- Foes (no monsters: every enemy is a person) ----------------------------
+def foes():
+    from heroeditor import Library, Rig
+    from characters import recipe_parts
+    from foes import FOES, GROUPS, BOSSES, battle_still, group_image
+    lib = Library(HERO)
+    rig = Rig(os.path.join(HERO, 'Prefabs', 'Human.prefab'), lib)
+    stills = {}
+    for foe_id, spec in FOES.items():
+        im = battle_still(rig, recipe_parts(HERO, spec))
+        stills[foe_id] = im
+        im.save(out(f'foes/{foe_id}.png'))
+        assets.append({'id': f'battle.foe.{foe_id}', 'group': 'battler', 'path': f'{REL}/foes/{foe_id}.png', 'w': im.width, 'h': im.height, 'foe': True,
+                       'use': f'Enemy in battle: {foe_id} (HeroEditor parts, scripts/art/foes.py)'})
+    for asset_id, members in GROUPS.items():
+        im = group_image([ImageOps.mirror(stills[m]) for m in members])
+        name = asset_id.split('.', 1)[1].replace('.', '-')
+        im.save(out(f'foes/{name}.png'))
+        assets.append({'id': asset_id, 'group': 'enemy', 'path': f'{REL}/foes/{name}.png', 'w': im.width, 'h': im.height, 'aspect': True, 'use': f'Enemy group on the map: {", ".join(members)}'})
+    for asset_id, foe_id in BOSSES.items():
+        im = ImageOps.mirror(stills[foe_id])
+        name = asset_id.split('.', 1)[1].replace('.', '-')
+        im.save(out(f'foes/{name}.png'))
+        assets.append({'id': asset_id, 'group': 'enemy', 'path': f'{REL}/foes/{name}.png', 'w': im.width, 'h': im.height, 'aspect': True, 'use': f'Boss on the map: {foe_id}'})
+
+
 # --- Interface ---------------------------------------------------------------
 GUI_FILES = {
     'panel.png': 'Sprites/Component/Popup/popup_00_frame.png',
@@ -264,11 +290,12 @@ def main():
     interface()
     if '--no-characters' not in sys.argv:
         characters()
+        foes()
     os.makedirs(os.path.join(GAME, 'src', 'data', 'myart'), exist_ok=True)
     keep = []
     target = os.path.join(GAME, 'src', 'data', 'myart', 'assets.json')
     if '--no-characters' in sys.argv and os.path.exists(target):
-        keep = [a for a in json.load(open(target))['assets'] if a.get('walker')]
+        keep = [a for a in json.load(open(target))['assets'] if a.get('walker') or a.get('foe') or a['id'].startswith('enemy.')]
     with open(target, 'w') as f:
         json.dump({'source': 'scripts/art/import_myart.py', 'assets': assets + keep}, f, indent=1)
     print(len(assets) + len(keep), 'assets')

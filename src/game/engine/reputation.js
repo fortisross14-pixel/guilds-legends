@@ -18,7 +18,7 @@ export const REPUTATION_GRADE = { Legendary: 2, 'Great Success': 1.5, Success: 1
 export const DECLINE_PENALTY = 5;
 export const EXPIRE_PENALTY = 10;
 
-export const SPECIALIZATION_TITLES = { Combat: 'Monster Hunters', Diplomacy: 'Envoys', Expedition: 'Pathfinders', Intrigue: 'Shadow Hand' };
+export const SPECIALIZATION_TITLES = { Combat: 'Bounty Hunters', Diplomacy: 'Envoys', Expedition: 'Pathfinders', Intrigue: 'Shadow Hand' };
 
 /** Perks per family level (cumulative). Shown in the Herald's Reputation view. */
 export const FAMILY_PERKS = [

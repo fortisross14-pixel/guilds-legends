@@ -342,10 +342,10 @@ export const TOWN_EVENTS = [
     effects: {},
   },
   {
-    id: 'news-monster',
+    id: 'news-outlaws',
     category: 'news',
-    title: 'Monster sighting',
-    text: 'Something big was seen near {town}. Local contracts pay 15% more.',
+    title: 'Outlaw sighting',
+    text: 'An outlaw band was seen near {town}. Local contracts pay 15% more.',
     weight: 2,
     effects: { localPay: 0.15 },
   },

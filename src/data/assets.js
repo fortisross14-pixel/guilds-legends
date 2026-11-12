@@ -109,11 +109,7 @@ const LIST = [
     ['debuff', 13, 'Debuffs, stuns, charging'],
     ['poison', 11, 'Poison ticks'],
   ].map(([id, n, use]) => ({ id: `fx.${id}`, group: 'fx', path: `art/fx/${id}.png`, borrow: `art/effects/effect_${String(n).padStart(2, '0')}.png`, w: 152, h: 130, use })),
-  // Enemy battle sprites (the turn order bar uses them too).
-  ...Array.from({ length: 16 }, (_, index) => {
-    const n = String(index + 1).padStart(2, '0');
-    return { id: `battle.enemy_${n}`, group: 'battler', path: `art/enemies/enemy_${n}.png`, w: 320, h: 288, use: `Enemy battle sprite ${n} (see src/data/enemies.js rosters)` };
-  }),
+  // Enemy battle sprites are people made from HeroEditor parts: battle.foe.<id>, from src/data/myart/assets.json.
 
   // Identity (Phase 4): founding charter crests and patron crests. Patron representatives
   // use their town NPC portraits (portrait.dunmere.merchant, portrait.greenhollow.cleric, portrait.ironford.foreman).

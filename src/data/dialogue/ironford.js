@@ -7,7 +7,7 @@ const SMITHS = patronTopics('smiths', 'the Smiths’ Guild', {
   ally: ['Allies. We forged you a blade. Don’t make us regret it.'],
   partner: ['Partners. Our steel is cheaper for you, and your chest got bigger.'],
   contact: ['Customers we trust. Our smiths will sharpen your gear even without an armory of your own.'],
-  stranger: ['Strangers. Take a monster contract with our seal, and we’ll talk.'],
+  stranger: ['Strangers. Take a bounty contract with our seal, and we’ll talk.'],
   gift: ['She pockets the purse. “The furnace thanks you.”'],
 });
 
@@ -46,13 +46,13 @@ export default {
         lines: ['Mind the sparks. Foundry Row burns visitors first.', 'Dagna Hale. I speak for the Smiths’ Guild. What brings a banner this far east?'],
         choices: [
           { text: 'We’re a Free Company. We pay in coin.', if: { charter: 'free' }, effects: [{ relationship: 1 }], reply: ['Good. Smiths like coin and carcasses. Not favours.'] },
-          { text: 'Work, if you have any.', reply: ['Always. Monster hunts, deep work. Things that burn or bite.'] },
+          { text: 'Work, if you have any.', reply: ['Always. Bounty hunts, deep work. People who burn or bite.'] },
           { text: 'Just looking around.', reply: ['Look with your hands in your pockets, then.'] },
         ],
       },
     ],
     topics: [
-      { id: 'work', text: 'What work does the Smiths’ Guild pay for?', lines: ['Monster hunts and deep work. Bring us monsters and ore; we bring you steel.'] },
+      { id: 'work', text: 'What work does the Smiths’ Guild pay for?', lines: ['Bounty hunts and deep work. Bring us outlaws and ore; we bring you steel.'] },
       { id: 'town', text: 'Who runs Ironford?', lines: ['The Smiths set prices. The toll-keeper sets the bridge. The river sets everything else.'] },
       ...SMITHS,
     ],

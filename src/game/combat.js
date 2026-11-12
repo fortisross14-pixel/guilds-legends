@@ -18,7 +18,6 @@ import { CLASS_PROFILES, ENEMY_ROLES, ENEMY_TYPES } from '../data/enemies.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const clone = (value) => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)));
-const ENEMY_SPRITE_COUNT = 16;
 const TIMED = ['poison', 'burn', 'regen', 'atkUp', 'atkDown', 'guard', 'taunt'];
 const INTERRUPT_SHARE = 0.12; // one hit of 12% max HP breaks a charge
 
@@ -282,24 +281,23 @@ export function createPartyEncounter({
     if (boss?.intro) encounter.intro = `${boss.name}: ${boss.intro}`;
     return startEncounter(encounter, items);
   }
-  const spriteBase = hashString(`${id}:${opponentName}`);
   const classes = [opponentClassId, 'Duelist', 'Ranger', 'Mage', 'Cleric'];
   for (let index = 0; index < count; index += 1) {
     const captain = index === 0;
+    const classId = classes[index % classes.length];
     const enemy = syntheticEnemy({
       id: `${id}-e${index}`,
       name: captain ? `${opponentName} captain` : `${opponentName} ${String.fromCharCode(65 + index - 1)}`,
-      classId: classes[index % classes.length],
+      classId,
       primal: opponentPrimal,
       level: clamp(opponentLevel + (captain ? 1 : 0), 1, 20),
       power: opponentPower + (captain ? 4 : -2 - index),
     });
-    const spriteNumber = ((spriteBase + (captain ? 0 : 1 + (index % 2))) % ENEMY_SPRITE_COUNT) + 1;
     encounter.enemies.push(
       makeCombatant(enemy, 'enemy', {
         role: captain ? 'Captain' : 'Minion',
         scale: (captain ? 1 : 0.8) * strength,
-        sprite: { kind: 'enemy', key: `enemy_${String(spriteNumber).padStart(2, '0')}` },
+        sprite: { kind: 'hero', classId: normalizeClassId(classId) },
       }),
     );
   }
@@ -670,7 +668,7 @@ function planFor(encounter, enemy) {
   }
 
   if (enemy.profile === 'skirmisher') {
-    // Only monsters run; champions and rival guild members stand their ground.
+    // Only wild rabble run; champions and rival guild members stand their ground.
     if (!boss && enemy.sprite?.kind === 'enemy' && encounter.mode === 'party' && allies.length === 1 && ratio(enemy) < 0.6 && roll < 0.5) return { action: 'flee' };
     const target = taunter || [...foes].sort((a, b) => a.hp - b.hp)[0];
     const poison = bestSkill(enemy, (skill) => damaging(skill) && skill.status?.type === 'poison');

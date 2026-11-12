@@ -148,10 +148,10 @@ export const STORY_MISSIONS = [
     number: 3,
     act: 1,
     chapter: 1,
-    title: 'Wolves on the Old Road',
-    goal: 'Clear the wolves off the Old Road.',
+    title: 'Wolfskins on the Old Road',
+    goal: 'Drive the Wolfskins off the Old Road.',
     locationId: 'dunmere',
-    summary: 'A merchant’s wagons keep losing mules to wolves on the Old Road. Protect them, and Dunmere will learn your name.',
+    summary: 'A merchant’s wagons keep losing mules to the Wolfskins, raiders in wolf pelts, on the Old Road. Protect them, and Dunmere will learn your name.',
     gate: { text: 'Hire your first companion (mission 2)', if: { storyDone: 'm2' } },
     alternatives: [{ text: 'Skipping the tutorial clears the road for you', if: { tutorialSkipped: true } }],
     steps: [
@@ -159,7 +159,7 @@ export const STORY_MISSIONS = [
       {
         id: 'contract',
         kind: 'contract',
-        text: 'Take “Wolves on the Old Road” at the Notice Board.',
+        text: 'Take “Wolfskins on the Old Road” at the Notice Board.',
         hint: 'Accept it at the Notice Board, then walk out onto the Old Road: find the tracks, beat the pack and the one driving it.',
         screen: 'missions',
         contracts: { default: { templateId: 'wolves-old-road', locationId: 'dunmere' } },

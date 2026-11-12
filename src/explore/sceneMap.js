@@ -33,6 +33,14 @@ function placed(asset, box, { maxH = Infinity } = {}) {
 }
 const BUILDING_SCALE = 0.42; // hand-painted 64 px tiles at the walk grid: doors about a walker high
 
+/** Map size for an enemy group or boss: people at about a walker's height. */
+function foeSize(asset, boss) {
+  const art = ASSETS[asset];
+  if (!art?.aspect) return boss ? { w: 80, h: 64 } : { w: 56, h: 44 };
+  const h = boss ? 60 : 50;
+  return { w: Math.round((h * art.w) / art.h), h };
+}
+
 const tileCenter = ([col, row]) => ({ x: (col + 0.5) * T, y: (row + 0.5) * T });
 const rect = (col, row, w, h) => ({ x: col * T, y: row * T, w: w * T, h: h * T });
 
@@ -214,7 +222,7 @@ export function wildMap(area) {
   const groups = areaGroups(area).map((group) => {
     const { x } = tileCenter(group.at);
     const feet = (group.at[1] + 1) * T - 2;
-    const size = group.isBoss ? { w: 80, h: 64 } : { w: 56, h: 44 };
+    const size = foeSize(group.asset, group.isBoss);
     return {
       id: `enemy:${group.id}`,
       kind: 'enemy',
@@ -261,9 +269,12 @@ export function wildMap(area) {
 
 /** The enemy-group art for a site fight, from who is in it. */
 function siteGroupAsset(enemies = []) {
-  if (enemies.some((id) => /wolf|hound/.test(id))) return 'enemy.group.wolves';
+  if (enemies.some((id) => /wolf/.test(id))) return 'enemy.group.wolfskins';
   if (enemies.some((id) => /hollow|veil|void|mind|dream/.test(id))) return 'enemy.group.hollow';
   if (enemies.some((id) => /witch|priest/.test(id))) return 'enemy.group.witch';
+  if (enemies.some((id) => /stalker/.test(id))) return 'enemy.group.stalkers';
+  if (enemies.some((id) => /bark|moss/.test(id))) return 'enemy.group.barkhides';
+  if (enemies.some((id) => /spore|grove/.test(id))) return 'enemy.group.spores';
   return 'enemy.group.bandits';
 }
 
@@ -286,8 +297,9 @@ export function siteTargets(objects) {
       const site = { missionId, objectiveId: objective.id, arrive: Boolean(arrive) };
       if (arrive) return { id, kind: 'poi', name: `Bring ${objective.name} here`, verb: 'Arrive', site, icon: 'flag', x, y: feet, w: 28, h: 28, asset: 'site.marker.destination', approach: { x, y: feet + 18 }, labelAt: { x, y: feet - 44 }, reach: 40, beacon: true };
       if (objective.kind === 'fight') {
-        const size = objective.boss ? { w: 80, h: 64 } : { w: 56, h: 44 };
-        return { id, kind: 'enemy', name: objective.name, verb: 'Fight', site, icon: objective.boss ? 'skull' : 'swords', x, y: feet, asset: siteGroupAsset(objective.enemies), ...size, bob: true, approach: { x, y: feet + 20 }, labelAt: { x, y: feet - size.h - 20 }, reach: objective.boss ? 40 : 34, auto: true, beacon: true };
+        const asset = siteGroupAsset(objective.enemies);
+        const size = foeSize(asset, false);
+        return { id, kind: 'enemy', name: objective.name, verb: 'Fight', site, icon: objective.boss ? 'skull' : 'swords', x, y: feet, asset, ...size, bob: true, approach: { x, y: feet + 20 }, labelAt: { x, y: feet - size.h - 20 }, reach: objective.boss ? 40 : 34, auto: true, beacon: true };
       }
       if (objective.kind === 'talk' || objective.kind === 'escort')
         return { id, kind: 'npc', name: objective.name, role: objective.role, verb: 'Talk', site, icon: SITE_ICONS[objective.kind], x, y: feet, asset: 'npc.role.traveller', ...personSize('npc.role.traveller'), bob: true, approach: { x, y: feet + 22 }, labelAt: { x, y: feet - personSize('npc.role.traveller').h - 16 }, reach: 38, beacon: true };

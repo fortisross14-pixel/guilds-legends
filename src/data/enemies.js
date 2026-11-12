@@ -1,6 +1,6 @@
 // Regional enemy rosters and bosses. Missions draw enemies from their region's
-// roster (scaled by difficulty and risk). Sprites are public/art/enemies/enemy_NN.png;
-// with 16 images, types reuse sprites with different names, stats and primals.
+// roster (scaled by difficulty and risk). Every enemy is a person; its sprite is
+// `foe.<id>` (battle: asset battle.foe.<id>), made by scripts/art/import_myart.py.
 
 /**
  * Stat multipliers, base class (for skills) and behavior profile per role.
@@ -22,67 +22,67 @@ export const ENEMY_ROLES = {
 /** Profile for enemies built from real heroes (rival guilds, duels). */
 export const CLASS_PROFILES = { Guardian: 'tank', Duelist: 'brute', Ranger: 'skirmisher', Rogue: 'skirmisher', Cleric: 'healer', Mage: 'caster', Scholar: 'caster', Artificer: 'caster' };
 
-// [id, name, role, sprite, abilities]. Sprite = public/art/enemies/enemy_NN.png: 01 bandit, 02 grey wolf,
-// 03 white wolf, 04 tusked boar, 05 skeleton with shield, 06 slime, 07 fire imp, 08 water spirit, 09 holy
-// knight with staff, 10 hooded figure, 11 goblin, 12 winged bat, 13 man-eating plant, 14 void eye,
-// 15 stone golem, 16 dark knight. Pick the closest picture to what the enemy is.
+// [id, name, role, abilities]. Every foe is a person (there are no monsters): bandits,
+// zealots, elemental adepts (fire, frost, storm, tide), the Veil's hollow dead. Each
+// has its own battle and map sprite, `foe.<id>`, assembled from HeroEditor parts
+// (recipes in scripts/art/foes.py).
 const ROSTERS = {
   Crownlands: [
-    ['road-bandit', 'Road Bandit', 'swift', 1, ['backstab']],
-    ['grey-wolf', 'Grey Wolf', 'brute', 2, ['lunge']],
-    ['hedge-witch', 'Hedge Witch', 'caster', 10, ['bolt', 'sleep']],
-    ['field-priest', 'Renegade Priest', 'healer', 9, ['cure', 'war-chant']],
-    ['shield-thug', 'Shield Thug', 'tank', 16, ['taunt']],
+    ['road-bandit', 'Road Bandit', 'swift', ['backstab']],
+    ['wolfskin', 'Wolfskin Raider', 'brute', ['lunge']],
+    ['hedge-witch', 'Hedge Witch', 'caster', ['bolt', 'sleep']],
+    ['field-priest', 'Renegade Priest', 'healer', ['cure', 'war-chant']],
+    ['shield-thug', 'Shield Thug', 'tank', ['taunt']],
   ],
   'Verdant Marches': [
-    ['thorn-stalker', 'Thorn Stalker', 'swift', 11, ['poison-arrow']],
-    ['bark-brute', 'Barkhide Brute', 'brute', 4, ['shield-bash']],
-    ['spore-caller', 'Spore Caller', 'caster', 13, ['storm', 'sleep']],
-    ['grove-mender', 'Grove Mender', 'healer', 13, ['cure', 'renew']],
-    ['moss-golem', 'Moss Golem', 'tank', 15, ['bulwark']],
+    ['thorn-stalker', 'Thorn Stalker', 'swift', ['poison-arrow']],
+    ['bark-brute', 'Barkhide Brute', 'brute', ['shield-bash']],
+    ['spore-caller', 'Spore Caller', 'caster', ['storm', 'sleep']],
+    ['grove-mender', 'Grove Mender', 'healer', ['cure', 'renew']],
+    ['moss-warden', 'Moss Warden', 'tank', ['bulwark']],
   ],
   'Ember Coast': [
-    ['reef-raider', 'Reef Raider', 'swift', 1, ['venom']],
-    ['deep-crab', 'Deep Crab', 'tank', 6, ['taunt']],
-    ['tide-caller', 'Tide Caller', 'caster', 8, ['bolt', 'storm']],
-    ['brine-cleric', 'Brine Cleric', 'healer', 9, ['cure']],
-    ['harbor-brute', 'Harbor Brute', 'brute', 4, ['lunge']],
-    ['sea-hag', 'Sea Hag', 'caster', 10, ['sleep']],
+    ['reef-raider', 'Reef Raider', 'swift', ['venom']],
+    ['shell-guard', 'Shell Guard', 'tank', ['taunt']],
+    ['tide-caller', 'Tide Caller', 'caster', ['bolt', 'storm']],
+    ['brine-cleric', 'Brine Cleric', 'healer', ['cure']],
+    ['harbor-brute', 'Harbor Brute', 'brute', ['lunge']],
+    ['sea-hag', 'Sea Hag', 'caster', ['sleep']],
   ],
   'Sun Kingdoms': [
-    ['ash-hound', 'Ash Hound', 'swift', 2, ['lunge']],
-    ['pyre-zealot', 'Pyre Zealot', 'caster', 7, ['bolt', 'storm']],
-    ['sun-templar', 'Sun Templar', 'tank', 9, ['bulwark']],
-    ['ember-acolyte', 'Ember Acolyte', 'healer', 10, ['cura']],
-    ['arena-brute', 'Arena Brute', 'brute', 16, ['shield-bash']],
+    ['ash-runner', 'Ash Runner', 'swift', ['lunge']],
+    ['pyre-zealot', 'Pyre Zealot', 'caster', ['bolt', 'storm']],
+    ['sun-templar', 'Sun Templar', 'tank', ['bulwark']],
+    ['ember-acolyte', 'Ember Acolyte', 'healer', ['cura']],
+    ['arena-brute', 'Arena Brute', 'brute', ['shield-bash']],
   ],
   'Storm Isles': [
-    ['gale-harpy', 'Gale Harpy', 'swift', 12, ['aimed-shot']],
-    ['storm-adept', 'Storm Adept', 'caster', 8, ['storm', 'greater-bolt']],
-    ['cliff-ogre', 'Cliff Ogre', 'brute', 11, ['lunge']],
-    ['wind-shaman', 'Wind Shaman', 'healer', 10, ['cure']],
-    ['thunder-shell', 'Thunder Shell', 'tank', 15, ['taunt']],
+    ['gale-skirmisher', 'Gale Skirmisher', 'swift', ['aimed-shot']],
+    ['storm-adept', 'Storm Adept', 'caster', ['storm', 'greater-bolt']],
+    ['cliff-brute', 'Cliff Brute', 'brute', ['lunge']],
+    ['wind-shaman', 'Wind Shaman', 'healer', ['cure']],
+    ['thunder-shield', 'Thunder Shield', 'tank', ['taunt']],
   ],
   'Frost Frontier': [
-    ['dire-wolf', 'Dire Wolf', 'swift', 3, ['lunge']],
-    ['tusk-brute', 'Tusk Brute', 'brute', 4, ['shield-bash']],
-    ['rime-seer', 'Rime Seer', 'caster', 10, ['sleep', 'bolt']],
-    ['herd-mother', 'Herd Mother', 'healer', 3, ['cura']],
-    ['frost-giant', 'Frost Giant', 'tank', 15, ['earthshaker']],
+    ['frost-reaver', 'Frost Reaver', 'swift', ['lunge']],
+    ['tusk-brute', 'Tusk Berserker', 'brute', ['shield-bash']],
+    ['rime-seer', 'Rime Seer', 'caster', ['sleep', 'bolt']],
+    ['rime-mother', 'Rime Mother', 'healer', ['cura']],
+    ['frostbound', 'Frostbound', 'tank', ['earthshaker']],
   ],
   'The Far Veil': [
-    ['veil-shade', 'Veil Shade', 'swift', 12, ['backstab', 'venom']],
-    ['mind-leech', 'Mind Leech', 'caster', 14, ['mind-spike']],
-    ['hollow-knight', 'Hollow Knight', 'tank', 5, ['bulwark']],
-    ['dream-weaver', 'Dream Weaver', 'healer', 14, ['cura', 'renew']],
-    ['void-hulk', 'Void Hulk', 'brute', 16, ['earthshaker']],
+    ['veil-wraith', 'Veil Wraith', 'swift', ['backstab', 'venom']],
+    ['mind-thief', 'Mind Thief', 'caster', ['mind-spike']],
+    ['hollow-knight', 'Hollow Knight', 'tank', ['bulwark']],
+    ['dream-weaver', 'Dream Weaver', 'healer', ['cura', 'renew']],
+    ['void-juggernaut', 'Void Juggernaut', 'brute', ['earthshaker']],
   ],
 };
 
 export const REGION_ENEMIES = Object.fromEntries(
   Object.entries(ROSTERS).map(([region, rows]) => [
     region,
-    rows.map(([id, name, role, sprite, skills]) => ({ id, name, role, sprite: `enemy_${String(sprite).padStart(2, '0')}`, skills })),
+    rows.map(([id, name, role, skills]) => ({ id, name, role, sprite: `foe.${id}`, skills })),
   ]),
 );
 
@@ -95,7 +95,7 @@ export const BOSSES = {
     id: 'boss-oswin',
     name: 'Graveknight Oswin',
     role: 'brute',
-    sprite: 'enemy_05',
+    sprite: 'foe.boss-oswin',
     skills: ['boss-hollow-oath', 'shield-bash'],
     trophy: 'oswin-signet',
     intro: '“Another banner come to rot on my road?”',
@@ -104,7 +104,7 @@ export const BOSSES = {
     id: 'boss-briarmother',
     name: 'The Briarmother',
     role: 'healer',
-    sprite: 'enemy_13',
+    sprite: 'foe.boss-briarmother',
     skills: ['boss-thorn-bloom', 'cura'],
     trophy: 'briar-crown',
     intro: '“The forest remembers every axe.”',
@@ -113,7 +113,7 @@ export const BOSSES = {
     id: 'boss-maelra',
     name: 'Maelra of the Deep',
     role: 'caster',
-    sprite: 'enemy_08',
+    sprite: 'foe.boss-maelra',
     skills: ['boss-undertow', 'storm'],
     trophy: 'tide-pearl',
     intro: '“Come closer, little sailors. The water is warm.”',
@@ -122,25 +122,25 @@ export const BOSSES = {
     id: 'boss-pyrelord',
     name: 'Pyrelord Kassad',
     role: 'caster',
-    sprite: 'enemy_07',
+    sprite: 'foe.boss-pyrelord',
     skills: ['boss-solar-flare', 'bolt'],
     trophy: 'sun-sigil',
     intro: '“Kneel, and burn with dignity.”',
   },
   'Storm Isles': {
     id: 'boss-tempest',
-    name: 'Tempest Roc',
+    name: 'Ysra the Tempest',
     role: 'swift',
-    sprite: 'enemy_12',
+    sprite: 'foe.boss-tempest',
     skills: ['boss-gale-wing', 'aimed-shot'],
     trophy: 'roc-feather',
-    intro: 'A scream splits the sky. Lightning crawls along its wings.',
+    intro: 'Ysra laughs into the wind. Lightning crawls along both her blades.',
   },
   'Frost Frontier': {
     id: 'boss-jarnvald',
     name: 'Jarnvald the Unthawed',
     role: 'tank',
-    sprite: 'enemy_15',
+    sprite: 'foe.boss-jarnvald',
     skills: ['boss-glacier', 'earthshaker'],
     trophy: 'frost-heart',
     intro: '“Winter does not hurry. Neither do I.”',
@@ -149,10 +149,10 @@ export const BOSSES = {
     id: 'boss-nameless',
     name: 'The Nameless Chorus',
     role: 'caster',
-    sprite: 'enemy_14',
+    sprite: 'foe.boss-nameless',
     skills: ['boss-chorus', 'mind-spike'],
     trophy: 'veil-mask',
-    intro: 'Many voices speak at once, and all of them are yours.',
+    intro: 'A masked figure opens its mouth, and many voices speak at once. All of them are yours.',
   },
 };
 
@@ -167,29 +167,29 @@ export const AREA_BOSSES = {
     id: 'grey-alpha',
     name: 'The Grey Alpha',
     role: 'brute',
-    sprite: 'enemy_03',
+    sprite: 'foe.grey-alpha',
     skills: ['lunge'],
-    intro: 'A scarred wolf twice the size of the pack rises from the mud. Its eyes find the weakest of you.',
-    phases: [{ at: 0.5, banner: 'The Alpha howls, and the pack answers!', summon: { type: 'grey-wolf', count: 2 } }],
+    intro: 'A scarred raider in a grey wolf’s pelt rises from the mud, twice the size of his gang. His eyes find the weakest of you.',
+    phases: [{ at: 0.5, banner: 'The Alpha howls, and the Wolfskins answer!', summon: { type: 'wolfskin', count: 2 } }],
   },
   'bandit-captain': {
     id: 'bandit-captain',
     name: 'Captain Vask',
     role: 'tank',
-    sprite: 'enemy_16',
+    sprite: 'foe.bandit-captain',
     skills: ['taunt', 'shield-bash', 'blade-dance'],
     intro: '“Shields up, lads. Let them tire themselves out.”',
     phases: [{ at: 0.5, banner: 'Vask throws the shield aside: “Enough. Cut them down!”', profile: 'brute', statuses: { atkUp: 9 }, areaSkill: 'blade-dance' }],
   },
   'lantern-brood': {
     id: 'lantern-brood',
-    name: 'Brood of the Lantern-eater',
+    name: 'The Lantern-eater',
     role: 'tank',
-    sprite: 'enemy_12',
+    sprite: 'foe.lantern-brood',
     skills: ['boss-lantern-eater', 'bulwark'],
-    intro: 'Lantern light gathers into a shape that remembers being hungry.',
+    intro: 'A hooded warlock stands in a ring of dead lanterns, drinking the last of their light.',
     charge: { skill: 'lantern-nova', every: 4 },
-    phases: [{ at: 0.5, banner: 'The light swells. It draws breath faster now.', profile: 'caster', charge: { skill: 'lantern-nova', every: 2 } }],
+    phases: [{ at: 0.5, banner: 'The stolen light swells in his hands. He draws breath faster now.', profile: 'caster', charge: { skill: 'lantern-nova', every: 2 } }],
   },
 };
 

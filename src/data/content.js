@@ -62,7 +62,7 @@ export const REGIONS = [
     color: '#4f8a68',
     primal: 'Plant',
     identity: 'Deep forests and ruined elder roads',
-    emphasis: 'Tracking, beasts, exploration and curses',
+    emphasis: 'Tracking, outlaws, exploration and curses',
     unlock: 'Regional',
   },
   {
@@ -98,7 +98,7 @@ export const REGIONS = [
     color: '#8ba9b8',
     primal: 'Animal',
     identity: 'Sparse settlements beyond royal control',
-    emphasis: 'Survival, giant hunts and colony defense',
+    emphasis: 'Survival, raider hunts and colony defense',
     unlock: 'Global',
   },
   {
@@ -126,8 +126,8 @@ export const APPOINTMENTS = [
 export const MISSION_TEMPLATES = [
   {
     id: 'wolves-old-road',
-    title: 'Wolves on the Old Road',
-    family: 'Monster Hunt',
+    title: 'Wolfskins on the Old Road',
+    family: 'Bounty Hunt',
     tier: 'Regional',
     region: 'Verdant Marches',
     risk: 1,
@@ -136,12 +136,12 @@ export const MISSION_TEMPLATES = [
     reward: [180, 260],
     fame: [5, 9],
     roles: ['Scout', 'Vanguard'],
-    // Who the fight fields (src/data/enemies.js): the pack, and the handler driving it.
-    enemies: ['grey-wolf', 'grey-wolf', 'road-bandit'],
-    brief: 'Carters refuse the north road after a pack began attacking in daylight. The tracks are too organized for ordinary wolves.',
+    // Who the fight fields (src/data/enemies.js): the gang, and the handler paying it.
+    enemies: ['wolfskin', 'wolfskin', 'road-bandit'],
+    brief: 'Carters refuse the north road after the Wolfskins, raiders in wolf pelts, began attacking in daylight. They strike too well for a hungry gang.',
     stakes: 'Reopen Dunmere’s main trade road before food prices rise.',
     choice: {
-      prompt: 'Torren finds human bootprints among the tracks. The pack is being driven toward the road.',
+      prompt: 'Torren finds new boots and city coin among the tracks. Someone is paying the gang to close the road.',
       options: [
         { id: 'hunt', label: 'Follow the handlers', note: 'Harder, but may reveal the real threat.', power: -3, fame: 4, reward: 80, tag: 'truth' },
         { id: 'protect', label: 'Fortify the caravan route', note: 'Safer and protects civilians.', power: 4, fame: 1, reward: 0, tag: 'mercy' },
@@ -317,8 +317,8 @@ export const MISSION_TEMPLATES = [
   },
   {
     id: 'river-leviathan',
-    title: 'The River Leviathan',
-    family: 'Monster Hunt',
+    title: 'The Serein Wreckers',
+    family: 'Bounty Hunt',
     tier: 'National',
     region: 'Verdant Marches',
     risk: 4,
@@ -327,15 +327,15 @@ export const MISSION_TEMPLATES = [
     reward: [780, 1100],
     fame: [24, 38],
     roles: ['Scout', 'Vanguard', 'Striker'],
-    brief: 'Something vast has dammed the River Serein with uprooted oaks. Two villages are already flooding.',
+    brief: 'River wreckers have dammed the River Serein with uprooted oaks to strand the barges. Two villages are already flooding.',
     stakes: 'A major rescue that can qualify the guild for National recognition.',
     choice: {
-      prompt: 'The creature is nesting around a clutch of eggs. Killing it will free the river immediately.',
+      prompt: 'The wreckers camp on the dam with their families. Breaking it frees the river immediately.',
       options: [
-        { id: 'slay', label: 'Slay the leviathan', note: 'Direct, dangerous and spectacular.', power: -2, fame: 10, reward: 180 },
+        { id: 'slay', label: 'Storm the dam', note: 'Direct, dangerous and spectacular.', power: -2, fame: 10, reward: 180 },
         {
           id: 'divert',
-          label: 'Divert the river around the nest',
+          label: 'Divert the river around the camp',
           note: 'Hard technical solution with fewer casualties.',
           power: -4,
           fame: 12,
@@ -408,7 +408,7 @@ export const MISSION_TEMPLATES = [
     brief: 'A road of impossible stones appears only beneath the winter aurora. No expedition has returned from its far end.',
     stakes: 'Open a route into the unmapped north and claim a continental feat.',
     choice: {
-      prompt: 'At the final arch, the party finds a wounded giant guarding a sky-iron compass.',
+      prompt: 'At the final arch, the party finds a wounded hermit-knight guarding a sky-iron compass.',
       options: [
         {
           id: 'aid',
@@ -431,7 +431,7 @@ export const MISSION_TEMPLATES = [
         {
           id: 'return',
           label: 'Map the route and return',
-          note: 'Complete the exploration without provoking the giants.',
+          note: 'Complete the exploration without provoking the causeway’s keepers.',
           power: 5,
           fame: 8,
           tag: 'exploration-feat',
@@ -502,11 +502,11 @@ export const MISSION_TEMPLATES = [
     brief: 'The river ferry returns each dawn without its passengers. Wet footprints lead away from an empty deck.',
     stakes: 'Restore the safest crossing into Dunmere before merchants abandon the route.',
     choice: {
-      prompt: 'The ferryman is smuggling refugees from a baronial purge, but something in the river has begun following the boat.',
+      prompt: 'The ferryman is smuggling refugees from a baronial purge, but river wreckers have begun following the boat.',
       options: [
         {
           id: 'refugees',
-          label: 'Protect the refugees and hunt the creature',
+          label: 'Protect the refugees and hunt the wreckers',
           note: 'A difficult promise with strong public meaning.',
           power: -4,
           fame: 6,
@@ -597,7 +597,7 @@ export const MISSION_TEMPLATES = [
   {
     id: 'mire-crown',
     title: 'The Mire King’s Crown',
-    family: 'Monster Hunt',
+    family: 'Bounty Hunt',
     tier: 'National',
     region: 'Verdant Marches',
     risk: 3,
@@ -607,10 +607,10 @@ export const MISSION_TEMPLATES = [
     fame: [14, 23],
     roles: ['Scout', 'Support', 'Striker'],
     artifact: 'Crown of Woven Reeds',
-    brief: 'A colossal antlered beast has united the marsh predators and driven three villages onto the old causeway.',
+    brief: 'A marsh warlord, the Mire King, has united the fen gangs and driven three villages onto the old causeway.',
     stakes: 'Break the siege without poisoning the wetland that feeds half the county.',
     choice: {
-      prompt: 'The beast guards a clutch of eggs beneath an ancient crown of woven reeds.',
+      prompt: 'The Mire King keeps his gangs’ families close, beneath an ancient crown of woven reeds.',
       options: [
         {
           id: 'slay',
@@ -622,7 +622,7 @@ export const MISSION_TEMPLATES = [
         },
         {
           id: 'move',
-          label: 'Drive the brood deeper into the wild',
+          label: 'Drive the gangs deeper into the fens',
           note: 'Harder, merciful and better for the region.',
           power: -5,
           fame: 8,
@@ -630,8 +630,8 @@ export const MISSION_TEMPLATES = [
         },
         {
           id: 'bind',
-          label: 'Bind the beast to the guild',
-          note: 'A Beastmaster or Specialist can create an unusual legacy.',
+          label: 'Swear the Mire King to the guild',
+          note: 'A Specialist can turn an old enemy into an unusual legacy.',
           power: -7,
           fame: 10,
           roleCheck: 'Specialist',
@@ -934,8 +934,8 @@ export const MISSION_TEMPLATES = [
   },
   {
     id: 'white-giant',
-    title: 'The White Giant’s Wake',
-    family: 'Monster Hunt',
+    title: 'The White Warlord’s Wake',
+    family: 'Bounty Hunt',
     tier: 'Global',
     region: 'Frost Frontier',
     risk: 5,
@@ -945,14 +945,14 @@ export const MISSION_TEMPLATES = [
     fame: [55, 85],
     roles: ['Vanguard', 'Scout', 'Support', 'Striker'],
     artifact: 'Heart-Ice Spear',
-    brief: 'A giant believed dead for three centuries is walking south, followed by an avalanche that never settles.',
-    stakes: 'Save the frontier colonies and decide whether the last giant should be killed or understood.',
+    brief: 'A frost warlord believed dead for three centuries is marching south, followed by an avalanche that never settles.',
+    stakes: 'Save the frontier colonies and decide whether the last of the Frostbound should be killed or understood.',
     choice: {
-      prompt: 'The giant carries a frozen human city on its back. Thousands may still be alive inside.',
+      prompt: 'The warlord’s host drags a frozen city’s people behind it on sledges. Thousands may still be alive.',
       options: [
         {
           id: 'kill',
-          label: 'Bring down the giant before the pass',
+          label: 'Bring down the warlord before the pass',
           note: 'The safest answer for the living settlements.',
           power: 3,
           fame: 12,
@@ -969,7 +969,7 @@ export const MISSION_TEMPLATES = [
         },
         {
           id: 'turn',
-          label: 'Turn the giant toward the empty north',
+          label: 'Turn the host toward the empty north',
           note: 'Requires insight, endurance and mercy.',
           power: -7,
           fame: 22,
@@ -1059,7 +1059,7 @@ export const MISSION_TEMPLATES = [
   },
   {
     id: 'last-dragon',
-    title: 'The Last Dragon’s Oath',
+    title: 'The Last Flamebearer’s Oath',
     family: 'Legend Quest',
     tier: 'Global',
     region: 'Frost Frontier',
@@ -1069,19 +1069,19 @@ export const MISSION_TEMPLATES = [
     reward: [3300, 5000],
     fame: [95, 155],
     roles: ['Captain', 'Vanguard', 'Striker', 'Support', 'Specialist'],
-    artifact: 'Scale of the First Flame',
-    brief: 'The last dragon wakes beneath the polar mountain and calls in an oath sworn by the first kings.',
-    stakes: 'Decide whether the age of dragons ends in battle, alliance or succession.',
+    artifact: 'Ember of the First Flame',
+    brief: 'The last Flamebearer, a fire-sworn queen of the first kings, wakes beneath the polar mountain and calls in their oath.',
+    stakes: 'Decide whether the age of the Flamebearers ends in battle, alliance or succession.',
     choice: {
-      prompt: 'The dragon demands one kingdom and one guild hero as guarantors of the ancient oath.',
+      prompt: 'The Flamebearer demands one kingdom and one guild hero as guarantors of the ancient oath.',
       options: [
         {
           id: 'battle',
           label: 'Reject the oath and fight',
-          note: 'The ultimate monster hunt.',
+          note: 'The ultimate bounty.',
           power: -12,
           fame: 36,
-          artifact: 'Scale of the First Flame',
+          artifact: 'Ember of the First Flame',
           tag: 'mythic-feat',
         },
         {
@@ -1095,7 +1095,7 @@ export const MISSION_TEMPLATES = [
         },
         {
           id: 'heir',
-          label: 'Find the dragon a mortal heir',
+          label: 'Find the Flamebearer a mortal heir',
           note: 'A strange cultural ending that changes the next era.',
           power: -9,
           fame: 40,
@@ -1118,7 +1118,7 @@ export const MISSION_TEMPLATES = [
     fame: [85, 135],
     roles: ['Captain', 'Vanguard', 'Striker', 'Support', 'Specialist'],
     tournament: true,
-    brief: 'Once every four years, the world’s great guilds compete across duels, rescues, monster arenas and command trials.',
+    brief: 'Once every four years, the world’s great guilds compete across duels, rescues, champion arenas and command trials.',
     stakes: 'Be recognized as the greatest living institution rather than merely the strongest party.',
     choice: {
       prompt: 'The final event is sabotaged, and winning now may kill the rival team trapped inside the arena.',
@@ -1328,7 +1328,7 @@ export const HIDDEN_TRAITS = [
   'Ancient curse',
   'Legendary lineage',
   'Prophetic dreams',
-  'Monster kinship',
+  'Outlaw kinship',
   'None',
   'None',
   'None',

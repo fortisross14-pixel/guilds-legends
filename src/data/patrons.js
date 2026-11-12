@@ -65,8 +65,8 @@ export const PATRONS = {
     home: 'ironford',
     crest: 'crest.patron.smiths',
     rep: { name: 'Dagna Hale', role: 'Foundry foreman', portrait: 'portrait.ironford.foreman', dialogue: 'ironford.foreman' },
-    about: 'Gear, mining and monster contracts. They respect a guild that comes back with dented armor and a carcass.',
-    families: ['Monster Hunt', 'Dungeon'],
+    about: 'Gear, mining and bounty contracts. They respect a guild that comes back with dented armor and an outlaw in chains.',
+    families: ['Bounty Hunt', 'Dungeon'],
     opposes: { trade: 4 },
     unlocks: {
       contact: 'Gear upgrades without an Armory, and upgrades cost 20% less',

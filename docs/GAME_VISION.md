@@ -38,6 +38,8 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 
 ## How to work
 
+- **No monsters.** Every enemy is a person: bandits and gangs (the Wolfskins wear wolf pelts), zealots, elemental adepts (fire, frost, storm, tide), and the Veil's hollow dead. Each is drawn with HeroEditor parts (`scripts/art/foes.py`). New content follows this: bounties and outlaws, not beasts.
+
 - **Do only the wave named in the request.** When it's done, stop and summarize. Do not start the next wave.
 - Work on main. Follow the ground rules and the **prototype-mode testing policy** in `CLAUDE.md`: no new tests, no full suite, no balance/performance/e2e runs. Only a quick sanity check (`npm run build`, plus `npm run test:fast` if engine logic changed). Stop after 2 failed attempts at the same check.
 - **Graphics are placeholders.** A separate design pass (with the Impeccable skill) comes later. Keep layout clean and functional. Reuse the existing CSS tokens and the art in `public/art` (portraits, sprites, enemies, effects, scenes). Don't spend time on polish, animations or new art. Do use semantic class names and keep visual styling in CSS, so the later redesign is easy.
@@ -154,7 +156,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 5. **Scripted first 10 minutes** (replace the old 10-step menu tutorial):
    1. Arrive in Dunmere. A short intro card sets the premise (the old guild vanished; the player is a founder with a banner).
    2. Tavern: hire your first companion (free), with the recruit introduction card.
-   3. Notice Board: take the first contract, Wolves on the Old Road.
+   3. Notice Board: take the first contract, Wolfskins on the Old Road.
    4. Travel to it on the map. A guaranteed easy road event happens on the way.
    5. First battle, with on-screen hints teaching command, target, a heal or item, and the enemy tell.
    6. Victory screen and level-up screen.
@@ -171,7 +173,7 @@ Today Guilds of Legend plays like a succession of dashboards. The target feel is
 - Promotion: the old composite-rank requirement is now an Official-ladder rank (the same thresholds: top 8 Regional, top 4 National) plus at least some Official points. Fame, contracts, feats and years still apply.
 - The top bar and the Herald show ranks in the guild's current tier. The Herald can switch scope.
 - Rankings moments: one every season (each 3 months, compared with 3 months earlier) and one after every tournament the player entered. A fanfare moment plays when the status title changes.
-- Scripted opening: the first contract (Wolves on the Old Road) is local to Dunmere, so the "travel to it" step is a march out of town. A guaranteed peddler event (two free potions) fires when the company sets out, then time runs to the battle. In the first battle heroes can't drop below 1 HP, the enemies are weakened, and a timeout counts as a win. The contract's XP is raised so the founder always levels up.
+- Scripted opening: the first contract (Wolfskins on the Old Road) is local to Dunmere, so the "travel to it" step is a march out of town. A guaranteed peddler event (two free potions) fires when the company sets out, then time runs to the battle. In the first battle heroes can't drop below 1 HP, the enemies are weakened, and a timeout counts as a win. The contract's XP is raised so the founder always levels up.
 - Known effect for the balance pass: the autoplay governor never enters tournaments, so with Official-based promotion the simulated guild stays Regional (`npm run sim`).
 - Removed: the composite guild score and the old 10-step menu tutorial.
 
@@ -271,7 +273,7 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
 
 ### Wave 7 notes (choices where the brief was open)
 
-- **Reputation families** are the four mission approaches (Combat/Diplomacy/Expedition/Intrigue), not the story families like "Monster Hunt".
+- **Reputation families** are the four mission approaches (Combat/Diplomacy/Expedition/Intrigue), not the story families like "Bounty Hunt".
   - Points: difficulty × grade weight (Legendary 2, Great 1.5, Success 1, Partial 0.3, Defeat −0.3, Catastrophic −0.5). They go to both the family and the contract's region.
   - Levels: Unknown 0, Known 100, Respected 300, Renowned 700, Legendary 1500.
 - **Family perks** (cumulative):
@@ -280,7 +282,7 @@ The problem: the team is invisible (three clicks deep), assigning heroes to trai
   - Renowned: next-tier contracts of that kind appear a tier early.
   - Legendary: +6% success estimate, and Combat also faces 10% weaker enemies.
 - **Regional perks:** +5% pay and −5% recruit signing fees per level in that region.
-- **Specialization title** comes from the top family once it reaches Known: Monster Hunters, Envoys, Pathfinders or Shadow Hand. It shows in the Guild Hall header and the Herald.
+- **Specialization title** comes from the top family once it reaches Known: Bounty Hunters, Envoys, Pathfinders or Shadow Hand. It shows in the Guild Hall header and the Herald.
 - **The Reputation view lives in the Herald,** next to a new Rivals & nemeses tab.
 - **Contracts going to rivals.**
   - Declining (Notice Board button, with confirm) or letting a contract expire hands it to a rival. The pick order is a nemesis from that region, then any rival from that region, then a rival near your tier.

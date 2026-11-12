@@ -1004,6 +1004,519 @@
    "sideOnly": true,
    "walker": true,
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "battle.foe.road-bandit",
+   "group": "battler",
+   "path": "art/packs/myart/foes/road-bandit.png",
+   "w": 184,
+   "h": 283,
+   "foe": true,
+   "use": "Enemy in battle: road-bandit (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.wolfskin",
+   "group": "battler",
+   "path": "art/packs/myart/foes/wolfskin.png",
+   "w": 170,
+   "h": 301,
+   "foe": true,
+   "use": "Enemy in battle: wolfskin (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.hedge-witch",
+   "group": "battler",
+   "path": "art/packs/myart/foes/hedge-witch.png",
+   "w": 281,
+   "h": 328,
+   "foe": true,
+   "use": "Enemy in battle: hedge-witch (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.field-priest",
+   "group": "battler",
+   "path": "art/packs/myart/foes/field-priest.png",
+   "w": 166,
+   "h": 274,
+   "foe": true,
+   "use": "Enemy in battle: field-priest (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.shield-thug",
+   "group": "battler",
+   "path": "art/packs/myart/foes/shield-thug.png",
+   "w": 190,
+   "h": 283,
+   "foe": true,
+   "use": "Enemy in battle: shield-thug (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.thorn-stalker",
+   "group": "battler",
+   "path": "art/packs/myart/foes/thorn-stalker.png",
+   "w": 192,
+   "h": 286,
+   "foe": true,
+   "use": "Enemy in battle: thorn-stalker (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.bark-brute",
+   "group": "battler",
+   "path": "art/packs/myart/foes/bark-brute.png",
+   "w": 168,
+   "h": 314,
+   "foe": true,
+   "use": "Enemy in battle: bark-brute (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.spore-caller",
+   "group": "battler",
+   "path": "art/packs/myart/foes/spore-caller.png",
+   "w": 232,
+   "h": 294,
+   "foe": true,
+   "use": "Enemy in battle: spore-caller (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.grove-mender",
+   "group": "battler",
+   "path": "art/packs/myart/foes/grove-mender.png",
+   "w": 217,
+   "h": 278,
+   "foe": true,
+   "use": "Enemy in battle: grove-mender (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.moss-warden",
+   "group": "battler",
+   "path": "art/packs/myart/foes/moss-warden.png",
+   "w": 205,
+   "h": 330,
+   "foe": true,
+   "use": "Enemy in battle: moss-warden (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.reef-raider",
+   "group": "battler",
+   "path": "art/packs/myart/foes/reef-raider.png",
+   "w": 187,
+   "h": 276,
+   "foe": true,
+   "use": "Enemy in battle: reef-raider (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.shell-guard",
+   "group": "battler",
+   "path": "art/packs/myart/foes/shell-guard.png",
+   "w": 175,
+   "h": 285,
+   "foe": true,
+   "use": "Enemy in battle: shell-guard (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.tide-caller",
+   "group": "battler",
+   "path": "art/packs/myart/foes/tide-caller.png",
+   "w": 190,
+   "h": 285,
+   "foe": true,
+   "use": "Enemy in battle: tide-caller (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.brine-cleric",
+   "group": "battler",
+   "path": "art/packs/myart/foes/brine-cleric.png",
+   "w": 186,
+   "h": 304,
+   "foe": true,
+   "use": "Enemy in battle: brine-cleric (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.harbor-brute",
+   "group": "battler",
+   "path": "art/packs/myart/foes/harbor-brute.png",
+   "w": 158,
+   "h": 276,
+   "foe": true,
+   "use": "Enemy in battle: harbor-brute (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.sea-hag",
+   "group": "battler",
+   "path": "art/packs/myart/foes/sea-hag.png",
+   "w": 222,
+   "h": 278,
+   "foe": true,
+   "use": "Enemy in battle: sea-hag (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.ash-runner",
+   "group": "battler",
+   "path": "art/packs/myart/foes/ash-runner.png",
+   "w": 158,
+   "h": 283,
+   "foe": true,
+   "use": "Enemy in battle: ash-runner (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.pyre-zealot",
+   "group": "battler",
+   "path": "art/packs/myart/foes/pyre-zealot.png",
+   "w": 239,
+   "h": 314,
+   "foe": true,
+   "use": "Enemy in battle: pyre-zealot (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.sun-templar",
+   "group": "battler",
+   "path": "art/packs/myart/foes/sun-templar.png",
+   "w": 192,
+   "h": 301,
+   "foe": true,
+   "use": "Enemy in battle: sun-templar (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.ember-acolyte",
+   "group": "battler",
+   "path": "art/packs/myart/foes/ember-acolyte.png",
+   "w": 195,
+   "h": 282,
+   "foe": true,
+   "use": "Enemy in battle: ember-acolyte (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.arena-brute",
+   "group": "battler",
+   "path": "art/packs/myart/foes/arena-brute.png",
+   "w": 212,
+   "h": 302,
+   "foe": true,
+   "use": "Enemy in battle: arena-brute (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.gale-skirmisher",
+   "group": "battler",
+   "path": "art/packs/myart/foes/gale-skirmisher.png",
+   "w": 190,
+   "h": 276,
+   "foe": true,
+   "use": "Enemy in battle: gale-skirmisher (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.storm-adept",
+   "group": "battler",
+   "path": "art/packs/myart/foes/storm-adept.png",
+   "w": 200,
+   "h": 275,
+   "foe": true,
+   "use": "Enemy in battle: storm-adept (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.cliff-brute",
+   "group": "battler",
+   "path": "art/packs/myart/foes/cliff-brute.png",
+   "w": 197,
+   "h": 286,
+   "foe": true,
+   "use": "Enemy in battle: cliff-brute (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.wind-shaman",
+   "group": "battler",
+   "path": "art/packs/myart/foes/wind-shaman.png",
+   "w": 243,
+   "h": 321,
+   "foe": true,
+   "use": "Enemy in battle: wind-shaman (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.thunder-shield",
+   "group": "battler",
+   "path": "art/packs/myart/foes/thunder-shield.png",
+   "w": 173,
+   "h": 286,
+   "foe": true,
+   "use": "Enemy in battle: thunder-shield (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.frost-reaver",
+   "group": "battler",
+   "path": "art/packs/myart/foes/frost-reaver.png",
+   "w": 190,
+   "h": 330,
+   "foe": true,
+   "use": "Enemy in battle: frost-reaver (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.tusk-brute",
+   "group": "battler",
+   "path": "art/packs/myart/foes/tusk-brute.png",
+   "w": 166,
+   "h": 314,
+   "foe": true,
+   "use": "Enemy in battle: tusk-brute (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.rime-seer",
+   "group": "battler",
+   "path": "art/packs/myart/foes/rime-seer.png",
+   "w": 211,
+   "h": 284,
+   "foe": true,
+   "use": "Enemy in battle: rime-seer (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.rime-mother",
+   "group": "battler",
+   "path": "art/packs/myart/foes/rime-mother.png",
+   "w": 221,
+   "h": 277,
+   "foe": true,
+   "use": "Enemy in battle: rime-mother (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.frostbound",
+   "group": "battler",
+   "path": "art/packs/myart/foes/frostbound.png",
+   "w": 188,
+   "h": 330,
+   "foe": true,
+   "use": "Enemy in battle: frostbound (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.veil-wraith",
+   "group": "battler",
+   "path": "art/packs/myart/foes/veil-wraith.png",
+   "w": 178,
+   "h": 281,
+   "foe": true,
+   "use": "Enemy in battle: veil-wraith (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.mind-thief",
+   "group": "battler",
+   "path": "art/packs/myart/foes/mind-thief.png",
+   "w": 190,
+   "h": 291,
+   "foe": true,
+   "use": "Enemy in battle: mind-thief (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.hollow-knight",
+   "group": "battler",
+   "path": "art/packs/myart/foes/hollow-knight.png",
+   "w": 194,
+   "h": 327,
+   "foe": true,
+   "use": "Enemy in battle: hollow-knight (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.dream-weaver",
+   "group": "battler",
+   "path": "art/packs/myart/foes/dream-weaver.png",
+   "w": 215,
+   "h": 282,
+   "foe": true,
+   "use": "Enemy in battle: dream-weaver (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.void-juggernaut",
+   "group": "battler",
+   "path": "art/packs/myart/foes/void-juggernaut.png",
+   "w": 241,
+   "h": 295,
+   "foe": true,
+   "use": "Enemy in battle: void-juggernaut (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-oswin",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-oswin.png",
+   "w": 204,
+   "h": 330,
+   "foe": true,
+   "use": "Enemy in battle: boss-oswin (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-briarmother",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-briarmother.png",
+   "w": 206,
+   "h": 289,
+   "foe": true,
+   "use": "Enemy in battle: boss-briarmother (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-maelra",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-maelra.png",
+   "w": 195,
+   "h": 278,
+   "foe": true,
+   "use": "Enemy in battle: boss-maelra (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-pyrelord",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-pyrelord.png",
+   "w": 198,
+   "h": 314,
+   "foe": true,
+   "use": "Enemy in battle: boss-pyrelord (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-tempest",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-tempest.png",
+   "w": 188,
+   "h": 276,
+   "foe": true,
+   "use": "Enemy in battle: boss-tempest (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-jarnvald",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-jarnvald.png",
+   "w": 207,
+   "h": 330,
+   "foe": true,
+   "use": "Enemy in battle: boss-jarnvald (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.boss-nameless",
+   "group": "battler",
+   "path": "art/packs/myart/foes/boss-nameless.png",
+   "w": 205,
+   "h": 276,
+   "foe": true,
+   "use": "Enemy in battle: boss-nameless (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.grey-alpha",
+   "group": "battler",
+   "path": "art/packs/myart/foes/grey-alpha.png",
+   "w": 184,
+   "h": 330,
+   "foe": true,
+   "use": "Enemy in battle: grey-alpha (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.bandit-captain",
+   "group": "battler",
+   "path": "art/packs/myart/foes/bandit-captain.png",
+   "w": 194,
+   "h": 307,
+   "foe": true,
+   "use": "Enemy in battle: bandit-captain (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "battle.foe.lantern-brood",
+   "group": "battler",
+   "path": "art/packs/myart/foes/lantern-brood.png",
+   "w": 210,
+   "h": 285,
+   "foe": true,
+   "use": "Enemy in battle: lantern-brood (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
+   "id": "enemy.group.bandits",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-bandits.png",
+   "w": 398,
+   "h": 283,
+   "aspect": true,
+   "use": "Enemy group on the map: road-bandit, shield-thug, field-priest"
+  },
+  {
+   "id": "enemy.group.wolfskins",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-wolfskins.png",
+   "w": 386,
+   "h": 301,
+   "aspect": true,
+   "use": "Enemy group on the map: wolfskin, road-bandit, wolfskin"
+  },
+  {
+   "id": "enemy.group.witch",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-witch.png",
+   "w": 435,
+   "h": 328,
+   "aspect": true,
+   "use": "Enemy group on the map: hedge-witch, shield-thug"
+  },
+  {
+   "id": "enemy.group.stalkers",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-stalkers.png",
+   "w": 297,
+   "h": 286,
+   "aspect": true,
+   "use": "Enemy group on the map: thorn-stalker, thorn-stalker"
+  },
+  {
+   "id": "enemy.group.spores",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-spores.png",
+   "w": 359,
+   "h": 294,
+   "aspect": true,
+   "use": "Enemy group on the map: spore-caller, grove-mender"
+  },
+  {
+   "id": "enemy.group.barkhides",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-barkhides.png",
+   "w": 317,
+   "h": 330,
+   "aspect": true,
+   "use": "Enemy group on the map: bark-brute, moss-warden"
+  },
+  {
+   "id": "enemy.group.wraiths",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-wraiths.png",
+   "w": 398,
+   "h": 291,
+   "aspect": true,
+   "use": "Enemy group on the map: veil-wraith, mind-thief, veil-wraith"
+  },
+  {
+   "id": "enemy.group.hollow",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/group-hollow.png",
+   "w": 373,
+   "h": 327,
+   "aspect": true,
+   "use": "Enemy group on the map: hollow-knight, void-juggernaut"
+  },
+  {
+   "id": "enemy.boss.alpha",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/boss-alpha.png",
+   "w": 184,
+   "h": 330,
+   "aspect": true,
+   "use": "Boss on the map: grey-alpha"
+  },
+  {
+   "id": "enemy.boss.captain",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/boss-captain.png",
+   "w": 194,
+   "h": 307,
+   "aspect": true,
+   "use": "Boss on the map: bandit-captain"
+  },
+  {
+   "id": "enemy.boss.lanterneater",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/boss-lanterneater.png",
+   "w": 210,
+   "h": 285,
+   "aspect": true,
+   "use": "Boss on the map: lantern-brood"
   }
  ]
 }

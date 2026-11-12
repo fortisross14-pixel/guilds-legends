@@ -88,35 +88,53 @@ def _first(lib_root, folder, name):
     return found[0]
 
 
+def _in(folder, name):
+    """'Name' is in the folder's Basic set; 'Set/Name' names another set."""
+    return f'{folder}/{name}.png' if '/' in name else f'{folder}/Basic/{name}.png'
+
+
 def recipe_parts(root, spec):
+    """Recipe keys: skin (a name in SKIN or an (r, g, b) multiplier), hair and hc,
+    eyes ('Male', or 'Undead/GlowingEyes'), ec, brows, mouth, beard, body
+    ('skeleton' for the Veil's dead), armor and helmet ('Name' or 'Set/Name'),
+    atint (a colour multiplier for armor and helmet), weapon, shield, cape, back, mask."""
     S = root + '/Sprites/'
-    skin = SKIN[spec.get('skin', 'light')]
+    skin = spec.get('skin', 'light')
+    skin = SKIN[skin] if isinstance(skin, str) else skin
     hair = HAIR[spec.get('hc', 'brown')]
+    atint = spec.get('atint')
+    dead = spec.get('body') == 'skeleton'
+    body_png = S + ('BodyParts/Body/Undead [Preview]/Skeleton1.png' if dead else 'BodyParts/Body/Basic/Human.png')
+    head_png = S + ('BodyParts/Head/Undead [Preview]/Skeleton1.png' if dead else 'BodyParts/Head/Basic/Head.png')
+    eyes = spec.get('eyes', 'Male')
     parts = {
-        'Body': (S + 'BodyParts/Body/Basic/Human.png', skin),
-        'Head': (S + 'BodyParts/Head/Basic/Head.png', skin),
-        'Ears': (S + 'BodyParts/Ears/Basic/HumanEar.png', skin),
-        'Eyes': (S + f"BodyParts/Eyes/Basic/{spec.get('eyes', 'Male')}.png", ('iris', EYES[spec.get('ec') or _eye_for(spec)])),
-        'Eyebrows': (S + f"BodyParts/Eyebrows/Basic/{spec.get('brows', 'Eyebrows1')}.png", hair),
-        'Mouth': S + f"BodyParts/Mouth/Basic/{spec.get('mouth', 'Normal')}.png",
-        'Armor': S + f"Equipment/Armor/Basic/{spec['armor']}.png",
+        'Body': (body_png, None if dead else skin),
+        'Head': (head_png, None if dead else skin),
+        'Eyes': (S + _in('BodyParts/Eyes', eyes), ('iris', EYES[spec.get('ec') or _eye_for(spec)] if '/' not in eyes else spec['glow'])) if ('/' not in eyes or spec.get('glow')) else S + _in('BodyParts/Eyes', eyes),
+        'Armor': (S + _in('Equipment/Armor', spec['armor']), atint) if atint else S + _in('Equipment/Armor', spec['armor']),
     }
+    if not dead:
+        parts['Ears'] = (S + 'BodyParts/Ears/Basic/HumanEar.png', skin)
+        parts['Eyebrows'] = (S + f"BodyParts/Eyebrows/Basic/{spec.get('brows', 'Eyebrows1')}.png", hair)
+        parts['Mouth'] = S + f"BodyParts/Mouth/Basic/{spec.get('mouth', 'Normal')}.png"
     helmet = spec.get('helmet')
     if helmet:
-        parts['Helmet'] = S + f'Equipment/Helmet/Basic/{helmet}.png'
+        parts['Helmet'] = (S + _in('Equipment/Helmet', helmet), atint) if atint else S + _in('Equipment/Helmet', helmet)
     # Helmets hide the hair; hats and [FullHair] pieces keep it.
-    if not helmet or 'Hat' in helmet or 'FullHair' in helmet or 'Cap' in helmet:
+    if spec.get('hair') and not dead and (not helmet or 'Hat' in helmet or 'FullHair' in helmet or 'Cap' in helmet):
         parts['Hair'] = (S + f"BodyParts/Hair/Basic/{spec['hair']}.png", hair)
-    if spec.get('beard'):
+    if spec.get('beard') and not dead:
         parts['Beard'] = (S + 'BodyParts/Beard/Basic/Beard.png', hair)
     if spec.get('weapon'):
         parts['MeleeWeapon'] = _first(S, 'Equipment/MeleeWeapon1H/Basic', spec['weapon'])
     if spec.get('shield'):
         parts['Shield'] = S + f"Equipment/Shield/Basic/{spec['shield']}.png"
     if spec.get('cape'):
-        parts['Cape'] = S + f"Equipment/Cape/Basic/{spec['cape']}.png"
+        parts['Cape'] = (S + f"Equipment/Cape/Basic/{spec['cape']}.png", atint) if atint else S + f"Equipment/Cape/Basic/{spec['cape']}.png"
     if spec.get('back'):
         parts['Back'] = S + f"Equipment/Back/Basic/{spec['back']}.png"
+    if spec.get('mask'):
+        parts['Mask'] = S + f"Equipment/Mask/Basic/{spec['mask']}.png"
     return parts
 
 

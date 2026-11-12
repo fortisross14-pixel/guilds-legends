@@ -125,9 +125,9 @@ export default {
       },
     ],
     topics: [
-      { id: 'job', text: 'What’s the job?', lines: ['Wolves on the Old Road. Bold ones. They take a mule in daylight.', 'And somebody is driving them toward my wagons.'] },
+      { id: 'job', text: 'What’s the job?', lines: ['The Wolfskins on the Old Road. Raiders in wolf pelts. They take a mule in daylight.', 'And somebody is paying them to hit my wagons.'] },
       { id: 'pay', text: 'What’s in it for us?', lines: ['Coin, and the Trade House’s memory. The second is worth more.'] },
-      { id: 'who', text: 'Who would drive wolves at wagons?', lines: ['Someone who wants the road closed. I’d love to know who. Find out and I’ll pay extra.'] },
+      { id: 'who', text: 'Who would pay raiders to hit wagons?', lines: ['Someone who wants the road closed. I’d love to know who. Find out and I’ll pay extra.'] },
     ],
   },
   'story.m3.thanks': {

@@ -310,27 +310,6 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `fx.debuff` | `art/fx/debuff.png` | 152×130 | `art/effects/effect_13.png` | borrowed | Debuffs, stuns, charging |
 | `fx.poison` | `art/fx/poison.png` | 152×130 | `art/effects/effect_11.png` | borrowed | Poison ticks |
 
-## Battle sprite (`battler`, placeholder #6a3a1a)
-
-| Id | Path | Size | Borrows | Status | Used for |
-|---|---|---|---|---|---|
-| `battle.enemy_01` | `art/enemies/enemy_01.png` | 320×288 | — | ready | Enemy battle sprite 01 (see src/data/enemies.js rosters) |
-| `battle.enemy_02` | `art/enemies/enemy_02.png` | 320×288 | — | ready | Enemy battle sprite 02 (see src/data/enemies.js rosters) |
-| `battle.enemy_03` | `art/enemies/enemy_03.png` | 320×288 | — | ready | Enemy battle sprite 03 (see src/data/enemies.js rosters) |
-| `battle.enemy_04` | `art/enemies/enemy_04.png` | 320×288 | — | ready | Enemy battle sprite 04 (see src/data/enemies.js rosters) |
-| `battle.enemy_05` | `art/enemies/enemy_05.png` | 320×288 | — | ready | Enemy battle sprite 05 (see src/data/enemies.js rosters) |
-| `battle.enemy_06` | `art/enemies/enemy_06.png` | 320×288 | — | ready | Enemy battle sprite 06 (see src/data/enemies.js rosters) |
-| `battle.enemy_07` | `art/enemies/enemy_07.png` | 320×288 | — | ready | Enemy battle sprite 07 (see src/data/enemies.js rosters) |
-| `battle.enemy_08` | `art/enemies/enemy_08.png` | 320×288 | — | ready | Enemy battle sprite 08 (see src/data/enemies.js rosters) |
-| `battle.enemy_09` | `art/enemies/enemy_09.png` | 320×288 | — | ready | Enemy battle sprite 09 (see src/data/enemies.js rosters) |
-| `battle.enemy_10` | `art/enemies/enemy_10.png` | 320×288 | — | ready | Enemy battle sprite 10 (see src/data/enemies.js rosters) |
-| `battle.enemy_11` | `art/enemies/enemy_11.png` | 320×288 | — | ready | Enemy battle sprite 11 (see src/data/enemies.js rosters) |
-| `battle.enemy_12` | `art/enemies/enemy_12.png` | 320×288 | — | ready | Enemy battle sprite 12 (see src/data/enemies.js rosters) |
-| `battle.enemy_13` | `art/enemies/enemy_13.png` | 320×288 | — | ready | Enemy battle sprite 13 (see src/data/enemies.js rosters) |
-| `battle.enemy_14` | `art/enemies/enemy_14.png` | 320×288 | — | ready | Enemy battle sprite 14 (see src/data/enemies.js rosters) |
-| `battle.enemy_15` | `art/enemies/enemy_15.png` | 320×288 | — | ready | Enemy battle sprite 15 (see src/data/enemies.js rosters) |
-| `battle.enemy_16` | `art/enemies/enemy_16.png` | 320×288 | — | ready | Enemy battle sprite 16 (see src/data/enemies.js rosters) |
-
 ## Crest (`crest`, placeholder #5c4a1e)
 
 | Id | Path | Size | Borrows | Status | Used for |
@@ -361,17 +340,68 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `enemy.group.wolves` | `art/walk/enemies/group-wolves.png` | 56×44 | — | placeholder | The Old Road: Grey wolf pair (standing on the map) |
-| `enemy.group.bandits` | `art/walk/enemies/group-bandits.png` | 56×44 | — | placeholder | The Old Road: Bandit lookouts (standing on the map) |
-| `enemy.group.witch` | `art/walk/enemies/group-witch.png` | 56×44 | — | placeholder | The Old Road: Hedge witch and guards (standing on the map) |
-| `enemy.boss.alpha` | `art/walk/enemies/boss-alpha.png` | 80×64 | — | placeholder | The Old Road: The Grey Alpha (boss on the map) |
-| `enemy.group.stalkers` | `art/walk/enemies/group-stalkers.png` | 56×44 | — | placeholder | Thornwood edge: Thorn stalkers (standing on the map) |
-| `enemy.group.spores` | `art/walk/enemies/group-spores.png` | 56×44 | — | placeholder | Thornwood edge: Spore callers and a mender (standing on the map) |
-| `enemy.group.barkhides` | `art/walk/enemies/group-barkhides.png` | 56×44 | — | placeholder | Thornwood edge: Barkhide brutes (standing on the map) |
-| `enemy.boss.captain` | `art/walk/enemies/boss-captain.png` | 80×64 | — | placeholder | Thornwood edge: Captain Vask (boss on the map) |
-| `enemy.group.shades` | `art/walk/enemies/group-shades.png` | 56×44 | — | placeholder | The Blackwood: Veil shades (standing on the map) |
-| `enemy.group.hollow` | `art/walk/enemies/group-hollow.png` | 56×44 | — | placeholder | The Blackwood: Void hulks (standing on the map) |
-| `enemy.boss.brood` | `art/walk/enemies/boss-brood.png` | 80×64 | — | placeholder | The Blackwood: Brood of the Lantern-eater (boss on the map) |
+| `enemy.group.wolfskins` | `art/packs/myart/foes/group-wolfskins.png` | 386×301 | — | ready | Enemy group on the map: wolfskin, road-bandit, wolfskin |
+| `enemy.group.bandits` | `art/packs/myart/foes/group-bandits.png` | 398×283 | — | ready | Enemy group on the map: road-bandit, shield-thug, field-priest |
+| `enemy.group.witch` | `art/packs/myart/foes/group-witch.png` | 435×328 | — | ready | Enemy group on the map: hedge-witch, shield-thug |
+| `enemy.boss.alpha` | `art/packs/myart/foes/boss-alpha.png` | 184×330 | — | ready | Boss on the map: grey-alpha |
+| `enemy.group.stalkers` | `art/packs/myart/foes/group-stalkers.png` | 297×286 | — | ready | Enemy group on the map: thorn-stalker, thorn-stalker |
+| `enemy.group.spores` | `art/packs/myart/foes/group-spores.png` | 359×294 | — | ready | Enemy group on the map: spore-caller, grove-mender |
+| `enemy.group.barkhides` | `art/packs/myart/foes/group-barkhides.png` | 317×330 | — | ready | Enemy group on the map: bark-brute, moss-warden |
+| `enemy.boss.captain` | `art/packs/myart/foes/boss-captain.png` | 194×307 | — | ready | Boss on the map: bandit-captain |
+| `enemy.group.wraiths` | `art/packs/myart/foes/group-wraiths.png` | 398×291 | — | ready | Enemy group on the map: veil-wraith, mind-thief, veil-wraith |
+| `enemy.group.hollow` | `art/packs/myart/foes/group-hollow.png` | 373×327 | — | ready | Enemy group on the map: hollow-knight, void-juggernaut |
+| `enemy.boss.lanterneater` | `art/packs/myart/foes/boss-lanterneater.png` | 210×285 | — | ready | Boss on the map: lantern-brood |
+
+## Battle sprite (`battler`, placeholder #6a3a1a)
+
+| Id | Path | Size | Borrows | Status | Used for |
+|---|---|---|---|---|---|
+| `battle.foe.road-bandit` | `art/packs/myart/foes/road-bandit.png` | 184×283 | — | ready | Enemy in battle: road-bandit (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.wolfskin` | `art/packs/myart/foes/wolfskin.png` | 170×301 | — | ready | Enemy in battle: wolfskin (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.hedge-witch` | `art/packs/myart/foes/hedge-witch.png` | 281×328 | — | ready | Enemy in battle: hedge-witch (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.field-priest` | `art/packs/myart/foes/field-priest.png` | 166×274 | — | ready | Enemy in battle: field-priest (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.shield-thug` | `art/packs/myart/foes/shield-thug.png` | 190×283 | — | ready | Enemy in battle: shield-thug (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.thorn-stalker` | `art/packs/myart/foes/thorn-stalker.png` | 192×286 | — | ready | Enemy in battle: thorn-stalker (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.bark-brute` | `art/packs/myart/foes/bark-brute.png` | 168×314 | — | ready | Enemy in battle: bark-brute (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.spore-caller` | `art/packs/myart/foes/spore-caller.png` | 232×294 | — | ready | Enemy in battle: spore-caller (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.grove-mender` | `art/packs/myart/foes/grove-mender.png` | 217×278 | — | ready | Enemy in battle: grove-mender (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.moss-warden` | `art/packs/myart/foes/moss-warden.png` | 205×330 | — | ready | Enemy in battle: moss-warden (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.reef-raider` | `art/packs/myart/foes/reef-raider.png` | 187×276 | — | ready | Enemy in battle: reef-raider (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.shell-guard` | `art/packs/myart/foes/shell-guard.png` | 175×285 | — | ready | Enemy in battle: shell-guard (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.tide-caller` | `art/packs/myart/foes/tide-caller.png` | 190×285 | — | ready | Enemy in battle: tide-caller (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.brine-cleric` | `art/packs/myart/foes/brine-cleric.png` | 186×304 | — | ready | Enemy in battle: brine-cleric (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.harbor-brute` | `art/packs/myart/foes/harbor-brute.png` | 158×276 | — | ready | Enemy in battle: harbor-brute (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.sea-hag` | `art/packs/myart/foes/sea-hag.png` | 222×278 | — | ready | Enemy in battle: sea-hag (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.ash-runner` | `art/packs/myart/foes/ash-runner.png` | 158×283 | — | ready | Enemy in battle: ash-runner (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.pyre-zealot` | `art/packs/myart/foes/pyre-zealot.png` | 239×314 | — | ready | Enemy in battle: pyre-zealot (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.sun-templar` | `art/packs/myart/foes/sun-templar.png` | 192×301 | — | ready | Enemy in battle: sun-templar (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.ember-acolyte` | `art/packs/myart/foes/ember-acolyte.png` | 195×282 | — | ready | Enemy in battle: ember-acolyte (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.arena-brute` | `art/packs/myart/foes/arena-brute.png` | 212×302 | — | ready | Enemy in battle: arena-brute (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.gale-skirmisher` | `art/packs/myart/foes/gale-skirmisher.png` | 190×276 | — | ready | Enemy in battle: gale-skirmisher (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.storm-adept` | `art/packs/myart/foes/storm-adept.png` | 200×275 | — | ready | Enemy in battle: storm-adept (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.cliff-brute` | `art/packs/myart/foes/cliff-brute.png` | 197×286 | — | ready | Enemy in battle: cliff-brute (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.wind-shaman` | `art/packs/myart/foes/wind-shaman.png` | 243×321 | — | ready | Enemy in battle: wind-shaman (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.thunder-shield` | `art/packs/myart/foes/thunder-shield.png` | 173×286 | — | ready | Enemy in battle: thunder-shield (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.frost-reaver` | `art/packs/myart/foes/frost-reaver.png` | 190×330 | — | ready | Enemy in battle: frost-reaver (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.tusk-brute` | `art/packs/myart/foes/tusk-brute.png` | 166×314 | — | ready | Enemy in battle: tusk-brute (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.rime-seer` | `art/packs/myart/foes/rime-seer.png` | 211×284 | — | ready | Enemy in battle: rime-seer (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.rime-mother` | `art/packs/myart/foes/rime-mother.png` | 221×277 | — | ready | Enemy in battle: rime-mother (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.frostbound` | `art/packs/myart/foes/frostbound.png` | 188×330 | — | ready | Enemy in battle: frostbound (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.veil-wraith` | `art/packs/myart/foes/veil-wraith.png` | 178×281 | — | ready | Enemy in battle: veil-wraith (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.mind-thief` | `art/packs/myart/foes/mind-thief.png` | 190×291 | — | ready | Enemy in battle: mind-thief (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.hollow-knight` | `art/packs/myart/foes/hollow-knight.png` | 194×327 | — | ready | Enemy in battle: hollow-knight (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.dream-weaver` | `art/packs/myart/foes/dream-weaver.png` | 215×282 | — | ready | Enemy in battle: dream-weaver (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.void-juggernaut` | `art/packs/myart/foes/void-juggernaut.png` | 241×295 | — | ready | Enemy in battle: void-juggernaut (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-oswin` | `art/packs/myart/foes/boss-oswin.png` | 204×330 | — | ready | Enemy in battle: boss-oswin (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-briarmother` | `art/packs/myart/foes/boss-briarmother.png` | 206×289 | — | ready | Enemy in battle: boss-briarmother (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-maelra` | `art/packs/myart/foes/boss-maelra.png` | 195×278 | — | ready | Enemy in battle: boss-maelra (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-pyrelord` | `art/packs/myart/foes/boss-pyrelord.png` | 198×314 | — | ready | Enemy in battle: boss-pyrelord (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-tempest` | `art/packs/myart/foes/boss-tempest.png` | 188×276 | — | ready | Enemy in battle: boss-tempest (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-jarnvald` | `art/packs/myart/foes/boss-jarnvald.png` | 207×330 | — | ready | Enemy in battle: boss-jarnvald (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.boss-nameless` | `art/packs/myart/foes/boss-nameless.png` | 205×276 | — | ready | Enemy in battle: boss-nameless (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.grey-alpha` | `art/packs/myart/foes/grey-alpha.png` | 184×330 | — | ready | Enemy in battle: grey-alpha (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.bandit-captain` | `art/packs/myart/foes/bandit-captain.png` | 194×307 | — | ready | Enemy in battle: bandit-captain (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.lantern-brood` | `art/packs/myart/foes/lantern-brood.png` | 210×285 | — | ready | Enemy in battle: lantern-brood (HeroEditor parts, scripts/art/foes.py) |
 
 ## Not yet routed through the registry
 

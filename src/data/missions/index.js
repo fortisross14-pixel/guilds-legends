@@ -30,9 +30,9 @@ export const SITES = {
     place: 'wild',
     par: 3,
     objectives: [
-      inspect('tracks', 'Wolf tracks', 'Paw prints, and boot prints beside them. Someone drives this pack.'),
-      fight('pack', 'The pack', ['grey-wolf', 'grey-wolf', 'road-bandit'], { count: 3, level: 1, power: 36, after: 'tracks' }),
-      fight('handler', 'The handler', ['road-bandit', 'grey-wolf'], { count: 2, level: 2, power: 40, boss: true, after: 'pack' }),
+      inspect('tracks', 'Raiders’ tracks', 'Wolf pelts snagged on the thorns, and new city boots in the mud. Someone pays this gang.'),
+      fight('pack', 'The Wolfskins', ['wolfskin', 'wolfskin', 'road-bandit'], { count: 3, level: 1, power: 36, after: 'tracks' }),
+      fight('handler', 'The handler', ['road-bandit', 'wolfskin'], { count: 2, level: 2, power: 40, boss: true, after: 'pack' }),
       cache(),
     ],
   },
@@ -68,7 +68,7 @@ export const SITES = {
     par: 4,
     objectives: [
       inspect('lantern', 'A cold lantern', 'Its glass is cracked from the inside. The light went somewhere.'),
-      fight('hollow', 'The hollow guard', ['hollow-knight', 'veil-shade'], { count: 2, level: 5, power: 56, after: 'lantern' }),
+      fight('hollow', 'The hollow guard', ['hollow-knight', 'veil-wraith'], { count: 2, level: 5, power: 56, after: 'lantern' }),
       collect('wicks', 'Lantern wicks', 2, { after: 'hollow' }),
       cache(),
     ],
@@ -242,10 +242,10 @@ export function familySite(family) {
       ],
     };
   if (/Expedition|Exploration|Dungeon/.test(f))
-    return { place: 'wild', par: 4, objectives: [collect('finds', 'Finds', 3), fight('guardian', 'The guardian', ['bark-brute', 'moss-golem'], { count: 2, level: 3, power: 46, boss: true, after: 'finds' }), cache()] };
+    return { place: 'wild', par: 4, objectives: [collect('finds', 'Finds', 3), fight('guardian', 'The guardian', ['bark-brute', 'moss-warden'], { count: 2, level: 3, power: 46, boss: true, after: 'finds' }), cache()] };
   if (/Escort|Rescue/.test(f))
     return { place: 'wild', par: 3, objectives: [fight('ambush', 'The ambush', ['road-bandit', 'shield-thug'], { count: 3, level: 2, power: 42 }), escort('charge', 'The traveller', 'Traveller', 'Get me through.', 'exit', { after: 'ambush' }), cache()] };
-  return { place: 'wild', par: 3, objectives: [inspect('signs', 'Signs of trouble', 'Fresh tracks.'), fight('foe', 'The threat', ['road-bandit', 'grey-wolf', 'shield-thug'], { count: 3, level: 2, power: 42, after: 'signs' }), cache()] };
+  return { place: 'wild', par: 3, objectives: [inspect('signs', 'Signs of trouble', 'Fresh tracks.'), fight('foe', 'The threat', ['road-bandit', 'wolfskin', 'shield-thug'], { count: 3, level: 2, power: 42, after: 'signs' }), cache()] };
 }
 
 /** A boss contract (engine stories.js): the region's boss in the wild area by the town. */

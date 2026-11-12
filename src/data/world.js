@@ -118,7 +118,7 @@ export const LOCATIONS = [
     x: 44,
     y: 24,
     travel: 2,
-    description: 'Frontier lodges built around beast trails and old hunting compacts.',
+    description: 'Frontier lodges built around game trails and old hunting compacts.',
     specialties: ['Ranger', 'Guardian', 'Cleric'],
     tournamentDivision: 'Professional',
   },

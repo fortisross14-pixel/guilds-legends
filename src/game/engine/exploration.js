@@ -441,7 +441,7 @@ function wildEncounterInPlace(next, area, group, attempt) {
     sourceId: groupId,
     title: group.isBoss ? group.boss.name : group.name,
     roundName: area.name,
-    objective: group.isBoss ? 'Bring down the beast of this place.' : 'Drive them off the road.',
+    objective: group.isBoss ? 'Bring down whoever rules this place.' : 'Drive them off the road.',
     playerHeroes: fighters.map((hero) => ({ hero, role: 'Fighter' })),
     opponentName: group.name,
     opponentPrimal: area.primal,

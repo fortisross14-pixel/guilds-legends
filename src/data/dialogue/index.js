@@ -23,7 +23,7 @@
 //
 // Conditions (all keys must hold):
 //   talked: bool             this conversation happened before
-//   oldRoadCleared: bool     the Wolves on the Old Road contract is done
+//   oldRoadCleared: bool     the Wolfskins on the Old Road contract is done
 //   tierAtLeast: n           guild tier (0 Regional, 1 National…)
 //   fameAtLeast: n, goldAtLeast: n
 //   any: [Condition, …]      at least one holds

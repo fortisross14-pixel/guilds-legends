@@ -280,7 +280,7 @@ export const PARTY_ROLES = [
 ];
 
 export const MISSION_APPROACH_BY_FAMILY = {
-  'Monster Hunt': 'Combat',
+  'Bounty Hunt': 'Combat',
   Rescue: 'Combat',
   Dungeon: 'Combat',
   Escort: 'Combat',

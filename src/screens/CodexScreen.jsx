@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
 import { BOSSES } from '../data/enemies.js';
 import { Panel } from '../components/UI.jsx';
+import Asset from '../components/Asset.jsx';
 import LoreCodex from './LoreCodex.jsx';
 import ChronicleScreen from './ChronicleScreen.jsx';
 import { GuildDirectory } from './RankingsScreen.jsx';
 
 // Records → Codex: what the guild knows about the world, in one tab: the Lore,
-// the Almanac (the guild's chronicle), the Bestiary and the guild directory.
+// the Almanac (the guild's chronicle), Most Wanted (the regional bosses) and the guild directory.
 
 const PAGES = [
   ['lore', 'Lore'],
   ['almanac', 'Almanac'],
-  ['bestiary', 'Bestiary'],
+  ['bestiary', 'Most Wanted'],
   ['guilds', 'Guilds'],
 ];
 
 function Bestiary({ state }) {
   const defeated = new Map((state.defeatedBosses || []).map((item) => [item.id, item]));
   return (
-    <Panel title="Regional bosses">
+    <Panel title="Most wanted, by region">
       {Object.entries(BOSSES).map(([region, boss]) => (
         <details key={boss.id} className={`journal-details bestiary-row ${defeated.has(boss.id) ? 'is-defeated' : ''}`}>
           <summary>
-            <img src={`${import.meta.env.BASE_URL}art/enemies/${boss.sprite}.png`} alt="" />
+            <Asset id={`battle.${boss.sprite}`} alt="" />
             <span>{boss.name}</span>
             <small>{defeated.has(boss.id) ? `Defeated ${defeated.get(boss.id).year}` : region}</small>
           </summary>

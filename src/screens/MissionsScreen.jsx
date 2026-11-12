@@ -9,7 +9,7 @@ import Icon from '../components/Icon.jsx';
 // do (short steps), where, what it pays, its deadline, and Accept, Report or
 // Give up. Contracts are played in the world, not sent off from here.
 
-const FAMILY_ICONS = { 'Monster Hunt': 'swords', Rescue: 'heart', Investigation: 'search', Political: 'crown', Tournament: 'trophy', Dungeon: 'skull', Saga: 'book', Escort: 'boot', Exploration: 'map', Infiltration: 'eye' };
+const FAMILY_ICONS = { 'Bounty Hunt': 'swords', Rescue: 'heart', Investigation: 'search', Political: 'crown', Tournament: 'trophy', Dungeon: 'skull', Saga: 'book', Escort: 'boot', Exploration: 'map', Infiltration: 'eye' };
 
 function statusOf(mission) {
   const status = mission.site?.status;
