@@ -13,23 +13,32 @@ export function xpForNextLevel(level) {
   return level >= 20 ? 0 : Math.round(40 + 60 * level ** 1.6);
 }
 
-/**
- * XP a fight is worth, before the level gap: a full fight (three foes) of that level;
- * a training match is worth a fifth less than a wild fight (lives are at stake out there), a tournament bout the most.
- */
+/** A training match is worth a fifth less than a wild fight (lives are at stake out there); a tournament bout the most. */
 export const XP_KIND = { wild: 1, training: 0.8, tournament: 1.5 };
-export function fightXp(level, kind = 'wild', foes = 3) {
-  return Math.round(foes * (28 + (level || 1) * 4) * (XP_KIND[kind] || 1));
+
+/**
+ * How strong a fight was for the party: the foes' levels added up, shared by the
+ * guild's fighters (4 + 4 + 3 against two fighters is 5.5).
+ */
+export function enemyStrength(enemyLevels, fighters) {
+  return enemyLevels.reduce((sum, level) => sum + (level || 1), 0) / Math.max(1, fighters);
 }
 
 /**
- * Battle XP by how strong the foes were next to the hero: a quarter more per level
- * above, a quarter less per level below (at least 15%). Beating level-2 road thugs
- * does little for a level-5 hero; they need stronger foes to grow.
+ * Wild fights a hero needs for the next level against foes of that strength:
+ * two when the strength is half a level under theirs, then about 1.65 times as
+ * many per level further below (a 5.5 fight: 2 at level 6, 3-4 at 7, 5-6 at 8,
+ * 9 at 9), never fewer than one for a fight above them. Casual: farming a little pays.
  */
-export function levelGapFactor(heroLevel, enemyLevel) {
-  if (!enemyLevel) return 1;
-  return clamp(1 + 0.25 * (enemyLevel - (heroLevel || 1)), 0.15, 1.5);
+export function fightsToLevel(heroLevel, strength) {
+  return Math.max(0.75, 2 * 1.65 ** ((heroLevel || 1) - strength - 0.5));
+}
+
+/** One hero's XP from a won fight (`kind`: wild, training, tournament); half for a lost training match or bout. */
+export function battleXp(hero, strength, kind = 'wild') {
+  const needed = xpForNextLevel(hero.level);
+  if (!needed) return 0;
+  return Math.max(1, Math.round((needed / fightsToLevel(hero.level, strength)) * (XP_KIND[kind] || 1)));
 }
 
 function rarityFromRoll(rng, bonus = 0) {

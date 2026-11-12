@@ -8,11 +8,16 @@ import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, fi
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
 import { storyDuelResultInPlace } from './story.js';
-import { applyXpInPlace, fightXp, levelGapFactor, xpForNextLevel } from './heroes.js';
+import { applyXpInPlace, battleXp, enemyStrength, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
-function xpEntryInPlace(hero, base, state, source, enemyLevel = null) {
-  const amount = Math.max(1, Math.round(base * levelGapFactor(hero.level, enemyLevel)));
+/** The fight's strength for the party (heroes.js enemyStrength): every foe's level, shared by the fighters. */
+function strengthOf(encounter) {
+  return enemyStrength((encounter.enemies || []).map((unit) => unit.level), (encounter.party || []).length);
+}
+
+function xpEntryInPlace(hero, encounter, state, source, kind = 'wild', share = 1) {
+  const amount = Math.max(1, Math.round(battleXp(hero, strengthOf(encounter), kind) * share));
   const fill = () => (xpForNextLevel(hero.level) ? (hero.xp || 0) / xpForNextLevel(hero.level) : 1);
   const levelBefore = hero.level;
   const from = fill();
@@ -59,7 +64,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     const reward = group.reward || {};
     const gold = reward.gold ? rng.int(reward.gold[0], reward.gold[1]) : 0;
     earnGoldInPlace(next, gold);
-    const xp = fighters.map((hero) => xpEntryInPlace(hero, reward.xp || 20, next, area.name, group.level));
+    const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, area.name));
     const loot = { ...(reward.items || {}) };
     if (group.isBoss) Object.entries(rollLoot(rng, next.guild.tierIndex, 1)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
     addItemsInPlace(next, loot);
@@ -89,7 +94,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
   if (combatResult.playerWon) {
     const gold = (30 + rng.int(0, 60)) * tier;
     earnGoldInPlace(next, gold);
-    const xp = fighters.map((hero) => xpEntryInPlace(hero, 25 * tier, next, 'a road ambush'));
+    const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, 'a road ambush'));
     const loot = rollLoot(rng, next.guild.tierIndex, 0);
     addItemsInPlace(next, loot);
     pushMoment(next, { type: 'victory', title: 'Ambush repelled', gold, xp, loot: lootList(loot) });
@@ -197,10 +202,8 @@ function concludeCombatInner(state, mutate) {
 
   if (encounter.sourceType === 'training') {
     const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
-    // A training match is worth a fifth less than a wild fight of the same level (heroes.js fightXp), by the level gap.
-    const level = encounter.sourceMeta?.level || 4;
-    const xpEach = fightXp(level, 'training');
-    const xp = fighters.map((hero) => xpEntryInPlace(hero, combatResult.playerWon ? xpEach : Math.round(xpEach / 2), next, 'a training match', level));
+    // A training match is worth a fifth less than a wild fight of the same strength (heroes.js battleXp); half if lost.
+    const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, 'a training match', 'training', combatResult.playerWon ? 1 : 0.5));
     if (combatResult.playerWon) pushMoment(next, { type: 'victory', title: `${encounter.title}: won`, gold: 0, xp, loot: [] });
     else next.notifications.push({ id: `training-lost-${encounter.id}`, tone: 'blue', title: 'Training match lost', text: 'Spent, but nobody hurt. The party learned something anyway.' });
     next.activeEncounter = null;
