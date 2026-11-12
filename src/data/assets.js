@@ -11,6 +11,7 @@ import { CHARTER_LIST } from './charters.js';
 import { PATRON_LIST } from './patrons.js';
 import { REGULARS } from './people.js';
 import { CLASSES } from './content.js';
+import ART_TEST from './artTest/layout.json';
 
 /** Placeholder colors per group (background, ink). */
 export const ASSET_GROUPS = {
@@ -28,6 +29,7 @@ export const ASSET_GROUPS = {
   enemy: { label: 'Enemy on the map', fill: '#7a3a22', ink: '#ffe0cc' },
   tileset: { label: 'Tileset', fill: '#3a3a3a', ink: '#ffffff' },
   fx: { label: 'Battle effect', fill: '#5a2a6a', ink: '#f6dcff' },
+  pack: { label: 'Art test (Arex V pack)', fill: '#4b5a32', ink: '#eef3cf' },
   crest: { label: 'Crest', fill: '#5c4a1e', ink: '#fff0c4' },
   battler: { label: 'Battle sprite', fill: '#6a3a1a', ink: '#ffe6cc' },
   missing: { label: 'Unregistered', fill: '#7a1f6e', ink: '#ffd6f6' },
@@ -220,6 +222,9 @@ WILD_AREA_LIST.forEach((area) => {
   );
   if (area.boss) add({ id: area.boss.asset, group: 'enemy', path: `art/walk/enemies/${slug(area.boss.asset)}.png`, w: 80, h: 64, use: `${area.name}: ${area.boss.boss.name} (boss on the map)` });
 });
+
+// The art test town (src/data/artTest): images composed from the Arex V "Medieval Fantasy" pack.
+ART_TEST.assets.forEach((asset) => add({ group: 'pack', ...asset }));
 
 export const ASSETS = Object.fromEntries(LIST.map((asset) => [asset.id, asset]));
 

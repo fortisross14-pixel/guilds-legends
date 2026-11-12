@@ -67,6 +67,14 @@ export default function SettingsScreen({ state, actions, slot }) {
         <Toggle label="Compact lists" checked={Boolean(settings.compactMode)} onChange={(on) => set({ compactMode: on })} />
         <Toggle label="Show asset ids" checked={Boolean(settings.showAssetIds)} onChange={(on) => set({ showAssetIds: on })} />
       </Group>
+      <Group title="Developer">
+        <div className="settings-row">
+          <span>Art test town (Arex V pack)</span>
+          <Button size="sm" onClick={() => (window.location.hash = 'art-test')}>
+            Open
+          </Button>
+        </div>
+      </Group>
       <Group title="Game">
         <label className="settings-row">
           <span>Difficulty</span>

@@ -1,0 +1,1177 @@
+{
+ "town": {
+  "size": {
+   "width": 1280,
+   "height": 896
+  },
+  "ground": "arex.town.ground",
+  "props": [
+   {
+    "asset": "arex.building.tavern",
+    "x": 96,
+    "y": 64,
+    "w": 256,
+    "h": 208
+   },
+   {
+    "asset": "arex.building.hall",
+    "x": 480,
+    "y": 32,
+    "w": 320,
+    "h": 208
+   },
+   {
+    "asset": "arex.building.shop",
+    "x": 960,
+    "y": 96,
+    "w": 224,
+    "h": 208
+   },
+   {
+    "asset": "arex.building.herald",
+    "x": 96,
+    "y": 576,
+    "w": 224,
+    "h": 208
+   },
+   {
+    "asset": "arex.building.arena",
+    "x": 928,
+    "y": 576,
+    "w": 288,
+    "h": 208
+   },
+   {
+    "asset": "arex.prop.pine",
+    "x": 0,
+    "y": 0,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.oak",
+    "x": 384,
+    "y": 0,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.pine2",
+    "x": 864,
+    "y": 0,
+    "w": 64,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.pine",
+    "x": 1184,
+    "y": 0,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.oak",
+    "x": 0,
+    "y": 224,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.pine",
+    "x": 1184,
+    "y": 256,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.bush2",
+    "x": 832,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "asset": "arex.prop.oak",
+    "x": 0,
+    "y": 768,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.pine",
+    "x": 384,
+    "y": 736,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.pine2",
+    "x": 800,
+    "y": 768,
+    "w": 64,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.oak",
+    "x": 1184,
+    "y": 768,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.rocks",
+    "x": 448,
+    "y": 640,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "asset": "arex.prop.rocks",
+    "x": 768,
+    "y": 96,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "asset": "arex.prop.well",
+    "x": 608,
+    "y": 384,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "asset": "arex.prop.board",
+    "x": 768,
+    "y": 320,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "asset": "arex.prop.signpost",
+    "x": 320,
+    "y": 384,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "asset": "arex.prop.stall",
+    "x": 992,
+    "y": 320,
+    "w": 96,
+    "h": 128
+   },
+   {
+    "asset": "arex.prop.cart",
+    "x": 832,
+    "y": 480,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.hay",
+    "x": 32,
+    "y": 672,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.prop.flowers",
+    "x": 384,
+    "y": 544,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "asset": "arex.prop.flowers",
+    "x": 832,
+    "y": 288,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "asset": "arex.prop.bush",
+    "x": 416,
+    "y": 288,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "asset": "arex.prop.bush",
+    "x": 896,
+    "y": 544,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "asset": "arex.prop.mushrooms",
+    "x": 64,
+    "y": 352,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "asset": "arex.prop.bush",
+    "x": 1152,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   }
+  ],
+  "blocks": [
+   {
+    "x": 96,
+    "y": 112,
+    "w": 256,
+    "h": 160
+   },
+   {
+    "x": 480,
+    "y": 80,
+    "w": 320,
+    "h": 160
+   },
+   {
+    "x": 960,
+    "y": 144,
+    "w": 224,
+    "h": 160
+   },
+   {
+    "x": 96,
+    "y": 624,
+    "w": 224,
+    "h": 160
+   },
+   {
+    "x": 928,
+    "y": 624,
+    "w": 288,
+    "h": 160
+   },
+   {
+    "x": 32,
+    "y": 64,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 416,
+    "y": 64,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 880,
+    "y": 64,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 1216,
+    "y": 64,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 32,
+    "y": 288,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 1216,
+    "y": 320,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 840,
+    "y": 224,
+    "w": 48,
+    "h": 32
+   },
+   {
+    "x": 32,
+    "y": 832,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 416,
+    "y": 800,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 816,
+    "y": 832,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 1216,
+    "y": 832,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "x": 448,
+    "y": 672,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "x": 768,
+    "y": 128,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "x": 608,
+    "y": 416,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "x": 768,
+    "y": 368,
+    "w": 64,
+    "h": 16
+   },
+   {
+    "x": 328,
+    "y": 432,
+    "w": 16,
+    "h": 16
+   },
+   {
+    "x": 992,
+    "y": 384,
+    "w": 96,
+    "h": 64
+   },
+   {
+    "x": 832,
+    "y": 512,
+    "w": 96,
+    "h": 64
+   },
+   {
+    "x": 32,
+    "y": 704,
+    "w": 96,
+    "h": 64
+   },
+   {
+    "x": 416,
+    "y": 304,
+    "w": 32,
+    "h": 16
+   },
+   {
+    "x": 896,
+    "y": 560,
+    "w": 32,
+    "h": 16
+   },
+   {
+    "x": 1152,
+    "y": 528,
+    "w": 32,
+    "h": 16
+   }
+  ],
+  "doors": [
+   {
+    "id": "door:tavern",
+    "name": "The Wayfarer",
+    "building": "tavern",
+    "asset": "arex.door.window",
+    "x": 240,
+    "y": 272,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "id": "door:hall",
+    "name": "Guild Hall",
+    "building": "guildHall",
+    "asset": "arex.door.arch",
+    "x": 656,
+    "y": 240,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "id": "door:shop",
+    "name": "Mira’s Supply",
+    "building": "shop",
+    "asset": "arex.door.wood",
+    "x": 1072,
+    "y": 304,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "id": "door:herald",
+    "name": "Herald’s Office",
+    "building": "herald",
+    "asset": "arex.door.plank",
+    "x": 208,
+    "y": 784,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "id": "door:arena",
+    "name": "Dunmere Arena",
+    "building": "arena",
+    "asset": "arex.door.archwindow",
+    "x": 1072,
+    "y": 784,
+    "w": 32,
+    "h": 64
+   }
+  ],
+  "people": [
+   {
+    "id": "guard",
+    "name": "Town guard",
+    "char": 21,
+    "at": [
+     19,
+     8
+    ],
+    "line": "Mind the Old Road after dark."
+   },
+   {
+    "id": "merchant",
+    "name": "Mira",
+    "char": 13,
+    "at": [
+     32,
+     12
+    ],
+    "line": "Fresh bread, old maps, honest prices."
+   },
+   {
+    "id": "villager",
+    "name": "Pip",
+    "char": 6,
+    "at": [
+     17,
+     13
+    ],
+    "line": "Is that a real guild banner?"
+   },
+   {
+    "id": "scholar",
+    "name": "Orren Pike",
+    "char": 3,
+    "at": [
+     7,
+     10
+    ],
+    "line": "Names are my trade."
+   },
+   {
+    "id": "farmer",
+    "name": "Hesta Coal",
+    "char": 9,
+    "at": [
+     5,
+     25
+    ],
+    "line": "Hay for the arena horses, every week."
+   }
+  ],
+  "spawn": {
+   "x": 640,
+   "y": 544
+  },
+  "exits": [
+   {
+    "id": "exit:west",
+    "name": "The Old Road",
+    "x": 32,
+    "y": 464
+   }
+  ]
+ },
+ "tavern": {
+  "size": {
+   "width": 512,
+   "height": 384
+  },
+  "ground": "arex.tavern.floor",
+  "props": [
+   {
+    "asset": "arex.furniture.shelf",
+    "x": 64,
+    "y": 0,
+    "w": 64,
+    "h": 96
+   },
+   {
+    "asset": "arex.furniture.shelf2",
+    "x": 128,
+    "y": 0,
+    "w": 64,
+    "h": 96
+   },
+   {
+    "asset": "arex.furniture.fireplace",
+    "x": 416,
+    "y": 0,
+    "w": 64,
+    "h": 128
+   },
+   {
+    "asset": "arex.furniture.barrels",
+    "x": 320,
+    "y": 32,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "asset": "arex.furniture.barrel",
+    "x": 288,
+    "y": 64,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.bartop",
+    "x": 96,
+    "y": 128,
+    "w": 96,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.bartop2",
+    "x": 192,
+    "y": 128,
+    "w": 96,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.barfront",
+    "x": 96,
+    "y": 160,
+    "w": 96,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.barfront2",
+    "x": 192,
+    "y": 160,
+    "w": 96,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.longtable",
+    "x": 32,
+    "y": 256,
+    "w": 96,
+    "h": 96
+   },
+   {
+    "asset": "arex.furniture.roundtable",
+    "x": 384,
+    "y": 224,
+    "w": 64,
+    "h": 96
+   },
+   {
+    "asset": "arex.furniture.chair",
+    "x": 64,
+    "y": 211,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "asset": "arex.furniture.chair2",
+    "x": 384,
+    "y": 179,
+    "w": 32,
+    "h": 64
+   },
+   {
+    "asset": "arex.furniture.stool",
+    "x": 128,
+    "y": 288,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.stool2",
+    "x": 448,
+    "y": 256,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.plant",
+    "x": 0,
+    "y": 320,
+    "w": 32,
+    "h": 32
+   },
+   {
+    "asset": "arex.furniture.plant2",
+    "x": 480,
+    "y": 320,
+    "w": 32,
+    "h": 32
+   }
+  ],
+  "blocks": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 512,
+    "h": 83
+   },
+   {
+    "x": 64,
+    "y": 64,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "x": 128,
+    "y": 64,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "x": 416,
+    "y": 80,
+    "w": 64,
+    "h": 48
+   },
+   {
+    "x": 320,
+    "y": 64,
+    "w": 64,
+    "h": 32
+   },
+   {
+    "x": 288,
+    "y": 76,
+    "w": 32,
+    "h": 19
+   },
+   {
+    "x": 96,
+    "y": 128,
+    "w": 96,
+    "h": 64
+   },
+   {
+    "x": 192,
+    "y": 128,
+    "w": 96,
+    "h": 64
+   },
+   {
+    "x": 32,
+    "y": 278,
+    "w": 96,
+    "h": 64
+   },
+   {
+    "x": 384,
+    "y": 246,
+    "w": 64,
+    "h": 64
+   },
+   {
+    "x": 0,
+    "y": 336,
+    "w": 32,
+    "h": 16
+   },
+   {
+    "x": 480,
+    "y": 336,
+    "w": 32,
+    "h": 16
+   }
+  ],
+  "people": [
+   {
+    "id": "mara",
+    "name": "Mara Fen",
+    "char": 14,
+    "at": [
+     6,
+     3
+    ],
+    "approach": [
+     6,
+     6.6
+    ],
+    "reach": 3.4,
+    "line": "Sit anywhere. Pay before you sing."
+   },
+   {
+    "id": "nessa",
+    "name": "Nessa Thornfield",
+    "char": 17,
+    "at": [
+     4,
+     10
+    ],
+    "line": "Looking for a guide? I know every trail."
+   },
+   {
+    "id": "bram",
+    "name": "Bram Calder",
+    "char": 25,
+    "at": [
+     11,
+     9
+    ],
+    "line": "You? A guild? I’ll believe it in the arena."
+   }
+  ],
+  "spawn": {
+   "x": 256,
+   "y": 352
+  },
+  "exits": [
+   {
+    "id": "exit:street",
+    "name": "Out to Dunmere",
+    "x": 256,
+    "y": 378
+   }
+  ]
+ },
+ "player": {
+  "char": 0
+ },
+ "assets": [
+  {
+   "id": "arex.town.ground",
+   "path": "art/packs/arex-medieval/test/town-ground.png",
+   "w": 1280,
+   "h": 896,
+   "use": "Art test town: ground"
+  },
+  {
+   "id": "arex.building.tavern",
+   "path": "art/packs/arex-medieval/test/building-tavern.png",
+   "w": 256,
+   "h": 208,
+   "use": "Art test town: The Wayfarer"
+  },
+  {
+   "id": "arex.door.window",
+   "path": "art/packs/arex-medieval/test/door-window.png",
+   "w": 128,
+   "h": 64,
+   "use": "Art test: window door, 4 opening frames",
+   "sheet": {
+    "frameWidth": 32,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.building.hall",
+   "path": "art/packs/arex-medieval/test/building-hall.png",
+   "w": 320,
+   "h": 208,
+   "use": "Art test town: Guild Hall"
+  },
+  {
+   "id": "arex.door.arch",
+   "path": "art/packs/arex-medieval/test/door-arch.png",
+   "w": 128,
+   "h": 64,
+   "use": "Art test: arch door, 4 opening frames",
+   "sheet": {
+    "frameWidth": 32,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.building.shop",
+   "path": "art/packs/arex-medieval/test/building-shop.png",
+   "w": 224,
+   "h": 208,
+   "use": "Art test town: Mira’s Supply"
+  },
+  {
+   "id": "arex.door.wood",
+   "path": "art/packs/arex-medieval/test/door-wood.png",
+   "w": 128,
+   "h": 64,
+   "use": "Art test: wood door, 4 opening frames",
+   "sheet": {
+    "frameWidth": 32,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.building.herald",
+   "path": "art/packs/arex-medieval/test/building-herald.png",
+   "w": 224,
+   "h": 208,
+   "use": "Art test town: Herald’s Office"
+  },
+  {
+   "id": "arex.door.plank",
+   "path": "art/packs/arex-medieval/test/door-plank.png",
+   "w": 128,
+   "h": 64,
+   "use": "Art test: plank door, 4 opening frames",
+   "sheet": {
+    "frameWidth": 32,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.building.arena",
+   "path": "art/packs/arex-medieval/test/building-arena.png",
+   "w": 288,
+   "h": 208,
+   "use": "Art test town: Dunmere Arena"
+  },
+  {
+   "id": "arex.door.archwindow",
+   "path": "art/packs/arex-medieval/test/door-archwindow.png",
+   "w": 128,
+   "h": 64,
+   "use": "Art test: archwindow door, 4 opening frames",
+   "sheet": {
+    "frameWidth": 32,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.prop.pine",
+   "path": "art/packs/arex-medieval/test/prop-pine.png",
+   "w": 96,
+   "h": 96,
+   "use": "Art test prop: pine"
+  },
+  {
+   "id": "arex.prop.oak",
+   "path": "art/packs/arex-medieval/test/prop-oak.png",
+   "w": 96,
+   "h": 96,
+   "use": "Art test prop: oak"
+  },
+  {
+   "id": "arex.prop.pine2",
+   "path": "art/packs/arex-medieval/test/prop-pine2.png",
+   "w": 64,
+   "h": 96,
+   "use": "Art test prop: pine2"
+  },
+  {
+   "id": "arex.prop.bush2",
+   "path": "art/packs/arex-medieval/test/prop-bush2.png",
+   "w": 64,
+   "h": 64,
+   "use": "Art test prop: bush2"
+  },
+  {
+   "id": "arex.prop.rocks",
+   "path": "art/packs/arex-medieval/test/prop-rocks.png",
+   "w": 64,
+   "h": 64,
+   "use": "Art test prop: rocks"
+  },
+  {
+   "id": "arex.prop.well",
+   "path": "art/packs/arex-medieval/test/prop-well.png",
+   "w": 64,
+   "h": 64,
+   "use": "Art test prop: well"
+  },
+  {
+   "id": "arex.prop.board",
+   "path": "art/packs/arex-medieval/test/prop-board.png",
+   "w": 64,
+   "h": 64,
+   "use": "Art test prop: board"
+  },
+  {
+   "id": "arex.prop.signpost",
+   "path": "art/packs/arex-medieval/test/prop-signpost.png",
+   "w": 32,
+   "h": 64,
+   "use": "Art test prop: signpost"
+  },
+  {
+   "id": "arex.prop.stall",
+   "path": "art/packs/arex-medieval/test/prop-stall.png",
+   "w": 96,
+   "h": 128,
+   "use": "Art test prop: stall"
+  },
+  {
+   "id": "arex.prop.cart",
+   "path": "art/packs/arex-medieval/test/prop-cart.png",
+   "w": 96,
+   "h": 96,
+   "use": "Art test prop: cart"
+  },
+  {
+   "id": "arex.prop.hay",
+   "path": "art/packs/arex-medieval/test/prop-hay.png",
+   "w": 96,
+   "h": 96,
+   "use": "Art test prop: hay"
+  },
+  {
+   "id": "arex.prop.flowers",
+   "path": "art/packs/arex-medieval/test/prop-flowers.png",
+   "w": 64,
+   "h": 32,
+   "use": "Art test prop: flowers"
+  },
+  {
+   "id": "arex.prop.bush",
+   "path": "art/packs/arex-medieval/test/prop-bush.png",
+   "w": 32,
+   "h": 32,
+   "use": "Art test prop: bush"
+  },
+  {
+   "id": "arex.prop.mushrooms",
+   "path": "art/packs/arex-medieval/test/prop-mushrooms.png",
+   "w": 64,
+   "h": 32,
+   "use": "Art test prop: mushrooms"
+  },
+  {
+   "id": "arex.tavern.floor",
+   "path": "art/packs/arex-medieval/test/tavern-floor.png",
+   "w": 512,
+   "h": 384,
+   "use": "Art test tavern: floor and walls"
+  },
+  {
+   "id": "arex.furniture.shelf",
+   "path": "art/packs/arex-medieval/test/furniture-shelf.png",
+   "w": 64,
+   "h": 96,
+   "use": "Art test tavern: shelf"
+  },
+  {
+   "id": "arex.furniture.shelf2",
+   "path": "art/packs/arex-medieval/test/furniture-shelf2.png",
+   "w": 64,
+   "h": 96,
+   "use": "Art test tavern: shelf2"
+  },
+  {
+   "id": "arex.furniture.fireplace",
+   "path": "art/packs/arex-medieval/test/furniture-fireplace.png",
+   "w": 64,
+   "h": 128,
+   "use": "Art test tavern: fireplace"
+  },
+  {
+   "id": "arex.furniture.barrels",
+   "path": "art/packs/arex-medieval/test/furniture-barrels.png",
+   "w": 64,
+   "h": 64,
+   "use": "Art test tavern: barrels"
+  },
+  {
+   "id": "arex.furniture.barrel",
+   "path": "art/packs/arex-medieval/test/furniture-barrel.png",
+   "w": 32,
+   "h": 32,
+   "use": "Art test tavern: barrel"
+  },
+  {
+   "id": "arex.furniture.bartop",
+   "path": "art/packs/arex-medieval/test/furniture-bartop.png",
+   "w": 96,
+   "h": 32,
+   "use": "Art test tavern: bartop"
+  },
+  {
+   "id": "arex.furniture.bartop2",
+   "path": "art/packs/arex-medieval/test/furniture-bartop2.png",
+   "w": 96,
+   "h": 32,
+   "use": "Art test tavern: bartop2"
+  },
+  {
+   "id": "arex.furniture.barfront",
+   "path": "art/packs/arex-medieval/test/furniture-barfront.png",
+   "w": 96,
+   "h": 32,
+   "use": "Art test tavern: barfront"
+  },
+  {
+   "id": "arex.furniture.barfront2",
+   "path": "art/packs/arex-medieval/test/furniture-barfront2.png",
+   "w": 96,
+   "h": 32,
+   "use": "Art test tavern: barfront2"
+  },
+  {
+   "id": "arex.furniture.longtable",
+   "path": "art/packs/arex-medieval/test/furniture-longtable.png",
+   "w": 96,
+   "h": 96,
+   "use": "Art test tavern: longtable"
+  },
+  {
+   "id": "arex.furniture.roundtable",
+   "path": "art/packs/arex-medieval/test/furniture-roundtable.png",
+   "w": 64,
+   "h": 96,
+   "use": "Art test tavern: roundtable"
+  },
+  {
+   "id": "arex.furniture.chair",
+   "path": "art/packs/arex-medieval/test/furniture-chair.png",
+   "w": 32,
+   "h": 64,
+   "use": "Art test tavern: chair"
+  },
+  {
+   "id": "arex.furniture.chair2",
+   "path": "art/packs/arex-medieval/test/furniture-chair2.png",
+   "w": 32,
+   "h": 64,
+   "use": "Art test tavern: chair2"
+  },
+  {
+   "id": "arex.furniture.stool",
+   "path": "art/packs/arex-medieval/test/furniture-stool.png",
+   "w": 32,
+   "h": 32,
+   "use": "Art test tavern: stool"
+  },
+  {
+   "id": "arex.furniture.stool2",
+   "path": "art/packs/arex-medieval/test/furniture-stool2.png",
+   "w": 32,
+   "h": 32,
+   "use": "Art test tavern: stool2"
+  },
+  {
+   "id": "arex.furniture.plant",
+   "path": "art/packs/arex-medieval/test/furniture-plant.png",
+   "w": 32,
+   "h": 32,
+   "use": "Art test tavern: plant"
+  },
+  {
+   "id": "arex.furniture.plant2",
+   "path": "art/packs/arex-medieval/test/furniture-plant2.png",
+   "w": 32,
+   "h": 32,
+   "use": "Art test tavern: plant2"
+  },
+  {
+   "id": "arex.char.0",
+   "path": "art/packs/arex-medieval/test/char-0.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 0",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.3",
+   "path": "art/packs/arex-medieval/test/char-3.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 3",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.6",
+   "path": "art/packs/arex-medieval/test/char-6.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 6",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.9",
+   "path": "art/packs/arex-medieval/test/char-9.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 9",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.13",
+   "path": "art/packs/arex-medieval/test/char-13.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 13",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.14",
+   "path": "art/packs/arex-medieval/test/char-14.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 14",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.17",
+   "path": "art/packs/arex-medieval/test/char-17.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 17",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.21",
+   "path": "art/packs/arex-medieval/test/char-21.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 21",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  },
+  {
+   "id": "arex.char.25",
+   "path": "art/packs/arex-medieval/test/char-25.png",
+   "w": 144,
+   "h": 256,
+   "use": "Art test character 25",
+   "sheet": {
+    "frameWidth": 48,
+    "frameHeight": 64
+   }
+  }
+ ]
+}

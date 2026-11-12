@@ -1,0 +1,46 @@
+/* The art test town (src/explore/ArtTestScene.jsx): the Arex V pack in play.
+   A full-screen layer over the game; the pixel art stays crisp. */
+.art-test { position: fixed; inset: 0; z-index: var(--z-system); background: #11130c; }
+.art-test .walk { z-index: auto; }
+.art-test canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+.art-test__bar {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 12px;
+  right: 12px;
+  z-index: var(--z-hud);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+.art-test__bar > * { pointer-events: auto; }
+.art-test__bar span {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(12, 10, 8, 0.78);
+  color: var(--text);
+  font-size: 14px;
+}
+.art-test__line {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: var(--z-dialogue);
+  display: grid;
+  gap: 4px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong, rgba(240, 214, 160, 0.4));
+  border-radius: 12px;
+  background: #f3e6c9;
+  color: #2a1d12;
+  text-align: left;
+  font: inherit;
+}
+.art-test__line strong { color: #3b2412; font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.art-test__line span { font-size: 16px; line-height: 1.4; }
+.art-test__line small { color: #6b5536; font-size: 12px; }

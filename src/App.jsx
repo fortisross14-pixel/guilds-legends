@@ -126,6 +126,7 @@ import EventCardModal from './components/EventCardModal.jsx';
 import { configureSound, playSound, unlockAudio } from './audio/sfx.js';
 import HeroStatusScreen from './components/HeroStatusScreen.jsx';
 import Prologue from './components/Prologue.jsx';
+import ArtTestScene from './explore/ArtTestScene.jsx';
 import { haptic } from './components/gestures.js';
 import DialogueBox from './explore/DialogueBox.jsx';
 import Asset from './components/Asset.jsx';
@@ -1409,10 +1410,27 @@ export default function App() {
   );
 }
 
+/** The art test town opens over everything when the address ends in #art-test (Settings → Developer links there). */
+function ArtTestGate() {
+  const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.location.hash === '#art-test');
+  useEffect(() => {
+    const update = () => setOpen(window.location.hash === '#art-test');
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, []);
+  if (!open) return null;
+  const close = () => {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    setOpen(false);
+  };
+  return <ArtTestScene onClose={close} />;
+}
+
 export function RootApp() {
   return (
     <ErrorBoundary>
       <App />
+      <ArtTestGate />
     </ErrorBoundary>
   );
 }
