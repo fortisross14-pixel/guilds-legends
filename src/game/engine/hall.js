@@ -9,7 +9,7 @@
 // upgrade, clear; one job at a time), weekly training and recovery, the monthly
 // room effects, the defeat rule (the party wakes in the infirmary; no deaths
 // from battles) and the next-upgrade suggestion. Data: src/data/rooms.js.
-import { CLEARING, CROWN, DEFEAT, EQUIPMENT, EQUIPMENT_BY_ID, HOUSE, INJURY, ROOMS, ROOM_BY_ID, TIER_NAMES, TRAINING, roomTileArt } from '../../data/rooms.js';
+import { CLEARING, CROWN, DEFEAT, EQUIPMENT, EQUIPMENT_BY_ID, HOUSE, ROOMS, ROOM_BY_ID, TIER_NAMES, TRAINING, roomTileArt } from '../../data/rooms.js';
 import { HOME_LOT_ID, LOT_BY_ID } from '../../data/lots.js';
 import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
 import {
@@ -504,28 +504,11 @@ function weeklyTrainingInPlace(state) {
 }
 
 /**
- * Weekly recovery. Normal injuries take a week; a defeat takes weeks by the
- * infirmary's tier. A patient in an infirmary bed heals a full week (and ends at
- * full HP); the defeated outside one heal at half speed.
+ * Weekly: the injured are put in free infirmary beds. Injuries themselves run down
+ * by the day (time.js, recoverDailyInPlace).
  */
 export function weeklyRecoveryInPlace(state) {
   autoAssignInPlace(state);
-  const patients = new Set(hallRooms(state).filter((room) => room.type === 'infirmary' && room.heroId).map((room) => room.heroId));
-  state.heroes
-    .filter((hero) => hero.status === 'injured')
-    .forEach((hero) => {
-      const inBed = patients.has(hero.id);
-      hero.injuryWeeks = Math.max(0, (hero.injuryWeeks || 1) - (inBed || !hero.defeated ? 1 : 0.5));
-      if (hero.injuryWeeks > 0) return;
-      hero.status = 'available';
-      hero.injury = null;
-      hero.defeated = false;
-      hero.health = inBed ? 100 : Math.max(hero.health ?? 0, INJURY.restHp);
-      hallRooms(state).forEach((room) => {
-        if (room.heroId === hero.id && room.type === 'infirmary') room.heroId = null;
-      });
-      state.notifications.push({ id: `recover-${hero.id}-${campaignWeekSerial(state)}`, tone: 'green', title: `${hero.name} is back on their feet`, text: inBed ? 'Out of the infirmary at full strength.' : 'Recovered, though still a little sore.' });
-    });
 }
 
 /** Weekly hall tick (time.js): construction, training and recovery. */

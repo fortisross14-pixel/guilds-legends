@@ -8,6 +8,7 @@ import {
   activeHeroCount,
   activityAvailable,
   roomLevel,
+  hallRooms,
   tallySpend,
   addChronicle,
   appointmentHolder,
@@ -94,10 +95,10 @@ function resolveMonthlyHeroActivities(state, rng) {
     let summary = '';
 
     if (hero.status === 'injured') {
-      // Injuries count down weekly (hall.js, weeklyRecoveryInPlace); the month adds care.
-      hero.health = clamp(hero.health + 5 + infirmaryLevel * 3, 0, 100);
+      // Injuries count down by the day (recoverDailyInPlace); the month adds care.
       hero.fatigue = clamp(hero.fatigue - (activity === 'Rest' ? 18 : 14), 0, 100);
-      summary = `Rested; ${Math.max(1, hero.injuryWeeks || 0)} week${hero.injuryWeeks === 1 ? '' : 's'} of recovery remain.`;
+      const days = Math.max(1, Math.ceil((hero.injuryWeeks || 0) * VITALS.injuryDays));
+      summary = `Resting; ${days} day${days === 1 ? '' : 's'} until fit to fight.`;
     } else if (activity === 'Rest') {
       hero.fatigue = clamp(hero.fatigue - (24 + infirmaryLevel * 2), 0, 100);
       hero.health = clamp(hero.health + 7 + infirmaryLevel, 0, 100);
@@ -416,15 +417,36 @@ function runWeekInPlace(next, rng, summary) {
  * returns true. A council report summarizes the advance when it crossed a month.
  * Time only moves through player actions (travel, rest, camps, contracts).
  */
-/** Every day, heroes at home recover a little HP and all their MP (battle-hiring spec). */
+/**
+ * Every day: an injured hero's injury runs down (a week; twice as fast in an infirmary
+ * bed), and when it ends they are fit to fight again, though not yet at full HP.
+ * Heroes at home who are not injured heal (back to full in about a week) and get all
+ * their MP back. Away from home, only the injury runs down.
+ */
 function recoverDailyInPlace(state) {
   const away = new Set(travellingPartyIds(state));
   // Better bedrooms mean better rest (Advanced: faster; State of the art: an extra rest day a week).
   const bedroom = roomLevel(state, 'bedroom');
+  const patients = new Set(hallRooms(state).filter((room) => room.type === 'infirmary' && room.heroId).map((room) => room.heroId));
   const heal = VITALS.dailyHeal + (bedroom >= 2 ? 2 : 0) + (bedroom >= 3 ? 2 : 0);
   state.heroes.forEach((hero) => {
-    if (!['available', 'injured'].includes(hero.status) || away.has(hero.id)) return;
-    hero.health = clamp((hero.health ?? 100) + heal, 1, 100);
+    const inBed = patients.has(hero.id);
+    if (hero.status === 'injured') {
+      hero.injuryWeeks = Math.max(0, Math.round(((hero.injuryWeeks || 0) - (inBed ? 2 : 1) / VITALS.injuryDays) * 1000) / 1000);
+      if (hero.injuryWeeks > 0.001) return;
+      hero.injuryWeeks = 0;
+      hero.status = 'available';
+      hero.injury = null;
+      hero.defeated = false;
+      hero.health = Math.max(hero.health ?? 0, VITALS.fitHp);
+      hallRooms(state).forEach((room) => {
+        if (room.heroId === hero.id && room.type === 'infirmary') room.heroId = null;
+      });
+      state.notifications.push({ id: `recover-${hero.id}-${campaignDaySerial(state)}`, tone: 'green', title: `${hero.name} is fit again`, text: 'Back on their feet and able to fight; full health in about a week.' });
+      return;
+    }
+    if (hero.status !== 'available' || away.has(hero.id)) return;
+    hero.health = clamp((hero.health ?? 100) + heal * (inBed ? 2 : 1), 1, 100);
     hero.mana = 100;
   });
 }

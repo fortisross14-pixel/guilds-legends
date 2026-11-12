@@ -8,7 +8,7 @@ import Icon, { CLASS_ICONS, STATUS_ICONS } from '../components/Icon.jsx';
 // One line per hero; everything else is on the hero's page (tap the row).
 const FILTER_FROM = 6; // the filter icon appears once the roster is this big
 
-const statusLabel = (hero) => (hero.status === 'injured' ? `Injured · ${hero.injuryWeeks}w` : hero.status === 'available' ? 'Ready' : hero.status === 'sidejob' ? 'Side job' : hero.status[0].toUpperCase() + hero.status.slice(1));
+const statusLabel = (hero) => (hero.status === 'injured' ? `Injured · fit in ${Math.max(1, Math.ceil((hero.injuryWeeks || 0) * 7))}d` : hero.status === 'available' ? 'Ready' : hero.status === 'sidejob' ? 'Side job' : hero.status[0].toUpperCase() + hero.status.slice(1));
 
 function HeroRow({ hero, onOpen }) {
   const classId = normalizeClassId(hero.classId);

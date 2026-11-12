@@ -125,12 +125,12 @@ export const TRAINING = { gain: [1, 2, 3], xpPerWeek: 2, swapCost: [80, 140, 220
 export const CLEARING = { refund: 0.4, weeks: 1 };
 
 /**
- * Injuries and defeat (no deaths from battles). Normal injuries take a week; a
- * patient in an infirmary bed ends that week at full HP, anyone else at `restHp`.
- * Defeat: the party wakes in the infirmary (or the founder's house before the
- * lot is rented), pays treatment per hero plus transport per day of distance,
- * and needs `weeks[tier]` to recover (index 0: no infirmary). Patients beyond the
- * infirmary's beds recover at half speed.
+ * Injuries and defeat (no deaths from battles). An injury keeps a hero out for a
+ * week (counted by the day, src/game/engine/time.js); then they are fit again and
+ * heal back to full in about another week (VITALS in src/data/activities.js). An
+ * infirmary bed halves both. Defeat: the party wakes in the infirmary (or the
+ * founder's house before the lot is rented), pays treatment per hero plus
+ * transport per day of distance, and is injured (`weeks[tier]`) like anyone else.
  */
 export const INJURY = { weeks: 1, restHp: 60 };
 /** Armory by tier (index 0 = none): shop discount and how many steps one gear upgrade climbs. */
@@ -139,7 +139,7 @@ export const ARMORY = { discount: [0, 0.05, 0.1, 0.15], upgradeSteps: [0, 0, 1, 
 /** Crown Room, State of the art: visitors draw better recruits and patrons. */
 export const VISITORS = { recruitQuality: 0.1, patronGain: 1.25 };
 
-export const DEFEAT = { weeks: [4, 4, 3, 2], treatment: 30, transportPerDay: 10, discount: [0, 0, 0.25, 0.5], hp: 10 };
+export const DEFEAT = { weeks: [1, 1, 1, 1], treatment: 30, transportPerDay: 10, discount: [0, 0, 0.25, 0.5], hp: 10 };
 
 /** Crown Room fame: per trophy a month (each repeat of the same trophy adds less). */
 export const CROWN = { fameFirst: 2, fameRepeat: 1, maxPerTrophy: 4, advancedBonus: 0.5 };

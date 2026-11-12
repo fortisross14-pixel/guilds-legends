@@ -20,7 +20,7 @@ export const JOURNAL_TABS = [
 ];
 
 const place = (id) => LOCATION_BY_ID[id === 'hall' ? 'dunmere' : id]?.name || id;
-const weeks = (count) => (count > 0 ? `${count}w` : 'back now');
+const weeks = (count) => (count > 0 ? `fit in ${Math.ceil(count * 7)}d` : 'fit now');
 
 function Row({ icon, title, meta, onClick, children }) {
   const body = (

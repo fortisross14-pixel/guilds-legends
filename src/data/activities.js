@@ -32,4 +32,8 @@ export const ACTIVITY_BY_ID = Object.fromEntries(MONTHLY_ACTIVITIES.map((activit
 /** HP and MP between battles (battle-hiring spec). Heroes start a fight with what they have
  * (hero.health and hero.mana are percents). Every day at home: +dailyHeal health and full MP.
  * Knocked out in a won fight: 1 HP and injured for knockoutWeeks. */
-export const VITALS = { dailyHeal: 6, knockoutWeeks: 1 };
+// Recovery (by the day): a hurt hero is back to full HP in a week (`dailyHeal` a day at home).
+// An injury (knocked out, defeated, a road wound) keeps a hero out for `injuryDays`; then they are
+// fit to fight again at `fitHp` and heal the rest of the way like anyone else (about a week more).
+// An infirmary bed doubles both. VITALS.knockoutWeeks is the injury in weeks (one).
+export const VITALS = { dailyHeal: 13, knockoutWeeks: 1, injuryDays: 7, fitHp: 10 };

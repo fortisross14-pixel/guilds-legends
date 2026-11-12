@@ -18,6 +18,10 @@ import { LOCATION_BY_ID } from '../data/world.js';
 // drag them onto the yard to take them out. One bottom panel at a time.
 
 const weeksText = (weeks) => `${weeks} week${weeks === 1 ? '' : 's'}`;
+const daysText = (weeks) => {
+  const days = Math.max(1, Math.ceil((weeks || 0) * 7));
+  return `${days} day${days === 1 ? '' : 's'}`;
+};
 const TIER_PIPS = [1, 2, 3];
 
 function TierPips({ tier }) {
@@ -347,7 +351,7 @@ function RoomPanel({ state, room, hall, actions, onDone }) {
         <div className="room-panel__who">
           {room.hero ? (
             <p>
-              <strong>{room.hero.name}</strong> {room.type === 'infirmary' ? `· back on their feet in ${weeksText(Math.ceil(room.hero.injuryWeeks || 1))}` : `· +${room.equipment.gain} ${room.equipment.stat} a month`}{' '}
+              <strong>{room.hero.name}</strong> {room.type === 'infirmary' ? `· fit to fight in ${daysText(room.hero.injuryWeeks)}` : `· +${room.equipment.gain} ${room.equipment.stat} a month`}{' '}
               <Button size="sm" onClick={() => actions.assignRoom(room.hero.id, null)}>
                 Take out
               </Button>
@@ -434,7 +438,7 @@ function RoomOutputs({ state, hall }) {
     .filter((room) => !room.busy)
     .map((room) => {
       if (room.type === 'training') return room.hero ? `${room.hero.name}: +${room.equipment.gain} ${room.equipment.stat} a month` : `${room.equipment.stat} training: nobody in it`;
-      if (room.type === 'infirmary') return room.hero ? `${room.hero.name}: back in ${weeksText(Math.ceil(room.hero.injuryWeeks || 1))}` : 'Infirmary: empty bed';
+      if (room.type === 'infirmary') return room.hero ? `${room.hero.name}: fit in ${daysText(room.hero.injuryWeeks)}` : 'Infirmary: empty bed';
       return null;
     })
     .filter(Boolean);

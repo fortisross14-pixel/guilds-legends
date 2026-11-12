@@ -395,8 +395,10 @@ export function restAtCamp(state, areaId) {
     hero.mana = 100;
     hero.fatigue = clamp((hero.fatigue ?? 0) - 20, 0, 100);
     if (hero.status === 'injured') {
-      hero.injuryWeeks = Math.max(0, (hero.injuryWeeks || 0) - 1);
-      if (hero.injuryWeeks === 0) {
+      // The night by the fire counts as a day of rest for the injury.
+      hero.injuryWeeks = Math.max(0, Math.round(((hero.injuryWeeks || 0) - 1 / 7) * 1000) / 1000);
+      if (hero.injuryWeeks <= 0.001) {
+        hero.injuryWeeks = 0;
         hero.status = 'available';
         hero.injury = null;
         healed += 1;
