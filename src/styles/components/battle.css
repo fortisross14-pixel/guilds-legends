@@ -210,3 +210,16 @@
 .battle-victory span { color: var(--gold-bright); font: 700 clamp(48px, 14vw, 104px)/1 var(--font-display); letter-spacing: .04em; text-shadow: 0 0 30px rgba(246, 210, 140, .55), 0 4px 0 rgba(0, 0, 0, .6); animation: victory-word 420ms var(--ease) both; }
 @keyframes victory-word { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .battle-victory span { animation: none; } }
+
+/* Elements: a chip on every plate; against the hero whose turn it is, an enemy's chip says Weak or Resists. */
+.element-chip { display: inline-flex; flex: none; align-items: center; gap: 2px; padding: 1px 3px; border: 1px solid color-mix(in srgb, var(--primal-color) 70%, #000); border-radius: 999px; background: color-mix(in srgb, var(--primal-color) 35%, #1a120c); color: #fff6e4; line-height: 1; }
+.element-chip b { font: 700 9px/1 var(--font-label); letter-spacing: .06em; text-transform: uppercase; }
+.element-chip.is-weak { border-color: #ffcf5c; box-shadow: 0 0 6px #ffb347; }
+.element-chip.is-weak b { color: #ffd88a; }
+.element-chip.is-resist { opacity: .85; }
+.element-chip.is-resist b { color: #b9c6d4; }
+.unit-info__element { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.battle-banner.battle-banner--edge { top: 22%; width: auto; padding: 6px 28px; font-size: var(--fs-3); pointer-events: none; animation: edge-pop calc(900ms / var(--speed, 1)) ease-out both; }
+.battle-banner.battle-banner--weak { color: #ffd88a; }
+.battle-banner.battle-banner--resist { color: #b9c6d4; font-size: .85em; }
+@keyframes edge-pop { 0% { opacity: 0; transform: translateX(-50%) scale(.7); } 20% { opacity: 1; transform: translateX(-50%) scale(1.08); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) scale(1); } }

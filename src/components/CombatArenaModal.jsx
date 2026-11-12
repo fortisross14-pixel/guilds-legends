@@ -2,6 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { previewCommand, turnOrder } from '../game/combat.js';
 import { SKILLS, STATUSES, skillLabel } from '../data/skills.js';
 import { ITEMS } from '../data/items.js';
+import { PRIMALS, primalCombatModifier } from '../data/world.js';
+
+// How a hit's element read out: 'WEAK' means the target is weak to the attacker's element.
+const EDGE_TEXT = { WEAK: 'Very effective!', RESIST: 'Not very effective' };
+/** The element line for a unit: what it beats and what beats it. */
+const elementLine = (primal) => (PRIMALS[primal] ? `${primal}: strong against ${PRIMALS[primal].beats}, weak to ${PRIMALS[primal].weakTo}` : primal || '');
 import { Button, HeroSprite, Modal, Motes, useSceneStyle } from './UI.jsx';
 import Asset from './Asset.jsx';
 import Icon from './Icon.jsx';
@@ -152,10 +158,24 @@ function StatusIcons({ status }) {
 }
 
 /** Under every unit (battle-hiring spec): name, level, a slim HP bar, MP for heroes, statuses. */
-function UnitPlate({ unit, chosen = false }) {
+/** A unit's element, as a coloured chip; `edge` marks an enemy against the hero whose turn it is. */
+function ElementChip({ primal, edge = 0 }) {
+  const info = PRIMALS[primal];
+  if (!info) return null;
+  return (
+    <span className={`element-chip${edge > 0 ? ' is-weak' : edge < 0 ? ' is-resist' : ''}`} style={{ '--primal-color': info.color }} title={elementLine(primal)} aria-label={elementLine(primal)}>
+      <Icon name={info.icon} size={12} tone="plain" />
+      {edge > 0 ? <b>Weak</b> : edge < 0 ? <b>Resists</b> : null}
+    </span>
+  );
+}
+
+function UnitPlate({ unit, chosen = false, against = null }) {
+  const edge = against && unit.side === 'enemy' && !unit.ko ? primalCombatModifier(against, unit.primal) : 0;
   return (
     <span className="unit-plate">
       <span className="unit-plate__name">
+        <ElementChip primal={unit.primal} edge={edge} />
         <strong>{unit.name.split(' ')[0]}</strong>
         <small className="num">Lv {unit.level}</small>
         {chosen ? <Icon name="check" size={12} tone="plain" /> : null}
@@ -194,7 +214,7 @@ function BeatMarks({ beat, unitId }) {
     text = 'RESIST';
     tone = 'miss';
   }
-  const tags = [hit.crit ? 'CRIT' : null, hit.tag, hit.status && hit.type === 'damage' && beat.kind !== 'tick' ? STATUSES[hit.status]?.label : null].filter(Boolean);
+  const tags = [hit.crit ? 'CRIT' : null, EDGE_TEXT[hit.tag] || null, hit.status && hit.type === 'damage' && beat.kind !== 'tick' ? STATUSES[hit.status]?.label : null].filter(Boolean);
   return (
     <>
       {fx ? (
@@ -223,7 +243,7 @@ function PreviewChip({ preview }) {
         {preview.lethal ? <Icon name="skull" size={14} tone="plain" /> : null}
         {value}
       </strong>
-      {preview.tag ? <em className={`target-preview__tag target-preview__tag--${preview.tag.toLowerCase()}`}>{preview.tag}</em> : null}
+      {preview.tag ? <em className={`target-preview__tag target-preview__tag--${preview.tag.toLowerCase()}`}>{EDGE_TEXT[preview.tag] || preview.tag}</em> : null}
       {preview.kind === 'damage' ? <small>{Math.round((preview.hit ?? 1) * 100)}% hit</small> : null}
     </span>
   );
@@ -306,6 +326,9 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
   const finished = encounter.status !== 'active';
   const display = replay?.display || null;
   const beat = replay?.beat || null;
+  // A hit on an element's weakness (or into its strength) says so, the way a damage number does.
+  const edgeHits = (beat?.hits || []).filter((hit) => hit.type === 'damage' && hit.tag);
+  const edgeBanner = edgeHits.some((hit) => hit.tag === 'WEAK') ? 'WEAK' : edgeHits.some((hit) => hit.tag === 'RESIST') ? 'RESIST' : null;
   const units = [...encounter.party, ...encounter.enemies];
   const unitById = (id) => units.find((unit) => unit.id === id) || null;
   const view = (unit) => {
@@ -641,6 +664,10 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
             <div className={`battle-banner ${beat?.kind ? `battle-banner--${beat.kind}` : 'battle-banner--intro'}`} onClick={() => setIntro(null)}>
               {beat?.banner || intro}
             </div>
+          ) : edgeBanner ? (
+            <div className={`battle-banner battle-banner--edge battle-banner--${edgeBanner === 'WEAK' ? 'weak' : 'resist'}`} key={`edge-${beat.seq}`}>
+              {EDGE_TEXT[edgeBanner]}
+            </div>
           ) : null}
 
           <div className="battle-field">
@@ -686,7 +713,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
                   ) : null}
                   {dragging?.overId === unit.id && overPreview ? <PreviewChip preview={overPreview} /> : null}
                   <EnemyArt unit={unit} />
-                  <UnitPlate unit={unit} />
+                  <UnitPlate unit={unit} against={!finished && !replaying ? actor?.primal : null} />
                   <BeatMarks beat={beat} unitId={unit.id} />
                 </button>
               );
@@ -955,7 +982,7 @@ function PreviewLine({ preview }) {
       {preview.lethal ? <Icon name="skull" size={14} tone="plain" /> : null}
       {value}
       {preview.kind === 'damage' ? ` · ${Math.round((preview.hit ?? 1) * 100)}%` : ''}
-      {preview.tag ? ` · ${preview.tag}` : ''}
+      {preview.tag ? ` · ${EDGE_TEXT[preview.tag] || preview.tag}` : ''}
     </em>
   );
 }
@@ -972,7 +999,10 @@ function UnitInfo({ unit, intent, onClose }) {
         </button>
       </header>
       <p className="unit-info__line">
-        {unit.side === 'enemy' ? `${PROFILE_NAMES[unit.profile] || 'Fighter'}${unit.boss ? ' · Boss' : ''}` : `Lv ${unit.level} ${unit.classId}`} · {unit.primal}
+        {unit.side === 'enemy' ? `${PROFILE_NAMES[unit.profile] || 'Fighter'}${unit.boss ? ' · Boss' : ''}` : `Lv ${unit.level} ${unit.classId}`}
+      </p>
+      <p className="unit-info__line unit-info__element">
+        <ElementChip primal={unit.primal} /> {elementLine(unit.primal)}. A strong element hits for a quarter more; a weak one for a fifth less.
       </p>
       <p className="unit-info__line">
         HP {unit.hp}/{unit.maxHp} · MP {unit.mp}/{unit.maxMp}
