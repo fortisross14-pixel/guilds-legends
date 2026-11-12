@@ -20,6 +20,10 @@ The icon shapes live in `src/components/iconPaths.js` and are drawn by `src/comp
 
 Both are loaded from Google Fonts.
 
+## Art test pack
+
+- **Medieval Fantasy (Regular)** by **Arex V** ([arex-v.itch.io](https://arex-v.itch.io/)): tiles and characters in `public/art/packs/arex-medieval/`, used for the art test town. License: may be used and edited in commercial and non-commercial games; the assets may not be resold, edited or not (`public/art/packs/arex-medieval/LICENSE.txt`).
+
 ## Code
 
 - **React** (MIT), **Vite** (MIT), **Phaser** (MIT).
