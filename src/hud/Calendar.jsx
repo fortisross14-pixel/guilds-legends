@@ -8,7 +8,7 @@ import { getArenaView } from '../game/engine.js';
  * type, always on screen, and a trophy that opens the next tournaments (open now
  * with the days left, or how many days until sign-up opens).
  */
-export default function Calendar({ state, navigate }) {
+export default function Calendar({ state, navigate, onMap = false }) {
   const [open, setOpen] = useState(false);
   const { date } = state;
   const here = state.world?.currentLocationId || 'dunmere';
@@ -19,7 +19,7 @@ export default function Calendar({ state, navigate }) {
     .slice(0, 5);
   const openNow = events.filter((item) => item.openNow).length;
   return (
-    <div className="calendar-chip">
+    <div className={`calendar-chip${onMap ? ' calendar-chip--map' : ''}`}>
       <div className="calendar-chip__date" aria-label="Today">
         <strong>
           {MONTHS[date.month]} {date.year}

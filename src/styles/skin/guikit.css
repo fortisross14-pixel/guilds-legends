@@ -253,3 +253,24 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .calendar-chip__panel p { margin: 0; color: var(--text-dim); }
 /* On a phone the goal line wraps beside the calendar instead of running under it. */
 @media (max-width: 640px) { .place-tag .goal-line { max-width: calc(100vw - 230px); white-space: normal; } .place-tag .goal-line span { white-space: normal; } }
+
+/* The world map: ink on parchment (scripts/art/worldmap.py), drawn smooth; roads in ink. */
+.world-map { background: #d9c79f; }
+.world-map__terrain { image-rendering: auto; filter: none; background-color: #d9c79f; }
+.world-map .map-route { stroke: #2a1d12; stroke-width: 2.5px; stroke-dasharray: 7 5; opacity: .85; }
+.world-map .map-route--under { stroke: rgba(240, 225, 190, .7); stroke-width: 6px; stroke-dasharray: none; }
+.world-map .map-route--dim { opacity: .35; }
+/* On the world map the place card owns the top right: the calendar sits at the bottom, between the orbs. */
+.calendar-chip--map { top: auto; right: auto; bottom: calc(var(--hud-bottom) + 6px); left: 50%; transform: translateX(-50%); }
+.calendar-chip--map .calendar-chip__panel { top: auto; bottom: calc(100% + 8px); right: 50%; transform: translateX(50%); }
+
+/* World map on a phone: the map fills the screen (drag to pan, pinch to zoom); places are tapped on it.
+   The chosen place's card sits low, above the orbs; the long list of places is not needed. */
+@media (max-width: 759px) {
+  /* Opens centred on where the guild is (--fx, --fy: its place on the map, set by MapScreen). */
+  .world-map__plane { --w: 170vh; left: calc(50vw - var(--w) * var(--fx, .5)); top: calc(34dvh - var(--w) * .625 * var(--fy, .5)); }
+  .world-map__fog { background: radial-gradient(ellipse 100% 70% at 50% 45%, transparent 60%, rgba(40, 26, 12, .45) 100%); }
+  .screen--world > .location-mobile-list, .screen--world > .world-spacer { display: none; }
+  .region-dossier--location { position: fixed; z-index: var(--z-panel); left: calc(var(--safe-l) + 12px); right: calc(var(--safe-r) + 12px); bottom: calc(var(--hud-bottom) + 76px); top: auto; width: auto; max-height: 42dvh; overflow: auto; margin: 0; }
+  .location-node strong { display: block; font-size: 12px; padding: 1px 5px; }
+}

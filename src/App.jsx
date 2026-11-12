@@ -1260,7 +1260,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
               setLedgerOpen(open);
             }}
           />
-          {!section && state.story?.prologue === 'done' ? <Calendar state={state} navigate={navigate} /> : null}
+          {!section && state.story?.prologue === 'done' ? <Calendar state={state} navigate={navigate} onMap={view === 'map'} /> : null}
           {orb ? <OrbScrim onClose={() => setOrb(null)} /> : null}
           {!section ? (
             <>

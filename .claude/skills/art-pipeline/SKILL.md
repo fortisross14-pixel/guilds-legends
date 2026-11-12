@@ -37,6 +37,7 @@ import attributes for the JSON).
   pieces by sheet tile). Trees are grown over every `T` tile by `src/explore/sceneMap.js`.
 - **Ground** is painted at run time from a place's tile rows by `src/explore/groundPaint.js`
   (quarter-tile autotiling; wild areas use the grassland road and ponds).
+- **The world map**: `scripts/art/worldmap.py` paints it (ink on parchment, land grown around the places of `src/data/world.js` and along every road); re-run it after moving a place or adding a road.
 - **Rooms** (walkable interiors): `scripts/art/interiors.py`, a function per room that places
   furniture and the people's spots (`room.spot`, seats under guests).
 - **UI skin**: `src/styles/skin/guikit.css` and the kit pieces copied by `GUI_FILES`.

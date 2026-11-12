@@ -1,3 +1,4 @@
+import { ROADS } from '../data/roads.js';
 import { usePanZoom } from '../components/usePanZoom.js';
 import React, { useState } from 'react';
 import { statusName } from '../data/tournaments.js';
@@ -14,15 +15,26 @@ const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
 
 // Road network as chains of location ids. Paths are built from each location's
 // x/y (percent of the map), so routes always meet the nodes.
+// The roads of src/data/roads.js (drawn bright), then the routes of later chapters (dim).
 const MAP_ROUTES = [
-  {
-    dim: false,
-    chain: ['dunmere', 'greenhollow', 'ironford', 'windmere', 'tidecross', 'sunspire', 'mooncourt', 'thornwatch', 'skyreach', 'beaststeppe', 'irondeep'],
-  },
+  ...ROADS.filter((road) => road.ends.every(Boolean)).map((road) => ({ dim: Boolean(road.gate?.chapterAtLeast), chain: road.ends })),
+  { dim: true, chain: ['windmere', 'tidecross', 'sunspire', 'mooncourt', 'thornwatch', 'skyreach', 'beaststeppe', 'irondeep'] },
   { dim: true, chain: ['tidecross', 'brasshaven', 'coral-crown', 'cloud-monastery', 'ashen-caldera', 'starfall-archive', 'far-veil'] },
   { dim: true, chain: ['thornwatch', 'verdant-citadel', 'irondeep'] },
   { dim: true, chain: ['skyreach', 'ashen-caldera', 'cloud-monastery'] },
 ];
+
+/**
+ * Where a wild area sits on the map: a road between two places sits halfway along it;
+ * a dead end (the Old Road, the Blackwood track) a little way out from its town.
+ */
+function areaSpot(area) {
+  const road = ROADS.find((item) => item.area === area.id);
+  const [a, b] = (road?.ends || []).map((id) => LOCATION_BY_ID[id]);
+  if (a && b) return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  if (a && area.map) return { x: a.x + (area.map.x - a.x) * 0.45, y: a.y + (area.map.y - a.y) * 0.45 };
+  return area.map;
+}
 
 function routePath(chain) {
   return chain
@@ -97,7 +109,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                 <Icon name="recenter" size={18} tone="plain" />
               </button>
             ) : null}
-            <div className="world-map__plane" style={panZoom.style}>
+            <div className="world-map__plane" style={{ ...panZoom.style, '--fx': (LOCATION_BY_ID[currentLocationId]?.x ?? 50) / 100, '--fy': (LOCATION_BY_ID[currentLocationId]?.y ?? 50) / 100 }}>
               <div className="world-map__terrain" style={{ '--overworld': overworld ? `url("${overworld}")` : 'none' }} data-asset="ui.overworld" />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
                 {MAP_ROUTES.map((route) => (
@@ -198,7 +210,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   <button
                     key={area.id}
                     className={`location-node location-node--wild ${view.unlocked ? 'is-unlocked' : 'is-locked'} ${selectedWild?.id === area.id ? 'is-selected' : ''} ${view.here ? 'is-current' : ''}`}
-                    style={{ left: `${area.map.x}%`, top: `${area.map.y}%`, '--primal': PRIMALS[area.primal]?.color }}
+                    style={{ left: `${areaSpot(area).x}%`, top: `${areaSpot(area).y}%`, '--primal': PRIMALS[area.primal]?.color }}
                     onClick={() => setSelectedId(`wild:${area.id}`)}
                     aria-label={`${area.name}, wild area${view.unlocked ? '' : ', closed'}`}
                   >

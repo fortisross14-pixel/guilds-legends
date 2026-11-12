@@ -172,7 +172,7 @@ const LIST = [
   ].map(([id, use]) => ({ id, group: 'ui', path: `art/awards/${id.replace('.', '-')}.png`, w: 64, h: 64, use })),
 
   // Interface art.
-  { id: 'ui.overworld', group: 'ui', path: 'ui/overworld.png', w: 200, h: 125, use: 'World map terrain' },
+  { id: 'ui.overworld', group: 'ui', path: 'art/packs/myart/worldmap.jpg', w: 2400, h: 1500, use: 'World map: ink on parchment (scripts/art/worldmap.py)' },
 ];
 
 // Generated from the town and wild-area data, so every placed thing has an entry.
