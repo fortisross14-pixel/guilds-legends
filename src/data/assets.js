@@ -120,9 +120,9 @@ const LIST = [
   // registrar NPCs, and inn interiors for the towns away from home (Dunmere's is the Wayfarer tavern).
   ...['dunmere', 'greenhollow', 'ironford', 'windmere'].map((town) => ({ id: `interior.arena.${town}`, group: 'interior', path: `art/interiors/arena-${town}.png`, borrow: scene(2), ...SCENE, use: `Arena interior in ${town[0].toUpperCase()}${town.slice(1)}: fighting ground, sign-up desk, history board` })),
   // Contract sites (missions-in-world): painted scenes behind a door in town, and the markers on walkable maps.
-  { id: 'site.ironford.archive', group: 'interior', path: 'art/sites/ironford-archive.png', borrow: 'art/interiors/herald.png', ...SCENE, use: 'Contract site: the Ironford archive vault (shelves, a desk, the quartermaster’s ledgers)' },
-  { id: 'site.ironford.slagpits', group: 'interior', path: 'art/sites/ironford-slagpits.png', borrow: 'art/interiors/arena-ironford.png', ...SCENE, use: 'Contract site: the slag pits behind the Ironford foundries' },
-  { id: 'site.windmere.cliffs', group: 'interior', path: 'art/sites/windmere-cliffs.png', borrow: 'art/interiors/arena-windmere.png', ...SCENE, use: 'Contract site: the cliff path above Windmere harbour' },
+  { id: 'site.ironford.archive', group: 'interior', path: 'art/sites/ironford-archive.png', borrow: 'art/packs/myart/interiors/herald.jpg', ...SCENE, use: 'Contract site: the Ironford archive vault (shelves, a desk, the quartermaster’s ledgers)' },
+  { id: 'site.ironford.slagpits', group: 'interior', path: 'art/sites/ironford-slagpits.png', ...SCENE, use: 'Contract site: the slag pits behind the Ironford foundries' },
+  { id: 'site.windmere.cliffs', group: 'interior', path: 'art/sites/windmere-cliffs.png', ...SCENE, use: 'Contract site: the cliff path above Windmere harbour' },
   { id: 'site.marker.inspect', group: 'prop', path: 'art/sites/marker-inspect.png', w: 28, h: 28, use: 'Contract objective on a walkable map: something to inspect (tracks, a clue, a lock)' },
   { id: 'site.marker.collect', group: 'prop', path: 'art/sites/marker-collect.png', w: 28, h: 28, use: 'Contract objective on a walkable map: something to collect (herbs, ore, evidence, a cache)' },
   { id: 'site.marker.destination', group: 'prop', path: 'art/sites/marker-destination.png', w: 28, h: 28, use: 'Contract objective on a walkable map: where an escort ends' },

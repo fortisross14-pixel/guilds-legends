@@ -4,8 +4,9 @@
 // Positions are percentages of the painting: spots are [x, y] of a person's feet,
 // hotspots and the door [x, y, w, h] boxes. `spots` lists the spot ids the people
 // model fills (src/game/engine/people.js): a regular names their spot, visitors take
-// the free ones in order. Each building has a default layout for its default painting,
-// and towns with their own painting override it (`towns`).
+// the free ones in order. The paintings are composed from the hand-painted interior
+// tiles to this layout (scripts/art/interiors.py), so every town's painting of a
+// building shares it; `towns` only picks that town's painting.
 
 /** The door: a box at the bottom middle of every painting. */
 const DOOR = [42, 86, 16, 14];
@@ -31,18 +32,9 @@ export const INTERIORS = {
       door: DOOR,
     },
     towns: {
-      greenhollow: {
-        art: 'interior.inn.greenhollow',
-        spots: { bar: [50, 31], t1a: [20, 58], t1b: [32, 61], t2a: [67, 58], t2b: [80, 61], t3a: [9, 80], t3b: [21, 82], corner: [89, 80] },
-      },
-      ironford: {
-        art: 'interior.inn.ironford',
-        spots: { bar: [50, 25], t1a: [22, 42], t1b: [36, 45], t2a: [65, 42], t2b: [78, 45], t3a: [22, 72], t3b: [36, 75], corner: [78, 72] },
-      },
-      windmere: {
-        art: 'interior.inn.windmere',
-        spots: { bar: [50, 27], t1a: [12, 46], t1b: [24, 49], t2a: [72, 43], t2b: [84, 46], t3a: [10, 76], t3b: [22, 79], corner: [80, 72] },
-      },
+      greenhollow: { art: 'interior.inn.greenhollow' },
+      ironford: { art: 'interior.inn.ironford' },
+      windmere: { art: 'interior.inn.windmere' },
     },
   },
   shop: {
@@ -72,21 +64,9 @@ export const INTERIORS = {
     },
     towns: {
       dunmere: { art: 'interior.arena.dunmere' },
-      greenhollow: {
-        art: 'interior.arena.greenhollow',
-        spots: { desk: [86, 26], ground: [50, 58], 'spar-1': [40, 72], 'spar-2': [60, 72], bench: [10, 60] },
-        hotspots: { board: [43, 2, 14, 24] },
-      },
-      ironford: {
-        art: 'interior.arena.ironford',
-        spots: { desk: [50, 18], ground: [50, 56], 'spar-1': [40, 72], 'spar-2': [60, 72], bench: [9, 52] },
-        hotspots: { board: [70, 2, 16, 22] },
-      },
-      windmere: {
-        art: 'interior.arena.windmere',
-        spots: { desk: [20, 32], ground: [50, 58], 'spar-1': [40, 74], 'spar-2': [60, 74], bench: [88, 62] },
-        hotspots: { board: [44, 4, 12, 20] },
-      },
+      greenhollow: { art: 'interior.arena.greenhollow' },
+      ironford: { art: 'interior.arena.ironford' },
+      windmere: { art: 'interior.arena.windmere' },
     },
   },
   herald: {

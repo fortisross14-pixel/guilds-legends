@@ -4,7 +4,7 @@
 
 Three Unity Asset Store packs, used under their licences in this private repo
 (only the pieces the game uses are copied; see public/art/packs/myart/README.md):
-  - 2D Hand Painted Tilesets (Town, Interior): the ground, the buildings, props
+  - 2D Hand Painted Tilesets (Town, Interior): the ground, the buildings, props, the interiors
   - GUI PRO Kit - Fantasy RPG: buttons, frames, bars, the joystick, the font
   - HeroEditor (Fantasy Heroes): walking characters, assembled from body parts
 
@@ -205,6 +205,20 @@ def characters():
                        'use': 'Walking character (HeroEditor parts, scripts/art/characters.py)'})
 
 
+# --- Interiors ---------------------------------------------------------------
+def key_magenta(im):
+    im.putdata([(0, 0, 0, 0) if (r > 180 and g < 90 and b > 180) else (r, g, b, a) for r, g, b, a in im.getdata()])
+    return im
+
+
+def interiors():
+    from interiors import compose
+    os.makedirs(out('interiors/x'), exist_ok=True) if False else os.makedirs(os.path.dirname(out('interiors/x')), exist_ok=True)
+    made = compose(INTERIOR.replace('64x64', '128x128'), TOWN.replace('64x64', '128x128'), key_magenta, os.path.dirname(out('interiors/x')))
+    for asset_id, name in made:
+        assets.append({'id': asset_id, 'group': 'interior', 'path': f'{REL}/interiors/{name}', 'w': 2560, 'h': 1152, 'use': 'Building interior (hand-painted tiles, scripts/art/interiors.py)'})
+
+
 # --- Foes (no monsters: every enemy is a person) ----------------------------
 def foes():
     from heroeditor import Library, Rig
@@ -287,6 +301,7 @@ def main():
     ground()
     buildings()
     props()
+    interiors()
     interface()
     if '--no-characters' not in sys.argv:
         characters()

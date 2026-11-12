@@ -57,22 +57,22 @@ Phase 7 will add style notes and generation prompts for each entry.
 |---|---|---|---|---|---|
 | `scene.hall.lot` | `art/hall/lot.png` | 1080×1080 | `art/interiors/guildhall-stage1.png` | borrowed | Guild Hall: the lot seen from above (the cabin, the slots, the yard) |
 | `scene.defeat` | `art/scenes/defeat.png` | 1280×576 | — | placeholder | Defeat: the party wakes in the infirmary (or the founder’s house) |
-| `interior.tavern` | `art/interiors/tavern.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Tavern (recruits) |
-| `interior.shop` | `art/interiors/shop.png` | 1280×576 | `art/scenes/scene_01.png` | ready | Shop |
-| `interior.arena` | `art/interiors/arena.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena (tournaments) |
-| `interior.herald` | `art/interiors/herald.png` | 1280×576 | `art/scenes/scene_03.png` | ready | Herald (rankings) |
+| `interior.tavern` | `art/packs/myart/interiors/tavern.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.shop` | `art/packs/myart/interiors/shop.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.arena` | `art/packs/myart/interiors/arena.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.herald` | `art/packs/myart/interiors/herald.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.noticeboard` | `art/interiors/noticeboard.png` | 1280×576 | `art/scenes/scene_10.png` | ready | Notice Board (contracts) |
-| `interior.house` | `art/interiors/house.png` | 1280×576 | — | placeholder | Player’s house (prologue): a small room at night, the hearth, the table, the one bed, the front door on the right wall (a painted scene; a mood gradient until drawn) |
-| `interior.arena.dunmere` | `art/interiors/arena-dunmere.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Dunmere: fighting ground, sign-up desk, history board |
-| `interior.arena.greenhollow` | `art/interiors/arena-greenhollow.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Greenhollow: fighting ground, sign-up desk, history board |
-| `interior.arena.ironford` | `art/interiors/arena-ironford.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Ironford: fighting ground, sign-up desk, history board |
-| `interior.arena.windmere` | `art/interiors/arena-windmere.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Arena interior in Windmere: fighting ground, sign-up desk, history board |
-| `site.ironford.archive` | `art/sites/ironford-archive.png` | 1280×576 | `art/interiors/herald.png` | borrowed | Contract site: the Ironford archive vault (shelves, a desk, the quartermaster’s ledgers) |
-| `site.ironford.slagpits` | `art/sites/ironford-slagpits.png` | 1280×576 | `art/interiors/arena-ironford.png` | borrowed | Contract site: the slag pits behind the Ironford foundries |
-| `site.windmere.cliffs` | `art/sites/windmere-cliffs.png` | 1280×576 | `art/interiors/arena-windmere.png` | borrowed | Contract site: the cliff path above Windmere harbour |
-| `interior.inn.greenhollow` | `art/interiors/inn-greenhollow.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Greenhollow (rest 1–3 nights, recruits) |
-| `interior.inn.ironford` | `art/interiors/inn-ironford.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Ironford (rest 1–3 nights, recruits) |
-| `interior.inn.windmere` | `art/interiors/inn-windmere.png` | 1280×576 | `art/scenes/scene_08.png` | ready | Inn in Windmere (rest 1–3 nights, recruits) |
+| `interior.house` | `art/packs/myart/interiors/house.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.arena.dunmere` | `art/packs/myart/interiors/arena-dunmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.arena.greenhollow` | `art/packs/myart/interiors/arena-greenhollow.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.arena.ironford` | `art/packs/myart/interiors/arena-ironford.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.arena.windmere` | `art/packs/myart/interiors/arena-windmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `site.ironford.archive` | `art/sites/ironford-archive.png` | 1280×576 | `art/packs/myart/interiors/herald.jpg` | borrowed | Contract site: the Ironford archive vault (shelves, a desk, the quartermaster’s ledgers) |
+| `site.ironford.slagpits` | `art/sites/ironford-slagpits.png` | 1280×576 | — | placeholder | Contract site: the slag pits behind the Ironford foundries |
+| `site.windmere.cliffs` | `art/sites/windmere-cliffs.png` | 1280×576 | — | placeholder | Contract site: the cliff path above Windmere harbour |
+| `interior.inn.greenhollow` | `art/packs/myart/interiors/inn-greenhollow.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.inn.ironford` | `art/packs/myart/interiors/inn-ironford.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.inn.windmere` | `art/packs/myart/interiors/inn-windmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 
 ## Prop (`prop`, placeholder #55602e)
 

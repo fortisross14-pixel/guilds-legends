@@ -46,7 +46,8 @@ export default function PaintedScene({ art, focusX = 50, className = '', label, 
   return (
     <main className={`interior ${className}`} aria-label={label}>
       <div className="interior__view" ref={viewRef} onClick={onBackgroundTap || undefined} onScroll={measure}>
-        <div className="interior__stage" style={{ width: size.w, height: size.h }}>
+        {/* --tile: one tile of the painting (9 rows tall), so people stand at the room's scale. */}
+        <div className="interior__stage" style={{ width: size.w, height: size.h, '--tile': `${size.h / 9}px` }}>
           <Asset id={art} className="interior__art" alt="" />
           {children}
         </div>

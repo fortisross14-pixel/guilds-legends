@@ -286,6 +286,102 @@
    "use": "Notice board (notes pinned to a wooden board)"
   },
   {
+   "id": "interior.tavern",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/tavern.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.greenhollow",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-greenhollow.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.ironford",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-ironford.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.windmere",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-windmere.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.shop",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/shop.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.arena",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/arena.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.arena.dunmere",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/arena-dunmere.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.arena.greenhollow",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/arena-greenhollow.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.arena.ironford",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/arena-ironford.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.arena.windmere",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/arena-windmere.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.herald",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/herald.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.house",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/house.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
    "id": "char.founder",
    "group": "char",
    "path": "art/packs/myart/chars/char-founder.png",
