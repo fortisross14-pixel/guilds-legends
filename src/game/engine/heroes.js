@@ -15,9 +15,9 @@ export function xpForNextLevel(level) {
 
 /**
  * XP a fight is worth, before the level gap: a full fight (three foes) of that level;
- * a training match is worth a little more than a wild fight, a tournament bout more still.
+ * a training match is worth a fifth less than a wild fight (lives are at stake out there), a tournament bout the most.
  */
-export const XP_KIND = { wild: 1, training: 1.2, tournament: 1.5 };
+export const XP_KIND = { wild: 1, training: 0.8, tournament: 1.5 };
 export function fightXp(level, kind = 'wild', foes = 3) {
   return Math.round(foes * (28 + (level || 1) * 4) * (XP_KIND[kind] || 1));
 }

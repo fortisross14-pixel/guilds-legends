@@ -197,7 +197,7 @@ function concludeCombatInner(state, mutate) {
 
   if (encounter.sourceType === 'training') {
     const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
-    // A training match is worth a little more than a wild fight of the same level (heroes.js fightXp), by the level gap.
+    // A training match is worth a fifth less than a wild fight of the same level (heroes.js fightXp), by the level gap.
     const level = encounter.sourceMeta?.level || 4;
     const xpEach = fightXp(level, 'training');
     const xp = fighters.map((hero) => xpEntryInPlace(hero, combatResult.playerWon ? xpEach : Math.round(xpEach / 2), next, 'a training match', level));
