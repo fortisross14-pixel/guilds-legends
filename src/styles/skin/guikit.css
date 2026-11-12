@@ -274,3 +274,4 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
   .region-dossier--location { position: fixed; z-index: var(--z-panel); left: calc(var(--safe-l) + 12px); right: calc(var(--safe-r) + 12px); bottom: calc(var(--hud-bottom) + 76px); top: auto; width: auto; max-height: 42dvh; overflow: auto; margin: 0; }
   .location-node strong { display: block; font-size: 12px; padding: 1px 5px; }
 }
+.rest-room__until { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }

@@ -114,11 +114,11 @@ export default {
   // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
   enemies: [],
   ambushes: [
-    { id: 'wolves-near', name: 'Wolfskin pair', types: ['wolfskin'], count: 2, level: 1, power: 36, if: { oldRoadCleared: false }, reward: { gold: [12, 24], xp: 18 } },
-    { id: 'wolf-pack', name: 'Wolfskins and a bandit', types: ['wolfskin', 'road-bandit'], count: 3, level: 2, power: 40, if: { oldRoadCleared: false }, reward: { gold: [18, 34], xp: 24 } },
-    { id: 'bandit-lookouts', name: 'Bandit lookouts', types: ['road-bandit', 'shield-thug'], count: 3, level: 2, power: 42, reward: { gold: [30, 50], xp: 26 } },
-    { id: 'hedge-witch', name: 'Hedge witch and guards', types: ['hedge-witch', 'shield-thug', 'field-priest'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [34, 56], xp: 30 } },
-    { id: 'renegades', name: 'Renegade priest’s band', types: ['field-priest', 'road-bandit', 'wolfskin'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [34, 56], xp: 30 } },
+    { id: 'wolves-near', name: 'Wolfskin pair', types: ['wolfskin'], count: 2, level: 1, power: 36, if: { oldRoadCleared: false }, reward: { gold: [24, 48], xp: 64 } },
+    { id: 'wolf-pack', name: 'Wolfskins and a bandit', types: ['wolfskin', 'road-bandit'], count: 3, level: 2, power: 40, if: { oldRoadCleared: false }, reward: { gold: [36, 68], xp: 108 } },
+    { id: 'bandit-lookouts', name: 'Bandit lookouts', types: ['road-bandit', 'shield-thug'], count: 3, level: 2, power: 42, reward: { gold: [60, 100], xp: 108 } },
+    { id: 'hedge-witch', name: 'Hedge witch and guards', types: ['hedge-witch', 'shield-thug', 'field-priest'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [68, 112], xp: 120 } },
+    { id: 'renegades', name: 'Renegade priest’s band', types: ['field-priest', 'road-bandit', 'wolfskin'], count: 3, level: 3, power: 44, if: { oldRoadCleared: true }, reward: { gold: [68, 112], xp: 120 } },
   ],
   boss: {
     id: 'grey-alpha',

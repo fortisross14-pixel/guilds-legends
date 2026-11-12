@@ -54,8 +54,8 @@ export default {
   // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
   enemies: [],
   ambushes: [
-    { id: 'shades', name: 'Veil wraiths', types: ['veil-wraith', 'mind-thief'], count: 3, level: 5, power: 58, reward: { gold: [55, 85], xp: 48 } },
-    { id: 'hulks', name: 'Void juggernauts', types: ['void-juggernaut', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [60, 95], xp: 52 } },
+    { id: 'shades', name: 'Veil wraiths', types: ['veil-wraith', 'mind-thief'], count: 3, level: 5, power: 58, reward: { gold: [110, 170], xp: 144 } },
+    { id: 'hulks', name: 'Void juggernauts', types: ['void-juggernaut', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [120, 190], xp: 156 } },
   ],
   boss: {
     id: 'lantern-brood',

@@ -18,7 +18,7 @@ export const LOTS = [
     name: 'The old stable yard on Banner Plaza',
     owner: 'Gideon Rusk',
     slots: 6,
-    rent: 35,
+    rent: 20,
     deposit: 160,
     // Several years of a young guild's savings.
     price: 6000,

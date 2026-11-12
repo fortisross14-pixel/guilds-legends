@@ -500,6 +500,14 @@ function RestPanel({ state, hall, actions, onDone = null }) {
           onDone?.();
         }}
       />
+      <div className="rest-room__until">
+        <Button size="sm" disabled={Boolean(paused)} onClick={() => { actions.restUntil('fit'); onDone?.(); }}>
+          Rest until fit
+        </Button>
+        <Button size="sm" disabled={Boolean(paused)} onClick={() => { actions.restUntil('full'); onDone?.(); }}>
+          Rest until full health
+        </Button>
+      </div>
       <p className="muted">Stops early if a battle, decision or tournament needs you.</p>
       <details className="rest-room__calendar">
         <summary>Calendar</summary>

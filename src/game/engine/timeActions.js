@@ -197,7 +197,20 @@ export const INN_NIGHT_COST = 6;
  * on the rest screen ({ heroId: activity }), then lets `days` pass (the rest
  * dial: 1 day to 13 weeks). Room activities resolve at each month start.
  */
-export function restAtHall(state, days, tasks = {}) {
+/**
+ * Rests at the Guild Hall: a number of days, or `until` 'fit' (nobody injured) or
+ * 'full' (nobody injured and everyone at full HP), for at most MAX_REST_DAYS.
+ */
+export function restAtHall(state, days, tasks = {}, until = null) {
+  if (until === 'fit' || until === 'full') {
+    const roster = (s) => s.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
+    const fit = (s) => roster(s).every((hero) => hero.status !== 'injured');
+    const full = (s) => fit(s) && roster(s).every((hero) => (hero.health ?? 100) >= 100);
+    const done = until === 'fit' ? fit : full;
+    if (done(state)) return { state, error: until === 'fit' ? 'Everyone is already fit.' : 'Everyone is already at full health.' };
+    if (!atHome(state)) return { state, error: `Rest at the Guild Hall in ${LOCATION_BY_ID[HOME_LOCATION_ID].name}, or at an inn while away.` };
+    return advanceDays(clone(state), MAX_REST_DAYS, true, done);
+  }
   if (!Number.isInteger(days) || days < 1 || days > MAX_REST_DAYS) return { state, error: `Rest between 1 and ${MAX_REST_DAYS} days.` };
   if (!atHome(state)) return { state, error: `Rest at the Guild Hall in ${LOCATION_BY_ID[HOME_LOCATION_ID].name}, or at an inn while away.` };
   const next = clone(state);

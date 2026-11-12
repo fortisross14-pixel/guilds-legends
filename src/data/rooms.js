@@ -25,7 +25,7 @@ export const ROOMS = [
     icon: 'moon',
     line: '+2 beds. Beds are the only roster limit.',
     tiers: [
-      { cost: 260, weeks: 2, upkeep: 10 },
+      { cost: 260, weeks: 2, upkeep: 5 },
       { cost: 420, weeks: 3, upkeep: 14 },
       { cost: 720, weeks: 4, upkeep: 20 },
     ],
@@ -139,7 +139,7 @@ export const ARMORY = { discount: [0, 0.05, 0.1, 0.15], upgradeSteps: [0, 0, 1, 
 /** Crown Room, State of the art: visitors draw better recruits and patrons. */
 export const VISITORS = { recruitQuality: 0.1, patronGain: 1.25 };
 
-export const DEFEAT = { weeks: [1, 1, 1, 1], treatment: 30, transportPerDay: 10, discount: [0, 0, 0.25, 0.5], hp: 10 };
+export const DEFEAT = { weeks: [1, 1, 1, 1], treatment: 20, transportPerDay: 5, maxCost: 30, discount: [0, 0, 0.25, 0.5], hp: 10 };
 
 /** Crown Room fame: per trophy a month (each repeat of the same trophy adds less). */
 export const CROWN = { fameFirst: 2, fameRepeat: 1, maxPerTrophy: 4, advancedBonus: 0.5 };

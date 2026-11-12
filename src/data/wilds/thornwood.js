@@ -54,10 +54,10 @@ export default {
   // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
   enemies: [],
   ambushes: [
-    { id: 'stalkers', name: 'Thorn stalkers', types: ['thorn-stalker'], count: 2, level: 3, power: 46, reward: { gold: [24, 40], xp: 30 } },
-    { id: 'spores', name: 'Spore callers and a mender', types: ['spore-caller', 'grove-mender'], count: 3, level: 3, power: 48, reward: { gold: [26, 44], xp: 32 } },
-    { id: 'barkhides', name: 'Barkhide brutes', types: ['bark-brute', 'moss-warden'], count: 3, level: 4, power: 50, reward: { gold: [36, 60], xp: 36 } },
-    { id: 'bandit-scouts', name: 'Bandit scouts', types: ['thorn-stalker', 'bark-brute', 'grove-mender'], count: 3, level: 4, power: 50, reward: { gold: [40, 66], xp: 38, items: { potion: 1 } } },
+    { id: 'stalkers', name: 'Thorn stalkers', types: ['thorn-stalker'], count: 2, level: 3, power: 46, reward: { gold: [48, 80], xp: 80 } },
+    { id: 'spores', name: 'Spore callers and a mender', types: ['spore-caller', 'grove-mender'], count: 3, level: 3, power: 48, reward: { gold: [52, 88], xp: 120 } },
+    { id: 'barkhides', name: 'Barkhide brutes', types: ['bark-brute', 'moss-warden'], count: 3, level: 4, power: 50, reward: { gold: [72, 120], xp: 132 } },
+    { id: 'bandit-scouts', name: 'Bandit scouts', types: ['thorn-stalker', 'bark-brute', 'grove-mender'], count: 3, level: 4, power: 50, reward: { gold: [80, 132], xp: 132, items: { potion: 1 } } },
   ],
   boss: {
     id: 'bandit-captain',

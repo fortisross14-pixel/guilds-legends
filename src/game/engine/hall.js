@@ -556,7 +556,9 @@ export function defeatInPlace(state, heroIds, where = state.world?.currentLocati
   if (!heroes.length) return null;
   const tier = hasHall(state) ? roomLevel(state, 'infirmary') : 0;
   const days = where === HOME_LOCATION_ID ? 0 : travelDays(where, HOME_LOCATION_ID) || 0;
-  const cost = Math.round(heroes.length * DEFEAT.treatment * (1 - DEFEAT.discount[tier]) + days * DEFEAT.transportPerDay);
+  // Treatment and transport, capped (DEFEAT.maxCost); a guild with less than that pays half of what it has.
+  const full = Math.min(DEFEAT.maxCost, Math.round(heroes.length * DEFEAT.treatment * (1 - DEFEAT.discount[tier]) + days * DEFEAT.transportPerDay));
+  const cost = state.guild.crowns >= full ? full : Math.floor(Math.max(0, state.guild.crowns) / 2);
   heroes.forEach((hero) => {
     hero.status = 'injured';
     hero.defeated = true;
