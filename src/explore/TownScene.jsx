@@ -1,3 +1,4 @@
+import { bannerPostUrl } from '../components/bannerImage.js';
 import { ROADS } from '../data/roads.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -45,6 +46,8 @@ export default function TownScene({
 }) {
   // The guild's own hall stands in Dunmere (an empty lot until story mission 1 rents it).
   const hall = town.id === 'dunmere' ? { asset: HALL_EXTERIOR, label: hasHall(state) ? 'Guild Hall' : 'Empty lot' } : null;
+  const bannerKey = town.id === 'dunmere' && hasHall(state) && state.guild.banner ? JSON.stringify(state.guild.banner) : '';
+  const bannerUrl = useMemo(() => (bannerKey ? bannerPostUrl(state.guild.banner) : null), [bannerKey]); // eslint-disable-line react-hooks/exhaustive-deps
   // Contract objectives in the streets and doors to painted contract sites (missions-in-world).
   const objects = siteObjects(state, 'town', town.id);
   const doors = siteDoors(state, town.id);
@@ -58,11 +61,20 @@ export default function TownScene({
   }).map((exit) => exit.id).join('|');
   const map = useMemo(() => {
     const built = townMap(town, hall);
+    // The guild's banner flies on a post by the hall's door once the hall is the guild's.
+    const hallDoor = town.buildings.find((building) => building.building === 'guildHall');
+    if (bannerUrl && hallDoor) {
+      const key = `banner-post:${bannerKey}`;
+      built.images = [{ key, url: bannerUrl }];
+      const x = (hallDoor.door[0] + 2.1) * 32;
+      const feet = hallDoor.door[1] * 32 + 10;
+      built.props = [...built.props, { asset: key, x: x - 20, y: feet - 100, w: 40, h: 100, depth: feet }];
+    }
     built.targets = [...built.targets, ...siteTargets(objects), ...doors.map(siteDoorTarget)].map((target) =>
       target.kind === 'exit' && shut.split('|').includes(target.id) ? { ...target, icon: 'lock', beacon: false } : target,
     );
     return built;
-  }, [town, hall?.asset, hall?.label, siteKey, shut]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [town, hall?.asset, hall?.label, siteKey, shut, bannerKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const [site, setSite] = useState(null);
   const ownApi = useRef(null);
   const api = apiRef || ownApi;

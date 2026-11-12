@@ -24,7 +24,7 @@ export default {
     ['T.........', '....::....', '..........', '.........T'],
     ['T.........', '....::....', '..........', '.........T'],
     ['T.........', '....::....', '..........', '.........T'],
-    ['T.::::::::', '::::::::::', '::::::::::', '::::::::.T'],
+    ['T.::::::::', '::::::::::', '::::::::::', '::::::::::'],
     ['T...:.....', '....::....', '..........', '....:....T'],
     ['T...:.....', '....::....', ',,,,,,,...', '....:....T'],
     ['T...:.....', '....::....', ',,,,,,,...', '....:....T'],
@@ -65,5 +65,8 @@ export default {
     { id: 'stablehand', name: 'Kit', role: 'Stablehand', at: [6, 19], dialogue: 'greenhollow.stablehand' },
     { id: 'cleric', name: 'Brother Alder', role: 'Grove cleric', at: [35, 13], dialogue: 'greenhollow.cleric' },
   ],
-  exits: [{ id: 'exit-thornwood', area: 'thornwood-edge', name: 'Thornwood edge', at: [14, 0], size: [2, 1] }],
+  exits: [
+    { id: 'exit-thornwood', area: 'thornwood-edge', name: 'The Thornwood road', at: [14, 0], size: [2, 1] },
+    { id: 'exit-iron-road', area: 'iron-road', name: 'The Iron Road', at: [39, 7], size: [1, 1] },
+  ],
 };

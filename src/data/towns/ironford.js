@@ -23,7 +23,7 @@ export default {
     ['W.........', '..........', '..........', '.........W'],
     ['W.........', '..........', '..........', '.........W'],
     ['W.........', '..........', '..........', '.........W'],
-    ['W.========', '==========', '==========', '========.W'],
+    ['==========', '==========', '==========', '========.W'],
     ['W.=.......', '.........=', '=.........', '.......=.W'],
     ['W.=.......', '.........=', '=.........', '.......=.W'],
     ['W.=.......', '.........=', '=.........', '.......=.W'],
@@ -70,5 +70,8 @@ export default {
     // The former Argent Crown quartermaster (story mission 6).
     { id: 'archivist', name: 'Oswin Tull', role: 'Archive keeper', at: [17, 7], dialogue: 'ironford.archivist' },
   ],
-  exits: [],
+  exits: [
+    { id: 'exit-iron-road', area: 'iron-road', name: 'The Iron Road', at: [0, 6], size: [1, 1] },
+    { id: 'exit-cliff-road', area: 'cliff-road', name: 'The cliff road', at: [19, 25], size: [2, 1] },
+  ],
 };

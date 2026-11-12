@@ -7,7 +7,7 @@ export const SLICE = {
   // Travel destinations on the world map.
   locations: ['dunmere', 'greenhollow', 'ironford', 'windmere'],
   // Walkable wild areas, built in Phase 1. Listed here so later phases share one source.
-  wildAreas: ['old-road', 'thornwood-edge', 'blackwood'],
+  wildAreas: ['old-road', 'thornwood-edge', 'blackwood', 'iron-road', 'cliff-road', 'coast-road'],
   // Highest guild tier with content in the slice (0 = Regional).
   maxTier: 0,
   // Systems kept in code but not surfaced in Chapter 1.

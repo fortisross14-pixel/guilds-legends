@@ -59,6 +59,18 @@ function targetHit(target) {
 export async function createWalkGame({ parent, map, bridge, start, coarse = false }) {
   const ids = [...new Set([map.ground, map.tiles?.asset, map.groundPaint?.asset, map.player.asset, ...(map.props || []).map((prop) => prop.asset), ...map.targets.map((target) => target.asset)].filter(Boolean))];
   const loaded = await Promise.all(ids.map(loadAsset));
+  // Images made at run time (the guild's banner post): { key, url } in map.images.
+  const extra = await Promise.all(
+    (map.images || []).map(
+      (item) =>
+        new Promise((resolve) => {
+          const image = new Image();
+          image.onload = () => resolve({ key: item.key, image });
+          image.onerror = () => resolve(null);
+          image.src = item.url;
+        }),
+    ),
+  );
   const grid = buildGrid(map.size, map.blocks, { pad: map.pad ?? 10, edge: map.edge ?? 0 });
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const size = () => ({ width: Math.max(1, parent.clientWidth), height: Math.max(1, parent.clientHeight) });
@@ -92,6 +104,10 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
         if (result.image && result.asset?.sheet) this.textures.addSpriteSheet(result.id, result.image, result.asset.sheet);
         else if (result.image) this.textures.addImage(result.id, result.image);
         else if (result.canvas) this.textures.addCanvas(result.id, result.canvas);
+      });
+      extra.filter(Boolean).forEach(({ key, image }) => {
+        if (this.textures.exists(key)) this.textures.remove(key);
+        this.textures.addImage(key, image);
       });
       this.cameras.main.setBackgroundColor(map.background || '#0b0c12');
       const atlas = map.groundPaint && loaded.find((result) => result.id === map.groundPaint.asset);

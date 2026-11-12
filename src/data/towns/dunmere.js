@@ -42,8 +42,8 @@ export default {
     ['~~~......=', '=.........', '..........', '==.......T'],
     ['~~~......=', '=.........', '..........', '==.......T'],
     ['~~~.======', '==========', '==========', '=======..T'],
-    ['~~~.......', '..T.......', '.....T....', '.........T'],
-    ['TTTTTTTTTT', 'TTTTTTTTTT', 'TTTTTTTTTT', 'TTTTTTTTTT'],
+    ['~~~.......', '..T.......', '.....T....', '==.......T'],
+    ['TTTTTTTTTT', 'TTTTTTTTTT', 'TTTTTTTTTT', '==TTTTTTTT'],
   ),
   // `door` is the street tile in front of the doorway; the building fills the 5×4 tiles above it.
   buildings: [
@@ -83,5 +83,6 @@ export default {
   exits: [
     { id: 'exit-old-road', area: 'old-road', name: 'The Old Road', at: [0, 15], size: [1, 2] },
     { id: 'exit-thornwood', area: 'thornwood-edge', name: 'The Thornwood road', at: [39, 15], size: [1, 2] },
+    { id: 'exit-coast-road', area: 'coast-road', name: 'The coast road', at: [30, 25], size: [2, 1] },
   ],
 };

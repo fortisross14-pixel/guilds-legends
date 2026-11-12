@@ -3,8 +3,9 @@
 import oldRoad from './oldRoad.js';
 import thornwood from './thornwood.js';
 import blackwood from './blackwood.js';
+import { cliffRoad, coastRoad, ironRoad } from './emptyRoad.js';
 
-export const WILD_AREAS = { [oldRoad.id]: oldRoad, [thornwood.id]: thornwood, [blackwood.id]: blackwood };
+export const WILD_AREAS = { [oldRoad.id]: oldRoad, [thornwood.id]: thornwood, [blackwood.id]: blackwood, [ironRoad.id]: ironRoad, [cliffRoad.id]: cliffRoad, [coastRoad.id]: coastRoad };
 export const WILD_AREA_LIST = Object.values(WILD_AREAS);
 
 /** Weeks before a defeated group or used gathering spot comes back. */

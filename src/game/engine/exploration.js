@@ -4,6 +4,7 @@
 // starting battles with enemy groups standing on the map.
 // Walking itself is presentation; only facts and positions are recorded here.
 // Conditions are shared with the story (checkCondition, story.js).
+import { MONTHS } from '../../data/content.js';
 import { DIALOGUES, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { TILE_SIZE } from '../../data/tiles.js';
@@ -349,7 +350,19 @@ export function enterWildArea(state, areaId, fromPosition = null) {
   exploration.positions[areaId] = tilePoint(link.arrive);
   if (fromPosition && Number.isFinite(fromPosition.x)) exploration.positions[from] = { x: Math.round(fromPosition.x), y: Math.round(fromPosition.y) };
   next.world.wildAreaId = areaId;
-  return { state: finalize(next), error: null };
+  // The leg from this town to the road (src/data/roads.js) passes while you travel.
+  const days = road?.legs?.[from] || 0;
+  next.world.trip = { from, areaId, days, legs: [{ to: road?.name || area.name, days }], startedOn: dateText(next.date) };
+  if (days > 0) {
+    const moved = advanceDays(next, days, true);
+    if (moved.error) return { state, error: moved.error };
+  }
+  return { state: finalize(next), error: null, days };
+}
+
+/** "Brightwane week 2, day 3": a date for trip reports. */
+function dateText(date) {
+  return `${MONTHS[date.month] || `month ${date.month + 1}`} week ${(date.week || 0) + 1}, day ${(date.day || 0) + 1}`;
 }
 
 /**
@@ -368,7 +381,27 @@ export function leaveWildArea(state, position = null, toTown = null) {
   const exploration = explorationInPlace(next);
   if (position && Number.isFinite(position.x)) exploration.positions[areaId] = { x: Math.round(position.x), y: Math.round(position.y) };
   next.world.wildAreaId = null;
-  if (to !== from) {
+  if (to === from) {
+    // Turning back the way you came costs nothing more.
+    next.world.trip = null;
+  } else {
+    // On to the far town: its leg passes, then the trip is reported.
+    const road = roadForArea(areaId);
+    const days = road?.legs?.[to] || 0;
+    if (days > 0) {
+      const moved = advanceDays(next, days, true);
+      if (moved.error) return { state, error: moved.error };
+    }
+    const trip = next.world.trip || { from, days: 0, legs: [], startedOn: null };
+    const legs = [...(trip.legs || []), { to: TOWNS[to]?.name || to, days }];
+    const total = legs.reduce((sum, leg) => sum + leg.days, 0);
+    next.notifications.push({
+      id: `arrived-${to}-${dateText(next.date)}`,
+      tone: 'gold',
+      title: `Arrived in ${TOWNS[to]?.name || to}: ${total} day${total === 1 ? '' : 's'} on the road`,
+      text: `${legs.map((leg) => `${leg.days} day${leg.days === 1 ? '' : 's'} to ${leg.to}`).join(', then ')}.${trip.startedOn ? ` Left ${TOWNS[trip.from]?.name || trip.from} on ${trip.startedOn}; today is ${dateText(next.date)}.` : ''}`,
+    });
+    next.world.trip = null;
     next.world.currentLocationId = to;
     next.world.visitedLocationIds = [...new Set([...(next.world.visitedLocationIds || []), to])];
     next.world.knowledge ||= { locations: {}, events: {}, sources: {} };
@@ -379,7 +412,7 @@ export function leaveWildArea(state, position = null, toTown = null) {
     if (gate) {
       const [col, row] = gate.at;
       const [w, h] = gate.size || [1, 1];
-      const inward = { x: col === 0 ? 1.5 : col + w >= (TOWNS[to].width || 40) ? -1 : 0, y: row === 0 ? 1.5 : 0 };
+      const inward = { x: col === 0 ? 1.5 : col + w >= (TOWNS[to].width || 40) ? -1 : 0, y: row === 0 ? 1.5 : row + h >= (TOWNS[to].height || 26) ? -1.5 : 0 };
       exploration.positions[to] = { x: Math.round((col + w / 2 + inward.x) * TILE_SIZE), y: Math.round((row + h / 2 + 0.5 + inward.y) * TILE_SIZE) };
     } else delete exploration.positions[to];
     addChronicle(next, { type: 'travel', importance: 1, title: `Arrived in ${TOWNS[to]?.name || to}`, text: `${next.guild.name} walks ${area.name} from ${TOWNS[from]?.name || from} to ${TOWNS[to]?.name || to}.`, tags: ['travel'] });

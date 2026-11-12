@@ -59,7 +59,8 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const selectedVisited = selectedKnowledge === 'visited' || selectedKnowledge === 'fullyExplored';
   const selectedSource = state.world?.knowledge?.sources?.[selected.id];
 
-  const startJourney = () => actions.travel(selected.id);
+  // A neighbour reached by a walkable road: step onto that road (src/data/roads.js); otherwise travel by the map.
+  const startJourney = () => (quote?.walk ? actions.enterWild(quote.walk) : actions.travel(selected.id));
 
   return (
     <div className="screen screen--world">
@@ -272,7 +273,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     <Icon name="boot" size={16} /> {quote.label} · <Icon name="coin" size={16} /> {quote.cost}
                   </span>
                   <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost} why={travel ? 'Already on the road.' : `Travel costs ${quote.cost} gold.`}>
-                  {travel ? 'On the road' : `Travel to ${selected.name}`}
+                  {travel ? 'On the road' : quote?.walk ? `Take ${quote.road.name}` : `Travel to ${selected.name}`}
                 </Button>
                 </div>
               ) : (
@@ -333,7 +334,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               <p>“{selectedSource?.note || `People talk of ${selected.name}.`}” · {selectedSource?.source || 'Travellers'}</p>
               {selected.id !== currentLocationId ? (
                 <Button variant="primary" size="lg" onClick={startJourney} disabled={Boolean(travel) || state.guild.crowns < quote.cost} why={travel ? 'Already on the road.' : `Travel costs ${quote.cost} gold.`}>
-                  {travel ? 'On the road' : `Travel (${quote.label})`}
+                  {travel ? 'On the road' : quote?.walk ? `Take ${quote.road.name}` : `Travel (${quote.label})`}
                 </Button>
               ) : null}
             </div>
