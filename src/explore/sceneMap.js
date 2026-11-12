@@ -5,6 +5,7 @@
 import { TILE_BY_CHAR, TILE_SIZE as T } from '../data/tiles.js';
 import { areaGroups } from '../data/wilds/index.js';
 import { ASSETS } from '../data/assets.js';
+import ROOMS from '../data/myart/rooms.json';
 
 const BUILDING = { w: 5, h: 5 }; // tiles; the bottom row of the building sits just above its door tile
 
@@ -312,4 +313,115 @@ export function siteDoorTarget(site) {
   const { x } = tileCenter(site.door);
   const feet = (site.door[1] + 1) * T - 2;
   return { id: `sitedoor:${site.id}`, kind: 'door', name: site.name, verb: 'Enter', siteId: site.id, icon: 'door', x, y: feet, asset: 'site.marker.door', w: 32, h: 40, approach: { x, y: feet + 18 }, labelAt: { x, y: feet - 56 }, reach: 36, beacon: true };
+}
+
+
+// Walkable rooms (building interiors): the hand-painted room paintings
+// (scripts/art/interiors.py) with their furniture footprints (src/data/myart/rooms.json).
+const RT = 44; // world px per painting tile: a walker stands about a tile tall
+
+/** True when the painting has a walkable room (its furniture is known). */
+export function hasWalkableRoom(art) {
+  return Boolean(ROOMS[art]);
+}
+
+/**
+ * The walkable map of a building's interior. `layout` comes from interiorLayout
+ * (percent positions); people stand at their spots, hotspots stand under their
+ * boxes, and the door mat leads out.
+ */
+export function interiorMap({ id, layout, people, names = {}, townName, badgesFor = () => [] }) {
+  const room = ROOMS[layout.art];
+  const [tw, th] = room.tiles;
+  const at = ([x, y]) => ({ x: ((x * tw) / 100) * RT, y: ((y * th) / 100) * RT });
+  const blocks = [{ x: 0, y: 0, w: tw * RT, h: room.wall * RT }, ...room.blocks.map(([x, y, w, h]) => ({ x: x * RT, y: y * RT, w: w * RT, h: h * RT }))];
+  const free = (point) => !blocks.some((b) => point.x > b.x - 12 && point.x < b.x + b.w + 12 && point.y > b.y - 12 && point.y < b.y + b.h + 12);
+  // Where to stand to reach something: straight below it, in front of any counter or table in the way.
+  const below = (point) => {
+    const inFront = blocks
+      .slice(1)
+      .filter((b) => point.x > b.x - 12 && point.x < b.x + b.w + 12 && b.y >= point.y - 4 && b.y < point.y + 3 * RT)
+      .reduce((lowest, b) => Math.max(lowest, b.y + b.h - point.y), 0);
+    for (let dy = Math.max(16, inFront + 16); dy < 5 * RT; dy += 8) {
+      const spot = { x: point.x, y: point.y + dy };
+      if (free(spot)) return spot;
+    }
+    return { x: point.x, y: point.y + 24 };
+  };
+  const targets = [];
+  people.forEach((person) => {
+    const spot = layout.spots[person.spot];
+    if (!spot) return;
+    const feet = at(spot);
+    const size = personSize(person.sprite, { w: 40, h: 56 });
+    const approach = below(feet);
+    targets.push({
+      id: `person:${person.id}`,
+      kind: 'npc',
+      personId: person.id,
+      name: names[person.id] || person.name,
+      role: person.role,
+      verb: 'Talk',
+      unknown: !(person.met || person.dialogue),
+      badges: person.met || person.dialogue ? badgesFor(person) : [],
+      x: feet.x,
+      y: feet.y,
+      asset: person.sprite,
+      ...size,
+      faceWalker: Boolean(ASSETS[person.sprite]?.walker),
+      approach,
+      labelAt: { x: feet.x, y: feet.y - size.h - 14 },
+      reach: approach.y - feet.y + 26,
+    });
+  });
+  layout.hotspots.forEach((spot) => {
+    const [x, y, w, h] = spot.box;
+    const foot = at([x + w / 2, y + h]);
+    const top = at([x, y]);
+    const end = at([x + w, y + h]);
+    const approach = below(foot);
+    targets.push({
+      id: `spot:${spot.id}`,
+      kind: 'poi',
+      spot,
+      name: spot.name,
+      verb: spot.verb,
+      icon: spot.shelf ? 'bag' : spot.board === 'history' ? 'trophy' : spot.board === 'rankings' ? 'crown' : 'book',
+      x: foot.x,
+      y: foot.y,
+      hit: { x: top.x, y: top.y, w: end.x - top.x, h: end.y - top.y },
+      approach,
+      labelAt: { x: foot.x, y: top.y - 10 },
+      reach: approach.y - foot.y + 30,
+    });
+  });
+  const [dx, dy, dw, dh] = layout.door;
+  const doorTop = at([dx, dy]);
+  const doorEnd = at([dx + dw, dy + dh]);
+  const doorX = (doorTop.x + doorEnd.x) / 2;
+  targets.push({
+    id: 'exit',
+    kind: 'exit',
+    name: `Out to ${townName}`,
+    verb: 'Leave',
+    icon: 'door',
+    x: doorX,
+    y: doorEnd.y - 6,
+    hit: { x: doorTop.x, y: doorTop.y, w: doorEnd.x - doorTop.x, h: doorEnd.y - doorTop.y },
+    approach: { x: doorX, y: doorEnd.y - 20 },
+    labelAt: { x: doorX, y: doorTop.y - 8 },
+    reach: 40,
+  });
+  return {
+    id: `room:${id}`,
+    size: { width: tw * RT, height: th * RT },
+    ground: layout.art,
+    background: '#1a120c',
+    player: { asset: 'char.founder', ...personSize('char.founder') },
+    pad: 9,
+    edge: 6,
+    blocks,
+    targets,
+    spawn: { x: doorX, y: doorEnd.y - 30 },
+  };
 }

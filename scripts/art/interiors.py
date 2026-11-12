@@ -35,9 +35,16 @@ P = {
 }
 
 
+# Small things on tables and the floor that you can walk past (everything else on the floor is solid).
+NONSOLID = {'mat-red', 'stool', 'flowers', 'mug', 'bowl', 'pitcher', 'scrolls', 'ink', 'book', 'note', 'candle', 'firewood',
+            'onions', 'bread', 'vials', 'potions', 'box', 'pot', 'sack', 'satchel', 'sack-patched', 'rug-green'}
+WALL_BASE = 3.05  # pieces whose foot is above this hang on the back wall
+
+
 class Room:
     def __init__(self, sheets, floor):
         self.sheets = sheets
+        self.blocks = []  # [x, y, w, h] in tiles: what a walker cannot cross (walkable rooms)
         self.im = Image.new('RGBA', (W * R, H * R))
         self.floor(floor)
         self.wall()
@@ -57,6 +64,12 @@ class Room:
             height = int(h * R) if h is not None and w is not None else int(width * im.height / im.width)
             im = im.resize((max(1, width), max(1, height)), Image.LANCZOS)
         self.im.alpha_composite(im, (int(x * R - im.width / 2), int(y * R - im.height)))
+        if name not in NONSOLID and y > WALL_BASE:
+            # The footprint: the bottom of the piece, a little narrower than its picture.
+            w_t, h_t = im.width / R, im.height / R
+            depth = min(0.7, h_t * 0.5)
+            # A tenth of a tile in from each side, so pieces set side by side (the bar) leave no gap.
+            self.blocks.append([round(x - w_t / 2 + 0.1, 2), round(y - depth, 2), round(max(0.3, w_t - 0.2), 2), round(depth - 0.05, 2)])
 
     def tile(self, name, x, y):
         self.im.alpha_composite(self.piece_raw(name), (int(x * R), int(y * R)))
@@ -261,5 +274,5 @@ def compose(src_interior, src_town, key_out, out_dir):
         maker(room)
         name = asset_id.split('.', 1)[1].replace('.', '-') + '.jpg'
         room.save(os.path.join(out_dir, name))
-        made.append((asset_id, name))
+        made.append((asset_id, name, room.blocks))
     return made

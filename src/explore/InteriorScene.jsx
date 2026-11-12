@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getStoryView, hasHall, peopleIn, shortLabels, storyNpcsHere } from '../game/engine.js';
 import Icon from '../components/Icon.jsx';
 import Asset from '../components/Asset.jsx';
 import PaintedScene, { at, box } from './PaintedScene.jsx';
+import WalkableScene from './WalkableScene.jsx';
+import { hasWalkableRoom, interiorMap } from './sceneMap.js';
 import { interiorLayout } from '../data/interiors.js';
 import { townFor } from '../data/towns/index.js';
 import DialogueBox from './DialogueBox.jsx';
@@ -13,10 +15,11 @@ import { dateLine } from '../hud/dateLine.js';
 const offerIcon = (offer) => (offer.type === 'hire' ? (offer.locked ? 'lock' : 'coin') : offer.type === 'mission' ? 'alert' : 'swords');
 
 /**
- * A building's interior as a painted scene (playtest-1-feedback): the painting
- * covers the screen (on a phone it pans sideways under a finger), people stand
- * at fixed spots on it, hotspots on it do something, and the door asks before
- * leading out. Tap a person to talk, a hotspot to use it. No walking inside.
+ * A building's interior. Rooms built from the hand-painted tiles are walkable
+ * (the same controls as town: tap or drag to walk, walk up to someone to talk,
+ * to a shelf or board to use it, to the door mat to leave). A painting without
+ * a walkable room falls back to the painted scene: people at fixed spots, tap
+ * to talk or use, the door asks before leading out.
  */
 export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, onTalk = null }) {
   const locationId = state.world?.currentLocationId || 'dunmere';
@@ -78,7 +81,64 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
     <p className="goal-line goal-line--status">No hall, no hires.</p>
   ) : null;
 
+  // Walkable rooms rebuild when who is here changes; the walker keeps their place.
+  const walkable = layout && hasWalkableRoom(layout.art);
+  const sceneApi = useRef(null);
+  const lastSpot = useRef(null);
+  const peopleKey = people.map((person) => `${person.id}@${person.spot}:${person.offers.length}:${person.met ? 1 : 0}`).join('|');
+  const roomMap = useMemo(
+    () =>
+      walkable
+        ? interiorMap({ id: `${locationId}:${building}`, layout, people, names, townName: town?.name || 'the street', badgesFor: (person) => person.offers.map(offerIcon) })
+        : null,
+    [walkable, peopleKey, locationId, building], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const overlay = (
+    <>
+      <PlaceTag title={label} sub={dateLine(state.date)} goal={goalLine} />
+      {talk?.dialogue ? (
+        <DialogueBox
+          key={talk.person}
+          state={state}
+          actions={actions}
+          conversationId={talk.dialogue}
+          visit={null}
+          onClose={() => setTalk(null)}
+          onOpenBuilding={(id) => id !== building && onOpen({ open: id })}
+        />
+      ) : talk ? (
+        <PersonDialogue key={talk.person} state={state} actions={actions} personId={talk.person} onClose={() => setTalk(null)} onOpen={onOpen} />
+      ) : null}
+    </>
+  );
+
   if (!layout) return null;
+  if (roomMap) {
+    const remember = () => {
+      const spot = sceneApi.current?.position?.();
+      if (spot) lastSpot.current = spot;
+    };
+    return (
+      <WalkableScene
+        key={peopleKey}
+        map={roomMap}
+        start={lastSpot.current || roomMap.spawn}
+        apiRef={sceneApi}
+        paused={blocked}
+        beacons={questPerson ? [`person:${questPerson.id}`] : []}
+        onInteract={(target) => {
+          remember();
+          if (target.kind === 'npc') talkTo(people.find((person) => person.id === target.personId) || { id: target.personId });
+          else if (target.kind === 'poi') use(target.spot);
+          else if (target.kind === 'exit') onLeave();
+        }}
+        className={`room room--${building}`}
+        label={`Inside ${label}`}
+      >
+        {overlay}
+      </WalkableScene>
+    );
+  }
   const doorAt = layout.door;
   return (
     <PaintedScene
@@ -87,24 +147,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
       className={`interior--${building}`}
       label={`Inside ${label}`}
       onBackgroundTap={() => ask && setAsk(false)}
-      overlay={
-        <>
-          <PlaceTag title={label} sub={dateLine(state.date)} goal={goalLine} />
-          {talk?.dialogue ? (
-            <DialogueBox
-              key={talk.person}
-              state={state}
-              actions={actions}
-              conversationId={talk.dialogue}
-              visit={null}
-              onClose={() => setTalk(null)}
-              onOpenBuilding={(id) => id !== building && onOpen({ open: id })}
-            />
-          ) : talk ? (
-            <PersonDialogue key={talk.person} state={state} actions={actions} personId={talk.person} onClose={() => setTalk(null)} onOpen={onOpen} />
-          ) : null}
-        </>
-      }
+      overlay={overlay}
     >
       {layout.hotspots.map((spot) => (
         <button

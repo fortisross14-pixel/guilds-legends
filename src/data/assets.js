@@ -232,8 +232,10 @@ MYART.assets.forEach((asset) => {
 MYART.assets
   .filter((asset) => asset.still && asset.id.startsWith('npc.'))
   .forEach((asset) => {
-    const portrait = LIST.find((entry) => entry.id === `portrait.${asset.id.slice(4)}`);
+    const id = `portrait.${asset.id.slice(4)}`;
+    const portrait = LIST.find((entry) => entry.id === id);
     if (portrait && !portrait.borrow) portrait.borrow = asset.still;
+    if (!portrait) LIST.push({ id, group: 'portrait', path: `art/portraits/npcs/${asset.id.slice(4).replace(/\./g, '-')}.png`, borrow: asset.still, w: 160, h: 160, use: `Dialogue portrait (its walking character until painted)` });
   });
 // Story people who also walk in town.
 [['founder', 'char.founder'], ['bram', 'npc.dunmere.fighter'], ['nessa', 'npc.dunmere.nessa'], ['mara', 'npc.dunmere.innkeeper'], ['stablemaster', 'npc.dunmere.stablemaster'], ['herbalist', 'npc.greenhollow.herbalist'], ['quartermaster', 'npc.ironford.archivist']].forEach(([story, walker]) => {

@@ -215,8 +215,13 @@ def interiors():
     from interiors import compose
     os.makedirs(out('interiors/x'), exist_ok=True) if False else os.makedirs(os.path.dirname(out('interiors/x')), exist_ok=True)
     made = compose(INTERIOR.replace('64x64', '128x128'), TOWN.replace('64x64', '128x128'), key_magenta, os.path.dirname(out('interiors/x')))
-    for asset_id, name in made:
+    rooms = {}
+    for asset_id, name, blocks in made:
         assets.append({'id': asset_id, 'group': 'interior', 'path': f'{REL}/interiors/{name}', 'w': 2560, 'h': 1152, 'use': 'Building interior (hand-painted tiles, scripts/art/interiors.py)'})
+        rooms[asset_id] = {'tiles': [20, 9], 'wall': 2.75, 'blocks': blocks}
+    # Walkable rooms: the furniture's footprints, read by src/explore/sceneMap.js (interiorMap).
+    with open(os.path.join(GAME, 'src', 'data', 'myart', 'rooms.json'), 'w') as f:
+        json.dump(rooms, f, indent=1)
 
 
 # --- Foes (no monsters: every enemy is a person) ----------------------------
