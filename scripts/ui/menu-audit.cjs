@@ -1,3 +1,4 @@
+/* global process, document, console */
 const { chromium, devices } = require('playwright');
 // Usage: npm run build, npx vite preview --port 4179, then: node scripts/ui/menu-audit.cjs <out-dir>
 // Opens every orb menu on a phone (iPhone 13), reports what opened, whether its list scrolls inside
