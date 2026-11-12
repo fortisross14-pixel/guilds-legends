@@ -477,10 +477,15 @@ export function interiorMap({ id, layout, people, names = {}, townName, badgesFo
     labelAt: { x: doorX, y: doorTop.y - 8 },
     reach: 40,
   });
+  // Pieces drawn above whoever stands behind them (the bar in front of the keeper), sorted by their foot.
+  const props = (room.front || []).map(({ asset, box: [x, y, w, h] }) => ({ asset, x: x * RT, y: y * RT, w: w * RT, h: h * RT }));
   return {
     id: `room:${id}`,
     size: { width: tw * RT, height: th * RT },
     ground: layout.art,
+    props,
+    // A small room (the founder's house) fits whole on the screen.
+    fit: tw <= 12 ? 'contain' : undefined,
     background: '#1a120c',
     player: { asset: 'char.founder', ...personSize('char.founder') },
     pad: 9,

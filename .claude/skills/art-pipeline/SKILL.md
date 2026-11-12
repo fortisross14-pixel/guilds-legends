@@ -39,7 +39,10 @@ import attributes for the JSON).
   (quarter-tile autotiling; wild areas use the grassland road and ponds).
 - **The world map**: `scripts/art/worldmap.py` paints it (ink on parchment, land grown around the places of `src/data/world.js` and along every road); re-run it after moving a place or adding a road.
 - **Rooms** (walkable interiors): `scripts/art/interiors.py`, a function per room that places
-  furniture and the people's spots (`room.spot`, seats under guests).
+  furniture and the people's spots (`room.spot`, seats under guests). A room's size is set in
+  `ROOMS` (default 20 x 9 tiles; the house is 10 x 7). Anyone standing *behind* a piece (the keeper
+  behind the bar) needs `put(..., front=True)`: the piece is cut out again as a PNG and drawn above
+  the people, sorted by its foot; never put a spot on top of painted furniture.
 - **UI skin**: `src/styles/skin/guikit.css` and the kit pieces copied by `GUI_FILES`.
 
 ## New packs

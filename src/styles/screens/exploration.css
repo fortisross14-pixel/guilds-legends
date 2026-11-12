@@ -148,9 +148,6 @@
 .interior__confirm { z-index: 3; }
 .interior .dialogue { position: fixed; z-index: var(--z-dialogue); }
 /* The prologue house as a painted scene. */
-.house__founder, .house__rook { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
-.house__founder { width: 48px; height: 66px; }
-.house__rook { width: 120px; height: 76px; object-fit: contain; image-rendering: pixelated; }
 .house__door.is-beacon .interior__tag { border: 1px solid var(--gold-bright); color: var(--gold-bright); }
 /* Pressed: keep the centring (touch.css scales every pressed button, which would move these off the finger). */
 .interior .interior__person:not(:disabled):active { transform: translate(-50%, -100%) scale(.97); }

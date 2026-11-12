@@ -255,9 +255,14 @@ def interiors():
     os.makedirs(out('interiors/x'), exist_ok=True) if False else os.makedirs(os.path.dirname(out('interiors/x')), exist_ok=True)
     made = compose(INTERIOR.replace('64x64', '128x128'), TOWN.replace('64x64', '128x128'), key_magenta, os.path.dirname(out('interiors/x')), EXTRA.replace('64x64', '128x128'))
     rooms = {}
-    for asset_id, name, blocks, spots in made:
-        assets.append({'id': asset_id, 'group': 'interior', 'path': f'{REL}/interiors/{name}', 'w': 2560, 'h': 1152, 'use': 'Building interior (hand-painted tiles, scripts/art/interiors.py)'})
-        rooms[asset_id] = {'tiles': [20, 9], 'wall': 2.75, 'blocks': blocks, 'spots': spots}
+    for asset_id, name, blocks, spots, (tw, th), fronts in made:
+        assets.append({'id': asset_id, 'group': 'interior', 'path': f'{REL}/interiors/{name}', 'w': tw * 128, 'h': th * 128, 'use': 'Building interior (hand-painted tiles, scripts/art/interiors.py)'})
+        front = []
+        for n, (file, box) in enumerate(fronts):
+            front_id = f'{asset_id}.front{n}'
+            assets.append({'id': front_id, 'group': 'interior', 'path': f'{REL}/interiors/{file}', 'w': round(box[2] * 128), 'h': round(box[3] * 128), 'use': 'A piece of a room drawn above the people behind it (scripts/art/interiors.py)'})
+            front.append({'asset': front_id, 'box': box})
+        rooms[asset_id] = {'tiles': [tw, th], 'wall': 2.75, 'blocks': blocks, 'spots': spots, **({'front': front} if front else {})}
     # Walkable rooms: the furniture's footprints, read by src/explore/sceneMap.js (interiorMap).
     with open(os.path.join(GAME, 'src', 'data', 'myart', 'rooms.json'), 'w') as f:
         json.dump(rooms, f, indent=1)

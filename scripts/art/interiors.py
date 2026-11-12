@@ -43,11 +43,13 @@ WALL_BASE = 3.05  # pieces whose foot is above this hang on the back wall
 
 
 class Room:
-    def __init__(self, sheets, floor):
+    def __init__(self, sheets, floor, size=(20, 9)):
         self.sheets = sheets
+        self.W, self.H = size
+        self.front = []  # pieces drawn again above the people (a counter in front of the keeper): (box px, alpha mask)
         self.blocks = []  # [x, y, w, h] in tiles: what a walker cannot cross (walkable rooms)
         self.spots = {}  # spot id -> (x, y) tiles: where each person stands (their feet)
-        self.im = Image.new('RGBA', (W * R, H * R))
+        self.im = Image.new('RGBA', (self.W * R, self.H * R))
         self.floor(floor)
         self.wall()
 
@@ -57,7 +59,7 @@ class Room:
         box = crop.getbbox()
         return crop.crop(box) if box else crop
 
-    def put(self, name, x, y, w=None, flip=False, h=None):
+    def put(self, name, x, y, w=None, flip=False, h=None, front=False):
         im = self.piece(name)
         if flip:
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
@@ -66,6 +68,9 @@ class Room:
             height = int(h * R) if h is not None and w is not None else int(width * im.height / im.width)
             im = im.resize((max(1, width), max(1, height)), Image.LANCZOS)
         self.im.alpha_composite(im, (int(x * R - im.width / 2), int(y * R - im.height)))
+        if front:
+            # Cut out again from the finished painting (save), drawn above whoever stands behind it.
+            self.front.append(((int(x * R - im.width / 2), int(y * R - im.height), im.width, im.height), im.getchannel('A')))
         if name not in NONSOLID and y > WALL_BASE:
             # The footprint: the bottom of the piece, a little narrower than its picture.
             w_t, h_t = im.width / R, im.height / R
@@ -81,11 +86,13 @@ class Room:
         return self.sheets[sheet].crop((c * R, r * R, (c + w) * R, (r + h) * R))
 
     def floor(self, name):
-        for row in range(3, H):
-            for col in range(W):
+        for row in range(3, self.H):
+            for col in range(self.W):
                 self.tile(name, col, row)
 
-    def wall(self, windows=(2, 7)):
+    def wall(self, windows=None):
+        W = self.W
+        windows = windows if windows is not None else ((2, 7) if W >= 16 else (1,))
         for seg in range(W // 2):
             self.tile('wall-window' if seg in windows else 'wall-plank', seg * 2, 0)
         # Carved posts every four tiles, so the wall reads as panels, not a fence.
@@ -103,6 +110,7 @@ class Room:
         self.im.alpha_composite(Image.new('RGBA', self.im.size, rgba))
 
     def vignette(self, strength=110):
+        W, H = self.W, self.H
         mask = Image.new('L', self.im.size, 0)
         draw = ImageDraw.Draw(mask)
         draw.rectangle([0, 0, W * R, H * R], fill=strength)
@@ -121,11 +129,20 @@ class Room:
 
     def door(self):
         """The way out, bottom middle (DOOR in interiors.js): a mat at the threshold."""
-        self.put('mat-red', 10, 9.05, w=2.6, h=1.5)
+        self.put('mat-red', self.W / 2, self.H + 0.05, w=2.6, h=1.5)
 
     def save(self, path):
+        """Writes the painting, and each front piece as a PNG beside it: returns [(file, [x, y, w, h] tiles)]."""
         self.vignette()
         self.im.convert('RGB').save(path, quality=86, optimize=True)
+        fronts = []
+        for n, ((x, y, w, h), alpha) in enumerate(self.front):
+            piece = self.im.crop((x, y, x + w, y + h))
+            piece.putalpha(alpha)
+            name = path.rsplit('.', 1)[0] + f'-front{n}.png'
+            piece.save(name, optimize=True)
+            fronts.append((os.path.basename(name), [round(x / R, 3), round(y / R, 3), round(w / R, 3), round(h / R, 3)]))
+        return fronts
 
 
 def pct(x, y):
@@ -140,11 +157,21 @@ def tavern(room):
     room.put('wall-shelf', 15.0, 2.2, w=2.0)
     room.put('mug', 14.5, 1.45, w=0.5)
     room.put('pot', 15.5, 1.45, w=0.45)
-    room.spot('bar', 10, 3.0)
-    room.put('counter-short', 8.95, 4.3, w=2.2)
-    room.put('counter-short', 11.05, 4.3, w=2.2, flip=True)
-    room.put('mug', 9.4, 3.6, w=0.45)
-    room.put('pitcher', 11.5, 3.55, w=0.5)
+    # The keeper stands behind the bar (between it and the wall); the bar is drawn over their legs.
+    room.spot('bar', 10, 4.05)
+    room.put('counter-short', 8.95, 5.0, w=2.2, front=True)
+    room.put('counter-short', 11.05, 5.0, w=2.2, flip=True, front=True)
+    room.put('mug', 9.2, 4.3, w=0.45, front=True)
+    room.put('pitcher', 11.6, 4.25, w=0.5, front=True)
+    # Behind the bar: casks on a rack and a shelf of bottles.
+    room.put('barrel', 7.0, 3.35, w=0.9)
+    room.put('barrel', 13.0, 3.35, w=0.9)
+    room.put('wall-shelf', 10.0, 2.25, w=2.0)
+    room.put('vials', 9.6, 1.5, w=0.45)
+    room.put('pot', 10.5, 1.5, w=0.45)
+    room.put('banner', 5.6, 2.6, w=0.8)
+    room.put('banner', 14.4, 2.6, w=0.8)
+    room.put('candle', 17.5, 3.25, w=0.5)
     for (cx, cy), (a, b) in [((5.0, 6.3), ('t1a', 't1b')), ((15.0, 6.3), ('t2a', 't2b')), ((5.0, 8.7), ('t3a', 't3b'))]:
         room.put('table', cx, cy, w=1.6)
         room.put('mug', cx - 0.25, cy - 1.35, w=0.4)
@@ -267,26 +294,27 @@ def priory(room):
 
 
 def house(room):
-    # The founder's house at night: the hearth, the table (founder at 46% x 66%), one bed, the door on the right.
-    room.put('fireplace', 3.4, 3.4, w=1.9)
-    room.put('firewood', 5.0, 3.3, w=0.7)
-    room.put('bed', 1.6, 7.6, w=2.4)
-    room.put('table', 11.0, 6.4, w=2.0)
-    room.put('candle', 10.6, 5.3, w=0.45)
-    room.put('bowl', 11.4, 5.35, w=0.45)
-    room.put('stool', 12.4, 6.6, w=0.6)
-    room.put('wall-shelf', 8.0, 2.2, w=1.9)
-    room.put('pot', 7.6, 1.45, w=0.45)
-    room.put('mug', 8.4, 1.45, w=0.45)
-    # The front door on the right wall: a dark doorway in a wooden frame.
-    ImageDraw.Draw(room.im).rectangle([int(16.9 * R), int(2.9 * R), int(19.3 * R), int(6.8 * R)], fill=(40, 26, 18, 255))
-    room.put('frame', 18.1, 6.95, w=2.8, h=4.3)
-    room.put('sack', 15.4, 3.4, w=0.8)
-    room.mood((14, 18, 50, 125))
+    # The founder's house (prologue): one small room at night. The bed by the hearth, a table with a candle,
+    # a chest, the door (mat) at the bottom. 10 x 7 tiles.
+    room.put('fireplace', 2.0, 3.4, w=1.9)
+    room.put('firewood', 3.5, 3.3, w=0.7)
+    room.put('wall-shelf', 7.4, 2.2, w=1.8)
+    room.put('pot', 7.0, 1.45, w=0.45)
+    room.put('mug', 7.8, 1.45, w=0.45)
+    room.put('bed', 1.5, 6.1, w=2.2)
+    room.put('table', 7.6, 5.4, w=1.6)
+    room.put('candle', 7.3, 4.35, w=0.4)
+    room.put('bowl', 7.9, 4.4, w=0.4)
+    room.put('stool', 6.3, 5.5, w=0.6)
+    room.put('sack', 9.2, 3.5, w=0.7)
+    room.spot('founder', 3.6, 5.2)
+    room.spot('rook', 5.0, 6.4)
+    room.door()
+    room.mood((14, 18, 50, 120))
     # Firelight on the left.
     glow = Image.new('RGBA', room.im.size)
     draw = ImageDraw.Draw(glow)
-    draw.ellipse([0.4 * R, 0.6 * R, 7 * R, 7.5 * R], fill=(255, 150, 60, 70))
+    draw.ellipse([-1 * R, 0.4 * R, 6 * R, 7 * R], fill=(255, 150, 60, 80))
     room.im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(R)))
 
 
@@ -303,7 +331,7 @@ ROOMS = [
     ('interior.arena.ironford', arena, ' Color 3', 'floor-stone'),
     ('interior.arena.windmere', arena, ' Color 2', 'floor-diamond'),
     ('interior.herald', herald, '', 'floor-check'),
-    ('interior.house', house, '', 'floor-oak'),
+    ('interior.house', house, '', 'floor-oak', (10, 7)),
     ('interior.temple', temple, '', 'floor-diamond'),
     ('interior.priory', priory, ' Color 2', 'floor-oak'),
 ]
@@ -314,7 +342,7 @@ def compose(src_interior, src_town, key_out, out_dir, src_extra=None):
     town = key_out(Image.open(os.path.join(src_town, 'Town@128x128.png')).convert('RGBA'))
     extra = key_out(Image.open(os.path.join(src_extra, 'ExtraObjects@128x128.png')).convert('RGBA')) if src_extra else None
     cache = {}
-    for asset_id, maker, palette, floor in ROOMS:
+    for asset_id, maker, palette, floor, *size in ROOMS:
         if palette not in cache:
             cache[palette] = {
                 I: key_out(Image.open(os.path.join(src_interior, f'Interior{palette}@128x128.png')).convert('RGBA')),
@@ -322,9 +350,10 @@ def compose(src_interior, src_town, key_out, out_dir, src_extra=None):
                 T: town,
                 'ExtraObjects': extra,
             }
-        room = Room(cache[palette], floor)
+        room = Room(cache[palette], floor, *size)
         maker(room)
         name = asset_id.split('.', 1)[1].replace('.', '-') + '.jpg'
-        room.save(os.path.join(out_dir, name))
-        made.append((asset_id, name, room.blocks, {k: [round(x * 100 / W, 1), round(y * 100 / H, 1)] for k, (x, y) in room.spots.items()}))
+        fronts = room.save(os.path.join(out_dir, name))
+        spots = {k: [round(x * 100 / room.W, 1), round(y * 100 / room.H, 1)] for k, (x, y) in room.spots.items()}
+        made.append((asset_id, name, room.blocks, spots, (room.W, room.H), fronts))
     return made

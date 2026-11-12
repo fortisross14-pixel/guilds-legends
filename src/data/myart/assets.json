@@ -993,12 +993,76 @@
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
   },
   {
+   "id": "interior.tavern.front0",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/tavern-front0.png",
+   "w": 281,
+   "h": 199,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.tavern.front1",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/tavern-front1.png",
+   "w": 281,
+   "h": 199,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.tavern.front2",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/tavern-front2.png",
+   "w": 57,
+   "h": 57,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.tavern.front3",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/tavern-front3.png",
+   "w": 64,
+   "h": 64,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
    "id": "interior.inn.greenhollow",
    "group": "interior",
    "path": "art/packs/myart/interiors/inn-greenhollow.jpg",
    "w": 2560,
    "h": 1152,
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.greenhollow.front0",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-greenhollow-front0.png",
+   "w": 281,
+   "h": 281,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.greenhollow.front1",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-greenhollow-front1.png",
+   "w": 281,
+   "h": 281,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.greenhollow.front2",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-greenhollow-front2.png",
+   "w": 57,
+   "h": 57,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.greenhollow.front3",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-greenhollow-front3.png",
+   "w": 64,
+   "h": 64,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
   },
   {
    "id": "interior.inn.ironford",
@@ -1009,12 +1073,76 @@
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
   },
   {
+   "id": "interior.inn.ironford.front0",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-ironford-front0.png",
+   "w": 281,
+   "h": 281,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.ironford.front1",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-ironford-front1.png",
+   "w": 281,
+   "h": 281,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.ironford.front2",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-ironford-front2.png",
+   "w": 57,
+   "h": 57,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.ironford.front3",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-ironford-front3.png",
+   "w": 64,
+   "h": 64,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
    "id": "interior.inn.windmere",
    "group": "interior",
    "path": "art/packs/myart/interiors/inn-windmere.jpg",
    "w": 2560,
    "h": 1152,
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.windmere.front0",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-windmere-front0.png",
+   "w": 281,
+   "h": 281,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.windmere.front1",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-windmere-front1.png",
+   "w": 281,
+   "h": 281,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.windmere.front2",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-windmere-front2.png",
+   "w": 57,
+   "h": 57,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.inn.windmere.front3",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/inn-windmere-front3.png",
+   "w": 64,
+   "h": 64,
+   "use": "A piece of a room drawn above the people behind it (scripts/art/interiors.py)"
   },
   {
    "id": "interior.shop",
@@ -1076,8 +1204,8 @@
    "id": "interior.house",
    "group": "interior",
    "path": "art/packs/myart/interiors/house.jpg",
-   "w": 2560,
-   "h": 1152,
+   "w": 1280,
+   "h": 896,
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
   },
   {

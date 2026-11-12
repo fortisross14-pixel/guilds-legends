@@ -5,6 +5,7 @@ const JOYSTICK_RADIUS = 48;
 
 /** What a door's or exit's bubble says: "Enter The Wayfarer", "Leave to Dunmere", "Travel: The Old Road". */
 export function confirmText(target) {
+  if (target.confirm) return target.confirm;
   if (target.kind === 'door') return `Enter ${target.name}`;
   const back = /^(Back|Out) to (.+)$/.exec(target.name || '');
   if (back) return `Leave to ${back[2]}`;

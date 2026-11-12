@@ -8,3 +8,4 @@ Thumbs.db
 .idea/
 playwright-report/
 test-results/
+__pycache__/
