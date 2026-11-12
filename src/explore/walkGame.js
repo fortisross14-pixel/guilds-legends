@@ -7,11 +7,21 @@
 import Phaser from 'phaser';
 import { loadAsset } from '../components/assetLoader.js';
 import { buildGrid, findPath, isFree } from './pathfinding.js';
+import { paintGround } from './groundPaint.js';
 
 const SPEED = 190; // world px per second
 const ARRIVE = 4;
 // Rows of a walker sheet (3 frames each, the middle one standing).
 const FACE = { down: 0, left: 1, right: 2, up: 3 };
+
+/**
+ * The sheet row for a facing. Side-only walkers (HeroEditor characters, drawn
+ * from the side) keep their last left or right while walking up or down.
+ */
+function sideRow(asset, facing, side) {
+  if (!asset?.sideOnly || facing === 'left' || facing === 'right') return FACE[facing];
+  return FACE[side || 'right'];
+}
 
 function isSheet(scene, key) {
   return Boolean(key && scene.textures.exists(key) && scene.textures.get(key).frameTotal > 2);
@@ -47,7 +57,7 @@ function targetHit(target) {
  * swap callbacks without recreating the game. Resolves to a controller.
  */
 export async function createWalkGame({ parent, map, bridge, start, coarse = false }) {
-  const ids = [...new Set([map.ground, map.tiles?.asset, map.player.asset, ...(map.props || []).map((prop) => prop.asset), ...map.targets.map((target) => target.asset)].filter(Boolean))];
+  const ids = [...new Set([map.ground, map.tiles?.asset, map.groundPaint?.asset, map.player.asset, ...(map.props || []).map((prop) => prop.asset), ...map.targets.map((target) => target.asset)].filter(Boolean))];
   const loaded = await Promise.all(ids.map(loadAsset));
   const grid = buildGrid(map.size, map.blocks, { pad: map.pad ?? 10, edge: map.edge ?? 0 });
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -84,6 +94,13 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
         else if (result.canvas) this.textures.addCanvas(result.id, result.canvas);
       });
       this.cameras.main.setBackgroundColor(map.background || '#0b0c12');
+      const atlas = map.groundPaint && loaded.find((result) => result.id === map.groundPaint.asset);
+      if (atlas?.image) {
+        const key = `ground:${map.id}`;
+        if (this.textures.exists(key)) this.textures.remove(key);
+        this.textures.addCanvas(key, paintGround({ image: atlas.image, atlas: atlas.asset, rows: map.groundPaint.rows, tileSize: map.groundPaint.tileSize, tone: map.groundPaint.tone }));
+        this.add.image(0, 0, key).setOrigin(0).setDisplaySize(map.size.width, map.size.height).setDepth(-10000);
+      }
       if (map.ground) this.add.image(0, 0, map.ground).setOrigin(0).setDisplaySize(map.size.width, map.size.height).setDepth(-10000);
       if (map.tiles) {
         const size = map.tiles.size;
@@ -109,6 +126,8 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       });
       const spawn = isFree(grid, start.x, start.y) ? start : findPath(grid, start, start)[0] || map.spawn;
       this.walker = isSheet(this, map.player.asset);
+      this.walkerAsset = loaded.find((result) => result.id === map.player.asset)?.asset;
+      this.side = 'right';
       this.player = (this.walker ? this.add.sprite(spawn.x, spawn.y, map.player.asset, FACE.down * 3 + 1) : this.add.image(spawn.x, spawn.y, map.player.asset))
         .setOrigin(0.5, 1)
         .setDisplaySize(map.player.w, map.player.h)
@@ -173,11 +192,13 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     walkScene.last = { x: player.x, y: player.y };
     if (Math.abs(dx) + Math.abs(dy) > 0.05) {
       walkScene.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
-      const key = `${map.player.asset}:walk-${walkScene.facing}`;
+      if (walkScene.facing === 'left' || walkScene.facing === 'right') walkScene.side = walkScene.facing;
+      const shown = walkScene.walkerAsset?.sideOnly && (walkScene.facing === 'up' || walkScene.facing === 'down') ? walkScene.side : walkScene.facing;
+      const key = `${map.player.asset}:walk-${shown}`;
       if (player.anims.currentAnim?.key !== key || !player.anims.isPlaying) player.play(key);
     } else if (player.anims.isPlaying) {
       player.stop();
-      player.setFrame(FACE[walkScene.facing] * 3 + 1);
+      player.setFrame(sideRow(walkScene.walkerAsset, walkScene.facing, walkScene.side) * 3 + 1);
     }
   }
 
@@ -188,7 +209,8 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     const dx = scene.player.x - target.x;
     const dy = scene.player.y - target.y;
     const facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
-    sprite.setFrame(FACE[facing] * 3 + 1);
+    const asset = loaded.find((result) => result.id === target.asset)?.asset;
+    sprite.setFrame(sideRow(asset, facing, dx < 0 ? 'left' : 'right') * 3 + 1);
   }
 
   function moveBy(player, dx, dy) {

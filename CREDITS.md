@@ -22,7 +22,7 @@ Both are loaded from Google Fonts.
 
 ## Art test pack
 
-- **Medieval Fantasy (Regular)** by **Arex V** ([arex-v.itch.io](https://arex-v.itch.io/)): tiles and characters in `public/art/packs/arex-medieval/`, used for the art test town. License: may be used and edited in commercial and non-commercial games; the assets may not be resold, edited or not (`public/art/packs/arex-medieval/LICENSE.txt`).
+- **2D Hand Painted - Town Tileset** and **2D Hand Painted - Interior Tileset** (Unity Asset Store): the ground, buildings and props in `public/art/packs/myart/` (tiles, buildings, props). **GUI PRO Kit - Fantasy RPG** by Layer Lab (Unity Asset Store): buttons, frames, bars, the joystick, the Alata and Josefin Sans fonts (SIL OFL) in `public/art/packs/myart/gui` and `fonts`. **HeroEditor / Fantasy Heroes** by Hippo (Unity Asset Store): the walking characters in `public/art/packs/myart/chars`, assembled from its body parts and equipment. All three under the Unity Asset Store EULA (Standard): used inside this game, not redistributed; the repository is private for that reason. Imported by `scripts/art/import_myart.py` from the private art repository.
 
 ## Code
 

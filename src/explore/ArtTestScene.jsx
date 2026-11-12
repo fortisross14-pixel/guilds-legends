@@ -1,50 +1,42 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { artTestDoorStep, artTestMap } from '../data/artTest/index.js';
+import React, { useMemo, useState } from 'react';
+import { TOWNS } from '../data/towns/index.js';
+import { WILD_AREA_LIST } from '../data/wilds/index.js';
 import { Button } from '../components/UI.jsx';
 import Icon from '../components/Icon.jsx';
 import WalkableScene from './WalkableScene.jsx';
+import { townMap, wildMap } from './sceneMap.js';
+
+const PLACES = [...Object.values(TOWNS).map((town) => ({ id: town.id, name: town.name, map: () => townMap(town) })), ...WILD_AREA_LIST.map((area) => ({ id: area.id, name: area.name, map: () => wildMap(area) }))];
 
 /**
- * The art test town (System → Settings → Developer, or #art-test in the address):
- * Dunmere rebuilt from the Arex V "Medieval Fantasy" pack, with the normal touch
- * controls. Only the Wayfarer has an inside. Nothing here changes the campaign.
+ * The art preview (Settings → Developer, or #art-test in the address): every town
+ * and wild area as the game draws it, with the normal touch controls, to judge the
+ * art without playing to it. Doors and people only say their name; nothing here
+ * changes the campaign.
  */
 export default function ArtTestScene({ onClose }) {
-  const [room, setRoom] = useState('town');
-  const [start, setStart] = useState(null);
+  const [index, setIndex] = useState(0);
   const [line, setLine] = useState(null);
-  const api = useRef(null);
-  const map = useMemo(() => artTestMap(room), [room]);
-
-  const interact = (target) => {
-    if (target.kind === 'npc') setLine({ name: target.name, text: target.line });
-    else if (target.kind === 'door' && target.building === 'tavern') {
-      setStart(null);
-      setRoom('tavern');
-    } else if (target.kind === 'door') setLine({ name: target.name, text: 'Only the Wayfarer has an inside in this test.' });
-    else if (target.kind === 'exit' && room === 'tavern') {
-      setStart(artTestDoorStep('door:tavern'));
-      setRoom('town');
-    } else if (target.kind === 'exit') setLine({ name: target.name, text: 'The road ends here in the art test.' });
-  };
+  const place = PLACES[index];
+  const map = useMemo(() => place.map(), [place]);
+  const next = () => setIndex((value) => (value + 1) % PLACES.length);
 
   return (
     <div className="art-test">
       <WalkableScene
-        key={room}
+        key={place.id}
         map={map}
-        start={start || map.spawn}
-        apiRef={api}
+        start={map.spawn}
         paused={Boolean(line)}
-        onInteract={interact}
-        className={`art-test__scene art-test__scene--${room}`}
-        label={room === 'tavern' ? 'Art test: the Wayfarer' : 'Art test: Dunmere'}
+        onInteract={(target) => setLine({ name: target.name, text: `${target.verb || 'Inspect'}: only a preview here.` })}
+        className="art-test__scene"
+        label={`Art preview: ${place.name}`}
       >
         <div className="art-test__bar">
-          <span>
-            <b>Art test</b> · {room === 'tavern' ? 'The Wayfarer' : 'Dunmere'}
-          </span>
-          <Button size="sm" onClick={onClose} aria-label="Close the art test">
+          <Button size="sm" onClick={next} aria-label="Next place">
+            {place.name} <Icon name="next" size={14} tone="plain" />
+          </Button>
+          <Button size="sm" onClick={onClose} aria-label="Close the art preview">
             <Icon name="close" size={14} tone="plain" /> Close
           </Button>
         </div>

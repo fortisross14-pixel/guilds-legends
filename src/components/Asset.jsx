@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { loadAsset, peekAsset } from './assetLoader.js';
+import { loadAsset, peekAsset, publicUrl } from './assetLoader.js';
 
 /** The resolved asset for an id (null until it loads). */
 export function useAsset(id) {
@@ -31,10 +31,12 @@ export function useAssetUrl(id) {
 export default function Asset({ id, alt = '', className = '', ...rest }) {
   const result = useAsset(id);
   if (!result?.url) return <span className={`asset asset--loading ${className}`} data-asset={id} aria-hidden={alt ? undefined : true} />;
+  // A walk sheet shows its standing frame (`still`) outside the walk engine.
+  const src = result.asset?.still && !result.placeholder ? publicUrl(result.asset.still) : result.url;
   return (
     <img
       className={`asset ${className}`}
-      src={result.url}
+      src={src}
       alt={alt}
       data-asset={id}
       data-placeholder={result.placeholder ? 'true' : undefined}

@@ -4,8 +4,34 @@
 // map is in world pixels.
 import { TILE_BY_CHAR, TILE_SIZE as T } from '../data/tiles.js';
 import { areaGroups } from '../data/wilds/index.js';
+import { ASSETS } from '../data/assets.js';
 
 const BUILDING = { w: 5, h: 5 }; // tiles; the bottom row of the building sits just above its door tile
+
+// HeroEditor walkers (scripts/art/characters.py) are drawn larger than the old 26 x 36 sprites.
+const WALKER = { w: 44, h: 47 };
+/** Draw size for a person's sprite: the walker size for hand-painted walk sheets. */
+export function personSize(asset, fallback = { w: 26, h: 36 }) {
+  return ASSETS[asset]?.walker ? WALKER : fallback;
+}
+
+/**
+ * Where a building or prop image goes. New art (`aspect` in the registry) keeps its
+ * own proportions: centred on the footprint, standing on its bottom edge, at its
+ * `scale` (buildings) or fitted to the footprint's width (props, height capped).
+ */
+function placed(asset, box, { maxH = Infinity } = {}) {
+  const art = ASSETS[asset];
+  if (!art?.aspect) return { asset, ...box };
+  let w = art.scale && art.group === 'building' ? art.w * BUILDING_SCALE : box.w;
+  let h = (w * art.h) / art.w;
+  if (h > maxH) {
+    w = (w * maxH) / h;
+    h = maxH;
+  }
+  return { asset, x: box.x + (box.w - w) / 2, y: box.y + box.h - h, w, h, depth: box.y + box.h };
+}
+const BUILDING_SCALE = 0.42; // hand-painted 64 px tiles at the walk grid: doors about a walker high
 
 const tileCenter = ([col, row]) => ({ x: (col + 0.5) * T, y: (row + 0.5) * T });
 const rect = (col, row, w, h) => ({ x: col * T, y: row * T, w: w * T, h: h * T });
@@ -36,7 +62,7 @@ function propPieces(props = []) {
     const [col, row] = prop.at;
     const [w, h] = prop.size;
     // Props are drawn one tile taller than their footprint, overlapping upward.
-    drawn.push({ asset: prop.asset, x: col * T, y: (row - 1) * T, w: w * T, h: (h + 1) * T });
+    drawn.push(placed(prop.asset, { x: col * T, y: (row - 1) * T, w: w * T, h: (h + 1) * T }, { maxH: (h + 2) * T }));
     if (!prop.walkable) blocks.push(rect(col, row, w, h));
     if (prop.poi) {
       const cx = (col + w / 2) * T;
@@ -81,12 +107,16 @@ function exitTarget(exit, extra = {}) {
 
 function base(place) {
   const { data, blocks } = tileGrid(place);
+  // The hand-painted ground, when imported, is painted from the tile rows (groundPaint.js).
+  const painted = ASSETS['tiles.handpainted'];
   return {
     id: place.id,
     size: { width: place.width * T, height: place.height * T },
     background: '#16191c',
-    tiles: { asset: 'tiles.ground', size: T, data },
-    player: { asset: 'char.founder', w: 26, h: 36 },
+    ...(painted
+      ? { groundPaint: { asset: 'tiles.handpainted', rows: place.tiles, tileSize: T, tone: place.kind === 'wild' ? 'rgba(20, 30, 40, .18)' : null } }
+      : { tiles: { asset: 'tiles.ground', size: T, data } }),
+    player: { asset: 'char.founder', ...personSize('char.founder') },
     pad: 9,
     blocks,
   };
@@ -109,7 +139,7 @@ export function townMap(town, hall = null) {
     const [col, row] = building.door;
     const left = col - Math.floor(BUILDING.w / 2);
     const top = row - BUILDING.h;
-    buildingProps.push({ asset: building.asset, x: left * T, y: top * T, w: BUILDING.w * T, h: BUILDING.h * T });
+    buildingProps.push(placed(building.asset, { x: left * T, y: top * T, w: BUILDING.w * T, h: BUILDING.h * T }));
     map.blocks.push(rect(left, top, BUILDING.w, BUILDING.h));
     const door = tileCenter(building.door);
     return {
@@ -148,14 +178,14 @@ function npcTarget(placeId, npc) {
     icon: 'letter',
     if: npc.if || null,
     hideWhenInactive: Boolean(npc.if),
+    faceWalker: Boolean(ASSETS[`npc.${placeId}.${npc.id}`]?.walker),
     x,
     y: feet,
     asset: `npc.${placeId}.${npc.id}`,
-    w: 26,
-    h: 36,
+    ...personSize(`npc.${placeId}.${npc.id}`),
     bob: true,
     approach: { x, y: feet + 22 },
-    labelAt: { x, y: feet - 54 },
+    labelAt: { x, y: feet - personSize(`npc.${placeId}.${npc.id}`).h - 18 },
     reach: 38,
   };
 }
@@ -260,7 +290,7 @@ export function siteTargets(objects) {
         return { id, kind: 'enemy', name: objective.name, verb: 'Fight', site, icon: objective.boss ? 'skull' : 'swords', x, y: feet, asset: siteGroupAsset(objective.enemies), ...size, bob: true, approach: { x, y: feet + 20 }, labelAt: { x, y: feet - size.h - 20 }, reach: objective.boss ? 40 : 34, auto: true, beacon: true };
       }
       if (objective.kind === 'talk' || objective.kind === 'escort')
-        return { id, kind: 'npc', name: objective.name, role: objective.role, verb: 'Talk', site, icon: SITE_ICONS[objective.kind], x, y: feet, asset: 'npc.role.traveller', w: 26, h: 36, bob: true, approach: { x, y: feet + 22 }, labelAt: { x, y: feet - 50 }, reach: 38, beacon: true };
+        return { id, kind: 'npc', name: objective.name, role: objective.role, verb: 'Talk', site, icon: SITE_ICONS[objective.kind], x, y: feet, asset: 'npc.role.traveller', ...personSize('npc.role.traveller'), bob: true, approach: { x, y: feet + 22 }, labelAt: { x, y: feet - personSize('npc.role.traveller').h - 16 }, reach: 38, beacon: true };
       return { id, kind: objective.kind === 'collect' ? 'gather' : 'poi', name: objective.name, verb: objective.kind === 'collect' ? 'Collect' : 'Inspect', site, icon: SITE_ICONS[objective.kind], x, y: feet, asset: objective.kind === 'collect' ? 'site.marker.collect' : 'site.marker.inspect', w: 28, h: 28, approach: { x, y: feet + 8 }, labelAt: { x, y: feet - 46 }, reach: 36, beacon: !objective.optional };
     });
 }

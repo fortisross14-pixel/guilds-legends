@@ -1,0 +1,1009 @@
+{
+ "source": "scripts/art/import_myart.py",
+ "assets": [
+  {
+   "id": "tiles.handpainted",
+   "group": "tileset",
+   "path": "art/packs/myart/tiles/ground-atlas.png",
+   "w": 512,
+   "h": 256,
+   "tile": 64,
+   "cols": 8,
+   "cells": {
+    "grass": 0,
+    "grass2": 1,
+    "flowers": 2,
+    "plaza0": 3,
+    "plaza1": 4,
+    "plaza2": 5,
+    "plaza3": 6,
+    "plaza4": 7,
+    "plaza5": 8,
+    "plaza6": 9,
+    "plaza7": 10,
+    "plaza8": 11,
+    "pool0": 12,
+    "pool1": 13,
+    "pool2": 14,
+    "pool3": 15,
+    "pool4": 16,
+    "pool5": 17,
+    "pool6": 18,
+    "pool7": 19,
+    "pool8": 20,
+    "water": 21,
+    "planks": 22,
+    "stone": 23,
+    "cobble0": 24,
+    "cobble1": 25,
+    "bushTop": 26,
+    "bushBottom": 27,
+    "hedge0": 28,
+    "hedge1": 29,
+    "hedge2": 30,
+    "hedge3": 31
+   },
+   "use": "Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js"
+  },
+  {
+   "id": "town.dunmere.herald",
+   "group": "building",
+   "path": "art/packs/myart/buildings/dunmere-herald.png",
+   "w": 373,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Dunmere: Herald\u2019s Office (purple gable house)"
+  },
+  {
+   "id": "town.dunmere.tavern",
+   "group": "building",
+   "path": "art/packs/myart/buildings/dunmere-tavern.png",
+   "w": 405,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Dunmere: The Wayfarer (thatched, the beer sign)"
+  },
+  {
+   "id": "town.dunmere.guildhall.stage1",
+   "group": "building",
+   "path": "art/packs/myart/buildings/dunmere-guildhall-stage1.png",
+   "w": 393,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Dunmere: the Guild Hall (wooden house)"
+  },
+  {
+   "id": "town.dunmere.shop",
+   "group": "building",
+   "path": "art/packs/myart/buildings/dunmere-shop.png",
+   "w": 437,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Dunmere: Mira\u2019s Supply (orange gable house, the potion sign)"
+  },
+  {
+   "id": "town.dunmere.arena",
+   "group": "building",
+   "path": "art/packs/myart/buildings/dunmere-arena.png",
+   "w": 455,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Dunmere: the arena (dark wooden house, the sword sign)"
+  },
+  {
+   "id": "town.greenhollow.arena",
+   "group": "building",
+   "path": "art/packs/myart/buildings/greenhollow-arena.png",
+   "w": 455,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Greenhollow: the arena"
+  },
+  {
+   "id": "town.greenhollow.lodge",
+   "group": "building",
+   "path": "art/packs/myart/buildings/greenhollow-lodge.png",
+   "w": 341,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Greenhollow: the lodge (moss thatch)"
+  },
+  {
+   "id": "town.greenhollow.shop",
+   "group": "building",
+   "path": "art/packs/myart/buildings/greenhollow-shop.png",
+   "w": 437,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Greenhollow: the shop"
+  },
+  {
+   "id": "town.greenhollow.tavern",
+   "group": "building",
+   "path": "art/packs/myart/buildings/greenhollow-tavern.png",
+   "w": 405,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Greenhollow: the tavern"
+  },
+  {
+   "id": "town.ironford.arena",
+   "group": "building",
+   "path": "art/packs/myart/buildings/ironford-arena.png",
+   "w": 455,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Ironford: the arena"
+  },
+  {
+   "id": "town.ironford.herald",
+   "group": "building",
+   "path": "art/packs/myart/buildings/ironford-herald.png",
+   "w": 373,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Ironford: the herald (blue gable house)"
+  },
+  {
+   "id": "town.ironford.offices",
+   "group": "building",
+   "path": "art/packs/myart/buildings/ironford-offices.png",
+   "w": 393,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Ironford: the offices"
+  },
+  {
+   "id": "town.ironford.shop",
+   "group": "building",
+   "path": "art/packs/myart/buildings/ironford-shop.png",
+   "w": 435,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Ironford: the shop (the armor sign)"
+  },
+  {
+   "id": "town.ironford.tavern",
+   "group": "building",
+   "path": "art/packs/myart/buildings/ironford-tavern.png",
+   "w": 405,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Ironford: the tavern"
+  },
+  {
+   "id": "town.windmere.arena",
+   "group": "building",
+   "path": "art/packs/myart/buildings/windmere-arena.png",
+   "w": 455,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Windmere: the arena"
+  },
+  {
+   "id": "town.windmere.inn",
+   "group": "building",
+   "path": "art/packs/myart/buildings/windmere-inn.png",
+   "w": 405,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Windmere: the inn"
+  },
+  {
+   "id": "town.windmere.shop",
+   "group": "building",
+   "path": "art/packs/myart/buildings/windmere-shop.png",
+   "w": 437,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Windmere: the shop"
+  },
+  {
+   "id": "prop.lamp",
+   "group": "prop",
+   "path": "art/packs/myart/props/lamp.png",
+   "w": 61,
+   "h": 256,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Street lamp"
+  },
+  {
+   "id": "prop.well",
+   "group": "prop",
+   "path": "art/packs/myart/props/well.png",
+   "w": 127,
+   "h": 166,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Well (blue roof)"
+  },
+  {
+   "id": "prop.stall",
+   "group": "prop",
+   "path": "art/packs/myart/props/stall.png",
+   "w": 192,
+   "h": 181,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Market stall (striped awning)"
+  },
+  {
+   "id": "prop.fountain",
+   "group": "prop",
+   "path": "art/packs/myart/props/fountain.png",
+   "w": 192,
+   "h": 192,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Fountain basin"
+  },
+  {
+   "id": "prop.kiln",
+   "group": "prop",
+   "path": "art/packs/myart/props/kiln.png",
+   "w": 64,
+   "h": 127,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Kiln chimney"
+  },
+  {
+   "id": "prop.crates",
+   "group": "prop",
+   "path": "art/packs/myart/props/crates.png",
+   "w": 124,
+   "h": 63,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Crate and barrel"
+  },
+  {
+   "id": "prop.noticeboard",
+   "group": "prop",
+   "path": "art/packs/myart/props/noticeboard.png",
+   "w": 126,
+   "h": 98,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Notice board (notes pinned to a wooden board)"
+  },
+  {
+   "id": "char.founder",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder.png",
+   "still": "art/packs/myart/chars/char-founder-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.merchant",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-merchant.png",
+   "still": "art/packs/myart/chars/npc-dunmere-merchant-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.fighter",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-fighter.png",
+   "still": "art/packs/myart/chars/npc-dunmere-fighter-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.stablemaster",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-stablemaster.png",
+   "still": "art/packs/myart/chars/npc-dunmere-stablemaster-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.nessa",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-nessa.png",
+   "still": "art/packs/myart/chars/npc-dunmere-nessa-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.traveler",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-traveler.png",
+   "still": "art/packs/myart/chars/npc-dunmere-traveler-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.herald",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-herald.png",
+   "still": "art/packs/myart/chars/npc-dunmere-herald-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.kilnmaster",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-kilnmaster.png",
+   "still": "art/packs/myart/chars/npc-dunmere-kilnmaster-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.lamplighter",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-lamplighter.png",
+   "still": "art/packs/myart/chars/npc-dunmere-lamplighter-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.greenhollow.herbalist",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-greenhollow-herbalist.png",
+   "still": "art/packs/myart/chars/npc-greenhollow-herbalist-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.greenhollow.warden",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-greenhollow-warden.png",
+   "still": "art/packs/myart/chars/npc-greenhollow-warden-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.greenhollow.storyteller",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-greenhollow-storyteller.png",
+   "still": "art/packs/myart/chars/npc-greenhollow-storyteller-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.greenhollow.stablehand",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-greenhollow-stablehand.png",
+   "still": "art/packs/myart/chars/npc-greenhollow-stablehand-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.greenhollow.cleric",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-greenhollow-cleric.png",
+   "still": "art/packs/myart/chars/npc-greenhollow-cleric-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.foreman",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-foreman.png",
+   "still": "art/packs/myart/chars/npc-ironford-foreman-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.tollkeeper",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-tollkeeper.png",
+   "still": "art/packs/myart/chars/npc-ironford-tollkeeper-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.smith",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-smith.png",
+   "still": "art/packs/myart/chars/npc-ironford-smith-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.guard",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-guard.png",
+   "still": "art/packs/myart/chars/npc-ironford-guard-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.scholar",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-scholar.png",
+   "still": "art/packs/myart/chars/npc-ironford-scholar-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.archivist",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-archivist.png",
+   "still": "art/packs/myart/chars/npc-ironford-archivist-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.windmere.courier",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-windmere-courier.png",
+   "still": "art/packs/myart/chars/npc-windmere-courier-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.windmere.monk",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-windmere-monk.png",
+   "still": "art/packs/myart/chars/npc-windmere-monk-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.dunmere.innkeeper",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-dunmere-innkeeper.png",
+   "still": "art/packs/myart/chars/npc-dunmere-innkeeper-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.shopkeeper",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-shopkeeper.png",
+   "still": "art/packs/myart/chars/npc-role-shopkeeper-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.registrar",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-registrar.png",
+   "still": "art/packs/myart/chars/npc-role-registrar-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.referee",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-referee.png",
+   "still": "art/packs/myart/chars/npc-role-referee-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.herald-s-clerk",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-herald-s-clerk.png",
+   "still": "art/packs/myart/chars/npc-role-herald-s-clerk-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.greenhollow.innkeeper",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-greenhollow-innkeeper.png",
+   "still": "art/packs/myart/chars/npc-greenhollow-innkeeper-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.herb-seller",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-herb-seller.png",
+   "still": "art/packs/myart/chars/npc-role-herb-seller-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.barkeep",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-barkeep.png",
+   "still": "art/packs/myart/chars/npc-ironford-barkeep-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.forge-trader",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-forge-trader.png",
+   "still": "art/packs/myart/chars/npc-role-forge-trader-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.assay-clerk",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-assay-clerk.png",
+   "still": "art/packs/myart/chars/npc-role-assay-clerk-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.innkeeper",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-innkeeper.png",
+   "still": "art/packs/myart/chars/npc-role-innkeeper-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.courier-supplier",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-courier-supplier.png",
+   "still": "art/packs/myart/chars/npc-role-courier-supplier-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.council-steward",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-council-steward.png",
+   "still": "art/packs/myart/chars/npc-role-council-steward-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.watch-sergeant",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-watch-sergeant.png",
+   "still": "art/packs/myart/chars/npc-role-watch-sergeant-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.temple-acolyte",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-temple-acolyte.png",
+   "still": "art/packs/myart/chars/npc-role-temple-acolyte-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.trader",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-trader.png",
+   "still": "art/packs/myart/chars/npc-role-trader-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.traveller",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-traveller.png",
+   "still": "art/packs/myart/chars/npc-role-traveller-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.messenger",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-messenger.png",
+   "still": "art/packs/myart/chars/npc-role-messenger-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.guardian",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-guardian.png",
+   "still": "art/packs/myart/chars/char-class-guardian-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.duelist",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-duelist.png",
+   "still": "art/packs/myart/chars/char-class-duelist-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.ranger",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-ranger.png",
+   "still": "art/packs/myart/chars/char-class-ranger-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.rogue",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-rogue.png",
+   "still": "art/packs/myart/chars/char-class-rogue-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.cleric",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-cleric.png",
+   "still": "art/packs/myart/chars/char-class-cleric-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.mage",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-mage.png",
+   "still": "art/packs/myart/chars/char-class-mage-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.scholar",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-scholar.png",
+   "still": "art/packs/myart/chars/char-class-scholar-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.class.artificer",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-class-artificer.png",
+   "still": "art/packs/myart/chars/char-class-artificer-still.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  }
+ ]
+}

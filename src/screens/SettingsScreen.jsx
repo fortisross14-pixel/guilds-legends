@@ -69,7 +69,7 @@ export default function SettingsScreen({ state, actions, slot }) {
       </Group>
       <Group title="Developer">
         <div className="settings-row">
-          <span>Art test town (Arex V pack)</span>
+          <span>Art preview (every town and wild area)</span>
           <Button size="sm" onClick={() => (window.location.hash = 'art-test')}>
             Open
           </Button>

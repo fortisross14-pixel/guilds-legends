@@ -1,8 +1,7 @@
-/* The art test town (src/explore/ArtTestScene.jsx): the Arex V pack in play.
-   A full-screen layer over the game; the pixel art stays crisp. */
+/* The art preview (src/explore/ArtTestScene.jsx): every place as the game draws it.
+   A full-screen layer over the game. */
 .art-test { position: fixed; inset: 0; z-index: var(--z-system); background: #11130c; }
 .art-test .walk { z-index: auto; }
-.art-test canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 .art-test__bar {
   position: absolute;
   top: calc(env(safe-area-inset-top, 0px) + 10px);

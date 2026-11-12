@@ -1410,7 +1410,7 @@ export default function App() {
   );
 }
 
-/** The art test town opens over everything when the address ends in #art-test (Settings → Developer links there). */
+/** The art preview opens over everything when the address ends in #art-test (Settings → Developer links there). */
 function ArtTestGate() {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.location.hash === '#art-test');
   useEffect(() => {
