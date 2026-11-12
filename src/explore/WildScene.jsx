@@ -13,7 +13,7 @@ import { Button } from '../components/UI.jsx';
  * walking into one or tapping it starts a battle. Gathering spots give items
  * or gold, a night at the camp heals the party (one day passes), the exit leads back to town.
  */
-export default function WildScene({ area, state, actions, paused = false, apiRef = null, onTalk = null }) {
+export default function WildScene({ area, state, actions, paused = false, apiRef = null, onTalk = null, openBuilding = null }) {
   // Contract objectives standing here (missions-in-world): the map is rebuilt when one is done.
   const objects = siteObjects(state, 'wild', area.id);
   const siteKey = objects.map((object) => `${object.missionId}:${object.objective.id}:${object.arrive ? 1 : 0}`).join('|');
@@ -32,6 +32,8 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
   }, [talk, site, onTalk]);
   useEffect(() => () => onTalk?.(false), [onTalk]);
   const [camp, setCamp] = useState(false);
+  // A door held shut by a boss (the temple, while the Ash Abbot holds its gate).
+  const [barred, setBarred] = useState(null);
   const view = getWildAreaView(state, area.id);
   const saved = state.world?.exploration?.positions?.[area.id];
   // When the map rebuilds here (a contract objective done), keep the founder where they stand;
@@ -51,6 +53,8 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
     else if (target.kind === 'gather') actions.gather(area.id, target.spot);
     else if (target.kind === 'camp') setCamp(true);
     else if (target.kind === 'exit') actions.leaveWild(position);
+    else if (target.kind === 'door' && view.gates?.[target.building]) setBarred(target.name);
+    else if (target.kind === 'door') openBuilding?.(target.building);
     else if (target.dialogue) setTalk({ id: target.dialogue, visit: { sceneId: area.id, targetId: target.id, position } });
   };
   const remaining = view.groups.filter((group) => group.available).length;
@@ -65,7 +69,7 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
         start={start}
         apiRef={api}
         activeTargets={[...view.activeTargets, ...map.targets.filter((target) => target.site).map((target) => target.id)]}
-        paused={Boolean(paused || talk || site || camp || state.activeEncounter || state.pendingEvent)}
+        paused={Boolean(paused || talk || site || camp || barred || state.activeEncounter || state.pendingEvent)}
         joystick={Boolean(state.settings?.joystick)}
         onInteract={interact}
         className={`wild-scene wild-scene--${area.id}`}
@@ -86,6 +90,20 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
             )
           }
         />
+        {barred ? (
+          <section className="walk-card" role="dialog" aria-label={barred}>
+            <div className="walk-card__box panel">
+              <span className="eyebrow">{barred}</span>
+              <h2>The doors are barred</h2>
+              <p>Brother Malric holds the temple gate. Get past him first.</p>
+              <div className="walk-card__actions">
+                <Button variant="primary" onClick={() => setBarred(null)}>
+                  Back
+                </Button>
+              </div>
+            </div>
+          </section>
+        ) : null}
         {camp ? (
           <section className="walk-card" role="dialog" aria-label={area.camp.name}>
             <div className="walk-card__box panel">

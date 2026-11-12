@@ -50,6 +50,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `town.windmere.inn` | `art/packs/myart/buildings/windmere-inn.png` | 405×448 | — | ready | Windmere: the inn |
 | `town.windmere.shop` | `art/packs/myart/buildings/windmere-shop.png` | 437×576 | — | ready | Windmere: the shop |
 | `town.windmere.arena` | `art/packs/myart/buildings/windmere-arena.png` | 455×512 | — | ready | Windmere: the arena |
+| `town.oldroad.temple` | `art/packs/myart/buildings/oldroad-temple.png` | 493×576 | — | ready | The Old Road: Dawnwatch Temple (blue gable house between white columns) |
+| `town.oldroad.priory` | `art/packs/myart/buildings/oldroad-priory.png` | 341×448 | — | ready | The Old Road: the priests’ house (moss thatch) |
 
 ## Interior (`interior`, placeholder #6b4a24)
 
@@ -73,6 +75,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.inn.greenhollow` | `art/packs/myart/interiors/inn-greenhollow.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.inn.ironford` | `art/packs/myart/interiors/inn-ironford.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.inn.windmere` | `art/packs/myart/interiors/inn-windmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.temple` | `art/packs/myart/interiors/temple.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.priory` | `art/packs/myart/interiors/priory.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 
 ## Prop (`prop`, placeholder #55602e)
 
@@ -147,27 +151,26 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `deco.tent` | `art/packs/myart/props/deco-tent.png` | 192×256 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.log` | `art/packs/myart/props/deco-log.png` | 176×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.spit` | `art/packs/myart/props/deco-spit.png` | 123×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.sacks` | `art/packs/myart/props/deco-sacks.png` | 64×89 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.cart` | `art/packs/myart/props/deco-cart.png` | 96×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.log-pile` | `art/packs/myart/props/deco-log-pile.png` | 128×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.signpost` | `art/packs/myart/props/deco-signpost.png` | 64×125 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.signpost-2` | `art/packs/myart/props/deco-signpost-2.png` | 64×82 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.rock-big` | `art/packs/myart/props/deco-rock-big.png` | 117×119 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stump` | `art/packs/myart/props/deco-stump.png` | 55×62 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.rocks` | `art/packs/myart/props/deco-rocks.png` | 63×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.standing-stone` | `art/packs/myart/props/deco-standing-stone.png` | 94×121 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.log-hollow` | `art/packs/myart/props/deco-log-hollow.png` | 60×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.stump-moss` | `art/packs/myart/props/deco-stump-moss.png` | 62×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.rock-tall` | `art/packs/myart/props/deco-rock-tall.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.banner` | `art/packs/myart/props/deco-banner.png` | 64×128 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.skull-pike` | `art/packs/myart/props/deco-skull-pike.png` | 34×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.campfire` | `art/packs/myart/props/deco-campfire.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.crate` | `art/packs/myart/props/deco-crate.png` | 126×77 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.barrel` | `art/packs/myart/props/deco-barrel.png` | 62×61 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.firewood` | `art/packs/myart/props/deco-firewood.png` | 52×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.sacks` | `art/packs/myart/props/deco-sacks.png` | 64×89 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.grave-cross` | `art/packs/myart/props/deco-grave-cross.png` | 61×94 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.ruin-column` | `art/packs/myart/props/deco-ruin-column.png` | 62×115 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.flowers-pink` | `art/packs/myart/props/deco-flowers-pink.png` | 44×57 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.log-hollow` | `art/packs/myart/props/deco-log-hollow.png` | 60×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.stump-moss` | `art/packs/myart/props/deco-stump-moss.png` | 62×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.grave` | `art/packs/myart/props/deco-grave.png` | 60×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.flowers-white` | `art/packs/myart/props/deco-flowers-white.png` | 57×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.flowers-pink` | `art/packs/myart/props/deco-flowers-pink.png` | 44×57 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.flowers-red` | `art/packs/myart/props/deco-flowers-red.png` | 53×63 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.fern` | `art/packs/myart/props/deco-fern.png` | 51×49 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.fern-2` | `art/packs/myart/props/deco-fern-2.png` | 60×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
@@ -183,14 +186,15 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `deco.tree-broad` | `art/packs/myart/props/deco-tree-broad.png` | 229×316 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tree-dead-small` | `art/packs/myart/props/deco-tree-dead-small.png` | 47×116 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.bush-dead` | `art/packs/myart/props/deco-bush-dead.png` | 118×111 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.rock-tall` | `art/packs/myart/props/deco-rock-tall.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.rock-flat` | `art/packs/myart/props/deco-rock-flat.png` | 120×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stump-big` | `art/packs/myart/props/deco-stump-big.png` | 116×127 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.haystack` | `art/packs/myart/props/deco-haystack.png` | 125×109 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.signpost-2` | `art/packs/myart/props/deco-signpost-2.png` | 64×82 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.barrel` | `art/packs/myart/props/deco-barrel.png` | 62×61 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.log-pile` | `art/packs/myart/props/deco-log-pile.png` | 128×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.bench` | `art/packs/myart/props/deco-bench.png` | 127×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.fence` | `art/packs/myart/props/deco-fence.png` | 171×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stocks` | `art/packs/myart/props/deco-stocks.png` | 114×83 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.grave` | `art/packs/myart/props/deco-grave.png` | 60×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.crystals` | `art/packs/myart/props/deco-crystals.png` | 59×111 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 
 ## Character sprite (`char`, placeholder #8a6a23)
@@ -252,6 +256,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.ironford.archivist` | `art/packs/myart/chars/npc-ironford-archivist.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.windmere.courier` | `art/packs/myart/chars/npc-windmere-courier.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.windmere.monk` | `art/packs/myart/chars/npc-windmere-monk.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.role.high-priestess` | `art/packs/myart/chars/npc-role-high-priestess.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.role.priest` | `art/packs/myart/chars/npc-role-priest.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.dunmere.innkeeper` | `art/packs/myart/chars/npc-dunmere-innkeeper.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.shopkeeper` | `art/packs/myart/chars/npc-role-shopkeeper.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.registrar` | `art/packs/myart/chars/npc-role-registrar.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
@@ -318,6 +324,8 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | `art/packs/myart/chars/npc-ironford-archivist-still.png` | borrowed | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
 | `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | `art/packs/myart/chars/npc-windmere-courier-still.png` | borrowed | Windmere: Sela Wick, Courier (dialogue portrait) |
 | `portrait.windmere.monk` | `art/portraits/npcs/windmere-monk.png` | 160×160 | `art/packs/myart/chars/npc-windmere-monk-still.png` | borrowed | Windmere: Brother Hale, Monastery keeper (dialogue portrait) |
+| `portrait.role.high-priestess` | `art/portraits/roles/high-priestess.png` | 160×160 | `art/packs/myart/chars/npc-role-high-priestess-still.png` | borrowed | Dialogue portrait: High priestess |
+| `portrait.role.priest` | `art/portraits/roles/priest.png` | 160×160 | `art/packs/myart/chars/npc-role-priest-still.png` | borrowed | Dialogue portrait: Priest |
 | `portrait.role.shopkeeper` | `art/portraits/roles/shopkeeper.png` | 160×160 | `art/packs/myart/chars/npc-role-shopkeeper-still.png` | borrowed | Dialogue portrait: Shopkeeper |
 | `portrait.role.herald-s-clerk` | `art/portraits/roles/herald-s-clerk.png` | 160×160 | `art/packs/myart/chars/npc-role-herald-s-clerk-still.png` | borrowed | Dialogue portrait: Herald’s clerk |
 | `portrait.greenhollow.innkeeper` | `art/portraits/npcs/greenhollow-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-innkeeper-still.png` | borrowed | Dialogue portrait: Innkeeper |
@@ -393,6 +401,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `enemy.group.bandits` | `art/packs/myart/foes/group-bandits.png` | 398×283 | — | ready | Enemy group on the map: road-bandit, shield-thug, field-priest |
 | `enemy.group.witch` | `art/packs/myart/foes/group-witch.png` | 435×328 | — | ready | Enemy group on the map: hedge-witch, shield-thug |
 | `enemy.boss.alpha` | `art/packs/myart/foes/boss-alpha.png` | 184×330 | — | ready | Boss on the map: grey-alpha |
+| `enemy.boss.abbot` | `art/packs/myart/foes/boss-abbot.png` | 194×328 | — | ready | Boss on the map: ash-abbot |
 | `enemy.group.stalkers` | `art/packs/myart/foes/group-stalkers.png` | 297×286 | — | ready | Enemy group on the map: thorn-stalker, thorn-stalker |
 | `enemy.group.spores` | `art/packs/myart/foes/group-spores.png` | 359×294 | — | ready | Enemy group on the map: spore-caller, grove-mender |
 | `enemy.group.barkhides` | `art/packs/myart/foes/group-barkhides.png` | 317×330 | — | ready | Enemy group on the map: bark-brute, moss-warden |
@@ -448,6 +457,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `battle.foe.boss-tempest` | `art/packs/myart/foes/boss-tempest.png` | 188×276 | — | ready | Enemy in battle: boss-tempest (HeroEditor parts, scripts/art/foes.py) |
 | `battle.foe.boss-jarnvald` | `art/packs/myart/foes/boss-jarnvald.png` | 207×330 | — | ready | Enemy in battle: boss-jarnvald (HeroEditor parts, scripts/art/foes.py) |
 | `battle.foe.boss-nameless` | `art/packs/myart/foes/boss-nameless.png` | 205×276 | — | ready | Enemy in battle: boss-nameless (HeroEditor parts, scripts/art/foes.py) |
+| `battle.foe.ash-abbot` | `art/packs/myart/foes/ash-abbot.png` | 194×328 | — | ready | Enemy in battle: ash-abbot (HeroEditor parts, scripts/art/foes.py) |
 | `battle.foe.grey-alpha` | `art/packs/myart/foes/grey-alpha.png` | 184×330 | — | ready | Enemy in battle: grey-alpha (HeroEditor parts, scripts/art/foes.py) |
 | `battle.foe.bandit-captain` | `art/packs/myart/foes/bandit-captain.png` | 194×307 | — | ready | Enemy in battle: bandit-captain (HeroEditor parts, scripts/art/foes.py) |
 | `battle.foe.lantern-brood` | `art/packs/myart/foes/lantern-brood.png` | 210×285 | — | ready | Enemy in battle: lantern-brood (HeroEditor parts, scripts/art/foes.py) |

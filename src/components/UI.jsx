@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { normalizeClassId } from '../data/content.js';
 import { PRIMALS, RARITIES } from '../data/world.js';
+import { ASSETS } from '../data/assets.js';
 import { useAssetUrl } from './Asset.jsx';
 import Icon from './Icon.jsx';
 const CREST_SIZES = { xs: 26, sm: 32, md: 42, lg: 56, xl: 84 };
@@ -50,8 +51,17 @@ export function heroArtKey(hero = {}) {
   return normalizeClassId(hero.classId || 'Guardian').toLowerCase();
 }
 
+// Hero portraits show a close-up of the hero's HeroEditor design (scripts/art/characters.py):
+// the founder's own, a story hero's own, otherwise their class's. The old class portraits stand in.
+const STORY_WALKERS = { nessa: 'npc.dunmere.nessa', bram: 'npc.dunmere.fighter' };
+function heroBust(hero) {
+  const walker = hero.id === 'founder-player' ? 'char.founder' : STORY_WALKERS[hero.storyId] || `char.class.${heroArtKey(hero)}`;
+  return ASSETS[walker]?.bust || null;
+}
+
 export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
   const classId = normalizeClassId(hero.classId);
+  const bust = heroBust(hero);
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
   const rarity = RARITIES[hero.rarity] || RARITIES.Common;
   const artKey = heroArtKey(hero);
@@ -66,7 +76,7 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
       role="img"
       aria-label={`${hero.name}, ${rarity.id} ${classId}`}
     >
-      <img className="hero-portrait__art" src={artUrl(`art/portraits/${artKey}.png`)} alt="" loading="lazy" />
+      <img className={`hero-portrait__art${bust ? ' hero-portrait__art--bust' : ''}`} src={artUrl(bust || `art/portraits/${artKey}.png`)} alt="" loading="lazy" />
       {showStatus && hero.status && hero.status !== 'available' ? <span className={`status-dot status-dot--${hero.status}`} title={hero.status} /> : null}
     </div>
   );

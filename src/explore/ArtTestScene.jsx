@@ -8,6 +8,12 @@ import { townMap, wildMap } from './sceneMap.js';
 
 const PLACES = [...Object.values(TOWNS).map((town) => ({ id: town.id, name: town.name, map: () => townMap(town) })), ...WILD_AREA_LIST.map((area) => ({ id: area.id, name: area.name, map: () => wildMap(area) }))];
 
+/** #art-test@x,y (tiles) starts the preview there, to look at a far corner of a place. */
+function startAt(map) {
+  const match = /@(\d+),(\d+)/.exec(typeof window === 'undefined' ? '' : window.location.hash);
+  return match ? { x: (Number(match[1]) + 0.5) * 32, y: (Number(match[2]) + 1) * 32 } : map.spawn;
+}
+
 /**
  * The art preview (Settings → Developer, or #art-test in the address): every town
  * and wild area as the game draws it, with the normal touch controls, to judge the
@@ -15,7 +21,10 @@ const PLACES = [...Object.values(TOWNS).map((town) => ({ id: town.id, name: town
  * changes the campaign.
  */
 export default function ArtTestScene({ onClose }) {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => {
+    const match = /#art-test:([a-z-]+)/.exec(typeof window === 'undefined' ? '' : window.location.hash);
+    return Math.max(0, PLACES.findIndex((place) => place.id === match?.[1]));
+  });
   const [line, setLine] = useState(null);
   const place = PLACES[index];
   const map = useMemo(() => place.map(), [place]);
@@ -26,7 +35,7 @@ export default function ArtTestScene({ onClose }) {
       <WalkableScene
         key={place.id}
         map={map}
-        start={map.spawn}
+        start={startAt(map)}
         paused={Boolean(line)}
         onInteract={(target) => setLine({ name: target.name, text: `${target.verb || 'Inspect'}: only a preview here.` })}
         className="art-test__scene"

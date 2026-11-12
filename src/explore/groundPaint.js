@@ -136,7 +136,7 @@ export function paintGround({ image, atlas, rows, tileSize = 32, tone = null, wi
       else if (char === 'W') draw('stone', col, row);
       else if (char === 'T' || char === 'x') {
         // The forest floor under the trees (sceneMap draws the trees).
-        context.fillStyle = char === 'x' ? 'rgba(30, 20, 40, .4)' : `rgba(12, 32, 14, ${0.22 + (hash(col, row) % 5) * 0.03})`;
+        context.fillStyle = char === 'x' ? 'rgba(30, 20, 40, .4)' : `rgba(12, 32, 14, ${0.08 + (hash(col, row) % 5) * 0.02})`;
         context.fillRect(col * D, row * D, D + 0.5, D + 0.5);
       } else if (char === '"') {
         // Undergrowth: tufted grass (wild), or a light shade in town.

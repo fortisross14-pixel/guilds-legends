@@ -16,6 +16,21 @@
 const reg = (locationId, building, spot, id, name, role, extra = {}) => ({ id: `${locationId}-${id}`, name, role, locationId, building, spot, ...extra });
 
 export const REGULARS = [
+  // Dawnwatch Temple, at the end of the Old Road (its buildings count as Dunmere's).
+  // Mother Aveline: tired, dry, unafraid; she has waited a long time for someone to come.
+  reg('dunmere', 'temple', 'altar', 'aveline', 'Mother Aveline', 'High priestess', {
+    hello: ['You came past Malric, so you are either brave or lost.', 'I am Aveline. This was a house of the Dawn, before.'],
+    again: ['The lamps are lit again. Small mercies.'],
+    chat: ['What happened here?', ['Malric was one of us. He found that pilgrims pay more to pass than to pray.']],
+    bye: 'Walk in the light. Or near it, at least.',
+  }),
+  // Brother Tamas: young, nervous, kind; he fed the pilgrims while Malric held the gate.
+  reg('dunmere', 'priory', 'table', 'tamas', 'Brother Tamas', 'Priest', {
+    hello: ['Oh. Visitors. Real ones.', 'Tamas. I keep the pot on and the cots clean.'],
+    again: ['Soup? There is always soup.'],
+    chat: ['Who stays here?', ['Pilgrims, when they can get through. The road west starts behind the temple.']],
+    bye: 'Mind the step. Everyone trips on it.',
+  }),
   // Dunmere
   reg('dunmere', 'tavern', 'bar', 'mara', 'Mara Fen', 'Innkeeper', { dialogue: 'dunmere.innkeeper', sprite: 'npc.dunmere.innkeeper', portrait: 'portrait.story.mara' }),
   // Mira Holt: brisk, protective of her stock.

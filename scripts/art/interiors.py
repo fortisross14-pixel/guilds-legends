@@ -32,6 +32,7 @@ P = {
     'onions': (I2, 10, 3, 1, 1), 'vials': (I2, 11, 3, 1, 1), 'ink': (I2, 11, 4, 1, 1), 'book': (I2, 13, 2, 1, 1), 'note': (I2, 14, 2, 1, 1), 'side-table-2': (I2, 15, 2, 1, 3),
     'door-arch': (I2, 1, 6, 1, 4), 'door-planks': (I2, 5, 13, 1, 2),
     'mat-red': (T, 10, 6, 3, 3),
+    'banner': ('ExtraObjects', 9, 8, 1, 2),
 }
 
 
@@ -45,6 +46,7 @@ class Room:
     def __init__(self, sheets, floor):
         self.sheets = sheets
         self.blocks = []  # [x, y, w, h] in tiles: what a walker cannot cross (walkable rooms)
+        self.spots = {}  # spot id -> (x, y) tiles: where each person stands (their feet)
         self.im = Image.new('RGBA', (W * R, H * R))
         self.floor(floor)
         self.wall()
@@ -111,6 +113,12 @@ class Room:
         dark.putalpha(mask)
         self.im.alpha_composite(dark)
 
+    def spot(self, spot_id, x, y, seat=None):
+        """A person's place; `seat` draws a stool (or bench) under them, so they sit at a table."""
+        if seat:
+            self.put(seat, x, y + 0.2, w=0.62 if seat == 'stool' else None)
+        self.spots[spot_id] = (x, y)
+
     def door(self):
         """The way out, bottom middle (DOOR in interiors.js): a mat at the threshold."""
         self.put('mat-red', 10, 9.05, w=2.6, h=1.5)
@@ -126,36 +134,31 @@ def pct(x, y):
 
 
 def tavern(room):
-    # The bar: the keeper stands at 52% x 31% (just in front of the wall), the counter in front.
-    room.put('fireplace', 3, 3.4, w=1.9)
-    room.put('firewood', 4.6, 3.3, w=0.7)
-    room.put('clock', 7.2, 2.5, w=0.75)
-    room.put('wall-shelf', 13.2, 2.2, w=1.9)
-    room.put('mug', 12.7, 1.45, w=0.5)
-    room.put('pot', 13.6, 1.45, w=0.45)
-    room.put('barrel', 15.8, 3.3, w=0.9)
-    room.put('barrel', 16.7, 3.4, w=0.9)
-    room.put('counter-short', 8.9, 4.3, w=2.2)
-    room.put('counter-short', 11.1, 4.3, w=2.2, flip=True)
+    # The keeper behind the bar (back middle); three tables, a guest on a stool at each side; a corner by the barrels.
+    room.put('fireplace', 2.6, 3.4, w=1.9)
+    room.put('firewood', 4.2, 3.3, w=0.7)
+    room.put('wall-shelf', 15.0, 2.2, w=2.0)
+    room.put('mug', 14.5, 1.45, w=0.5)
+    room.put('pot', 15.5, 1.45, w=0.45)
+    room.spot('bar', 10, 3.0)
+    room.put('counter-short', 8.95, 4.3, w=2.2)
+    room.put('counter-short', 11.05, 4.3, w=2.2, flip=True)
     room.put('mug', 9.4, 3.6, w=0.45)
-    room.put('pitcher', 11.6, 3.55, w=0.5)
-    for (ax, ay), (bx, by) in [((23, 58), (35, 60)), ((69, 56), (81, 58)), ((9, 76), (20, 79))]:
-        x1, y1 = pct(ax, ay)
-        x2, y2 = pct(bx, by)
-        room.put('table', (x1 + x2) / 2, max(y1, y2) + 0.2, w=1.9)
-        room.put('mug', (x1 + x2) / 2 - 0.3, max(y1, y2) - 0.9, w=0.4)
-        room.put('bowl', (x1 + x2) / 2 + 0.3, max(y1, y2) - 0.85, w=0.4)
-        room.put('stool', x1 - 0.55, y1 + 0.35, w=0.6)
-        room.put('stool', x2 + 0.55, y2 + 0.35, w=0.6)
-    room.put('barrel-small', 19.3, 7.2, w=0.8)
-    room.put('sack', 19.4, 8.0, w=0.8)
-    room.put('flowers', 17.8, 5.0, w=0.6)
+    room.put('pitcher', 11.5, 3.55, w=0.5)
+    for (cx, cy), (a, b) in [((5.0, 6.3), ('t1a', 't1b')), ((15.0, 6.3), ('t2a', 't2b')), ((5.0, 8.7), ('t3a', 't3b'))]:
+        room.put('table', cx, cy, w=1.6)
+        room.put('mug', cx - 0.25, cy - 1.35, w=0.4)
+        room.spot(a, cx - 1.35, cy - 0.35, seat='stool')
+        room.spot(b, cx + 1.35, cy - 0.35, seat='stool')
+    room.put('barrel', 18.3, 7.6, w=0.9)
+    room.put('barrel', 19.2, 7.9, w=0.9)
+    room.spot('corner', 17.2, 8.2)
     room.door()
     room.mood((255, 170, 80, 18))
 
 
 def shop(room):
-    # Shelves along the back wall (hotspots), the counter on the right (keeper at 86% x 40%).
+    # Shelves along the back wall (hotspots), the keeper behind the counter on the right, two browsing spots.
     room.put('sword-rack', 4.6, 2.9, w=0.95)
     room.put('spear-rack', 6.6, 2.9, w=0.95)
     room.put('wall-shelf', 9.4, 2.4, w=2.6)
@@ -163,58 +166,101 @@ def shop(room):
         room.put(item, 8.5 + i * 0.6, 1.55, w=0.55)
     room.put('armor-stand', 13.0, 3.1, w=1.1)
     room.put('cupboard', 16.7, 3.2, w=2.2)
-    room.put('vials', 16.2, 1.6, w=0.5)
-    room.put('box', 17.2, 1.6, w=0.5)
-    room.put('counter-short', 17.2, 5.0, w=2.6)
-    room.put('scrolls', 16.7, 4.0, w=0.55)
-    room.put('ink', 17.8, 4.0, w=0.4)
+    room.spot('counter', 17.2, 3.6)
+    room.put('counter-short', 17.2, 5.1, w=2.6)
     room.put('barrel', 1.3, 4.4, w=0.9)
     room.put('sack-patched', 2.2, 4.6, w=0.8)
-    room.put('satchel', 3.0, 4.7, w=0.7)
-    room.put('table-long', 9.0, 7.8, w=2.6)
-    room.put('onions', 8.4, 6.6, w=0.5)
-    room.put('bread', 9.6, 6.6, w=0.5)
-    room.put('plant', 19.3, 8.0, w=0.8)
+    room.spot('browse-1', 6.0, 5.2)
+    room.spot('browse-2', 11.5, 5.2)
+    room.put('plant', 19.3, 8.6, w=0.8)
     room.door()
 
 
 def arena(room):
-    # The registrar's desk on the left (18% x 39%), the history board on the right wall (78-98%),
-    # the sparring mat in the middle, the bench at 12% x 64%.
-    room.put('table', 3.6, 4.9, w=2.0)
-    room.put('scrolls', 3.2, 3.9, w=0.5)
-    room.put('ink', 4.1, 3.9, w=0.4)
-    room.put('mat-red', 10, 7.4, w=7.0, h=3.9)
+    # The registrar behind her desk on the left, the history board on the right wall,
+    # the sparring mat in the middle (a fighter on it, two sparring), a bench to watch from.
+    room.spot('desk', 3.6, 3.2)
+    room.put('counter-short', 3.6, 4.6, w=2.2)
+    room.put('scrolls', 3.2, 3.85, w=0.5)
+    room.put('mat-red', 10, 7.6, w=7.0, h=3.9)
+    room.spot('ground', 10, 5.4)
+    room.spot('spar-1', 8.2, 6.9)
+    room.spot('spar-2', 11.8, 6.9)
     room.put('frame', 17.6, 3.0, w=3.6)
-    for i, (nx, ny) in enumerate([(16.6, 1.5), (17.5, 1.3), (18.4, 1.6), (17.0, 2.4), (18.1, 2.5)]):
+    for nx, ny in [(16.6, 1.5), (17.5, 1.3), (18.4, 1.6), (17.0, 2.4), (18.1, 2.5)]:
         room.put('note', nx, ny, w=0.55)
     room.put('sword-rack', 7.0, 2.9, w=0.95)
     room.put('spear-rack', 8.2, 2.9, w=0.95)
     room.put('armor-stand', 12.6, 3.1, w=1.1)
-    room.put('spear-rack', 14.0, 2.9, w=0.95)
-    room.put('bench', 2.4, 6.4, w=2.6)
+    room.put('bench', 2.6, 7.0, w=2.6)
+    room.spot('bench', 2.6, 6.75)
     room.put('barrel', 19.3, 6.3, w=0.9)
-    room.put('barrel-small', 18.6, 7.0, w=0.75)
     room.door()
 
 
 def herald(room):
-    # The herald's desk in the middle (50% x 46%), the ranking board above it (37-63%), the records shelf right (71-92%).
+    # The herald behind the desk under the ranking board; the records shelf on the right; a waiting bench.
     room.put('frame', 10, 3.1, w=4.6)
     for i in range(6):
         room.put('note', 8.6 + (i % 3) * 1.4, 1.5 + (i // 3) * 0.9, w=0.6)
-    room.put('wall-shelf', 15.2, 1.9, w=2.4)
-    room.put('wall-shelf', 15.2, 3.2, w=2.4)
+    room.put('wall-shelf', 15.4, 1.9, w=2.4)
+    room.put('wall-shelf', 15.4, 3.2, w=2.4)
     for i in range(3):
-        room.put('book', 14.4 + i * 0.75, 1.15, w=0.55)
-        room.put('scrolls', 14.4 + i * 0.75, 2.45, w=0.55)
-    room.put('table-long', 10, 5.6, w=3.0)
-    room.put('ink', 9.4, 4.4, w=0.4)
-    room.put('book', 10.6, 4.45, w=0.6)
-    room.put('bench', 6.0, 7.2, w=2.6)
+        room.put('book', 14.6 + i * 0.75, 1.15, w=0.55)
+        room.put('scrolls', 14.6 + i * 0.75, 2.45, w=0.55)
+    room.spot('desk', 10, 3.6)
+    room.put('counter-short', 8.95, 4.95, w=2.2)
+    room.put('counter-short', 11.05, 4.95, w=2.2, flip=True)
+    room.put('ink', 9.4, 4.25, w=0.4)
+    room.put('bench', 5.2, 7.3, w=2.6)
+    room.spot('bench', 5.2, 7.05)
+    room.spot('door-side', 15.8, 7.4)
     room.put('plant', 2.0, 4.3, w=0.9)
-    room.put('clock', 4.5, 2.5, w=0.75)
     room.put('plant', 18.6, 8.6, w=0.9)
+    room.door()
+
+
+def temple(room):
+    # Dawnwatch Temple: the altar under the big window, candles, two rows of pews, a priestess at the altar.
+    room.put('big-window', 10, 3.0, w=3.4)
+    room.put('banner', 6.4, 3.0, w=0.9)
+    room.put('banner', 13.6, 3.0, w=0.9)
+    room.spot('altar', 10, 3.5)
+    room.put('table-long', 10, 5.2, w=3.0)
+    room.put('candle', 9.0, 3.65, w=0.45)
+    room.put('candle', 11.0, 3.65, w=0.45)
+    room.put('book', 10.0, 3.7, w=0.55)
+    for y in (6.6, 8.1):
+        room.put('bench', 6.0, y, w=2.8)
+        room.put('bench', 14.0, y, w=2.8)
+    room.spot('pew-1', 5.4, 6.35)
+    room.spot('pew-2', 14.6, 6.35)
+    room.spot('pew-3', 6.6, 7.85)
+    room.put('candle', 2.0, 4.2, w=0.5)
+    room.put('candle', 18.0, 4.2, w=0.5)
+    room.put('plant', 1.6, 8.6, w=0.9)
+    room.put('plant', 18.4, 8.6, w=0.9)
+    room.door()
+    room.mood((255, 230, 180, 22))
+
+
+def priory(room):
+    # The priests' house: a hearth, a table where Brother Tamas sits, two cots, shelves of jars.
+    room.put('fireplace', 3.0, 3.4, w=1.9)
+    room.put('firewood', 4.6, 3.3, w=0.7)
+    room.put('wall-shelf', 9.0, 2.2, w=2.0)
+    room.put('vials', 8.5, 1.45, w=0.45)
+    room.put('pot', 9.5, 1.45, w=0.45)
+    room.put('table', 10, 6.4, w=1.7)
+    room.put('bowl', 9.75, 5.0, w=0.4)
+    room.put('candle', 10.3, 5.0, w=0.4)
+    room.spot('table', 8.6, 6.05, seat='stool')
+    room.spot('hearth', 5.2, 4.6)
+    room.put('bed', 16.0, 6.4, w=2.0)
+    room.put('bed', 18.6, 6.4, w=2.0)
+    room.spot('cot', 17.3, 7.6)
+    room.put('sack', 1.6, 8.4, w=0.8)
+    room.put('barrel', 2.6, 8.6, w=0.85)
     room.door()
 
 
@@ -256,12 +302,15 @@ ROOMS = [
     ('interior.arena.windmere', arena, ' Color 2', 'floor-diamond'),
     ('interior.herald', herald, '', 'floor-check'),
     ('interior.house', house, '', 'floor-oak'),
+    ('interior.temple', temple, '', 'floor-diamond'),
+    ('interior.priory', priory, ' Color 2', 'floor-oak'),
 ]
 
 
-def compose(src_interior, src_town, key_out, out_dir):
+def compose(src_interior, src_town, key_out, out_dir, src_extra=None):
     made = []
     town = key_out(Image.open(os.path.join(src_town, 'Town@128x128.png')).convert('RGBA'))
+    extra = key_out(Image.open(os.path.join(src_extra, 'ExtraObjects@128x128.png')).convert('RGBA')) if src_extra else None
     cache = {}
     for asset_id, maker, palette, floor in ROOMS:
         if palette not in cache:
@@ -269,10 +318,11 @@ def compose(src_interior, src_town, key_out, out_dir):
                 I: key_out(Image.open(os.path.join(src_interior, f'Interior{palette}@128x128.png')).convert('RGBA')),
                 I2: key_out(Image.open(os.path.join(src_interior, f'Interior 2{palette}@128x128.png')).convert('RGBA')),
                 T: town,
+                'ExtraObjects': extra,
             }
         room = Room(cache[palette], floor)
         maker(room)
         name = asset_id.split('.', 1)[1].replace('.', '-') + '.jpg'
         room.save(os.path.join(out_dir, name))
-        made.append((asset_id, name, room.blocks))
+        made.append((asset_id, name, room.blocks, {k: [round(x * 100 / W, 1), round(y * 100 / H, 1)] for k, (x, y) in room.spots.items()}))
     return made

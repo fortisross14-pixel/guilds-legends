@@ -8,6 +8,8 @@
 // tiles to this layout (scripts/art/interiors.py), so every town's painting of a
 // building shares it; `towns` only picks that town's painting.
 
+import ROOMS from './myart/rooms.json';
+
 /** The door: a box at the bottom middle of every painting. */
 const DOOR = [42, 86, 16, 14];
 
@@ -84,6 +86,20 @@ export const INTERIORS = {
   },
 };
 
+// Dawnwatch Temple and the priests' house, at the west end of the Old Road (src/data/wilds/oldRoad.js).
+INTERIORS.temple = {
+  id: 'temple',
+  art: 'interior.temple',
+  spots: [{ id: 'altar', keeper: true }, { id: 'pew-1' }, { id: 'pew-2' }, { id: 'pew-3' }],
+  layout: { spots: { altar: [50, 39], 'pew-1': [27, 71], 'pew-2': [73, 71], 'pew-3': [33, 87] }, hotspots: {}, door: DOOR },
+};
+INTERIORS.priory = {
+  id: 'priory',
+  art: 'interior.priory',
+  spots: [{ id: 'table', keeper: true }, { id: 'hearth' }, { id: 'cot' }],
+  layout: { spots: { table: [43, 67], hearth: [26, 51], cot: [86, 84] }, hotspots: {}, door: DOOR },
+};
+
 /**
  * One building's painted scene in a town: the painting, where each spot stands,
  * the hotspots (with what they do) and the door. Town overrides replace positions only.
@@ -96,7 +112,8 @@ export function interiorLayout(building, locationId) {
   return {
     id: room.id,
     art: town.art || room.art,
-    spots: { ...room.layout.spots, ...(town.spots || {}) },
+    // A room painted by scripts/art/interiors.py knows where its people stand (seats, counters).
+    spots: { ...room.layout.spots, ...(town.spots || {}), ...(ROOMS[town.art || room.art]?.spots || {}) },
     hotspots,
     door: room.layout.door,
   };

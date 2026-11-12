@@ -161,8 +161,25 @@ def building(asset_id, image, use):
     assets.append({'id': asset_id, 'group': 'building', 'path': f'{REL}/{path}', 'w': image.width, 'h': image.height, 'aspect': True, 'scale': WT / TS, 'use': use})
 
 
+def temple():
+    """Dawnwatch Temple: the blue gable house between two white columns, a banner on each."""
+    house = gable('Town')
+    extra = sheet('ExtraObjects', EXTRA)
+    column = trim(tiles(extra, 8, 9, 1, 2)).resize((int(TS * 0.95), int(TS * 2.4)), Image.LANCZOS)
+    banner = trim(tiles(extra, 9, 8, 1, 2))
+    pad = column.width
+    canvas = Image.new('RGBA', (house.width + pad * 2, house.height))
+    canvas.alpha_composite(house, (pad, 0))
+    for x in (0, canvas.width - column.width):
+        canvas.alpha_composite(column, (x, canvas.height - column.height))
+        canvas.alpha_composite(banner, (x + (column.width - banner.width) // 2, canvas.height - column.height - banner.height + 20))
+    return canvas
+
+
 def buildings():
     B = building
+    B('town.oldroad.temple', temple(), 'The Old Road: Dawnwatch Temple (blue gable house between white columns)')
+    B('town.oldroad.priory', thatch('Town 2 Color 3'), 'The Old Road: the priests’ house (moss thatch)')
     B('town.dunmere.herald', gable('TownColor3'), 'Dunmere: Herald’s Office (purple gable house)')
     B('town.dunmere.tavern', with_sign(thatch('Town 2'), 'beer'), 'Dunmere: The Wayfarer (thatched, the beer sign)')
     B('town.dunmere.guildhall.stage1', woodhouse('Town 2'), 'Dunmere: the Guild Hall (wooden house)')
@@ -205,15 +222,17 @@ def props():
 # --- Characters --------------------------------------------------------------
 def characters():
     from heroeditor import Library, Rig
-    from characters import R, recipe_parts, walk_sheet, FRAME
+    from characters import R, recipe_parts, walk_sheet, FRAME, bust
     lib = Library(HERO)
     rig = Rig(os.path.join(HERO, 'Prefabs', 'Human.prefab'), lib)
     for asset_id, spec in R.items():
-        image, still = walk_sheet(rig, recipe_parts(HERO, spec))
+        parts = recipe_parts(HERO, spec)
+        image, still = walk_sheet(rig, parts)
         name = asset_id.replace('.', '-')
         image.save(out(f'chars/{name}.png'))
         still.save(out(f'chars/{name}-still.png'))
-        assets.append({'id': asset_id, 'group': 'npc' if asset_id.startswith('npc.') else 'char', 'path': f'{REL}/chars/{name}.png', 'still': f'{REL}/chars/{name}-still.png',
+        bust(rig, parts).save(out(f'chars/{name}-bust.png'))
+        assets.append({'id': asset_id, 'group': 'npc' if asset_id.startswith('npc.') else 'char', 'path': f'{REL}/chars/{name}.png', 'still': f'{REL}/chars/{name}-still.png', 'bust': f'{REL}/chars/{name}-bust.png',
                        'w': FRAME[0], 'h': FRAME[1], 'sheet': {'frameWidth': FRAME[0], 'frameHeight': FRAME[1]}, 'sideOnly': True, 'walker': True,
                        'use': 'Walking character (HeroEditor parts, scripts/art/characters.py)'})
 
@@ -227,11 +246,11 @@ def key_magenta(im):
 def interiors():
     from interiors import compose
     os.makedirs(out('interiors/x'), exist_ok=True) if False else os.makedirs(os.path.dirname(out('interiors/x')), exist_ok=True)
-    made = compose(INTERIOR.replace('64x64', '128x128'), TOWN.replace('64x64', '128x128'), key_magenta, os.path.dirname(out('interiors/x')))
+    made = compose(INTERIOR.replace('64x64', '128x128'), TOWN.replace('64x64', '128x128'), key_magenta, os.path.dirname(out('interiors/x')), EXTRA.replace('64x64', '128x128'))
     rooms = {}
-    for asset_id, name, blocks in made:
+    for asset_id, name, blocks, spots in made:
         assets.append({'id': asset_id, 'group': 'interior', 'path': f'{REL}/interiors/{name}', 'w': 2560, 'h': 1152, 'use': 'Building interior (hand-painted tiles, scripts/art/interiors.py)'})
-        rooms[asset_id] = {'tiles': [20, 9], 'wall': 2.75, 'blocks': blocks}
+        rooms[asset_id] = {'tiles': [20, 9], 'wall': 2.75, 'blocks': blocks, 'spots': spots}
     # Walkable rooms: the furniture's footprints, read by src/explore/sceneMap.js (interiorMap).
     with open(os.path.join(GAME, 'src', 'data', 'myart', 'rooms.json'), 'w') as f:
         json.dump(rooms, f, indent=1)

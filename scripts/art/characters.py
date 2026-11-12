@@ -65,6 +65,8 @@ R = {
     'npc.role.trader': dict(hair='Shaggy', hc='chestnut', skin='tan', armor='Nomad', helmet='GypsyHat', eyes='Male'),
     'npc.role.traveller': dict(hair='SideFringe', hc='brown', skin='light', armor='Wanderer', cape='OldCape2 [Paint]', eyes='Male'),
     'npc.role.messenger': dict(hair='ShortHair', hc='blond', skin='fair', armor='Scout [Paint]', eyes='Female'),
+    'npc.role.high-priestess': dict(hair='LongHair', hc='grey', skin='light', armor='BishopArmor', helmet='BishopHat [FullHair]', eyes='Female', ec='grey'),
+    'npc.role.priest': dict(hair='BowlCut' if False else 'SideFringe', hc='brown', skin='tan', armor='Cleric [Paint]', eyes='Male', ec='hazel', mouth='Normal'),
     'char.class.guardian': dict(hair='ShortHair', hc='brown', skin='tan', armor='KnightArmor [Paint]', helmet='KnightHelm [Paint]', shield='KnightShield', weapon='Sword/ShortIronKatana [Paint]', eyes='Male'),
     'char.class.duelist': dict(hair='Slicked', hc='black', skin='light', armor='MercenaryArmor [Paint]', weapon='Sword/ShortIronKatana [Paint]', eyes='Male', brows='Angry'),
     'char.class.ranger': dict(hair='ShortPonytail', hc='auburn', skin='fair', armor='HunterLightArmor', helmet='RangerHat [Paint]', back='ArrowQuiver', eyes='Female'),
@@ -166,3 +168,12 @@ def walk_sheet(rig, parts):
             sheet.alpha_composite(f, (c * FRAME[0], r * FRAME[1]))
     still = frames[1]
     return sheet, still
+
+
+def bust(rig, parts, size=192):
+    """A close-up of the head and shoulders, for portraits (hero rows, dialogue)."""
+    im = rig.render(parts, size=BOX, origin=FEET)
+    # The head sits about 100-240 px above the feet in the rig's own pixels.
+    top = FEET[1] - 250
+    box = (FEET[0] - 95, top, FEET[0] + 95, top + 190)
+    return im.crop(box).resize((size, size), Image.LANCZOS)

@@ -75,6 +75,26 @@
    "use": "Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js"
   },
   {
+   "id": "town.oldroad.temple",
+   "group": "building",
+   "path": "art/packs/myart/buildings/oldroad-temple.png",
+   "w": 493,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "The Old Road: Dawnwatch Temple (blue gable house between white columns)"
+  },
+  {
+   "id": "town.oldroad.priory",
+   "group": "building",
+   "path": "art/packs/myart/buildings/oldroad-priory.png",
+   "w": 341,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "The Old Road: the priests\u2019 house (moss thatch)"
+  },
+  {
    "id": "town.dunmere.herald",
    "group": "building",
    "path": "art/packs/myart/buildings/dunmere-herald.png",
@@ -303,16 +323,6 @@
    "aspect": true,
    "scale": 0.5,
    "use": "Crate and barrel"
-  },
-  {
-   "id": "prop.noticeboard",
-   "group": "prop",
-   "path": "art/packs/myart/props/noticeboard.png",
-   "w": 126,
-   "h": 98,
-   "aspect": true,
-   "scale": 0.5,
-   "use": "Notice board (notes pinned to a wooden board)"
   },
   {
    "id": "deco.tree-oak",
@@ -1060,10 +1070,27 @@
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
   },
   {
+   "id": "interior.temple",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/temple.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
+   "id": "interior.priory",
+   "group": "interior",
+   "path": "art/packs/myart/interiors/priory.jpg",
+   "w": 2560,
+   "h": 1152,
+   "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
+  },
+  {
    "id": "char.founder",
    "group": "char",
    "path": "art/packs/myart/chars/char-founder.png",
    "still": "art/packs/myart/chars/char-founder-still.png",
+   "bust": "art/packs/myart/chars/char-founder-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1079,6 +1106,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-merchant.png",
    "still": "art/packs/myart/chars/npc-dunmere-merchant-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-merchant-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1094,6 +1122,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-fighter.png",
    "still": "art/packs/myart/chars/npc-dunmere-fighter-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-fighter-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1109,6 +1138,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-stablemaster.png",
    "still": "art/packs/myart/chars/npc-dunmere-stablemaster-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-stablemaster-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1124,6 +1154,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-nessa.png",
    "still": "art/packs/myart/chars/npc-dunmere-nessa-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-nessa-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1139,6 +1170,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-traveler.png",
    "still": "art/packs/myart/chars/npc-dunmere-traveler-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-traveler-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1154,6 +1186,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-herald.png",
    "still": "art/packs/myart/chars/npc-dunmere-herald-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-herald-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1169,6 +1202,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-kilnmaster.png",
    "still": "art/packs/myart/chars/npc-dunmere-kilnmaster-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-kilnmaster-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1184,6 +1218,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-lamplighter.png",
    "still": "art/packs/myart/chars/npc-dunmere-lamplighter-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-lamplighter-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1199,6 +1234,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-greenhollow-herbalist.png",
    "still": "art/packs/myart/chars/npc-greenhollow-herbalist-still.png",
+   "bust": "art/packs/myart/chars/npc-greenhollow-herbalist-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1214,6 +1250,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-greenhollow-warden.png",
    "still": "art/packs/myart/chars/npc-greenhollow-warden-still.png",
+   "bust": "art/packs/myart/chars/npc-greenhollow-warden-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1229,6 +1266,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-greenhollow-storyteller.png",
    "still": "art/packs/myart/chars/npc-greenhollow-storyteller-still.png",
+   "bust": "art/packs/myart/chars/npc-greenhollow-storyteller-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1244,6 +1282,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-greenhollow-stablehand.png",
    "still": "art/packs/myart/chars/npc-greenhollow-stablehand-still.png",
+   "bust": "art/packs/myart/chars/npc-greenhollow-stablehand-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1259,6 +1298,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-greenhollow-cleric.png",
    "still": "art/packs/myart/chars/npc-greenhollow-cleric-still.png",
+   "bust": "art/packs/myart/chars/npc-greenhollow-cleric-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1274,6 +1314,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-foreman.png",
    "still": "art/packs/myart/chars/npc-ironford-foreman-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-foreman-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1289,6 +1330,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-tollkeeper.png",
    "still": "art/packs/myart/chars/npc-ironford-tollkeeper-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-tollkeeper-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1304,6 +1346,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-smith.png",
    "still": "art/packs/myart/chars/npc-ironford-smith-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-smith-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1319,6 +1362,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-guard.png",
    "still": "art/packs/myart/chars/npc-ironford-guard-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-guard-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1334,6 +1378,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-scholar.png",
    "still": "art/packs/myart/chars/npc-ironford-scholar-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-scholar-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1349,6 +1394,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-archivist.png",
    "still": "art/packs/myart/chars/npc-ironford-archivist-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-archivist-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1364,6 +1410,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-windmere-courier.png",
    "still": "art/packs/myart/chars/npc-windmere-courier-still.png",
+   "bust": "art/packs/myart/chars/npc-windmere-courier-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1379,6 +1426,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-windmere-monk.png",
    "still": "art/packs/myart/chars/npc-windmere-monk-still.png",
+   "bust": "art/packs/myart/chars/npc-windmere-monk-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1394,6 +1442,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-innkeeper.png",
    "still": "art/packs/myart/chars/npc-dunmere-innkeeper-still.png",
+   "bust": "art/packs/myart/chars/npc-dunmere-innkeeper-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1409,6 +1458,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-shopkeeper.png",
    "still": "art/packs/myart/chars/npc-role-shopkeeper-still.png",
+   "bust": "art/packs/myart/chars/npc-role-shopkeeper-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1424,6 +1474,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-registrar.png",
    "still": "art/packs/myart/chars/npc-role-registrar-still.png",
+   "bust": "art/packs/myart/chars/npc-role-registrar-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1439,6 +1490,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-referee.png",
    "still": "art/packs/myart/chars/npc-role-referee-still.png",
+   "bust": "art/packs/myart/chars/npc-role-referee-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1454,6 +1506,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-herald-s-clerk.png",
    "still": "art/packs/myart/chars/npc-role-herald-s-clerk-still.png",
+   "bust": "art/packs/myart/chars/npc-role-herald-s-clerk-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1469,6 +1522,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-greenhollow-innkeeper.png",
    "still": "art/packs/myart/chars/npc-greenhollow-innkeeper-still.png",
+   "bust": "art/packs/myart/chars/npc-greenhollow-innkeeper-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1484,6 +1538,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-herb-seller.png",
    "still": "art/packs/myart/chars/npc-role-herb-seller-still.png",
+   "bust": "art/packs/myart/chars/npc-role-herb-seller-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1499,6 +1554,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-ironford-barkeep.png",
    "still": "art/packs/myart/chars/npc-ironford-barkeep-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-barkeep-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1514,6 +1570,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-forge-trader.png",
    "still": "art/packs/myart/chars/npc-role-forge-trader-still.png",
+   "bust": "art/packs/myart/chars/npc-role-forge-trader-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1529,6 +1586,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-assay-clerk.png",
    "still": "art/packs/myart/chars/npc-role-assay-clerk-still.png",
+   "bust": "art/packs/myart/chars/npc-role-assay-clerk-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1544,6 +1602,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-innkeeper.png",
    "still": "art/packs/myart/chars/npc-role-innkeeper-still.png",
+   "bust": "art/packs/myart/chars/npc-role-innkeeper-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1559,6 +1618,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-courier-supplier.png",
    "still": "art/packs/myart/chars/npc-role-courier-supplier-still.png",
+   "bust": "art/packs/myart/chars/npc-role-courier-supplier-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1574,6 +1634,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-council-steward.png",
    "still": "art/packs/myart/chars/npc-role-council-steward-still.png",
+   "bust": "art/packs/myart/chars/npc-role-council-steward-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1589,6 +1650,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-watch-sergeant.png",
    "still": "art/packs/myart/chars/npc-role-watch-sergeant-still.png",
+   "bust": "art/packs/myart/chars/npc-role-watch-sergeant-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1604,6 +1666,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-temple-acolyte.png",
    "still": "art/packs/myart/chars/npc-role-temple-acolyte-still.png",
+   "bust": "art/packs/myart/chars/npc-role-temple-acolyte-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1619,6 +1682,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-trader.png",
    "still": "art/packs/myart/chars/npc-role-trader-still.png",
+   "bust": "art/packs/myart/chars/npc-role-trader-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1634,6 +1698,7 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-traveller.png",
    "still": "art/packs/myart/chars/npc-role-traveller-still.png",
+   "bust": "art/packs/myart/chars/npc-role-traveller-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1649,6 +1714,39 @@
    "group": "npc",
    "path": "art/packs/myart/chars/npc-role-messenger.png",
    "still": "art/packs/myart/chars/npc-role-messenger-still.png",
+   "bust": "art/packs/myart/chars/npc-role-messenger-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.high-priestess",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-high-priestess.png",
+   "still": "art/packs/myart/chars/npc-role-high-priestess-still.png",
+   "bust": "art/packs/myart/chars/npc-role-high-priestess-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.role.priest",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-role-priest.png",
+   "still": "art/packs/myart/chars/npc-role-priest-still.png",
+   "bust": "art/packs/myart/chars/npc-role-priest-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1664,6 +1762,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-guardian.png",
    "still": "art/packs/myart/chars/char-class-guardian-still.png",
+   "bust": "art/packs/myart/chars/char-class-guardian-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1679,6 +1778,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-duelist.png",
    "still": "art/packs/myart/chars/char-class-duelist-still.png",
+   "bust": "art/packs/myart/chars/char-class-duelist-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1694,6 +1794,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-ranger.png",
    "still": "art/packs/myart/chars/char-class-ranger-still.png",
+   "bust": "art/packs/myart/chars/char-class-ranger-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1709,6 +1810,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-rogue.png",
    "still": "art/packs/myart/chars/char-class-rogue-still.png",
+   "bust": "art/packs/myart/chars/char-class-rogue-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1724,6 +1826,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-cleric.png",
    "still": "art/packs/myart/chars/char-class-cleric-still.png",
+   "bust": "art/packs/myart/chars/char-class-cleric-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1739,6 +1842,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-mage.png",
    "still": "art/packs/myart/chars/char-class-mage-still.png",
+   "bust": "art/packs/myart/chars/char-class-mage-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1754,6 +1858,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-scholar.png",
    "still": "art/packs/myart/chars/char-class-scholar-still.png",
+   "bust": "art/packs/myart/chars/char-class-scholar-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1769,6 +1874,7 @@
    "group": "char",
    "path": "art/packs/myart/chars/char-class-artificer.png",
    "still": "art/packs/myart/chars/char-class-artificer-still.png",
+   "bust": "art/packs/myart/chars/char-class-artificer-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -2167,6 +2273,15 @@
    "use": "Enemy in battle: boss-nameless (HeroEditor parts, scripts/art/foes.py)"
   },
   {
+   "id": "battle.foe.ash-abbot",
+   "group": "battler",
+   "path": "art/packs/myart/foes/ash-abbot.png",
+   "w": 194,
+   "h": 328,
+   "foe": true,
+   "use": "Enemy in battle: ash-abbot (HeroEditor parts, scripts/art/foes.py)"
+  },
+  {
    "id": "battle.foe.grey-alpha",
    "group": "battler",
    "path": "art/packs/myart/foes/grey-alpha.png",
@@ -2264,6 +2379,15 @@
    "h": 327,
    "aspect": true,
    "use": "Enemy group on the map: hollow-knight, void-juggernaut"
+  },
+  {
+   "id": "enemy.boss.abbot",
+   "group": "enemy",
+   "path": "art/packs/myart/foes/boss-abbot.png",
+   "w": 194,
+   "h": 328,
+   "aspect": true,
+   "use": "Boss on the map: ash-abbot"
   },
   {
    "id": "enemy.boss.alpha",

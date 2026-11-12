@@ -216,7 +216,12 @@ WILD_AREA_LIST.forEach((area) => {
   area.enemies.forEach((group) =>
     add({ id: group.asset, group: 'enemy', path: `art/walk/enemies/${slug(group.asset)}.png`, w: 56, h: 44, use: `${area.name}: ${group.name} (standing on the map)` }),
   );
-  if (area.boss) add({ id: area.boss.asset, group: 'enemy', path: `art/walk/enemies/${slug(area.boss.asset)}.png`, w: 80, h: 64, use: `${area.name}: ${area.boss.boss.name} (boss on the map)` });
+  [area.boss, ...(area.bosses || [])].filter(Boolean).forEach((boss) =>
+    add({ id: boss.asset, group: 'enemy', path: `art/walk/enemies/${slug(boss.asset)}.png`, w: 80, h: 64, use: `${area.name}: ${boss.boss.name} (boss on the map)` }),
+  );
+  (area.buildings || []).forEach((building) =>
+    add({ id: building.asset, group: 'building', path: `art/walk/buildings/${slug(building.asset)}.png`, w: 5 * TILE_SIZE, h: 5 * TILE_SIZE, use: `${area.name}: ${building.label} (front with door)` }),
+  );
 });
 
 

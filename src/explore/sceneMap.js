@@ -6,6 +6,7 @@ import { TILE_BY_CHAR, TILE_SIZE as T } from '../data/tiles.js';
 import { areaGroups } from '../data/wilds/index.js';
 import { ASSETS } from '../data/assets.js';
 import ROOMS from '../data/myart/rooms.json';
+import { TOWN_ANCHORS, WILD_ANCHORS } from '../data/missions/places.js';
 
 const BUILDING = { w: 5, h: 5 }; // tiles; the bottom row of the building sits just above its door tile
 
@@ -140,7 +141,7 @@ function treeProps(place) {
       const jitter = ((roll >> 3) % 9) - 4;
       const x = (col + 0.5) * T - w / 2 + jitter;
       const y = (row + 1) * T - h + ((roll >> 6) % 5);
-      trees.push({ asset: art.id, x, y, w, h, depth: y + h });
+      trees.push({ asset: art.id, x, y, w, h, depth: y + h, tree: true });
     });
   });
   return trees;
@@ -164,23 +165,22 @@ function base(place) {
 }
 
 // What a door is for, at a glance: coin = shop, sword = arena, bed = rest (hall and inns), crown = rankings.
-const DOOR_ICONS = { shop: 'coin', arena: 'sword', guildHall: 'moon', tavern: 'moon', herald: 'crown', noticeBoard: 'scroll' };
+const DOOR_ICONS = { shop: 'coin', arena: 'sword', guildHall: 'moon', tavern: 'moon', herald: 'crown', noticeBoard: 'scroll', temple: 'heart', priory: 'moon' };
 
 /**
  * Walkable map for a town. `hall` ({ asset, label }) swaps the main Guild Hall
  * building's art and name for the guild's current hall stage.
  */
-export function townMap(town, hall = null) {
-  const map = base(town);
-  const props = propPieces(town.props);
-  const buildingProps = [];
-  const doors = town.buildings.map((source) => {
+/** Buildings standing on a walkable map: their art, their blocks, and a door target each. */
+function buildingPieces(buildings = [], map, hall = null) {
+  const drawn = [];
+  const doors = buildings.map((source) => {
     const isHall = hall && source.building === 'guildHall' && !source.id;
     const building = isHall ? { ...source, asset: hall.asset, label: hall.label } : source;
     const [col, row] = building.door;
     const left = col - Math.floor(BUILDING.w / 2);
     const top = row - BUILDING.h;
-    buildingProps.push(placed(building.asset, { x: left * T, y: top * T, w: BUILDING.w * T, h: BUILDING.h * T }));
+    drawn.push(placed(building.asset, { x: left * T, y: top * T, w: BUILDING.w * T, h: BUILDING.h * T }));
     map.blocks.push(rect(left, top, BUILDING.w, BUILDING.h));
     const door = tileCenter(building.door);
     return {
@@ -189,6 +189,7 @@ export function townMap(town, hall = null) {
       name: building.label,
       verb: 'Enter',
       building: building.building,
+      gate: building.gate || null,
       icon: DOOR_ICONS[building.building] || null,
       x: door.x,
       y: row * T,
@@ -198,10 +199,32 @@ export function townMap(town, hall = null) {
       reach: 34,
     };
   });
+  return { drawn, doors };
+}
+
+/**
+ * Trees that would hide someone or something are left out: a tree's crown stands
+ * in front of whatever is behind it (above its trunk), so no person, door, group or
+ * prop may stand inside a crown.
+ */
+function clearOfTrees(trees, map, anchors = []) {
+  const points = [...anchors.map(([col, row]) => ({ x: (col + 0.5) * T, y: (row + 1) * T - 8 })), ...map.targets.map((target) => ({ x: target.x, y: target.y - 6 })), ...(map.props || []).filter((prop) => !prop.tree).map((prop) => ({ x: prop.x + prop.w / 2, y: prop.y + prop.h - 6 }))];
+  return trees.filter((tree) => !points.some((point) => point.x > tree.x + 6 && point.x < tree.x + tree.w - 6 && point.y > tree.y + 10 && point.y < tree.y + tree.h - 4));
+}
+
+/**
+ * Walkable map for a town. `hall` ({ asset, label }) swaps the main Guild Hall
+ * building's art and name for the guild's current hall stage.
+ */
+export function townMap(town, hall = null) {
+  const map = base(town);
+  const props = propPieces(town.props);
+  const buildings = buildingPieces(town.buildings, map, hall);
   const npcs = town.npcs.map((npc) => npcTarget(town.id, npc));
   map.blocks.push(...props.blocks);
-  map.props = [...treeProps(town), ...props.drawn, ...buildingProps];
-  map.targets = [...doors, ...props.targets, ...npcs, ...(town.exits || []).map((exit) => exitTarget(exit, { area: exit.area }))];
+  map.props = [...props.drawn, ...buildings.drawn];
+  map.targets = [...buildings.doors, ...props.targets, ...npcs, ...(town.exits || []).map((exit) => exitTarget(exit, { area: exit.area }))];
+  map.props = [...clearOfTrees(treeProps(town), map, TOWN_ANCHORS[town.id]), ...map.props];
   map.spawn = tileCenter(town.spawn);
   return map;
 }
@@ -239,7 +262,8 @@ export function wildMap(area) {
   const [cw, ch] = area.camp.size;
   const campX = (cc + cw / 2) * T;
   map.blocks.push(...props.blocks, rect(cc, cr, cw, ch));
-  map.props = [...treeProps(area), ...props.drawn, placed('prop.campfire', { x: cc * T, y: cr * T, w: cw * T, h: ch * T })];
+  const buildings = buildingPieces(area.buildings, map);
+  map.props = [...props.drawn, ...buildings.drawn, placed('prop.campfire', { x: cc * T, y: cr * T, w: cw * T, h: ch * T })];
   const camp = {
     id: 'camp',
     kind: 'camp',
@@ -294,7 +318,8 @@ export function wildMap(area) {
       hideWhenInactive: true,
     };
   });
-  map.targets = [camp, ...props.targets, ...groups, ...gathers, exitTarget(area.exit, { id: 'exit', hub: area.hub })];
+  map.targets = [camp, ...buildings.doors, ...props.targets, ...groups, ...gathers, exitTarget(area.exit, { id: 'exit', hub: area.hub })];
+  map.props = [...clearOfTrees(treeProps(area), map, WILD_ANCHORS[area.id]), ...map.props];
   map.spawn = tileCenter(area.arrive);
   return map;
 }

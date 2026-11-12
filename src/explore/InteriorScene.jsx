@@ -21,11 +21,12 @@ const offerIcon = (offer) => (offer.type === 'hire' ? (offer.locked ? 'lock' : '
  * a walkable room falls back to the painted scene: people at fixed spots, tap
  * to talk or use, the door asks before leading out.
  */
-export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, onTalk = null }) {
+export default function InteriorScene({ building, state, actions, onLeave, onOpen, paused = false, onTalk = null, title = null, outTo = null }) {
   const locationId = state.world?.currentLocationId || 'dunmere';
   const town = townFor(locationId);
   const layout = interiorLayout(building, locationId);
-  const label = town?.buildings.find((item) => item.building === building)?.label || building;
+  const label = title || town?.buildings.find((item) => item.building === building)?.label || building;
+  const outside = outTo || town?.name || 'the street';
   const people = peopleIn(state, locationId, building);
   const names = shortLabels(people);
   const [talk, setTalk] = useState(null);
@@ -89,7 +90,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
   const roomMap = useMemo(
     () =>
       walkable
-        ? interiorMap({ id: `${locationId}:${building}`, layout, people, names, townName: town?.name || 'the street', badgesFor: (person) => person.offers.map(offerIcon) })
+        ? interiorMap({ id: `${locationId}:${building}`, layout, people, names, townName: outside, badgesFor: (person) => person.offers.map(offerIcon) })
         : null,
     [walkable, peopleKey, locationId, building], // eslint-disable-line react-hooks/exhaustive-deps
   );
@@ -177,7 +178,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
           event.stopPropagation();
           setAsk(true);
         }}
-        aria-label={`Leave to ${town?.name || 'the street'}`}
+        aria-label={`Leave to ${outside}`}
       >
         <span className="interior__tag">
           <Icon name="door" size={14} />
@@ -238,7 +239,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
           }}
         >
           <Icon name="door" size={16} tone="plain" />
-          Leave to {town?.name || 'the street'}
+          Leave to {outside}
         </button>
       ) : null}
     </PaintedScene>

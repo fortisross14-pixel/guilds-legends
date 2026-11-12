@@ -172,6 +172,16 @@ export const AREA_BOSSES = {
     intro: 'A scarred raider in a grey wolf’s pelt rises from the mud, twice the size of his gang. His eyes find the weakest of you.',
     phases: [{ at: 0.5, banner: 'The Alpha howls, and the Wolfskins answer!', summon: { type: 'wolfskin', count: 2 } }],
   },
+  // Dawnwatch Temple, at the west end of the Old Road: a fallen priest holds its gate.
+  'ash-abbot': {
+    id: 'ash-abbot',
+    name: 'Brother Malric, the Ash Abbot',
+    role: 'caster',
+    sprite: 'foe.ash-abbot',
+    skills: ['greater-bolt', 'sleep'],
+    intro: '“The Dawn went out of this temple years ago. I keep its doors now, and they open for coin.”',
+    phases: [{ at: 0.5, banner: 'Malric calls his acolytes from the cloister!', summon: { type: 'field-priest', count: 1 } }],
+  },
   'bandit-captain': {
     id: 'bandit-captain',
     name: 'Captain Vask',

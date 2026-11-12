@@ -152,3 +152,6 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 /* Tab rows scroll sideways rather than cut their last tab. */
 .tabs, .filter-pills { overflow-x: auto; scrollbar-width: none; }
 .tabs button, .filter-pills button { flex: 0 0 auto; }
+
+/* Hero portraits: a close-up of the hero's HeroEditor design, filling the frame. */
+.hero-portrait__art--bust { object-fit: cover; object-position: 50% 30%; image-rendering: auto; }

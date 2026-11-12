@@ -1014,7 +1014,8 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       return;
     }
     if (route.view === 'interior') {
-      if (!INTERIORS[route.building] || !townFor(locationId)?.buildings.some((item) => item.building === route.building)) {
+      const inWild = WILD_AREAS[state.world?.wildAreaId]?.buildings?.some((item) => item.building === route.building);
+      if (!INTERIORS[route.building] || (!inWild && !townFor(locationId)?.buildings.some((item) => item.building === route.building))) {
         setMessage({ at: Date.now(), tone: 'blue', text: `There is no ${BUILDINGS[route.building]?.name.toLowerCase() || 'such place'} in ${LOCATION_BY_ID[locationId]?.name || 'this town'}.` });
         return;
       }
@@ -1125,10 +1126,23 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
       <MapScreen {...placeProps} place={place} />
     ) : view === 'interior' && town && !wildArea ? (
       <InteriorScene key={`${locationId}-${place.building}`} building={place.building} {...placeProps} paused={covered} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} onOpen={openFromInterior} />
+    ) : view === 'interior' && wildArea?.buildings?.some((item) => item.building === place.building) ? (
+      // A building in a wild area (Dawnwatch Temple on the Old Road): its people belong to the hub town.
+      <InteriorScene
+        key={`${wildArea.id}-${place.building}`}
+        building={place.building}
+        {...placeProps}
+        title={wildArea.buildings.find((item) => item.building === place.building).label}
+        outTo={wildArea.name}
+        paused={covered}
+        onTalk={setTalking}
+        onLeave={() => setPlaceState({ view: 'scene' })}
+        onOpen={openFromInterior}
+      />
     ) : view === 'site' && town && !wildArea ? (
       <SiteScene key={place.site} siteId={place.site} {...placeProps} paused={covered} onTalk={setTalking} onLeave={() => setPlaceState({ view: 'scene' })} />
     ) : wildArea ? (
-      <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} />
+      <WildScene key={wildArea.id} area={wildArea} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} openBuilding={openBuilding} />
     ) : town ? (
       <TownScene key={town.id} town={town} {...placeProps} paused={covered} apiRef={sceneApi} onTalk={setTalking} openBuilding={openBuilding} showBuilding={openBuilding} openSite={(id) => setPlaceState({ view: 'site', site: id })} />
     ) : (
@@ -1412,9 +1426,9 @@ export default function App() {
 
 /** The art preview opens over everything when the address ends in #art-test (Settings → Developer links there). */
 function ArtTestGate() {
-  const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.location.hash === '#art-test');
+  const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.location.hash.startsWith('#art-test'));
   useEffect(() => {
-    const update = () => setOpen(window.location.hash === '#art-test');
+    const update = () => setOpen(window.location.hash.startsWith('#art-test'));
     window.addEventListener('hashchange', update);
     return () => window.removeEventListener('hashchange', update);
   }, []);

@@ -12,6 +12,7 @@
 import { REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
 import { INTERIORS } from '../../data/interiors.js';
 import { TOWNS } from '../../data/towns/index.js';
+import { wildBuildings } from '../../data/wilds/index.js';
 import { CLASSES, normalizeClassId } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createDuelEncounter } from '../combat.js';
@@ -30,7 +31,8 @@ const pick = (list, seed) => list[hashString(seed) % list.length];
 
 /** Buildings that have an interior in this town. */
 function townBuildings(locationId) {
-  return (TOWNS[locationId]?.buildings || []).map((building) => building.building).filter((id) => INTERIORS[id]);
+  // A wild area's buildings (Dawnwatch Temple on the Old Road) count as its hub town's.
+  return [...(TOWNS[locationId]?.buildings || []), ...wildBuildings(locationId)].map((building) => building.building).filter((id) => INTERIORS[id]);
 }
 
 /** Is this contract on the board without anyone handing it over (story and boss contracts)? */

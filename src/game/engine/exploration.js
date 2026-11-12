@@ -310,9 +310,12 @@ export function getWildAreaView(state, areaId) {
     visited: Boolean(wild.visited),
     groups,
     gathers,
+    // A building held by a boss (`gate`) stays shut until that boss is beaten (Dawnwatch Temple).
+    gates: Object.fromEntries((area.buildings || []).filter((building) => building.gate).map((building) => [building.building, !wild.cleared?.[building.gate]])),
     activeTargets: [
       'camp',
       'exit',
+      ...(area.buildings || []).map((building) => `door:${building.building}`),
       ...(area.props || []).filter((prop) => prop.poi).map((prop) => `poi:${prop.id}`),
       ...groups.filter((group) => group.available).map((group) => `enemy:${group.id}`),
       ...gathers.filter((spot) => spot.available).map((spot) => `gather:${spot.id}`),

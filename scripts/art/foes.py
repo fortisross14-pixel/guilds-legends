@@ -68,6 +68,7 @@ FOES = {
     'boss-jarnvald': dict(hair='LongHair', hc='white', skin=FROST, armor='Vikings/VikingRoughArmor3 [Paint]', helmet='Vikings/VikingIronHelm3', atint=FROST, shield='OldHeavyShield', weapon='Axe/RunicAxe', eyes=GLOW, beard=True),
     'boss-nameless': dict(hair='LongHair', hc='black', skin=VOID, armor='NecromancerArmor', mask='Mask2 [Paint]', weapon='Wand/CursedBone', eyes=GLOW, cape='VampireCape [Paint]'),
     # Wild-area bosses
+    'ash-abbot': dict(hair='BuzzCut', hc='grey', skin='fair', armor='CardinalArmor', helmet='CardinalHat [Paint]', atint=(0.42, 0.36, 0.42), weapon='Wand/CursedBone', eyes=GLOW, glow=(255, 120, 40), cape='VampireCape [Paint]', mouth='Smirk'),
     'grey-alpha': dict(hair='Shaggy', hc='grey', skin='light', armor='Vikings/VikingFurArmor', helmet='Vikings/VikingIronHelm2', weapon='Axe/DreadCleaver', brows='Angry', mouth='Angry', beard=True, cape='OldCape2 [Paint]'),
     'bandit-captain': dict(hair='Slicked', hc='black', skin='tan', armor='MercenaryArmor [Paint]', helmet='MercenaryHelm1 [Paint]', shield='KiteShield', weapon='Sword/GuardSword1 [Paint]', brows='Angry', mouth='Smirk'),
     'lantern-brood': dict(hair='LongHair', hc='white', skin=VOID, armor='WarlockArmor', helmet='HermitHood [Paint]', atint=VOID, shield='HermitLamp', weapon='Wand/WarlockWand', eyes=GLOW, cape='VampireCape [Paint]'),
@@ -90,7 +91,7 @@ GROUPS = {
     'enemy.group.wraiths': ['veil-wraith', 'mind-thief', 'veil-wraith'],
     'enemy.group.hollow': ['hollow-knight', 'void-juggernaut'],
 }
-BOSSES = {'enemy.boss.alpha': 'grey-alpha', 'enemy.boss.captain': 'bandit-captain', 'enemy.boss.lanterneater': 'lantern-brood'}
+BOSSES = {'enemy.boss.abbot': 'ash-abbot', 'enemy.boss.alpha': 'grey-alpha', 'enemy.boss.captain': 'bandit-captain', 'enemy.boss.lanterneater': 'lantern-brood'}
 
 BOX = (300, 330)
 FEET = (150, 310)
