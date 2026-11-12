@@ -1,3 +1,5 @@
+import GuildBanner from './GuildBanner.jsx';
+import { BANNER_COLORS, BANNER_EMBLEMS, BANNER_PATTERNS, DEFAULT_BANNER, colorHex } from '../data/banner.js';
 import React, { useState } from 'react';
 import { PLAYER_HOUSE } from '../data/playerHouse.js';
 import { PROLOGUE } from '../data/story.js';
@@ -22,6 +24,7 @@ export default function Prologue({ state, onComplete }) {
   const skipping = Boolean(state.story?.skipRequested);
   const [phase, setPhase] = useState(skipping ? 'name' : 'knock');
   const [motto, setMotto] = useState('No light is lost forever.');
+  const [banner, setBanner] = useState(DEFAULT_BANNER);
   const [charter, setCharter] = useState('free');
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState(null);
@@ -146,6 +149,70 @@ export default function Prologue({ state, onComplete }) {
                   Motto
                   <input value={motto} maxLength={72} onChange={(event) => setMotto(event.target.value)} />
                 </label>
+                <fieldset className="banner-maker">
+                  <legend>Your banner</legend>
+                  <div className="banner-maker__preview">
+                    <GuildBanner banner={banner} size={88} title={`The banner of ${name.trim() || 'your guild'}`} />
+                  </div>
+                  <div className="banner-maker__rows">
+                    <div className="banner-maker__row" role="group" aria-label="Pattern">
+                      <span>Pattern</span>
+                      <div className="banner-maker__options">
+                        {BANNER_PATTERNS.map((item) => (
+                          <button key={item.id} type="button" className={`banner-maker__pattern${banner.pattern === item.id ? ' is-selected' : ''}`} aria-pressed={banner.pattern === item.id} aria-label={item.name} title={item.name} onClick={() => setBanner({ ...banner, pattern: item.id })}>
+                            <GuildBanner banner={{ ...banner, pattern: item.id }} plain size={26} title={item.name} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {[0, 1].slice(0, BANNER_PATTERNS.find((item) => item.id === banner.pattern)?.colors || 1).map((slot) => (
+                      <div key={slot} className="banner-maker__row" role="group" aria-label={slot ? 'Second colour' : 'First colour'}>
+                        <span>{slot ? 'Second colour' : 'Colour'}</span>
+                        <div className="banner-maker__options">
+                          {BANNER_COLORS.map((color) => (
+                            <button
+                              key={color.id}
+                              type="button"
+                              className={`banner-maker__swatch${banner.colors[slot] === color.id ? ' is-selected' : ''}`}
+                              style={{ background: color.hex }}
+                              aria-pressed={banner.colors[slot] === color.id}
+                              aria-label={color.name}
+                              title={color.name}
+                              onClick={() => setBanner({ ...banner, colors: slot ? [banner.colors[0], color.id] : [color.id, banner.colors[1]] })}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="banner-maker__row" role="group" aria-label="Emblem">
+                      <span>Emblem</span>
+                      <div className="banner-maker__options">
+                        {BANNER_EMBLEMS.map((item) => (
+                          <button key={item.id} type="button" className={`banner-maker__emblem${banner.emblem === item.id ? ' is-selected' : ''}`} aria-pressed={banner.emblem === item.id} aria-label={item.name} title={item.name} onClick={() => setBanner({ ...banner, emblem: item.id })}>
+                            <Icon name={item.id} size={22} tone="plain" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="banner-maker__row" role="group" aria-label="Emblem colour">
+                      <span>Emblem colour</span>
+                      <div className="banner-maker__options">
+                        {BANNER_COLORS.map((color) => (
+                          <button
+                            key={color.id}
+                            type="button"
+                            className={`banner-maker__swatch${banner.emblemColor === color.id ? ' is-selected' : ''}`}
+                            style={{ background: colorHex(color.id) }}
+                            aria-pressed={banner.emblemColor === color.id}
+                            aria-label={color.name}
+                            title={color.name}
+                            onClick={() => setBanner({ ...banner, emblemColor: color.id })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
                 <fieldset className="charter-picker">
                   <legend>Charter: what kind of guild will this be?</legend>
                   <div className="charter-picker__options">
@@ -182,7 +249,7 @@ export default function Prologue({ state, onComplete }) {
                   size="lg"
                   disabled={!name.trim() || name.trim().toLowerCase() === 'the broken lantern'}
                   why="Name your guild first."
-                  onClick={() => onComplete({ choice, guildName: name.trim(), motto: motto.trim(), charter })}
+                  onClick={() => onComplete({ choice, guildName: name.trim(), motto: motto.trim(), charter, banner })}
                 >
                   Raise the banner
                 </Button>

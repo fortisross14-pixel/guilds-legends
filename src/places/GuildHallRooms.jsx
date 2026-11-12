@@ -1,3 +1,4 @@
+import GuildBanner from '../components/GuildBanner.jsx';
 import React, { useState } from 'react';
 import { MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { HOUSE } from '../data/rooms.js';
@@ -559,6 +560,7 @@ export default function GuildHallRooms({ state, actions, navigate, slot, initial
   return (
     <div className="hall-rooms">
       <header className="hall-summary">
+        {state.guild.banner ? <GuildBanner banner={state.guild.banner} size={40} title={`The banner of ${state.guild.name}, over the door`} className="hall-summary__banner" /> : null}
         <strong>{hall.lotName}</strong>
         <Badge tone={hall.bought ? 'green' : 'blue'}>{hall.bought ? 'Owned' : `Rented · ${hall.rent}/month`}</Badge>
         <span className={hall.free <= 0 ? 'is-full' : ''}>

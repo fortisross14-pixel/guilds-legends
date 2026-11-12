@@ -27,7 +27,7 @@ function fanPoints(count, side) {
  * One orb. `items`: [{ id, label, icon, badge, onSelect }]. `badge` on an item is a
  * number or true (a dot); the orb shows a dot when any item has one.
  */
-export function Orb({ side, icon, label, items, showLabel = false, open, onOpenChange, settings }) {
+export function Orb({ side, icon, art = null, label, items, showLabel = false, open, onOpenChange, settings }) {
   const orbRef = useRef(null);
   const press = useRef(null);
   const [hot, setHot] = useState(null);
@@ -119,7 +119,7 @@ export function Orb({ side, icon, label, items, showLabel = false, open, onOpenC
         }}
         onContextMenu={(event) => event.preventDefault()}
       >
-        <Icon name={icon} size={28} />
+        {art || <Icon name={icon} size={28} />}
         {badge && !open ? <i className="orb__badge" aria-hidden="true" /> : null}
       </button>
       {showLabel && !open ? <span className="orb__label">{label}</span> : null}

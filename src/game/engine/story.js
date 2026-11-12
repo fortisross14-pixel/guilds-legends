@@ -4,6 +4,7 @@
 // the shared condition checker (dialogue, gates, wild areas). Progress runs
 // after every engine action through the finalize hook, so gates open the
 // moment their condition holds; nothing here runs on the calendar.
+import { cleanBanner } from '../../data/banner.js';
 import { CHAPTERS, EVIDENCE, PROLOGUE, REGIONAL_TOURNAMENTS, STORY_HEROES, STORY_MISSIONS, STORY_MISSION_BY_ID } from '../../data/story.js';
 import { PATHS } from '../../data/charters.js';
 import { DIALOGUES, SEASON_MONTHS, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
@@ -599,12 +600,14 @@ export function foundGuildInPlace(state, guildName) {
  * founded: its name, motto and charter. Then Act I begins (or, when the player
  * asked to skip the tutorial at new game, the skipped state).
  */
-export function completePrologue(state, { choice, guildName, motto, charter } = {}) {
+export function completePrologue(state, { choice, guildName, motto, charter, banner } = {}) {
   if (storyState(state).prologue === 'done') return { state, error: null };
   if (!String(guildName || '').trim()) return { state, error: 'Name your guild.' };
   const next = clone(state);
   const story = storyInPlace(next);
   applyCharterInPlace(next, charter);
+  // The banner the founder designed (src/data/banner.js).
+  next.guild.banner = cleanBanner(banner);
   if (String(motto || '').trim()) next.guild.motto = String(motto).trim().slice(0, 72);
   if (story.skipRequested) {
     delete story.skipRequested;

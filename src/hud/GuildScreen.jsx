@@ -1,3 +1,4 @@
+import GuildBanner from '../components/GuildBanner.jsx';
 import React from 'react';
 import { CHARTERS } from '../data/charters.js';
 import { getConnectionsView, getPathScores, getPromotionRequirement, getReputationSummary, getStatusTitle, specializationTitle } from '../game/engine.js';
@@ -47,7 +48,7 @@ function CharterTab({ state }) {
   return (
     <div className="guild-screen">
       <header className="guild-charter">
-        <Asset id={charter.crest} className="guild-charter__crest" />
+        {state.guild.banner ? <GuildBanner banner={state.guild.banner} size={56} title={`The banner of ${state.guild.name}`} className="guild-charter__crest" /> : <Asset id={charter.crest} className="guild-charter__crest" />}
         <div>
           <strong>{state.guild.name}</strong>
           <small>{charter.name}</small>

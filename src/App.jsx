@@ -1,3 +1,4 @@
+import GuildBanner from './components/GuildBanner.jsx';
 import React, { Component, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   acknowledgeCouncilReport,
@@ -1244,7 +1245,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           {view === 'map' && !section ? <PlaceTag title={traveling ? 'On the road' : 'World map'} sub={dateLine(state.date)} /> : null}
           <Ledger
             gold={summary.crowns}
-            crest={<Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="ledger__charter" />}
+            crest={state.guild.banner ? <GuildBanner banner={state.guild.banner} size={22} title={state.guild.name} /> : <Asset id={CHARTERS[state.guild.charter]?.crest || 'crest.charter.free'} className="ledger__charter" />}
             rows={ledgerRows}
             open={ledgerOpen}
             onOpenChange={(open) => {
@@ -1255,7 +1256,7 @@ This replaces slot ${slot} (${state.guild.name}). The current campaign in this s
           {orb ? <OrbScrim onClose={() => setOrb(null)} /> : null}
           {!section ? (
             <>
-              <Orb side="left" icon="banner" label="Guild" items={guildItems} showLabel={orbUses < 4} open={orb === 'left'} onOpenChange={(open) => openOrb('left', open)} settings={state.settings} />
+               <Orb side="left" icon="banner" art={state.guild.banner ? <GuildBanner banner={state.guild.banner} size={30} title={`${state.guild.name}`} /> : null} label="Guild" items={guildItems} showLabel={orbUses < 4} open={orb === 'left'} onOpenChange={(open) => openOrb('left', open)} settings={state.settings} />
               <Orb side="right" icon="world" label="World" items={worldItems} showLabel={orbUses < 4} open={orb === 'right'} onOpenChange={(open) => openOrb('right', open)} settings={state.settings} />
             </>
           ) : null}
