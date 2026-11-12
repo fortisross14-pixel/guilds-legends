@@ -59,6 +59,7 @@ function makeCombatant(hero, side, { role = null, sprite = null, scale = 1, mods
   return {
     id: `${side}-${hero.id}`,
     heroId: side === 'party' ? hero.id : null,
+    storyId: hero.storyId || null,
     name: hero.name,
     side,
     classId,

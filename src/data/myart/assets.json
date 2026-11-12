@@ -1091,6 +1091,7 @@
    "path": "art/packs/myart/chars/char-founder.png",
    "still": "art/packs/myart/chars/char-founder-still.png",
    "bust": "art/packs/myart/chars/char-founder-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1123,6 +1124,7 @@
    "path": "art/packs/myart/chars/npc-dunmere-fighter.png",
    "still": "art/packs/myart/chars/npc-dunmere-fighter-still.png",
    "bust": "art/packs/myart/chars/npc-dunmere-fighter-bust.png",
+   "battle": "art/packs/myart/chars/npc-dunmere-fighter-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1155,6 +1157,7 @@
    "path": "art/packs/myart/chars/npc-dunmere-nessa.png",
    "still": "art/packs/myart/chars/npc-dunmere-nessa-still.png",
    "bust": "art/packs/myart/chars/npc-dunmere-nessa-bust.png",
+   "battle": "art/packs/myart/chars/npc-dunmere-nessa-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1763,6 +1766,7 @@
    "path": "art/packs/myart/chars/char-class-guardian.png",
    "still": "art/packs/myart/chars/char-class-guardian-still.png",
    "bust": "art/packs/myart/chars/char-class-guardian-bust.png",
+   "battle": "art/packs/myart/chars/char-class-guardian-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1779,6 +1783,7 @@
    "path": "art/packs/myart/chars/char-class-duelist.png",
    "still": "art/packs/myart/chars/char-class-duelist-still.png",
    "bust": "art/packs/myart/chars/char-class-duelist-bust.png",
+   "battle": "art/packs/myart/chars/char-class-duelist-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1795,6 +1800,7 @@
    "path": "art/packs/myart/chars/char-class-ranger.png",
    "still": "art/packs/myart/chars/char-class-ranger-still.png",
    "bust": "art/packs/myart/chars/char-class-ranger-bust.png",
+   "battle": "art/packs/myart/chars/char-class-ranger-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1811,6 +1817,7 @@
    "path": "art/packs/myart/chars/char-class-rogue.png",
    "still": "art/packs/myart/chars/char-class-rogue-still.png",
    "bust": "art/packs/myart/chars/char-class-rogue-bust.png",
+   "battle": "art/packs/myart/chars/char-class-rogue-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1827,6 +1834,7 @@
    "path": "art/packs/myart/chars/char-class-cleric.png",
    "still": "art/packs/myart/chars/char-class-cleric-still.png",
    "bust": "art/packs/myart/chars/char-class-cleric-bust.png",
+   "battle": "art/packs/myart/chars/char-class-cleric-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1843,6 +1851,7 @@
    "path": "art/packs/myart/chars/char-class-mage.png",
    "still": "art/packs/myart/chars/char-class-mage-still.png",
    "bust": "art/packs/myart/chars/char-class-mage-bust.png",
+   "battle": "art/packs/myart/chars/char-class-mage-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1859,6 +1868,7 @@
    "path": "art/packs/myart/chars/char-class-scholar.png",
    "still": "art/packs/myart/chars/char-class-scholar-still.png",
    "bust": "art/packs/myart/chars/char-class-scholar-bust.png",
+   "battle": "art/packs/myart/chars/char-class-scholar-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {
@@ -1875,6 +1885,7 @@
    "path": "art/packs/myart/chars/char-class-artificer.png",
    "still": "art/packs/myart/chars/char-class-artificer-still.png",
    "bust": "art/packs/myart/chars/char-class-artificer-bust.png",
+   "battle": "art/packs/myart/chars/char-class-artificer-battle.png",
    "w": 112,
    "h": 120,
    "sheet": {

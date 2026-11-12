@@ -170,6 +170,12 @@ def walk_sheet(rig, parts):
     return sheet, still
 
 
+def battle_figure(rig, parts):
+    """Full size, facing right (heroes stand on the left in battle)."""
+    im = rig.render(parts, size=(300, 330), origin=(150, 310))
+    return im.crop(im.getbbox()) if im.getbbox() else im
+
+
 def bust(rig, parts, size=192):
     """A close-up of the head and shoulders, for portraits (hero rows, dialogue)."""
     im = rig.render(parts, size=BOX, origin=FEET)

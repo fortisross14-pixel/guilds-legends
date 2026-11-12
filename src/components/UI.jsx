@@ -54,9 +54,12 @@ export function heroArtKey(hero = {}) {
 // Hero portraits show a close-up of the hero's HeroEditor design (scripts/art/characters.py):
 // the founder's own, a story hero's own, otherwise their class's. The old class portraits stand in.
 const STORY_WALKERS = { nessa: 'npc.dunmere.nessa', bram: 'npc.dunmere.fighter' };
+function heroLook(hero) {
+  const id = hero.heroId || hero.id;
+  return ASSETS[id === 'founder-player' ? 'char.founder' : STORY_WALKERS[hero.storyId] || `char.class.${heroArtKey(hero)}`] || null;
+}
 function heroBust(hero) {
-  const walker = hero.id === 'founder-player' ? 'char.founder' : STORY_WALKERS[hero.storyId] || `char.class.${heroArtKey(hero)}`;
-  return ASSETS[walker]?.bust || null;
+  return heroLook(hero)?.bust || null;
 }
 
 export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
@@ -187,7 +190,8 @@ export function HeroSprite({ hero, size = 'md', enemy = false }) {
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
   return (
     <div className={`hero-sprite hero-sprite--${size} ${enemy ? 'hero-sprite--enemy' : ''}`} style={{ '--sprite-glow': primal.color }}>
-      <img src={`${import.meta.env.BASE_URL}art/sprites/${artKey}.png`} alt="" loading="lazy" />
+      {/* The hero's HeroEditor figure (heroes face right; the enemy side is mirrored in CSS). */}
+      <img className={heroLook(hero)?.battle ? 'hero-sprite__figure' : ''} src={`${import.meta.env.BASE_URL}${heroLook(hero)?.battle || `art/sprites/${artKey}.png`}`} alt="" loading="lazy" />
     </div>
   );
 }

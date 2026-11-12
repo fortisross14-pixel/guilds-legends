@@ -222,7 +222,7 @@ def props():
 # --- Characters --------------------------------------------------------------
 def characters():
     from heroeditor import Library, Rig
-    from characters import R, recipe_parts, walk_sheet, FRAME, bust
+    from characters import R, recipe_parts, walk_sheet, FRAME, bust, battle_figure
     lib = Library(HERO)
     rig = Rig(os.path.join(HERO, 'Prefabs', 'Human.prefab'), lib)
     for asset_id, spec in R.items():
@@ -232,7 +232,9 @@ def characters():
         image.save(out(f'chars/{name}.png'))
         still.save(out(f'chars/{name}-still.png'))
         bust(rig, parts).save(out(f'chars/{name}-bust.png'))
-        assets.append({'id': asset_id, 'group': 'npc' if asset_id.startswith('npc.') else 'char', 'path': f'{REL}/chars/{name}.png', 'still': f'{REL}/chars/{name}-still.png', 'bust': f'{REL}/chars/{name}-bust.png',
+        if asset_id.startswith('char.') or asset_id in ('npc.dunmere.nessa', 'npc.dunmere.fighter'):
+            battle_figure(rig, parts).save(out(f'chars/{name}-battle.png'))
+        assets.append({'id': asset_id, 'group': 'npc' if asset_id.startswith('npc.') else 'char', 'path': f'{REL}/chars/{name}.png', 'still': f'{REL}/chars/{name}-still.png', 'bust': f'{REL}/chars/{name}-bust.png', **({'battle': f'{REL}/chars/{name}-battle.png'} if asset_id.startswith('char.') or asset_id in ('npc.dunmere.nessa', 'npc.dunmere.fighter') else {}),
                        'w': FRAME[0], 'h': FRAME[1], 'sheet': {'frameWidth': FRAME[0], 'frameHeight': FRAME[1]}, 'sideOnly': True, 'walker': True,
                        'use': 'Walking character (HeroEditor parts, scripts/art/characters.py)'})
 

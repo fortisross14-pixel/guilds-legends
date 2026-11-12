@@ -155,3 +155,5 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 
 /* Hero portraits: a close-up of the hero's HeroEditor design, filling the frame. */
 .hero-portrait__art--bust { object-fit: cover; object-position: 50% 30%; image-rendering: auto; }
+/* Heroes in battle: their HeroEditor figure, a little taller than the old sprites' frame. */
+.hero-sprite:has(.hero-sprite__figure) { aspect-ratio: 4 / 5; }

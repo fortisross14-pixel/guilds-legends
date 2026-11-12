@@ -108,8 +108,11 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
         const tileset = tilemap.addTilesetImage(map.tiles.asset, map.tiles.asset, size, size, 0, 0);
         tilemap.createLayer(0, tileset, 0, 0).setDepth(-10000);
       }
+      // Trees fade while the walker is behind their crown (see update), so nobody is lost behind one.
+      this.trees = [];
       (map.props || []).forEach((prop) => {
-        this.add.image(prop.x, prop.y, prop.asset).setOrigin(0).setDisplaySize(prop.w, prop.h).setDepth(prop.depth ?? prop.y + prop.h);
+        const image = this.add.image(prop.x, prop.y, prop.asset).setOrigin(0).setDisplaySize(prop.w, prop.h).setDepth(prop.depth ?? prop.y + prop.h);
+        if (prop.tree) this.trees.push({ image, prop });
       });
       this.sprites = {};
       map.targets.forEach((target) => {
@@ -182,6 +185,11 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       }
       player.setDepth(player.y);
       if (this.walker) animateWalker(this, player);
+      this.trees.forEach(({ image, prop }) => {
+        const behind = player.x > prop.x + 8 && player.x < prop.x + prop.w - 8 && player.y < prop.y + prop.h - 4 && player.y > prop.y + 10;
+        const alpha = behind ? 0.45 : 1;
+        if (image.alpha !== alpha) image.setAlpha(alpha);
+      });
       updateNear();
     }
   }
