@@ -608,6 +608,13 @@ export function completePrologue(state, { choice, guildName, motto, charter, ban
   applyCharterInPlace(next, charter);
   // The banner the founder designed (src/data/banner.js).
   next.guild.banner = cleanBanner(banner);
+  // The founder wakes in the house; stepping out puts them at its door in Dunmere.
+  const house = TOWNS.dunmere?.buildings.find((building) => building.building === 'house');
+  if (house) {
+    next.world.exploration ||= {};
+    next.world.exploration.positions ||= {};
+    next.world.exploration.positions.dunmere = { x: (house.door[0] + 0.5) * 32, y: (house.door[1] + 1) * 32 + 6 };
+  }
   if (String(motto || '').trim()) next.guild.motto = String(motto).trim().slice(0, 72);
   if (story.skipRequested) {
     delete story.skipRequested;

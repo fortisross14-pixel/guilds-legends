@@ -13,6 +13,7 @@ export function useAsset(id) {
   }, []);
   useEffect(() => {
     let live = true;
+    if (!id) return undefined;
     if (peekAsset(id)) setResult(peekAsset(id));
     else loadAsset(id).then((value) => live && setResult(value));
     return () => {
@@ -30,6 +31,7 @@ export function useAssetUrl(id) {
 /** An <img> for a registered asset; shows a placeholder (silhouette, shape or mood) when the file is missing. */
 export default function Asset({ id, alt = '', className = '', ...rest }) {
   const result = useAsset(id);
+  if (!id) return null;
   if (!result?.url) return <span className={`asset asset--loading ${className}`} data-asset={id} aria-hidden={alt ? undefined : true} />;
   // A walk sheet shows its standing frame (`still`) outside the walk engine.
   const src = result.asset?.still && !result.placeholder ? publicUrl(result.asset.still) : result.url;

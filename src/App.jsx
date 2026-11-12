@@ -664,14 +664,18 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
   // wild area) puts the player in that place's walkable scene.
   const arrivalKey = `${state.world?.currentLocationId}|${state.world?.activeTravel ? 'road' : 'here'}|${state.world?.wildAreaId || ''}|${state.story?.prologue}`;
   const lastArrival = useRef(arrivalKey);
+  const lastPrologueDone = useRef(state.story?.prologue === 'done');
   useEffect(() => {
     if (lastArrival.current === arrivalKey) return;
     lastArrival.current = arrivalKey;
     if (!state.world?.activeTravel) {
-      setPlaceState({ view: 'scene' });
+      // The opening ends inside the founder's house; any other arrival is the place's walkable scene.
+      const openingEnded = arrivalKey.endsWith('|done') && !lastPrologueDone.current;
+      setPlaceState(openingEnded ? { view: 'interior', building: 'house' } : { view: 'scene' });
       setSectionState(null);
     }
-  }, [arrivalKey, state.world?.activeTravel]);
+    lastPrologueDone.current = state.story?.prologue === 'done';
+  }, [arrivalKey, state.world?.activeTravel]); // eslint-disable-line react-hooks/exhaustive-deps
   const [heroModalId, setHeroModalId] = useState(null);
   const [storyScene, setStoryScene] = useState(null);
   // A conversation open in the scene: queued cards wait until it closes.
@@ -783,7 +787,10 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
 
   const actions = useMemo(
     () => ({
-      completePrologue: (options) => applyResult(completePrologue(state, options)),
+      // After the knock at the door, the founder wakes inside the house (its door leads out to Dunmere).
+      completePrologue: (options) => {
+        applyResult(completePrologue(state, options));
+      },
       // Story scenes (src/data/dialogue/story.js): play one now, or close the one showing.
       playStoryScene: (missionId) => applyResult(playStoryScene(state, missionId)),
       finishStoryScene: (conversationId) => commitState(finishStoryScene(state, conversationId)),
