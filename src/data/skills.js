@@ -39,7 +39,7 @@ const list = [
   {
     id: 'taunt',
     classId: 'Guardian',
-    level: 3,
+    level: 4,
     name: 'Taunt',
     mp: 4,
     target: 'self',
@@ -50,7 +50,7 @@ const list = [
   {
     id: 'rally',
     classId: 'Guardian',
-    level: 6,
+    level: 9,
     name: 'Rally',
     mp: 8,
     target: 'allAllies',
@@ -61,7 +61,7 @@ const list = [
   {
     id: 'bulwark',
     classId: 'Guardian',
-    level: 10,
+    level: 13,
     name: 'Bulwark',
     mp: 10,
     target: 'allAllies',
@@ -72,7 +72,7 @@ const list = [
   {
     id: 'earthshaker',
     classId: 'Guardian',
-    level: 15,
+    level: 17,
     name: 'Earthshaker',
     mp: 16,
     target: 'allEnemies',
@@ -99,7 +99,7 @@ const list = [
   {
     id: 'disarm',
     classId: 'Duelist',
-    level: 4,
+    level: 5,
     name: 'Disarm',
     mp: 5,
     target: 'enemy',
@@ -124,7 +124,7 @@ const list = [
   {
     id: 'flurry',
     classId: 'Duelist',
-    level: 12,
+    level: 13,
     name: 'Flurry',
     mp: 12,
     target: 'enemy',
@@ -136,7 +136,7 @@ const list = [
   {
     id: 'finale',
     classId: 'Duelist',
-    level: 17,
+    level: 18,
     name: 'Finale',
     mp: 18,
     target: 'enemy',
@@ -162,7 +162,7 @@ const list = [
   {
     id: 'poison-arrow',
     classId: 'Ranger',
-    level: 3,
+    level: 4,
     name: 'Poison Arrow',
     mp: 5,
     target: 'enemy',
@@ -175,7 +175,7 @@ const list = [
   {
     id: 'volley',
     classId: 'Ranger',
-    level: 7,
+    level: 9,
     name: 'Volley',
     mp: 9,
     target: 'allEnemies',
@@ -187,7 +187,7 @@ const list = [
   {
     id: 'pinning-shot',
     classId: 'Ranger',
-    level: 11,
+    level: 13,
     name: 'Pinning Shot',
     mp: 8,
     target: 'enemy',
@@ -200,7 +200,7 @@ const list = [
   {
     id: 'arrow-storm',
     classId: 'Ranger',
-    level: 16,
+    level: 17,
     name: 'Arrow Storm',
     mp: 16,
     target: 'allEnemies',
@@ -226,7 +226,7 @@ const list = [
   {
     id: 'steal',
     classId: 'Rogue',
-    level: 3,
+    level: 5,
     name: 'Steal',
     mp: 3,
     target: 'enemy',
@@ -238,7 +238,7 @@ const list = [
   {
     id: 'venom',
     classId: 'Rogue',
-    level: 6,
+    level: 10,
     name: 'Venom',
     mp: 6,
     target: 'enemy',
@@ -251,7 +251,7 @@ const list = [
   {
     id: 'shadowstep',
     classId: 'Rogue',
-    level: 10,
+    level: 14,
     name: 'Shadowstep',
     mp: 10,
     target: 'enemy',
@@ -264,7 +264,7 @@ const list = [
   {
     id: 'assassinate',
     classId: 'Rogue',
-    level: 16,
+    level: 18,
     name: 'Assassinate',
     mp: 16,
     target: 'enemy',
@@ -290,7 +290,7 @@ const list = [
   {
     id: 'purify',
     classId: 'Cleric',
-    level: 3,
+    level: 7,
     name: 'Purify',
     mp: 3,
     target: 'ally',
@@ -298,11 +298,11 @@ const list = [
     power: 0.3,
     description: 'Remove poison and stun, with a small heal.',
   },
-  { id: 'cura', classId: 'Cleric', level: 6, name: 'Cura', mp: 9, target: 'allAllies', effect: 'heal', power: 0.7, description: 'Heal the whole party.' },
+  { id: 'cura', classId: 'Cleric', level: 9, name: 'Cura', mp: 9, target: 'allAllies', effect: 'heal', power: 0.7, description: 'Heal the whole party.' },
   {
     id: 'raise',
     classId: 'Cleric',
-    level: 9,
+    level: 12,
     name: 'Raise',
     mp: 14,
     target: 'koAlly',
@@ -313,7 +313,7 @@ const list = [
   {
     id: 'holy',
     classId: 'Cleric',
-    level: 13,
+    level: 15,
     name: 'Holy',
     mp: 14,
     target: 'enemy',
@@ -364,7 +364,7 @@ const list = [
   {
     id: 'sleep',
     classId: 'Mage',
-    level: 8,
+    level: 9,
     name: 'Sleep',
     mp: 8,
     target: 'enemy',
@@ -375,7 +375,7 @@ const list = [
   {
     id: 'greater-bolt',
     classId: 'Mage',
-    level: 12,
+    level: 13,
     name: 'Greater Bolt',
     mp: 12,
     target: 'enemy',
@@ -414,7 +414,7 @@ const list = [
   {
     id: 'expose',
     classId: 'Scholar',
-    level: 3,
+    level: 4,
     name: 'Sap Strength',
     mp: 4,
     target: 'enemy',
@@ -422,11 +422,11 @@ const list = [
     status: { type: 'atkDown', turns: 3, chance: 0.9 },
     description: 'Cuts the target’s attack by 30% for 3 rounds.',
   },
-  { id: 'mend', classId: 'Scholar', level: 5, name: 'Mend', mp: 6, target: 'ally', effect: 'heal', power: 0.7, description: 'Heal one ally.' },
+  { id: 'mend', classId: 'Scholar', level: 8, name: 'Mend', mp: 6, target: 'ally', effect: 'heal', power: 0.7, description: 'Heal one ally.' },
   {
     id: 'battle-plan',
     classId: 'Scholar',
-    level: 9,
+    level: 10,
     name: 'Battle Plan',
     mp: 10,
     target: 'allAllies',
@@ -465,7 +465,7 @@ const list = [
   {
     id: 'bomb-toss',
     classId: 'Artificer',
-    level: 4,
+    level: 5,
     name: 'Bomb Toss',
     mp: 7,
     target: 'allEnemies',
@@ -475,11 +475,11 @@ const list = [
     status: { type: 'burn', turns: 2, chance: 0.3 },
     description: 'Explosives hit every enemy and may set them burning.',
   },
-  { id: 'repair-kit', classId: 'Artificer', level: 7, name: 'Field Kit', mp: 6, target: 'ally', effect: 'heal', power: 0.8, description: 'Patch up one ally.' },
+  { id: 'repair-kit', classId: 'Artificer', level: 8, name: 'Field Kit', mp: 6, target: 'ally', effect: 'heal', power: 0.8, description: 'Patch up one ally.' },
   {
     id: 'overclock',
     classId: 'Artificer',
-    level: 10,
+    level: 12,
     name: 'Overclock',
     mp: 10,
     target: 'ally',
@@ -490,7 +490,7 @@ const list = [
   {
     id: 'cannon',
     classId: 'Artificer',
-    level: 15,
+    level: 16,
     name: 'Hand Cannon',
     mp: 16,
     target: 'enemy',

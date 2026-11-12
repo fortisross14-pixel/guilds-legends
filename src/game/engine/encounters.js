@@ -8,10 +8,11 @@ import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, fi
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
 import { storyDuelResultInPlace } from './story.js';
-import { applyXpInPlace, xpForNextLevel } from './heroes.js';
+import { applyXpInPlace, levelGapFactor, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
-function xpEntryInPlace(hero, amount, state, source) {
+function xpEntryInPlace(hero, base, state, source, enemyLevel = null) {
+  const amount = Math.max(1, Math.round(base * levelGapFactor(hero.level, enemyLevel)));
   const fill = () => (xpForNextLevel(hero.level) ? (hero.xp || 0) / xpForNextLevel(hero.level) : 1);
   const levelBefore = hero.level;
   const from = fill();
@@ -58,7 +59,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     const reward = group.reward || {};
     const gold = reward.gold ? rng.int(reward.gold[0], reward.gold[1]) : 0;
     earnGoldInPlace(next, gold);
-    const xp = fighters.map((hero) => xpEntryInPlace(hero, reward.xp || 20, next, area.name));
+    const xp = fighters.map((hero) => xpEntryInPlace(hero, reward.xp || 20, next, area.name, group.level));
     const loot = { ...(reward.items || {}) };
     if (group.isBoss) Object.entries(rollLoot(rng, next.guild.tierIndex, 1)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
     addItemsInPlace(next, loot);

@@ -8,8 +8,19 @@ import { addHeroHistory, appointmentHolder, clamp, getHero, roomLevel, tallyHero
 import { charterEstimate, charterOf, patronAtLeast } from './charter.js';
 import { estimateBonus } from './reputation.js';
 
+/** XP to the next level: level 2 comes after a fight or so, level 3 after a couple more; from 4 on it climbs steeply. */
 export function xpForNextLevel(level) {
-  return level >= 20 ? 0 : 70 + level * 30;
+  return level >= 20 ? 0 : Math.round(40 + 60 * level ** 1.6);
+}
+
+/**
+ * Battle XP by how strong the foes were next to the hero: a quarter more per level
+ * above, a quarter less per level below (at least 15%). Beating level-2 road thugs
+ * does little for a level-5 hero; they need stronger foes to grow.
+ */
+export function levelGapFactor(heroLevel, enemyLevel) {
+  if (!enemyLevel) return 1;
+  return clamp(1 + 0.25 * (enemyLevel - (heroLevel || 1)), 0.15, 1.5);
 }
 
 function rarityFromRoll(rng, bonus = 0) {

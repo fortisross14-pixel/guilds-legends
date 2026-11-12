@@ -11,7 +11,7 @@ import { WILD_AREAS } from '../../data/wilds/index.js';
 import { normalizeClassId } from '../../data/content.js';
 import { siteFor } from '../../data/missions/index.js';
 import { campaignDaySerial, clamp, clone, commitRng, earnGoldInPlace, finalize, getHero, hashString, pushMoment, rngFor, travellingPartyIds } from './core.js';
-import { applyXpInPlace, xpForNextLevel } from './heroes.js';
+import { applyXpInPlace, levelGapFactor, xpForNextLevel } from './heroes.js';
 import { addItemsInPlace, battleItems, lootList, rollLoot } from './inventory.js';
 import { defeatInPlace } from './hall.js';
 import { objectiveOpen } from './missions.js';
@@ -255,8 +255,9 @@ export function siteFightConcludedInPlace(next, encounter, combatResult) {
   }
   if (!mission?.site) return;
   mission.site.kos += (combatResult.knockedOut || []).length;
-  const xpAmount = 18 + (encounter.sourceMeta?.fight?.level || 2) * 4;
+  const fightLevel = encounter.sourceMeta?.fight?.level || 2;
   const xp = fighters.map((hero) => {
+    const xpAmount = Math.max(1, Math.round((18 + fightLevel * 4) * levelGapFactor(hero.level, fightLevel)));
     const fill = () => (xpForNextLevel(hero.level) ? (hero.xp || 0) / xpForNextLevel(hero.level) : 1);
     const levelBefore = hero.level;
     const from = fill();

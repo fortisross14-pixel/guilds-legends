@@ -486,6 +486,7 @@ export function interiorMap({ id, layout, people, names = {}, townName, badgesFo
     props,
     // A small room (the founder's house) fits whole on the screen.
     fit: tw <= 12 ? 'contain' : undefined,
+    room: tw > 12,
     background: '#1a120c',
     player: { asset: 'char.founder', ...personSize('char.founder') },
     pad: 9,

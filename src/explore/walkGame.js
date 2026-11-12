@@ -32,6 +32,8 @@ function isSheet(scene, key) {
  * Rooms (`fit: 'contain'`) fit whole on one screen instead, leaving room for the HUD.
  */
 function worldZoomFor(map, cssWidth, cssHeight, coarse) {
+  // Rooms stay at a person's scale: walkers about 60 px tall on a phone, not the whole height of the screen.
+  if (map.room) return Math.max(cssWidth / map.size.width, Math.min(Math.max(cssWidth / map.size.width, cssHeight / map.size.height), coarse ? 1.15 : 1.35));
   if (map.fit === 'contain') return Math.min(2.6, Math.max(0.6, Math.min(cssWidth / map.size.width, (cssHeight - 150) / map.size.height) * 0.96));
   const fill = Math.max(cssWidth / map.size.width, cssHeight / map.size.height);
   const comfort = coarse ? 1.2 : 1;
