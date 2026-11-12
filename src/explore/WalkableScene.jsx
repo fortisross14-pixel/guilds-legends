@@ -56,6 +56,8 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
   const controllerRef = useRef(null);
   const bridge = useRef({});
   const labelRefs = useRef({});
+  const sizes = useRef(new Map());
+  const frame = useRef(0);
   const pointer = useRef(null);
   const keys = useRef(new Set());
   const stickBase = useRef(null);
@@ -103,15 +105,24 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
       function rank(target) {
         return (beaconsRef.current.includes(target.id) ? 4 : 0) + (target.beacon ? 2 : 0) + (target.id === nearId ? 1 : 0);
       }
+      // Label sizes are read once and cached (re-read every couple of seconds): reading them
+      // every frame, between writes, forced a layout per label and slowed big screens to a crawl.
+      frame.current += 1;
+      if (frame.current % 120 === 1) sizes.current = new Map();
       order.forEach((target) => {
         const element = labelRefs.current[target.id];
         if (!element) return;
+        let size = sizes.current.get(target.id);
+        if (!size) {
+          size = { w: element.offsetWidth || 80, h: element.offsetHeight || 28 };
+          sizes.current.set(target.id, size);
+        }
         const point = project(target.labelAt?.x ?? target.x, target.labelAt?.y ?? target.y + 6);
         let { x, y } = point;
         let edge = '';
         // Beacons stay on screen, pinned to the nearest edge with an arrow.
         if ((target.beacon || beaconsRef.current.includes(target.id)) && width) {
-          const half = (element.offsetWidth || 80) / 2 + 10;
+          const half = size.w / 2 + 10;
           const top = 132;
           const bottom = height - 104;
           if (x < half) [x, edge] = [half, 'left'];
@@ -120,8 +131,7 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
           else if (y > bottom) [y, edge] = [bottom, edge || 'down'];
         }
         if (element.dataset.edge !== edge) element.dataset.edge = edge;
-        const w = element.offsetWidth || 80;
-        const h = element.offsetHeight || 28;
+        const { w, h } = size;
         const hits = (rect) => x + w / 2 > rect.left - 4 && x - w / 2 < rect.right + 4 && y + h > rect.top - 2 && y < rect.bottom + 2;
         const under = (!edge && hudRects.current.some(hits)) || placed.some(hits);
         if (!under) placed.push({ left: x - w / 2, right: x + w / 2, top: y, bottom: y + h });

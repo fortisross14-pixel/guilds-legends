@@ -161,10 +161,15 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       });
     }
 
-    update(_time, delta) {
+    update() {
       const player = this.player;
       if (!player) return;
-      const step = (SPEED * Math.min(delta, 50)) / 1000;
+      // Real elapsed time (Phaser smooths and clamps its own delta, which made walking crawl on slow
+      // frames); a long frame is capped so nobody jumps through a wall.
+      const now = performance.now();
+      const delta = Math.min(120, now - (this.lastTick || now));
+      this.lastTick = now;
+      const step = (SPEED * delta) / 1000;
       if (!state.paused && (state.stick.x || state.stick.y)) {
         const length = Math.hypot(state.stick.x, state.stick.y);
         const scale = Math.min(1, length) / length;
