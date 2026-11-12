@@ -232,6 +232,20 @@ MYART.assets.forEach((asset) => {
   else LIST[index] = { ...LIST[index], ...asset, borrow: undefined };
 });
 
+// A person with no painted portrait yet borrows their walking character's standing frame.
+MYART.assets
+  .filter((asset) => asset.still && asset.id.startsWith('npc.'))
+  .forEach((asset) => {
+    const portrait = LIST.find((entry) => entry.id === `portrait.${asset.id.slice(4)}`);
+    if (portrait && !portrait.borrow) portrait.borrow = asset.still;
+  });
+// Story people who also walk in town.
+[['founder', 'char.founder'], ['bram', 'npc.dunmere.fighter'], ['nessa', 'npc.dunmere.nessa'], ['mara', 'npc.dunmere.innkeeper'], ['stablemaster', 'npc.dunmere.stablemaster'], ['herbalist', 'npc.greenhollow.herbalist'], ['quartermaster', 'npc.ironford.archivist']].forEach(([story, walker]) => {
+  const portrait = LIST.find((entry) => entry.id === `portrait.story.${story}`);
+  const still = MYART.assets.find((asset) => asset.id === walker)?.still;
+  if (portrait && still && !portrait.borrow) portrait.borrow = still;
+});
+
 export const ASSETS = Object.fromEntries(LIST.map((asset) => [asset.id, asset]));
 
 /** The registry entry for an id; unknown ids get a loud "missing" placeholder entry. */

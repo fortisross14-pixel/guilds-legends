@@ -75,8 +75,9 @@ export function paintGround({ image, atlas, rows, tileSize = 32, tone = null }) 
         if (SET_FOR[char] !== setId && !(setId === 'water' && char === 'b')) continue;
         [0, 1].forEach((qy) =>
           [0, 1].forEach((qx) => {
-            const h = same(col + (qx ? 1 : -1), row);
-            const v = same(col, row + (qy ? 1 : -1));
+            // A shape one tile wide along an axis fills the tile across it (edges would leave a thin strip).
+            const h = same(col + (qx ? 1 : -1), row) || (!same(col - 1, row) && !same(col + 1, row) && setId === 'path');
+            const v = same(col, row + (qy ? 1 : -1)) || (!same(col, row - 1) && !same(col, row + 1) && setId === 'path');
             let piece = 4;
             if (h && !v) piece = qy ? 7 : 1;
             else if (!h && v) piece = qx ? 5 : 3;
@@ -102,8 +103,8 @@ export function paintGround({ image, atlas, rows, tileSize = 32, tone = null }) 
         if (row > 0) draw('bushTop', col, row - 1);
       } else if (char === 'T' || char === 'x') {
         // Woods and deadwood: a dense canopy (the hand-painted pack has no trees yet).
-        draw(`hedge${hash(col, row) % 4}`, col, row);
-        context.fillStyle = char === 'x' ? 'rgba(30, 20, 40, .5)' : 'rgba(10, 30, 15, .32)';
+        draw('hedge0', col, row);
+        context.fillStyle = char === 'x' ? 'rgba(30, 20, 40, .5)' : `rgba(10, 30, 15, ${0.26 + (hash(col, row) % 5) * 0.03})`;
         context.fillRect(col * D, row * D, D + 0.5, D + 0.5);
       } else if (char === '"') {
         context.fillStyle = 'rgba(20, 45, 20, .3)';
