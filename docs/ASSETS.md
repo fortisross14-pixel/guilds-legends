@@ -12,22 +12,22 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `bg.title` | `art/bg/title.png` | 1280×576 | `art/scenes/scene_01.png` | borrowed | Title screen |
-| `bg.chronicle` | `art/bg/chronicle.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Chronicle menu and its pages |
-| `bg.town.dunmere` | `art/bg/town-dunmere.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Dunmere town directory (fallback menu) |
-| `bg.town.greenhollow` | `art/bg/town-greenhollow.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Greenhollow town directory |
-| `bg.town.ironford` | `art/bg/town-ironford.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Ironford town directory |
-| `bg.town.default` | `art/bg/town-default.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Any other town directory |
-| `bg.town.windmere` | `art/bg/town-windmere.png` | 1280×576 | `art/scenes/scene_07.png` | borrowed | Windmere town directory (no walkable layout yet) |
-| `bg.story.house` | `art/bg/story-house.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Prologue: the player’s house at night, rain and firelight |
-| `bg.story.warning` | `art/bg/story-warning.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act I ending: outside the Dunmere arena after the Harvest Melee |
-| `bg.story.greenhollow` | `art/bg/story-greenhollow.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: Maren Bell’s herb room in Greenhollow |
-| `bg.story.archive` | `art/bg/story-archive.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: the Ironford archive vault |
-| `bg.story.windmere` | `art/bg/story-windmere.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: the cliffside ring at Windmere |
-| `bg.story.thornwood` | `art/bg/story-thornwood.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Act II: the trapper’s hut at the Thornwood edge (Wren) |
-| `bg.story.banner` | `art/bg/story-banner.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Chapter 1 ending: the Guild Hall, Wren facing the banner |
-| `bg.story.chapter` | `art/bg/story-chapter.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Chapter summary and the Chapter 2 teaser |
-| `bg.season.review` | `art/bg/season-review.png` | 1280×576 | `art/scenes/scene_09.png` | borrowed | Season review cards (end of each year, re-opened from the record book) |
+| `bg.title` | `art/packs/myart/bg/background_00_title.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.chronicle` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.town.dunmere` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.town.greenhollow` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.town.ironford` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.town.default` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.town.windmere` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.house` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.warning` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.greenhollow` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.archive` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.windmere` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.thornwood` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.banner` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.story.chapter` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.season.review` | `art/packs/myart/bg/background_04_reward.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
 
 ## Building exterior (`building`, placeholder #5a4636)
 
@@ -58,12 +58,12 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `scene.hall.lot` | `art/hall/lot.png` | 1080×1080 | `art/interiors/guildhall-stage1.png` | borrowed | Guild Hall: the lot seen from above (the cabin, the slots, the yard) |
-| `scene.defeat` | `art/scenes/defeat.png` | 1280×576 | — | placeholder | Defeat: the party wakes in the infirmary (or the founder’s house) |
+| `scene.defeat` | `art/packs/myart/bg/background_01_loading.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
 | `interior.tavern` | `art/packs/myart/interiors/tavern.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.shop` | `art/packs/myart/interiors/shop.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.arena` | `art/packs/myart/interiors/arena.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.herald` | `art/packs/myart/interiors/herald.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
-| `interior.noticeboard` | `art/interiors/noticeboard.png` | 1280×576 | `art/scenes/scene_10.png` | ready | Notice Board (contracts) |
+| `interior.noticeboard` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
 | `interior.house` | `art/packs/myart/interiors/house.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.arena.dunmere` | `art/packs/myart/interiors/arena-dunmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.arena.greenhollow` | `art/packs/myart/interiors/arena-greenhollow.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
@@ -123,14 +123,14 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `hall.equipment.podium.3` | `art/hall/equipment/podium-3.png` | 128×128 | — | placeholder | Training equipment: Podium (Presence), State of the art |
 | `hall.crown.case` | `art/hall/crown-case.png` | 128×128 | — | placeholder | Crown Room: a trophy case (one per trophy, with its count) |
 | `prop.campfire` | `art/packs/myart/props/prop-campfire.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `prop.signpost` | `art/walk/props/signpost.png` | 32×48 | — | placeholder | Exit from a town or wild area |
+| `prop.signpost` | `art/packs/myart/props/prop-signpost.png` | 64×125 | — | ready | Marker on the walk map (Extra Objects) |
 | `prop.gather.herb` | `art/packs/myart/props/prop-gather-herb.png` | 57×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.gather.ore` | `art/packs/myart/props/prop-gather-ore.png` | 58×53 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.gather.coin` | `art/packs/myart/props/prop-gather-coin.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `site.marker.inspect` | `art/sites/marker-inspect.png` | 28×28 | — | placeholder | Contract objective on a walkable map: something to inspect (tracks, a clue, a lock) |
-| `site.marker.collect` | `art/sites/marker-collect.png` | 28×28 | — | placeholder | Contract objective on a walkable map: something to collect (herbs, ore, evidence, a cache) |
-| `site.marker.destination` | `art/sites/marker-destination.png` | 28×28 | — | placeholder | Contract objective on a walkable map: where an escort ends |
-| `site.marker.door` | `art/sites/marker-door.png` | 32×40 | — | placeholder | A door in town to a painted contract site |
+| `site.marker.inspect` | `art/packs/myart/props/site-marker-inspect.png` | 72×30 | — | ready | Marker on the walk map (Extra Objects) |
+| `site.marker.collect` | `art/packs/myart/props/site-marker-collect.png` | 62×58 | — | ready | Marker on the walk map (Extra Objects) |
+| `site.marker.destination` | `art/packs/myart/props/site-marker-destination.png` | 64×128 | — | ready | Marker on the walk map (Extra Objects) |
+| `site.marker.door` | `art/packs/myart/props/site-marker-door.png` | 56×118 | — | ready | Marker on the walk map (Extra Objects) |
 | `prop.fountain` | `art/packs/myart/props/fountain.png` | 192×192 | — | ready | Fountain basin |
 | `prop.noticeboard` | `art/packs/myart/props/prop-noticeboard.png` | 123×113 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.well` | `art/packs/myart/props/well.png` | 127×166 | — | ready | Well (blue roof) |
@@ -218,17 +218,17 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `bg.battle.oldroad` | `art/battle/oldroad.png` | 1280×576 | — | ready | Battles on the Old Road |
-| `bg.battle.thornwood` | `art/battle/thornwood.png` | 1280×576 | — | ready | Battles at the Thornwood edge |
-| `bg.battle.blackwood` | `art/battle/blackwood.png` | 1280×576 | — | ready | Battles in the Blackwood |
-| `bg.battle.arena` | `art/battle/arena.png` | 1280×576 | `art/scenes/scene_02.png` | ready | Tournaments, duels, challenges |
-| `bg.battle.fire` | `art/battle/fire.png` | 1280×576 | `art/scenes/scene_12.png` | ready | Battles in Fire lands |
-| `bg.battle.plant` | `art/battle/plant.png` | 1280×576 | `art/scenes/scene_11.png` | ready | Battles in Plant lands |
-| `bg.battle.water` | `art/battle/water.png` | 1280×576 | `art/scenes/scene_04.png` | ready | Battles in Water lands |
-| `bg.battle.air` | `art/battle/air.png` | 1280×576 | `art/scenes/scene_05.png` | ready | Battles in Air lands |
-| `bg.battle.animal` | `art/battle/animal.png` | 1280×576 | `art/scenes/scene_11.png` | ready | Battles in Animal lands |
-| `bg.battle.psychic` | `art/battle/psychic.png` | 1280×576 | `art/scenes/scene_06.png` | ready | Battles in Psychic lands |
-| `bg.battle.iron` | `art/battle/iron.png` | 1280×576 | `art/scenes/scene_12.png` | ready | Battles in Iron lands |
+| `bg.battle.oldroad` | `art/packs/myart/bg/background_05_sample_00.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.thornwood` | `art/packs/myart/bg/background_05_sample_00.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.blackwood` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.arena` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.fire` | `art/packs/myart/bg/background_01_loading.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.plant` | `art/packs/myart/bg/background_05_sample_00.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.water` | `art/packs/myart/bg/background_05_sample_00.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.air` | `art/packs/myart/bg/background_05_sample_00.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.animal` | `art/packs/myart/bg/background_05_sample_00.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.psychic` | `art/packs/myart/bg/background_03_character.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
+| `bg.battle.iron` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
 
 ## NPC sprite (`npc`, placeholder #4f3d78)
 
@@ -276,6 +276,11 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.role.trader` | `art/packs/myart/chars/npc-role-trader.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.traveller` | `art/packs/myart/chars/npc-role-traveller.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.messenger` | `art/packs/myart/chars/npc-role-messenger.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.story.rook` | `art/packs/myart/chars/npc-story-rook.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.story.thorne` | `art/packs/myart/chars/npc-story-thorne.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.story.wren` | `art/packs/myart/chars/npc-story-wren.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.story.champion` | `art/packs/myart/chars/npc-story-champion.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.story.representative` | `art/packs/myart/chars/npc-story-representative.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 
 ## Tileset (`tileset`, placeholder #3a3a3a)
 
@@ -289,69 +294,69 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `portrait.poi` | `art/portraits/npcs/poi.png` | 160×160 | — | placeholder | Dialogue portrait for places and objects (fountain, statue, wells…) |
-| `portrait.arena.referee` | `art/portraits/npcs/arena-referee.png` | 160×160 | — | placeholder | Arena referee at the fighting ground (starts bouts) |
-| `portrait.arena.registrar` | `art/portraits/npcs/arena-registrar.png` | 160×160 | — | placeholder | Arena registrar at the sign-up desk |
-| `portrait.story.founder` | `art/portraits/story/founder.png` | 160×160 | `art/packs/myart/chars/char-founder-still.png` | borrowed | You, the founder, in dialogue (the class sprite stands in later) |
-| `portrait.story.rook` | `art/portraits/story/rook.png` | 160×160 | — | placeholder | Lord Cassian Rook: battered armor, silver insignia, dying (prologue) |
-| `portrait.story.thorne` | `art/portraits/story/thorne.png` | 160×160 | — | placeholder | Garrick Thorne: guildmaster of the Argent Crown, charming and cold |
-| `portrait.story.mara` | `art/portraits/story/mara.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-innkeeper-still.png` | borrowed | Mara Fen: keeper of the Wayfarer, practical and funny |
-| `portrait.story.nessa` | `art/portraits/story/nessa.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-nessa-still.png` | borrowed | Nessa Thornfield: young Ranger, hunter and guide |
-| `portrait.story.bram` | `art/portraits/story/bram.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-fighter-still.png` | borrowed | Bram Calder: proud Duelist from Dunmere |
-| `portrait.story.wren` | `art/portraits/story/wren.png` | 160×160 | — | placeholder | Wren: the Broken Lantern’s last scout, living as “Linnet” |
-| `portrait.story.herbalist` | `art/portraits/story/herbalist.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-herbalist-still.png` | borrowed | Maren Bell: retired herbalist of Greenhollow |
-| `portrait.story.quartermaster` | `art/portraits/story/quartermaster.png` | 160×160 | `art/packs/myart/chars/npc-ironford-archivist-still.png` | borrowed | Oswin Tull: former Argent Crown quartermaster, now an archive keeper in Ironford |
-| `portrait.story.champion` | `art/portraits/story/champion.png` | 160×160 | — | placeholder | Halden Marsh: aging Windmere champion |
-| `portrait.story.representative` | `art/portraits/story/representative.png` | 160×160 | — | placeholder | The Argent Crown’s well-dressed representative |
-| `portrait.story.stablemaster` | `art/portraits/story/stablemaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-stablemaster-still.png` | borrowed | Gideon Rusk: owner of the old stable on Banner Plaza |
-| `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-merchant-still.png` | borrowed | Dunmere: Corwin Pell, Road merchant (dialogue portrait) |
-| `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-fighter-still.png` | borrowed | Dunmere: Bram Calder, Duelist (dialogue portrait) |
-| `portrait.dunmere.stablemaster` | `art/portraits/npcs/dunmere-stablemaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-stablemaster-still.png` | borrowed | Dunmere: Gideon Rusk, Stable owner (dialogue portrait) |
-| `portrait.dunmere.nessa` | `art/portraits/npcs/dunmere-nessa.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-nessa-still.png` | borrowed | Dunmere: Nessa Thornfield, Hunter (dialogue portrait) |
-| `portrait.dunmere.traveler` | `art/portraits/npcs/dunmere-traveler.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-traveler-still.png` | borrowed | Dunmere: Iven Quill, Traveler (dialogue portrait) |
-| `portrait.dunmere.herald` | `art/portraits/npcs/dunmere-herald.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-herald-still.png` | borrowed | Dunmere: Orren Pike, Herald (dialogue portrait) |
-| `portrait.dunmere.kilnmaster` | `art/portraits/npcs/dunmere-kilnmaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-kilnmaster-still.png` | borrowed | Dunmere: Hesta Coal, Kiln-master (dialogue portrait) |
-| `portrait.dunmere.lamplighter` | `art/portraits/npcs/dunmere-lamplighter.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-lamplighter-still.png` | borrowed | Dunmere: Pip, Lamplighter (dialogue portrait) |
-| `portrait.greenhollow.herbalist` | `art/portraits/npcs/greenhollow-herbalist.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-herbalist-still.png` | borrowed | Greenhollow: Maren Bell, Herbalist (dialogue portrait) |
-| `portrait.greenhollow.warden` | `art/portraits/npcs/greenhollow-warden.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-warden-still.png` | borrowed | Greenhollow: Warden Tamsin, Forest warden (dialogue portrait) |
-| `portrait.greenhollow.storyteller` | `art/portraits/npcs/greenhollow-storyteller.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-storyteller-still.png` | borrowed | Greenhollow: Old Fen, Storyteller (dialogue portrait) |
-| `portrait.greenhollow.stablehand` | `art/portraits/npcs/greenhollow-stablehand.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-stablehand-still.png` | borrowed | Greenhollow: Kit, Stablehand (dialogue portrait) |
-| `portrait.greenhollow.cleric` | `art/portraits/npcs/greenhollow-cleric.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-cleric-still.png` | borrowed | Greenhollow: Brother Alder, Grove cleric (dialogue portrait) |
-| `portrait.ironford.foreman` | `art/portraits/npcs/ironford-foreman.png` | 160×160 | `art/packs/myart/chars/npc-ironford-foreman-still.png` | borrowed | Ironford: Dagna Hale, Foundry foreman (dialogue portrait) |
-| `portrait.ironford.tollkeeper` | `art/portraits/npcs/ironford-tollkeeper.png` | 160×160 | `art/packs/myart/chars/npc-ironford-tollkeeper-still.png` | borrowed | Ironford: Ansel Brook, Bridge toll-keeper (dialogue portrait) |
-| `portrait.ironford.smith` | `art/portraits/npcs/ironford-smith.png` | 160×160 | `art/packs/myart/chars/npc-ironford-smith-still.png` | borrowed | Ironford: Corr Anvilson, Smith (dialogue portrait) |
-| `portrait.ironford.guard` | `art/portraits/npcs/ironford-guard.png` | 160×160 | `art/packs/myart/chars/npc-ironford-guard-still.png` | borrowed | Ironford: Ysolde Marr, Caravan guard (dialogue portrait) |
-| `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | `art/packs/myart/chars/npc-ironford-scholar-still.png` | borrowed | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
-| `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | `art/packs/myart/chars/npc-ironford-archivist-still.png` | borrowed | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
-| `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | `art/packs/myart/chars/npc-windmere-courier-still.png` | borrowed | Windmere: Sela Wick, Courier (dialogue portrait) |
-| `portrait.windmere.monk` | `art/portraits/npcs/windmere-monk.png` | 160×160 | `art/packs/myart/chars/npc-windmere-monk-still.png` | borrowed | Windmere: Brother Hale, Monastery keeper (dialogue portrait) |
-| `portrait.role.high-priestess` | `art/portraits/roles/high-priestess.png` | 160×160 | `art/packs/myart/chars/npc-role-high-priestess-still.png` | borrowed | Dialogue portrait: High priestess |
-| `portrait.role.priest` | `art/portraits/roles/priest.png` | 160×160 | `art/packs/myart/chars/npc-role-priest-still.png` | borrowed | Dialogue portrait: Priest |
-| `portrait.role.shopkeeper` | `art/portraits/roles/shopkeeper.png` | 160×160 | `art/packs/myart/chars/npc-role-shopkeeper-still.png` | borrowed | Dialogue portrait: Shopkeeper |
-| `portrait.role.herald-s-clerk` | `art/portraits/roles/herald-s-clerk.png` | 160×160 | `art/packs/myart/chars/npc-role-herald-s-clerk-still.png` | borrowed | Dialogue portrait: Herald’s clerk |
-| `portrait.greenhollow.innkeeper` | `art/portraits/npcs/greenhollow-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-innkeeper-still.png` | borrowed | Dialogue portrait: Innkeeper |
-| `portrait.role.herb-seller` | `art/portraits/roles/herb-seller.png` | 160×160 | `art/packs/myart/chars/npc-role-herb-seller-still.png` | borrowed | Dialogue portrait: Herb seller |
-| `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | `art/packs/myart/chars/npc-ironford-barkeep-still.png` | borrowed | Dialogue portrait: Barkeep |
-| `portrait.role.forge-trader` | `art/portraits/roles/forge-trader.png` | 160×160 | `art/packs/myart/chars/npc-role-forge-trader-still.png` | borrowed | Dialogue portrait: Forge trader |
-| `portrait.role.assay-clerk` | `art/portraits/roles/assay-clerk.png` | 160×160 | `art/packs/myart/chars/npc-role-assay-clerk-still.png` | borrowed | Dialogue portrait: Assay clerk |
-| `portrait.role.innkeeper` | `art/portraits/roles/innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-role-innkeeper-still.png` | borrowed | Dialogue portrait: Innkeeper |
-| `portrait.role.courier-supplier` | `art/portraits/roles/courier-supplier.png` | 160×160 | `art/packs/myart/chars/npc-role-courier-supplier-still.png` | borrowed | Dialogue portrait: Courier supplier |
-| `portrait.role.council-steward` | `art/portraits/roles/council-steward.png` | 160×160 | `art/packs/myart/chars/npc-role-council-steward-still.png` | borrowed | Dialogue portrait by role: council steward |
-| `portrait.role.watch-sergeant` | `art/portraits/roles/watch-sergeant.png` | 160×160 | `art/packs/myart/chars/npc-role-watch-sergeant-still.png` | borrowed | Dialogue portrait by role: watch sergeant |
-| `portrait.role.temple-acolyte` | `art/portraits/roles/temple-acolyte.png` | 160×160 | `art/packs/myart/chars/npc-role-temple-acolyte-still.png` | borrowed | Dialogue portrait by role: temple acolyte |
-| `portrait.role.trader` | `art/portraits/roles/trader.png` | 160×160 | `art/packs/myart/chars/npc-role-trader-still.png` | borrowed | Dialogue portrait by role: trader |
-| `portrait.role.traveller` | `art/portraits/roles/traveller.png` | 160×160 | `art/packs/myart/chars/npc-role-traveller-still.png` | borrowed | Dialogue portrait by role: traveller |
-| `portrait.role.messenger` | `art/portraits/roles/messenger.png` | 160×160 | `art/packs/myart/chars/npc-role-messenger-still.png` | borrowed | Dialogue portrait by role: messenger |
-| `portrait.class.guardian` | `art/portraits/classes/guardian.png` | 160×160 | `art/portraits/guardian.png` | borrowed | Dialogue portrait for a Guardian recruit |
-| `portrait.class.duelist` | `art/portraits/classes/duelist.png` | 160×160 | `art/portraits/duelist.png` | borrowed | Dialogue portrait for a Duelist recruit |
-| `portrait.class.ranger` | `art/portraits/classes/ranger.png` | 160×160 | `art/portraits/ranger.png` | borrowed | Dialogue portrait for a Ranger recruit |
-| `portrait.class.rogue` | `art/portraits/classes/rogue.png` | 160×160 | `art/portraits/rogue.png` | borrowed | Dialogue portrait for a Rogue recruit |
-| `portrait.class.cleric` | `art/portraits/classes/cleric.png` | 160×160 | `art/portraits/cleric.png` | borrowed | Dialogue portrait for a Cleric recruit |
-| `portrait.class.mage` | `art/portraits/classes/mage.png` | 160×160 | `art/portraits/mage.png` | borrowed | Dialogue portrait for a Mage recruit |
-| `portrait.class.scholar` | `art/portraits/classes/scholar.png` | 160×160 | `art/portraits/scholar.png` | borrowed | Dialogue portrait for a Scholar recruit |
-| `portrait.class.artificer` | `art/portraits/classes/artificer.png` | 160×160 | `art/portraits/artificer.png` | borrowed | Dialogue portrait for a Artificer recruit |
-| `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-innkeeper-still.png` | borrowed | Dialogue portrait (its walking character until painted) |
-| `portrait.role.registrar` | `art/portraits/npcs/role-registrar.png` | 160×160 | `art/packs/myart/chars/npc-role-registrar-still.png` | borrowed | Dialogue portrait (its walking character until painted) |
-| `portrait.role.referee` | `art/portraits/npcs/role-referee.png` | 160×160 | `art/packs/myart/chars/npc-role-referee-still.png` | borrowed | Dialogue portrait (its walking character until painted) |
+| `portrait.arena.referee` | `art/portraits/npcs/arena-referee.png` | 160×160 | `art/packs/myart/chars/npc-role-referee-bust.png` | borrowed | Arena referee at the fighting ground (starts bouts) |
+| `portrait.arena.registrar` | `art/portraits/npcs/arena-registrar.png` | 160×160 | `art/packs/myart/chars/npc-role-registrar-bust.png` | borrowed | Arena registrar at the sign-up desk |
+| `portrait.story.founder` | `art/portraits/story/founder.png` | 160×160 | `art/packs/myart/chars/char-founder-bust.png` | borrowed | You, the founder, in dialogue (the class sprite stands in later) |
+| `portrait.story.rook` | `art/portraits/story/rook.png` | 160×160 | `art/packs/myart/chars/npc-story-rook-bust.png` | borrowed | Lord Cassian Rook: battered armor, silver insignia, dying (prologue) |
+| `portrait.story.thorne` | `art/portraits/story/thorne.png` | 160×160 | `art/packs/myart/chars/npc-story-thorne-bust.png` | borrowed | Garrick Thorne: guildmaster of the Argent Crown, charming and cold |
+| `portrait.story.mara` | `art/portraits/story/mara.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-innkeeper-bust.png` | borrowed | Mara Fen: keeper of the Wayfarer, practical and funny |
+| `portrait.story.nessa` | `art/portraits/story/nessa.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-nessa-bust.png` | borrowed | Nessa Thornfield: young Ranger, hunter and guide |
+| `portrait.story.bram` | `art/portraits/story/bram.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-fighter-bust.png` | borrowed | Bram Calder: proud Duelist from Dunmere |
+| `portrait.story.wren` | `art/portraits/story/wren.png` | 160×160 | `art/packs/myart/chars/npc-story-wren-bust.png` | borrowed | Wren: the Broken Lantern’s last scout, living as “Linnet” |
+| `portrait.story.herbalist` | `art/portraits/story/herbalist.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-herbalist-bust.png` | borrowed | Maren Bell: retired herbalist of Greenhollow |
+| `portrait.story.quartermaster` | `art/portraits/story/quartermaster.png` | 160×160 | `art/packs/myart/chars/npc-ironford-archivist-bust.png` | borrowed | Oswin Tull: former Argent Crown quartermaster, now an archive keeper in Ironford |
+| `portrait.story.champion` | `art/portraits/story/champion.png` | 160×160 | `art/packs/myart/chars/npc-story-champion-bust.png` | borrowed | Halden Marsh: aging Windmere champion |
+| `portrait.story.representative` | `art/portraits/story/representative.png` | 160×160 | `art/packs/myart/chars/npc-story-representative-bust.png` | borrowed | The Argent Crown’s well-dressed representative |
+| `portrait.story.stablemaster` | `art/portraits/story/stablemaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-stablemaster-bust.png` | borrowed | Gideon Rusk: owner of the old stable on Banner Plaza |
+| `portrait.dunmere.merchant` | `art/portraits/npcs/dunmere-merchant.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-merchant-bust.png` | borrowed | Dunmere: Corwin Pell, Road merchant (dialogue portrait) |
+| `portrait.dunmere.fighter` | `art/portraits/npcs/dunmere-fighter.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-fighter-bust.png` | borrowed | Dunmere: Bram Calder, Duelist (dialogue portrait) |
+| `portrait.dunmere.stablemaster` | `art/portraits/npcs/dunmere-stablemaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-stablemaster-bust.png` | borrowed | Dunmere: Gideon Rusk, Stable owner (dialogue portrait) |
+| `portrait.dunmere.nessa` | `art/portraits/npcs/dunmere-nessa.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-nessa-bust.png` | borrowed | Dunmere: Nessa Thornfield, Hunter (dialogue portrait) |
+| `portrait.dunmere.traveler` | `art/portraits/npcs/dunmere-traveler.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-traveler-bust.png` | borrowed | Dunmere: Iven Quill, Traveler (dialogue portrait) |
+| `portrait.dunmere.herald` | `art/portraits/npcs/dunmere-herald.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-herald-bust.png` | borrowed | Dunmere: Orren Pike, Herald (dialogue portrait) |
+| `portrait.dunmere.kilnmaster` | `art/portraits/npcs/dunmere-kilnmaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-kilnmaster-bust.png` | borrowed | Dunmere: Hesta Coal, Kiln-master (dialogue portrait) |
+| `portrait.dunmere.lamplighter` | `art/portraits/npcs/dunmere-lamplighter.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-lamplighter-bust.png` | borrowed | Dunmere: Pip, Lamplighter (dialogue portrait) |
+| `portrait.greenhollow.herbalist` | `art/portraits/npcs/greenhollow-herbalist.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-herbalist-bust.png` | borrowed | Greenhollow: Maren Bell, Herbalist (dialogue portrait) |
+| `portrait.greenhollow.warden` | `art/portraits/npcs/greenhollow-warden.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-warden-bust.png` | borrowed | Greenhollow: Warden Tamsin, Forest warden (dialogue portrait) |
+| `portrait.greenhollow.storyteller` | `art/portraits/npcs/greenhollow-storyteller.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-storyteller-bust.png` | borrowed | Greenhollow: Old Fen, Storyteller (dialogue portrait) |
+| `portrait.greenhollow.stablehand` | `art/portraits/npcs/greenhollow-stablehand.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-stablehand-bust.png` | borrowed | Greenhollow: Kit, Stablehand (dialogue portrait) |
+| `portrait.greenhollow.cleric` | `art/portraits/npcs/greenhollow-cleric.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-cleric-bust.png` | borrowed | Greenhollow: Brother Alder, Grove cleric (dialogue portrait) |
+| `portrait.ironford.foreman` | `art/portraits/npcs/ironford-foreman.png` | 160×160 | `art/packs/myart/chars/npc-ironford-foreman-bust.png` | borrowed | Ironford: Dagna Hale, Foundry foreman (dialogue portrait) |
+| `portrait.ironford.tollkeeper` | `art/portraits/npcs/ironford-tollkeeper.png` | 160×160 | `art/packs/myart/chars/npc-ironford-tollkeeper-bust.png` | borrowed | Ironford: Ansel Brook, Bridge toll-keeper (dialogue portrait) |
+| `portrait.ironford.smith` | `art/portraits/npcs/ironford-smith.png` | 160×160 | `art/packs/myart/chars/npc-ironford-smith-bust.png` | borrowed | Ironford: Corr Anvilson, Smith (dialogue portrait) |
+| `portrait.ironford.guard` | `art/portraits/npcs/ironford-guard.png` | 160×160 | `art/packs/myart/chars/npc-ironford-guard-bust.png` | borrowed | Ironford: Ysolde Marr, Caravan guard (dialogue portrait) |
+| `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | `art/packs/myart/chars/npc-ironford-scholar-bust.png` | borrowed | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
+| `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | `art/packs/myart/chars/npc-ironford-archivist-bust.png` | borrowed | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
+| `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | `art/packs/myart/chars/npc-windmere-courier-bust.png` | borrowed | Windmere: Sela Wick, Courier (dialogue portrait) |
+| `portrait.windmere.monk` | `art/portraits/npcs/windmere-monk.png` | 160×160 | `art/packs/myart/chars/npc-windmere-monk-bust.png` | borrowed | Windmere: Brother Hale, Monastery keeper (dialogue portrait) |
+| `portrait.role.high-priestess` | `art/portraits/roles/high-priestess.png` | 160×160 | `art/packs/myart/chars/npc-role-high-priestess-bust.png` | borrowed | Dialogue portrait: High priestess |
+| `portrait.role.priest` | `art/portraits/roles/priest.png` | 160×160 | `art/packs/myart/chars/npc-role-priest-bust.png` | borrowed | Dialogue portrait: Priest |
+| `portrait.role.shopkeeper` | `art/portraits/roles/shopkeeper.png` | 160×160 | `art/packs/myart/chars/npc-role-shopkeeper-bust.png` | borrowed | Dialogue portrait: Shopkeeper |
+| `portrait.role.herald-s-clerk` | `art/portraits/roles/herald-s-clerk.png` | 160×160 | `art/packs/myart/chars/npc-role-herald-s-clerk-bust.png` | borrowed | Dialogue portrait: Herald’s clerk |
+| `portrait.greenhollow.innkeeper` | `art/portraits/npcs/greenhollow-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-innkeeper-bust.png` | borrowed | Dialogue portrait: Innkeeper |
+| `portrait.role.herb-seller` | `art/portraits/roles/herb-seller.png` | 160×160 | `art/packs/myart/chars/npc-role-herb-seller-bust.png` | borrowed | Dialogue portrait: Herb seller |
+| `portrait.ironford.barkeep` | `art/portraits/npcs/ironford-barkeep.png` | 160×160 | `art/packs/myart/chars/npc-ironford-barkeep-bust.png` | borrowed | Dialogue portrait: Barkeep |
+| `portrait.role.forge-trader` | `art/portraits/roles/forge-trader.png` | 160×160 | `art/packs/myart/chars/npc-role-forge-trader-bust.png` | borrowed | Dialogue portrait: Forge trader |
+| `portrait.role.assay-clerk` | `art/portraits/roles/assay-clerk.png` | 160×160 | `art/packs/myart/chars/npc-role-assay-clerk-bust.png` | borrowed | Dialogue portrait: Assay clerk |
+| `portrait.role.innkeeper` | `art/portraits/roles/innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-role-innkeeper-bust.png` | borrowed | Dialogue portrait: Innkeeper |
+| `portrait.role.courier-supplier` | `art/portraits/roles/courier-supplier.png` | 160×160 | `art/packs/myart/chars/npc-role-courier-supplier-bust.png` | borrowed | Dialogue portrait: Courier supplier |
+| `portrait.role.council-steward` | `art/portraits/roles/council-steward.png` | 160×160 | `art/packs/myart/chars/npc-role-council-steward-bust.png` | borrowed | Dialogue portrait by role: council steward |
+| `portrait.role.watch-sergeant` | `art/portraits/roles/watch-sergeant.png` | 160×160 | `art/packs/myart/chars/npc-role-watch-sergeant-bust.png` | borrowed | Dialogue portrait by role: watch sergeant |
+| `portrait.role.temple-acolyte` | `art/portraits/roles/temple-acolyte.png` | 160×160 | `art/packs/myart/chars/npc-role-temple-acolyte-bust.png` | borrowed | Dialogue portrait by role: temple acolyte |
+| `portrait.role.trader` | `art/portraits/roles/trader.png` | 160×160 | `art/packs/myart/chars/npc-role-trader-bust.png` | borrowed | Dialogue portrait by role: trader |
+| `portrait.role.traveller` | `art/portraits/roles/traveller.png` | 160×160 | `art/packs/myart/chars/npc-role-traveller-bust.png` | borrowed | Dialogue portrait by role: traveller |
+| `portrait.role.messenger` | `art/portraits/roles/messenger.png` | 160×160 | `art/packs/myart/chars/npc-role-messenger-bust.png` | borrowed | Dialogue portrait by role: messenger |
+| `portrait.class.guardian` | `art/packs/myart/chars/char-class-guardian-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.duelist` | `art/packs/myart/chars/char-class-duelist-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.ranger` | `art/packs/myart/chars/char-class-ranger-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.rogue` | `art/packs/myart/chars/char-class-rogue-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.cleric` | `art/packs/myart/chars/char-class-cleric-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.mage` | `art/packs/myart/chars/char-class-mage-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.scholar` | `art/packs/myart/chars/char-class-scholar-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.class.artificer` | `art/packs/myart/chars/char-class-artificer-bust.png` | 192×192 | — | ready | Class portrait (the HeroEditor close-up) |
+| `portrait.dunmere.innkeeper` | `art/portraits/npcs/dunmere-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-innkeeper-bust.png` | borrowed | Dialogue portrait (its walking character until painted) |
+| `portrait.role.registrar` | `art/portraits/npcs/role-registrar.png` | 160×160 | `art/packs/myart/chars/npc-role-registrar-bust.png` | borrowed | Dialogue portrait (its walking character until painted) |
+| `portrait.role.referee` | `art/portraits/npcs/role-referee.png` | 160×160 | `art/packs/myart/chars/npc-role-referee-bust.png` | borrowed | Dialogue portrait (its walking character until painted) |
 
 ## Battle effect (`fx`, placeholder #5a2a6a)
 
@@ -371,26 +376,26 @@ Phase 7 will add style notes and generation prompts for each entry.
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `crest.charter.merchant` | `art/crests/charter-merchant.png` | 128×128 | — | placeholder | Charter crest: Merchant House (new game, top bar, Herald) |
-| `crest.charter.free` | `art/crests/charter-free.png` | 128×128 | — | placeholder | Charter crest: Free Company (new game, top bar, Herald) |
-| `crest.charter.scholars` | `art/crests/charter-scholars.png` | 128×128 | — | placeholder | Charter crest: Scholars’ Lodge (new game, top bar, Herald) |
-| `crest.charter.shield` | `art/crests/charter-shield.png` | 128×128 | — | placeholder | Charter crest: Shield of the People (new game, top bar, Herald) |
-| `crest.patron.trade` | `art/crests/patron-trade.png` | 128×128 | — | placeholder | Patron crest: The Dunmere Trade House (Connections) |
-| `crest.patron.temple` | `art/crests/patron-temple.png` | 128×128 | — | placeholder | Patron crest: The Temple of the Dawn (Connections) |
-| `crest.patron.smiths` | `art/crests/patron-smiths.png` | 128×128 | — | placeholder | Patron crest: The Ironford Smiths’ Guild (Connections) |
-| `crest.argent-crown` | `art/crests/argent-crown.png` | 128×128 | — | placeholder | The Argent Crown’s emblem (scratched into the door, Herald, rival pages) |
+| `crest.charter.merchant` | `art/packs/myart/emblems/crest-charter-merchant.png` | 361×294 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.charter.free` | `art/packs/myart/emblems/crest-charter-free.png` | 361×294 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.charter.scholars` | `art/packs/myart/emblems/crest-charter-scholars.png` | 361×294 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.charter.shield` | `art/packs/myart/emblems/crest-charter-shield.png` | 361×294 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.patron.trade` | `art/packs/myart/emblems/crest-patron-trade.png` | 149×129 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.patron.temple` | `art/packs/myart/emblems/crest-patron-temple.png` | 135×124 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.patron.smiths` | `art/packs/myart/emblems/crest-patron-smiths.png` | 135×89 | — | ready | Emblem (GUI PRO Kit icon) |
+| `crest.argent-crown` | `art/packs/myart/emblems/crest-argent-crown.png` | 126×102 | — | ready | Emblem (GUI PRO Kit icon) |
 
 ## Interface (`ui`, placeholder #255a5a)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `relic.banner` | `art/relics/last-banner.png` | 120×160 | — | placeholder | The Last Banner: torn, bloodstained, a golden lantern (naming card, Trophy hall, Lore codex) |
-| `award.mvp` | `art/awards/award-mvp.png` | 64×64 | — | placeholder | MVP of the season (review, career tab, hall of fame) |
-| `award.rookie` | `art/awards/award-rookie.png` | 64×64 | — | placeholder | Rookie of the year |
-| `award.signing` | `art/awards/award-signing.png` | 64×64 | — | placeholder | Best signing of the year |
-| `trophy.title` | `art/awards/trophy-title.png` | 64×64 | — | placeholder | Tournament title (season review, record book) |
-| `trophy.record` | `art/awards/trophy-record.png` | 64×64 | — | placeholder | Record broken (moment, record book) |
-| `trophy.hall` | `art/awards/trophy-hall.png` | 64×64 | — | placeholder | Hall of fame plaque |
+| `relic.banner` | `art/packs/myart/emblems/relic-banner.png` | 139×139 | — | ready | Emblem (GUI PRO Kit icon) |
+| `award.mvp` | `art/packs/myart/emblems/award-mvp.png` | 93×117 | — | ready | Emblem (GUI PRO Kit icon) |
+| `award.rookie` | `art/packs/myart/emblems/award-rookie.png` | 93×117 | — | ready | Emblem (GUI PRO Kit icon) |
+| `award.signing` | `art/packs/myart/emblems/award-signing.png` | 116×126 | — | ready | Emblem (GUI PRO Kit icon) |
+| `trophy.title` | `art/packs/myart/emblems/trophy-title.png` | 136×101 | — | ready | Emblem (GUI PRO Kit icon) |
+| `trophy.record` | `art/packs/myart/emblems/trophy-record.png` | 116×112 | — | ready | Emblem (GUI PRO Kit icon) |
+| `trophy.hall` | `art/packs/myart/emblems/trophy-hall.png` | 93×117 | — | ready | Emblem (GUI PRO Kit icon) |
 | `ui.overworld` | `ui/overworld.png` | 200×125 | — | ready | World map terrain |
 
 ## Enemy on the map (`enemy`, placeholder #7a3a22)

@@ -1086,6 +1086,349 @@
    "use": "Building interior (hand-painted tiles, scripts/art/interiors.py)"
   },
   {
+   "id": "bg.title",
+   "path": "art/packs/myart/bg/background_00_title.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "interior.noticeboard",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.town.dunmere",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.town.greenhollow",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.town.ironford",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.town.windmere",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.town.default",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.arena",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.iron",
+   "path": "art/packs/myart/bg/background_02_home.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.chronicle",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.house",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.warning",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.greenhollow",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.archive",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.windmere",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.thornwood",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.banner",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.story.chapter",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.blackwood",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.psychic",
+   "path": "art/packs/myart/bg/background_03_character.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.season.review",
+   "path": "art/packs/myart/bg/background_04_reward.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "scene.defeat",
+   "path": "art/packs/myart/bg/background_01_loading.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.fire",
+   "path": "art/packs/myart/bg/background_01_loading.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.oldroad",
+   "path": "art/packs/myart/bg/background_05_sample_00.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.thornwood",
+   "path": "art/packs/myart/bg/background_05_sample_00.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.plant",
+   "path": "art/packs/myart/bg/background_05_sample_00.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.animal",
+   "path": "art/packs/myart/bg/background_05_sample_00.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.air",
+   "path": "art/packs/myart/bg/background_05_sample_00.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "bg.battle.water",
+   "path": "art/packs/myart/bg/background_05_sample_00.jpg",
+   "w": 1920,
+   "h": 1080,
+   "use": "Backdrop (GUI PRO Kit painted background)"
+  },
+  {
+   "id": "crest.charter.merchant",
+   "path": "art/packs/myart/emblems/crest-charter-merchant.png",
+   "w": 361,
+   "h": 294,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.charter.free",
+   "path": "art/packs/myart/emblems/crest-charter-free.png",
+   "w": 361,
+   "h": 294,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.charter.scholars",
+   "path": "art/packs/myart/emblems/crest-charter-scholars.png",
+   "w": 361,
+   "h": 294,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.charter.shield",
+   "path": "art/packs/myart/emblems/crest-charter-shield.png",
+   "w": 361,
+   "h": 294,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.patron.trade",
+   "path": "art/packs/myart/emblems/crest-patron-trade.png",
+   "w": 149,
+   "h": 129,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.patron.temple",
+   "path": "art/packs/myart/emblems/crest-patron-temple.png",
+   "w": 135,
+   "h": 124,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.patron.smiths",
+   "path": "art/packs/myart/emblems/crest-patron-smiths.png",
+   "w": 135,
+   "h": 89,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "crest.argent-crown",
+   "path": "art/packs/myart/emblems/crest-argent-crown.png",
+   "w": 126,
+   "h": 102,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "relic.banner",
+   "path": "art/packs/myart/emblems/relic-banner.png",
+   "w": 139,
+   "h": 139,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "award.mvp",
+   "path": "art/packs/myart/emblems/award-mvp.png",
+   "w": 93,
+   "h": 117,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "award.rookie",
+   "path": "art/packs/myart/emblems/award-rookie.png",
+   "w": 93,
+   "h": 117,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "award.signing",
+   "path": "art/packs/myart/emblems/award-signing.png",
+   "w": 116,
+   "h": 126,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "trophy.title",
+   "path": "art/packs/myart/emblems/trophy-title.png",
+   "w": 136,
+   "h": 101,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "trophy.record",
+   "path": "art/packs/myart/emblems/trophy-record.png",
+   "w": 116,
+   "h": 112,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "trophy.hall",
+   "path": "art/packs/myart/emblems/trophy-hall.png",
+   "w": 93,
+   "h": 117,
+   "use": "Emblem (GUI PRO Kit icon)"
+  },
+  {
+   "id": "site.marker.inspect",
+   "path": "art/packs/myart/props/site-marker-inspect.png",
+   "w": 72,
+   "h": 30,
+   "use": "Marker on the walk map (Extra Objects)"
+  },
+  {
+   "id": "site.marker.collect",
+   "path": "art/packs/myart/props/site-marker-collect.png",
+   "w": 62,
+   "h": 58,
+   "use": "Marker on the walk map (Extra Objects)"
+  },
+  {
+   "id": "site.marker.destination",
+   "path": "art/packs/myart/props/site-marker-destination.png",
+   "w": 64,
+   "h": 128,
+   "use": "Marker on the walk map (Extra Objects)"
+  },
+  {
+   "id": "site.marker.door",
+   "path": "art/packs/myart/props/site-marker-door.png",
+   "w": 56,
+   "h": 118,
+   "use": "Marker on the walk map (Extra Objects)"
+  },
+  {
+   "id": "prop.signpost",
+   "path": "art/packs/myart/props/prop-signpost.png",
+   "w": 64,
+   "h": 125,
+   "use": "Marker on the walk map (Extra Objects)"
+  },
+  {
    "id": "char.founder",
    "group": "char",
    "path": "art/packs/myart/chars/char-founder.png",
@@ -1761,6 +2104,86 @@
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
   },
   {
+   "id": "npc.story.rook",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-story-rook.png",
+   "still": "art/packs/myart/chars/npc-story-rook-still.png",
+   "bust": "art/packs/myart/chars/npc-story-rook-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.story.thorne",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-story-thorne.png",
+   "still": "art/packs/myart/chars/npc-story-thorne-still.png",
+   "bust": "art/packs/myart/chars/npc-story-thorne-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.story.wren",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-story-wren.png",
+   "still": "art/packs/myart/chars/npc-story-wren-still.png",
+   "bust": "art/packs/myart/chars/npc-story-wren-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.story.champion",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-story-champion.png",
+   "still": "art/packs/myart/chars/npc-story-champion-still.png",
+   "bust": "art/packs/myart/chars/npc-story-champion-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.story.representative",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-story-representative.png",
+   "still": "art/packs/myart/chars/npc-story-representative-still.png",
+   "bust": "art/packs/myart/chars/npc-story-representative-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
    "id": "char.class.guardian",
    "group": "char",
    "path": "art/packs/myart/chars/char-class-guardian.png",
@@ -1776,6 +2199,13 @@
    "sideOnly": true,
    "walker": true,
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "portrait.class.guardian",
+   "path": "art/packs/myart/chars/char-class-guardian-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
   },
   {
    "id": "char.class.duelist",
@@ -1795,6 +2225,13 @@
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
   },
   {
+   "id": "portrait.class.duelist",
+   "path": "art/packs/myart/chars/char-class-duelist-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
+  },
+  {
    "id": "char.class.ranger",
    "group": "char",
    "path": "art/packs/myart/chars/char-class-ranger.png",
@@ -1810,6 +2247,13 @@
    "sideOnly": true,
    "walker": true,
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "portrait.class.ranger",
+   "path": "art/packs/myart/chars/char-class-ranger-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
   },
   {
    "id": "char.class.rogue",
@@ -1829,6 +2273,13 @@
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
   },
   {
+   "id": "portrait.class.rogue",
+   "path": "art/packs/myart/chars/char-class-rogue-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
+  },
+  {
    "id": "char.class.cleric",
    "group": "char",
    "path": "art/packs/myart/chars/char-class-cleric.png",
@@ -1844,6 +2295,13 @@
    "sideOnly": true,
    "walker": true,
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "portrait.class.cleric",
+   "path": "art/packs/myart/chars/char-class-cleric-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
   },
   {
    "id": "char.class.mage",
@@ -1863,6 +2321,13 @@
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
   },
   {
+   "id": "portrait.class.mage",
+   "path": "art/packs/myart/chars/char-class-mage-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
+  },
+  {
    "id": "char.class.scholar",
    "group": "char",
    "path": "art/packs/myart/chars/char-class-scholar.png",
@@ -1880,6 +2345,13 @@
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
   },
   {
+   "id": "portrait.class.scholar",
+   "path": "art/packs/myart/chars/char-class-scholar-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
+  },
+  {
    "id": "char.class.artificer",
    "group": "char",
    "path": "art/packs/myart/chars/char-class-artificer.png",
@@ -1895,6 +2367,13 @@
    "sideOnly": true,
    "walker": true,
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "portrait.class.artificer",
+   "path": "art/packs/myart/chars/char-class-artificer-bust.png",
+   "w": 192,
+   "h": 192,
+   "use": "Class portrait (the HeroEditor close-up)"
   },
   {
    "id": "battle.foe.road-bandit",

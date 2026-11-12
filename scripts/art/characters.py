@@ -67,6 +67,12 @@ R = {
     'npc.role.messenger': dict(hair='ShortHair', hc='blond', skin='fair', armor='Scout [Paint]', eyes='Female'),
     'npc.role.high-priestess': dict(hair='LongHair', hc='grey', skin='light', armor='BishopArmor', helmet='BishopHat [FullHair]', eyes='Female', ec='grey'),
     'npc.role.priest': dict(hair='BowlCut' if False else 'SideFringe', hc='brown', skin='tan', armor='Cleric [Paint]', eyes='Male', ec='hazel', mouth='Normal'),
+    # Story people with no walking part yet: drawn for their portraits.
+    'npc.story.rook': dict(hair='ShortHair', hc='grey', skin='light', armor='KnightArmor [Paint]', atint=(0.75, 0.75, 0.8), eyes='Male', ec='grey', beard=True, brows='Angry', mouth='Normal'),
+    'npc.story.thorne': dict(hair='Slicked', hc='black', skin='fair', armor='ChampionArmor', cape='RoyalCape [Paint]', eyes='Male', ec='blue', mouth='Smirk'),
+    'npc.story.wren': dict(hair='ShortPonytail', hc='brown', skin='tan', armor='ThiefArmor', helmet='AssassinHood [Paint]', eyes='Female', ec='green'),
+    'npc.story.champion': dict(hair='PushedBack', hc='grey', skin='tan', armor='GladiatorArmor', eyes='Male', ec='brown', beard=True),
+    'npc.story.representative': dict(hair='Slicked', hc='blond', skin='fair', armor='CardinalArmor', eyes='Male', ec='grey', mouth='Smirk'),
     'char.class.guardian': dict(hair='ShortHair', hc='brown', skin='tan', armor='KnightArmor [Paint]', helmet='KnightHelm [Paint]', shield='KnightShield', weapon='Sword/ShortIronKatana [Paint]', eyes='Male'),
     'char.class.duelist': dict(hair='Slicked', hc='black', skin='light', armor='MercenaryArmor [Paint]', weapon='Sword/ShortIronKatana [Paint]', eyes='Male', brows='Angry'),
     'char.class.ranger': dict(hair='ShortPonytail', hc='auburn', skin='fair', armor='HunterLightArmor', helmet='RangerHat [Paint]', back='ArrowQuiver', eyes='Female'),

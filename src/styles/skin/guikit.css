@@ -139,7 +139,7 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .dialogue__controls button.is-on { background: none; color: #4a2c06; border-image-source: url('/art/packs/myart/gui/btn-gold.png'); }
 .dialogue__recruit { border-color: var(--line-soft); background: rgba(16, 13, 26, .4); }
 /* A townsperson without a painted portrait shows their walking character, face first. */
-.dialogue__portrait img[src*='/myart/chars/'] { object-fit: cover; object-position: 50% 8%; transform: scale(1.6); transform-origin: 50% 0; }
+.dialogue__portrait img[src*='-still.png'] { object-fit: cover; object-position: 50% 8%; transform: scale(1.6); transform-origin: 50% 0; }
 
 /* People in the hand-painted rooms stand at the room's scale (one tile is --tile, PaintedScene). */
 .interior__sprite { width: calc(var(--tile, 64px) * 1.05); height: calc(var(--tile, 64px) * 1.13); image-rendering: auto; }

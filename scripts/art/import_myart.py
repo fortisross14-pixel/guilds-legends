@@ -237,6 +237,9 @@ def characters():
         assets.append({'id': asset_id, 'group': 'npc' if asset_id.startswith('npc.') else 'char', 'path': f'{REL}/chars/{name}.png', 'still': f'{REL}/chars/{name}-still.png', 'bust': f'{REL}/chars/{name}-bust.png', **({'battle': f'{REL}/chars/{name}-battle.png'} if asset_id.startswith('char.') or asset_id in ('npc.dunmere.nessa', 'npc.dunmere.fighter') else {}),
                        'w': FRAME[0], 'h': FRAME[1], 'sheet': {'frameWidth': FRAME[0], 'frameHeight': FRAME[1]}, 'sideOnly': True, 'walker': True,
                        'use': 'Walking character (HeroEditor parts, scripts/art/characters.py)'})
+        if asset_id.startswith('char.class.'):
+            # The class portrait is the class's close-up.
+            assets.append({'id': 'portrait.' + asset_id[5:], 'path': f'{REL}/chars/{name}-bust.png', 'w': 192, 'h': 192, 'use': 'Class portrait (the HeroEditor close-up)'})
 
 
 # --- Interiors ---------------------------------------------------------------
@@ -282,6 +285,56 @@ def foes():
         name = asset_id.split('.', 1)[1].replace('.', '-')
         im.save(out(f'foes/{name}.png'))
         assets.append({'id': asset_id, 'group': 'enemy', 'path': f'{REL}/foes/{name}.png', 'w': im.width, 'h': im.height, 'aspect': True, 'use': f'Boss on the map: {foe_id}'})
+
+
+# --- Backdrops (GUI PRO Kit's painted backgrounds) --------------------------
+BACKDROPS = {
+    'background_00_title_1920.png': ['bg.title'],
+    'background_02_home_1920.png': ['interior.noticeboard', 'bg.town.dunmere', 'bg.town.greenhollow', 'bg.town.ironford', 'bg.town.windmere', 'bg.town.default', 'bg.battle.arena', 'bg.battle.iron'],
+    'background_03_character_1920.png': ['bg.chronicle', 'bg.story.house', 'bg.story.warning', 'bg.story.greenhollow', 'bg.story.archive', 'bg.story.windmere',
+                                         'bg.story.thornwood', 'bg.story.banner', 'bg.story.chapter', 'bg.battle.blackwood', 'bg.battle.psychic'],
+    'background_04_reward_1920.png': ['bg.season.review'],
+    'background_01_loading_1920.png': ['scene.defeat', 'bg.battle.fire'],
+    'background_05_sample_00_1920.png': ['bg.battle.oldroad', 'bg.battle.thornwood', 'bg.battle.plant', 'bg.battle.animal', 'bg.battle.air', 'bg.battle.water'],
+}
+
+
+def backdrops():
+    folder = os.path.join(GUI, 'Sprites', 'Demo', 'Demo_Background')
+    for name, ids in BACKDROPS.items():
+        image = Image.open(os.path.join(folder, name)).convert('RGB')
+        path = f"bg/{name.replace('_1920.png', '.jpg')}"
+        image.save(out(path), quality=84, optimize=True)
+        for asset_id in ids:
+            assets.append({'id': asset_id, 'path': f'{REL}/{path}', 'w': 1920, 'h': 1080, 'use': 'Backdrop (GUI PRO Kit painted background)'})
+
+
+# --- Emblems and markers ------------------------------------------------------
+EMBLEMS = {
+    'crest.charter.merchant': 'Demo/Demo_Icon_Flags/icon_guild_flag_0.png', 'crest.charter.free': 'Demo/Demo_Icon_Flags/icon_guild_flag_1.png',
+    'crest.charter.scholars': 'Demo/Demo_Icon_Flags/icon_guild_flag_2.png', 'crest.charter.shield': 'Demo/Demo_Icon_Flags/icon_guild_flag_3.png',
+    'crest.patron.trade': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_scale.png', 'crest.patron.temple': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_candle.png',
+    'crest.patron.smiths': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_anvil.png', 'crest.argent-crown': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_crown.png',
+    'relic.banner': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_guild_flag.png',
+    'award.mvp': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_medalgold.png', 'award.rookie': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_medalsilver.png',
+    'award.signing': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_ticket.png', 'trophy.title': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_trophy.png',
+    'trophy.record': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_star.png', 'trophy.hall': 'Component/Icon_ItemIcons_(Original)/icon_itemicon_medalbronze.png',
+}
+MARKERS = {'site.marker.inspect': (2, 4, 2, 1), 'site.marker.collect': (4, 8, 1, 1), 'site.marker.destination': (9, 8, 1, 2), 'site.marker.door': (7, 6, 1, 2), 'prop.signpost': (11, 8, 1, 2)}
+
+
+def emblems():
+    for asset_id, rel in EMBLEMS.items():
+        image = Image.open(os.path.join(GUI, 'Sprites', rel)).convert('RGBA')
+        path = f"emblems/{asset_id.replace('.', '-')}.png"
+        image.save(out(path))
+        assets.append({'id': asset_id, 'path': f'{REL}/{path}', 'w': image.width, 'h': image.height, 'use': 'Emblem (GUI PRO Kit icon)'})
+    extra = sheet('ExtraObjects', EXTRA)
+    for asset_id, (c, r, w, h) in MARKERS.items():
+        image = trim(tiles(extra, c, r, w, h))
+        path = f"props/{asset_id.replace('.', '-')}.png"
+        image.save(out(path))
+        assets.append({'id': asset_id, 'path': f'{REL}/{path}', 'w': image.width, 'h': image.height, 'use': 'Marker on the walk map (Extra Objects)'})
 
 
 # --- Interface ---------------------------------------------------------------
@@ -342,6 +395,8 @@ def main():
     props()
     wild_things()
     interiors()
+    backdrops()
+    emblems()
     interface()
     if '--no-characters' not in sys.argv:
         characters()
@@ -350,7 +405,7 @@ def main():
     keep = []
     target = os.path.join(GAME, 'src', 'data', 'myart', 'assets.json')
     if '--no-characters' in sys.argv and os.path.exists(target):
-        keep = [a for a in json.load(open(target))['assets'] if a.get('walker') or a.get('foe') or a['id'].startswith('enemy.')]
+        keep = [a for a in json.load(open(target))['assets'] if a.get('walker') or a.get('foe') or a['id'].startswith('enemy.') or a['id'].startswith('portrait.class.') or a['id'].startswith('npc.story.')]
     with open(target, 'w') as f:
         json.dump({'source': 'scripts/art/import_myart.py', 'assets': assets + keep}, f, indent=1)
     print(len(assets) + len(keep), 'assets')

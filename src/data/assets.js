@@ -239,14 +239,20 @@ MYART.assets
   .forEach((asset) => {
     const id = `portrait.${asset.id.slice(4)}`;
     const portrait = LIST.find((entry) => entry.id === id);
-    if (portrait && !portrait.borrow) portrait.borrow = asset.still;
-    if (!portrait) LIST.push({ id, group: 'portrait', path: `art/portraits/npcs/${asset.id.slice(4).replace(/\./g, '-')}.png`, borrow: asset.still, w: 160, h: 160, use: `Dialogue portrait (its walking character until painted)` });
+    if (portrait && !portrait.borrow) portrait.borrow = asset.bust || asset.still;
+    if (!portrait) LIST.push({ id, group: 'portrait', path: `art/portraits/npcs/${asset.id.slice(4).replace(/\./g, '-')}.png`, borrow: asset.bust || asset.still, w: 160, h: 160, use: `Dialogue portrait (its walking character until painted)` });
   });
 // Story people who also walk in town.
-[['founder', 'char.founder'], ['bram', 'npc.dunmere.fighter'], ['nessa', 'npc.dunmere.nessa'], ['mara', 'npc.dunmere.innkeeper'], ['stablemaster', 'npc.dunmere.stablemaster'], ['herbalist', 'npc.greenhollow.herbalist'], ['quartermaster', 'npc.ironford.archivist']].forEach(([story, walker]) => {
-  const portrait = LIST.find((entry) => entry.id === `portrait.story.${story}`);
-  const still = MYART.assets.find((asset) => asset.id === walker)?.still;
-  if (portrait && still && !portrait.borrow) portrait.borrow = still;
+// Story people and the arena's staff borrow their HeroEditor close-up (bust).
+[
+  ['portrait.story.founder', 'char.founder'], ['portrait.story.bram', 'npc.dunmere.fighter'], ['portrait.story.nessa', 'npc.dunmere.nessa'], ['portrait.story.mara', 'npc.dunmere.innkeeper'],
+  ['portrait.story.stablemaster', 'npc.dunmere.stablemaster'], ['portrait.story.herbalist', 'npc.greenhollow.herbalist'], ['portrait.story.quartermaster', 'npc.ironford.archivist'],
+  ['portrait.story.rook', 'npc.story.rook'], ['portrait.story.thorne', 'npc.story.thorne'], ['portrait.story.wren', 'npc.story.wren'], ['portrait.story.champion', 'npc.story.champion'],
+  ['portrait.story.representative', 'npc.story.representative'], ['portrait.arena.referee', 'npc.role.referee'], ['portrait.arena.registrar', 'npc.role.registrar'],
+].forEach(([id, walker]) => {
+  const portrait = LIST.find((entry) => entry.id === id);
+  const art = MYART.assets.find((asset) => asset.id === walker);
+  if (portrait && art) portrait.borrow = art.bust || art.still;
 });
 
 export const ASSETS = Object.fromEntries(LIST.map((asset) => [asset.id, asset]));

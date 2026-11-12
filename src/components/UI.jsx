@@ -67,7 +67,6 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
   const bust = heroBust(hero);
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
   const rarity = RARITIES[hero.rarity] || RARITIES.Common;
-  const artKey = heroArtKey(hero);
   return (
     <div
       className={`hero-portrait hero-portrait--${size} hero-portrait--r-${rarity.id.toLowerCase()}`}
@@ -79,7 +78,7 @@ export function HeroPortrait({ hero, size = 'md', showStatus = true }) {
       role="img"
       aria-label={`${hero.name}, ${rarity.id} ${classId}`}
     >
-      <img className={`hero-portrait__art${bust ? ' hero-portrait__art--bust' : ''}`} src={artUrl(bust || `art/portraits/${artKey}.png`)} alt="" loading="lazy" />
+      <img className={`hero-portrait__art${bust ? ' hero-portrait__art--bust' : ''}`} src={artUrl(bust || ASSETS['char.class.guardian']?.bust || '')} alt="" loading="lazy" />
       {showStatus && hero.status && hero.status !== 'available' ? <span className={`status-dot status-dot--${hero.status}`} title={hero.status} /> : null}
     </div>
   );
@@ -186,12 +185,11 @@ export function useMenuKeys() {
 }
 
 export function HeroSprite({ hero, size = 'md', enemy = false }) {
-  const artKey = heroArtKey(hero);
   const primal = PRIMALS[hero.primal] || PRIMALS.Fire;
   return (
     <div className={`hero-sprite hero-sprite--${size} ${enemy ? 'hero-sprite--enemy' : ''}`} style={{ '--sprite-glow': primal.color }}>
       {/* The hero's HeroEditor figure (heroes face right; the enemy side is mirrored in CSS). */}
-      <img className={heroLook(hero)?.battle ? 'hero-sprite__figure' : ''} src={`${import.meta.env.BASE_URL}${heroLook(hero)?.battle || `art/sprites/${artKey}.png`}`} alt="" loading="lazy" />
+      <img className={heroLook(hero)?.battle ? 'hero-sprite__figure' : ''} src={`${import.meta.env.BASE_URL}${heroLook(hero)?.battle || ASSETS['char.class.guardian']?.battle || ''}`} alt="" loading="lazy" />
     </div>
   );
 }
