@@ -58,9 +58,9 @@ export const INTERIORS = {
   arena: {
     id: 'arena',
     art: 'interior.arena',
-    spots: [{ id: 'desk', keeper: true }, { id: 'ground' }, { id: 'spar-1' }, { id: 'spar-2' }, { id: 'bench' }],
+    spots: [{ id: 'desk', keeper: true }, { id: 'ground' }, { id: 'spar-1' }, { id: 'spar-2' }, { id: 'bench' }, { id: 'spar-3' }, { id: 'spar-4' }],
     layout: {
-      spots: { desk: [18, 39], ground: [50, 60], 'spar-1': [40, 76], 'spar-2': [60, 76], bench: [12, 64] },
+      spots: { desk: [18, 39], ground: [50, 60], 'spar-1': [40, 76], 'spar-2': [60, 76], bench: [12, 64], 'spar-3': [76, 82], 'spar-4': [24, 88] },
       hotspots: { board: { box: [78, 4, 20, 36], name: 'History board', verb: 'Read', board: 'history' } },
       door: DOOR,
     },

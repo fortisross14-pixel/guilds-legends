@@ -194,6 +194,8 @@ def arena(room):
     room.put('armor-stand', 12.6, 3.1, w=1.1)
     room.put('bench', 2.6, 7.0, w=2.6)
     room.spot('bench', 2.6, 6.75)
+    room.spot('spar-3', 15.2, 7.6)
+    room.spot('spar-4', 4.8, 8.4)
     room.put('barrel', 19.3, 6.3, w=0.9)
     room.door()
 

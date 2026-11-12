@@ -9,13 +9,13 @@
 // challenger is a candidate who only joins after you beat them in a bout.
 // Regulars come from src/data/people.js. Only memory is stored, in
 // state.people[id] (met, talks, relationship, interview, last seen).
-import { REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
+import { SPARRING, REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
 import { INTERIORS } from '../../data/interiors.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { wildBuildings } from '../../data/wilds/index.js';
 import { CLASSES, normalizeClassId } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
-import { createDuelEncounter } from '../combat.js';
+import { createDuelEncounter, createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, freeBeds, hasHall, hashString, rngFor } from './core.js';
 import { makeCandidate, recruitObjection } from './candidates.js';
 import { baseSalaryFor, candidateRanges, contractSalary } from './contracts.js';
@@ -140,6 +140,16 @@ export function townPeople(state, locationId) {
       byIssuer.get(key).offers[0].missionIds.push(mission.id);
     });
   people.push(...byIssuer.values());
+  // Sparring partners at the arena: always there, a new set each month, from easy to hard.
+  if (buildings.includes('arena')) {
+    const classes = ['Duelist', 'Guardian', 'Ranger', 'Rogue', 'Mage', 'Cleric'];
+    for (let index = 0; index < (SPARRING[locationId] || 2); index += 1) {
+      const key = `spar-${locationId}-${index}-${campaignMonthSerial(state)}`;
+      const classId = classes[hashString(key) % classes.length];
+      const tier = ['easy', 'even', 'hard', 'even', 'hard'][index];
+      people.push({ id: key, name: visitorName(key, taken), role: `${classId} · sparring partner (${tier})`, locationId, building: 'arena', kind: 'visitor', voice: 'Fighter', sprite: `char.class.${classKey(classId)}`, portrait: `portrait.class.${classKey(classId)}`, classId, sparTier: tier, offers: [{ type: 'spar' }] });
+    }
+  }
   // A messenger waits at the herald while there is unread news.
   if (buildings.includes('herald') && state.newsUnread) {
     people.push({ id: `messenger-${locationId}`, name: 'A messenger', role: 'Messenger', voice: 'Messenger', locationId, building: 'herald', kind: 'visitor', sprite: 'npc.role.messenger', portrait: 'portrait.role.messenger', offers: [], service: 'news' });
@@ -251,6 +261,7 @@ function hubChoices(state, person) {
     if (offer.type === 'mission') choices.push(nextMission(state, person).ready ? choice('mission', 'It’s done.') : choice('mission', 'Need anything done?', Boolean(asked.mission)));
     if (offer.type === 'hire') choices.push(choice('hire', 'Looking for work?', Boolean(asked.hire)));
     if (offer.type === 'challenge') choices.push(choice('challenge', 'Fancy a friendly bout?', Boolean(asked.challenge)));
+    if (offer.type === 'spar') choices.push(choice('spar', 'Up for a training match?'));
   });
   choices.push(choice('bye', 'Goodbye.'));
   return choices;
@@ -472,6 +483,13 @@ export function talkToPerson(state, personId, choiceId) {
     const locked = person.offers.some((offer) => offer.locked);
     lines = ['One against one, friendly. First to yield loses.', locked ? 'Beat me and I’ll hear your offer.' : 'Win and the whole town hears about it.'];
     choices = [choice('challenge.fight', `You’re on. (+${BOUT_FAME} fame if we win)`), choice('back', 'Maybe another time.')];
+  } else if (action === 'spar') {
+    lines = ['Your fighters against me and a friend. Blunted blades: nobody gets hurt, but you’ll be spent.', 'Good practice, and the whole party learns from it.'];
+    choices = [choice('spar.fight', 'Let’s train.'), choice('back', 'Maybe later.')];
+  } else if (action === 'spar.fight') {
+    const started = startTrainingInPlace(next, person);
+    if (started) return { state, error: started };
+    return { state: finalize(next), error: null, lines: [], choices: [], ui: { close: true } };
   } else if (action === 'challenge.fight') {
     const started = startPersonBoutInPlace(next, person, candidate);
     if (started) return { state, error: started };
@@ -535,6 +553,48 @@ function startPersonBoutInPlace(state, person, candidate) {
     items: battleItems(state),
   });
   state.people[person.id].bouts = (state.people[person.id].bouts || 0) + 1;
+  return null;
+}
+
+/**
+ * A training match at the arena: the fit party against a sparring partner and a
+ * friend, levelled easy, even or hard against the guild. XP for everyone who
+ * fought; nobody is injured (encounters.js), but the fighters end spent.
+ */
+function startTrainingInPlace(state, person) {
+  if (state.activeEncounter) return 'Another fight is already waiting.';
+  const fighters = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter((hero) => hero?.status === 'available');
+  const party = (fighters.length ? fighters : state.heroes.filter((hero) => hero.status === 'available').sort((a, b) => b.power - a.power)).slice(0, 4);
+  if (!party.length) return 'Nobody is fit to fight.';
+  const level = Math.round(party.reduce((sum, hero) => sum + hero.level, 0) / party.length);
+  const power = Math.round(party.reduce((sum, hero) => sum + (hero.power || 40), 0) / party.length);
+  const shift = { easy: -1, even: 0, hard: 1 }[person.sparTier] || 0;
+  const count = state.people?.[person.id]?.bouts || 0;
+  state.activeEncounter = createPartyEncounter({
+    id: `training-${person.id}-${count}`,
+    seed: (state.rngState ^ hashString(`training:${person.id}:${count}`)) >>> 0,
+    sourceType: 'training',
+    sourceId: person.id,
+    title: `Training match: ${person.name}`,
+    roundName: `${LOCATION_BY_ID[person.locationId]?.name || ''} sparring ring`.trim(),
+    objective: 'Blunted blades: win, and learn.',
+    playerHeroes: party.map((hero) => ({ hero, role: 'Fighter' })),
+    opponentName: person.name,
+    opponentClassId: person.classId,
+    opponentLevel: clamp(level + shift, 1, 20),
+    opponentPower: Math.round(power * (1 + shift * 0.1)),
+    enemyCount: clamp(party.length, 1, 2),
+    risk: 1,
+    canFlee: true,
+    items: battleItems(state),
+  });
+  state.activeEncounter.sourceMeta = { personId: person.id, tier: person.sparTier || 'even' };
+  // The partner by name, and a friend from the ring.
+  const first = String(person.name).split(' ')[0];
+  state.activeEncounter.enemies.forEach((unit, index) => {
+    unit.name = index === 0 ? person.name : `${first}’s friend`;
+  });
+  state.people[person.id].bouts = count + 1;
   return null;
 }
 

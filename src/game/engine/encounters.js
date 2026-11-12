@@ -122,7 +122,10 @@ export function autoResolveActiveCombat(state, mutate = false) {
   return { state: finalize(next), error: null, encounter: next.activeEncounter };
 }
 
-/** HP and MP carry over (battle-hiring spec). Knocked out in a won fight: 1 HP, injured for a week. */
+/** Fights that spend heroes but never injure them: training matches, bouts and tournaments. */
+const NO_INJURY = new Set(['training', 'person-bout', 'tournament', 'challenge']);
+
+/** HP and MP carry over (battle-hiring spec). Knocked out in a won fight: 1 HP, injured for a week (not in training or tournaments). */
 function carryVitalsInPlace(state, encounter, combatResult) {
   encounter.party.forEach((unit) => {
     const hero = unit.heroId ? getHero(state, unit.heroId) : null;
@@ -133,6 +136,12 @@ function carryVitalsInPlace(state, encounter, combatResult) {
       return;
     }
     hero.health = 1;
+    if (NO_INJURY.has(encounter.sourceType)) {
+      // Spent, not hurt: low HP and no MP, but free to keep going.
+      hero.health = 10;
+      hero.mana = 0;
+      return;
+    }
     if (combatResult.playerWon && hero.status === 'available') {
       hero.status = 'injured';
       hero.injury = 'Knocked out';
@@ -183,6 +192,17 @@ function concludeCombatInner(state, mutate) {
     next.activeEncounter = null;
     evaluateStateInPlace(next);
     return { state: finalize(next), error: null, result: { kind: 'challenge', combat: combatResult } };
+  }
+
+  if (encounter.sourceType === 'training') {
+    const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
+    const xpEach = { easy: 14, even: 22, hard: 32 }[encounter.sourceMeta?.tier] || 22;
+    const xp = fighters.map((hero) => xpEntryInPlace(hero, combatResult.playerWon ? xpEach : Math.round(xpEach / 2), next, 'a training match'));
+    if (combatResult.playerWon) pushMoment(next, { type: 'victory', title: `${encounter.title}: won`, gold: 0, xp, loot: [] });
+    else next.notifications.push({ id: `training-lost-${encounter.id}`, tone: 'blue', title: 'Training match lost', text: 'Spent, but nobody hurt. The party learned something anyway.' });
+    next.activeEncounter = null;
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'training', combat: combatResult } };
   }
 
   if (encounter.sourceType === 'person-bout') {

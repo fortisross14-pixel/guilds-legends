@@ -221,7 +221,11 @@ export const ROLE_VOICES = {
 };
 
 /** First words when you walk up to someone new, by what they want from you. */
+/** Sparring partners always at each arena: 2-3 in a town, 4-5 in a city (training matches). */
+export const SPARRING = { dunmere: 3, greenhollow: 2, windmere: 2, ironford: 5 };
+
 export const FIRST_LINES = {
+  spar: ['Here to train? The ring is free and so am I.', 'Warm-up or a real workout? I do both.', 'Pick a weapon off the rack. We go until someone yields.'],
   hire: ['A new banner? I’ve been waiting for one that isn’t already full of cousins.', 'You’re hiring? You have the look of someone who’s hiring.', 'Don’t mind me. Just a free sword and an empty purse.'],
   mission: ['You carry a banner. Good. I have a problem that needs one.', 'Are you the guild people mention? I have work, and coin for it.', 'Please, sit. I won’t keep you long.'],
   challenge: ['You look like you can hold a blade. Fancy finding out?', 'They say your guild is new. New usually means soft.'],
@@ -231,6 +235,7 @@ export const FIRST_LINES = {
 
 /** What the player can ask a visitor about themselves, by kind. */
 export const CHAT_TEXT = {
+  spar: 'How good are you?',
   hire: 'Where are you from?',
   mission: 'What’s wrong?',
   rumor: 'Where are you headed?',
