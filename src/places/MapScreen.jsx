@@ -17,7 +17,7 @@ const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
 // x/y (percent of the map), so routes always meet the nodes.
 // The roads of src/data/roads.js (drawn bright), then the routes of later chapters (dim).
 const MAP_ROUTES = [
-  ...ROADS.filter((road) => road.ends.every(Boolean)).map((road) => ({ dim: Boolean(road.gate?.chapterAtLeast), chain: road.ends })),
+  ...ROADS.filter((road) => !road.area && road.ends.every(Boolean)).map((road) => ({ dim: Boolean(road.gate?.chapterAtLeast), chain: road.ends })),
   { dim: true, chain: ['windmere', 'tidecross', 'sunspire', 'mooncourt', 'thornwatch', 'skyreach', 'beaststeppe', 'irondeep'] },
   { dim: true, chain: ['tidecross', 'brasshaven', 'coral-crown', 'cloud-monastery', 'ashen-caldera', 'starfall-archive', 'far-veil'] },
   { dim: true, chain: ['thornwatch', 'verdant-citadel', 'irondeep'] },
@@ -66,6 +66,24 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const locationMissions = knownMissions(state).filter((mission) => mission.locationId === selected.id);
   const locationTournament = state.tournaments?.find((tournament) => tournament.locationId === selected.id && tournament.status !== 'completed');
   const selectedBranch = (state.guild.branches || []).find((branch) => branch.active !== false && branch.locationId === selected.id);
+  // Only what the guild knows is on the map: places it has visited or heard of, the roads
+  // out of those places, and routes whose two ends it knows. A new campaign shows Dunmere.
+  const known = (id) => id === currentLocationId || (knowledge[id] || 'unknown') !== 'unknown';
+  const knownArea = (area) => {
+    const road = ROADS.find((item) => item.area === area.id);
+    return Boolean(state.world?.exploration?.wild?.[area.id]?.visited) || (road ? road.ends.some((end) => end && known(end)) : known(area.hub));
+  };
+  const routes = MAP_ROUTES.flatMap((route) =>
+    route.chain.slice(1).map((id, index) => ({ dim: route.dim, chain: [route.chain[index], id] })).filter((leg) => leg.chain.every(known)),
+  );
+  // A walkable road is drawn from each known end to its marker, so it reaches the marker
+  // before the far town is known (and a dead end, the Old Road, still meets its town).
+  const spurs = WILD_AREA_LIST.filter(knownArea)
+    .map((area) => ({ area, road: ROADS.find((item) => item.area === area.id) }))
+    .filter(({ road }) => road)
+    .flatMap(({ area, road }) =>
+      road.ends.filter((end) => end && known(end)).map((end) => ({ id: `${area.id}-${end}`, from: LOCATION_BY_ID[end], to: areaSpot(area) })),
+    );
   const selectedKnowledge = knowledge[selected.id] || 'unknown';
   const selectedKnown = selectedKnowledge !== 'unknown';
   const selectedVisited = selectedKnowledge === 'visited' || selectedKnowledge === 'fullyExplored';
@@ -112,7 +130,13 @@ export default function MapScreen({ state, actions, navigate, place }) {
             <div className="world-map__plane" style={{ ...panZoom.style, '--fx': (LOCATION_BY_ID[currentLocationId]?.x ?? 50) / 100, '--fy': (LOCATION_BY_ID[currentLocationId]?.y ?? 50) / 100 }}>
               <div className="world-map__terrain" style={{ '--overworld': overworld ? `url("${overworld}")` : 'none' }} data-asset="ui.overworld" />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Travel routes between fictional settlements">
-                {MAP_ROUTES.map((route) => (
+                {spurs.map((spur) => (
+                  <path key={`spur-under-${spur.id}`} className="map-route map-route--under" d={`M${spur.from.x} ${spur.from.y} L${spur.to.x} ${spur.to.y}`} vectorEffect="non-scaling-stroke" />
+                ))}
+                {spurs.map((spur) => (
+                  <path key={`spur-${spur.id}`} className="map-route" d={`M${spur.from.x} ${spur.from.y} L${spur.to.x} ${spur.to.y}`} vectorEffect="non-scaling-stroke" />
+                ))}
+                {routes.map((route) => (
                   <path
                     key={`under-${route.chain.join('-')}`}
                     className={`map-route map-route--under${route.dim ? ' map-route--dim' : ''}`}
@@ -120,7 +144,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     vectorEffect="non-scaling-stroke"
                   />
                 ))}
-                {MAP_ROUTES.map((route) => (
+                {routes.map((route) => (
                   <path
                     key={route.chain.join('-')}
                     className={`map-route${route.dim ? ' map-route--dim' : ''}`}
@@ -150,7 +174,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                   <Icon name="flag" size={24} />
                 </span>
               ) : null}
-              {LOCATIONS.map((location) => {
+              {LOCATIONS.filter((location) => known(location.id)).map((location) => {
                 const beyond = !inSlice(location.id);
                 const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
                 const isCurrent = location.id === currentLocationId;
@@ -204,7 +228,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
                     <Icon name="skull" size={24} label={`Boss: ${mission.title}`} />
                   </span>
                 ))}
-              {WILD_AREA_LIST.map((area) => {
+              {WILD_AREA_LIST.filter(knownArea).map((area) => {
                 const view = getWildAreaView(state, area.id);
                 return (
                   <button
@@ -372,7 +396,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
       </div>
 
       <div className="location-mobile-list" aria-label="Destinations list" data-menu>
-        {WILD_AREA_LIST.map((area) => (
+        {WILD_AREA_LIST.filter(knownArea).map((area) => (
           <button key={area.id} className={selectedWild?.id === area.id ? 'is-selected' : ''} onClick={() => setSelectedId(`wild:${area.id}`)}>
             <span style={{ '--primal': PRIMALS[area.primal]?.color }}>
               <Icon name="tree" size={12} />
@@ -383,7 +407,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
           </button>
         ))}
         {/* Places in a later chapter share one row. */}
-        {LOCATIONS.filter((location, index) => inSlice(location.id) || LOCATIONS.findIndex((item) => !inSlice(item.id)) === index).map((location) => {
+        {LOCATIONS.filter((location) => known(location.id) && inSlice(location.id)).map((location) => {
           const beyond = !inSlice(location.id);
           const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
           const knowledgeStatus = knowledge[location.id] || 'unknown';
