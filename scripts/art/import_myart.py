@@ -178,6 +178,8 @@ def temple():
 
 def buildings():
     B = building
+    B('town.dunmere.house', woodhouse('Town 2 Fall'), 'Dunmere: your house (a small wooden cottage, autumn wood)')
+    assets[-1]['buildingScale'] = 0.34
     B('town.oldroad.temple', temple(), 'The Old Road: Dawnwatch Temple (blue gable house between white columns)')
     B('town.oldroad.priory', thatch('Town 2 Color 3'), 'The Old Road: the priests’ house (moss thatch)')
     B('town.dunmere.herald', gable('TownColor3'), 'Dunmere: Herald’s Office (purple gable house)')

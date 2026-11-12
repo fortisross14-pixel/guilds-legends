@@ -12,6 +12,7 @@
 import { CLEARING, CROWN, DEFEAT, EQUIPMENT, EQUIPMENT_BY_ID, HOUSE, ROOMS, ROOM_BY_ID, TIER_NAMES, TRAINING, roomTileArt } from '../../data/rooms.js';
 import { HOME_LOT_ID, LOT_BY_ID } from '../../data/lots.js';
 import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
+import { TOWNS } from '../../data/towns/index.js';
 import {
   HOME_LOCATION_ID,
   activeHeroCount,
@@ -564,10 +565,16 @@ export function defeatInPlace(state, heroIds, where = state.world?.currentLocati
     hero.health = DEFEAT.hp;
     hero.mana = 100;
   });
-  // Home: the guild wakes where it lives.
+  // Home: the guild wakes where it lives, and steps out of its door (the hall, or the founder's house).
   state.world.currentLocationId = HOME_LOCATION_ID;
   state.world.wildAreaId = null;
   state.world.activeTravel = null;
+  const home = TOWNS[HOME_LOCATION_ID]?.buildings.find((building) => building.building === (hasHall(state) ? 'guildHall' : 'house'));
+  if (home) {
+    state.world.exploration ||= {};
+    state.world.exploration.positions ||= {};
+    state.world.exploration.positions[HOME_LOCATION_ID] = { x: (home.door[0] + 0.5) * 32, y: (home.door[1] + 1) * 32 + 6 };
+  }
   const paid = Math.max(0, Math.min(cost, state.guild.crowns));
   state.guild.crowns -= paid;
   if (paid) tallySpend(state, 'other', paid);

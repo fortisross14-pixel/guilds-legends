@@ -75,6 +75,17 @@
    "use": "Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js"
   },
   {
+   "id": "town.dunmere.house",
+   "group": "building",
+   "path": "art/packs/myart/buildings/dunmere-house.png",
+   "w": 393,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Dunmere: your house (a small wooden cottage, autumn wood)",
+   "buildingScale": 0.34
+  },
+  {
    "id": "town.oldroad.temple",
    "group": "building",
    "path": "art/packs/myart/buildings/oldroad-temple.png",

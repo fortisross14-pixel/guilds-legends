@@ -211,3 +211,8 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
   .section { width: min(860px, 100%); }
   .section.has-detail { width: min(1180px, 100%); }
 }
+
+/* Battles: the two sides stand apart, with open ground between them, and fighters a bit smaller. */
+.battle-field { --unit: clamp(64px, 19vw, 122px); grid-template-columns: 1fr minmax(48px, 22%) 1fr; gap: 0; }
+.battle-field > .battle-allies { grid-column: 1; }
+.battle-field > .battle-enemies { grid-column: 3; }

@@ -31,7 +31,7 @@ function placed(asset, box, { maxH = Infinity } = {}) {
     const h = art.h * art.scale;
     return { asset, x: box.x + (box.w - w) / 2, y: box.y + box.h - h, w, h, depth: box.y + box.h };
   }
-  let w = art.scale && art.group === 'building' ? art.w * BUILDING_SCALE : box.w;
+  let w = art.scale && art.group === 'building' ? art.w * (art.buildingScale || BUILDING_SCALE) : box.w;
   let h = (w * art.h) / art.w;
   if (h > maxH) {
     w = (w * maxH) / h;
@@ -165,7 +165,7 @@ function base(place) {
 }
 
 // What a door is for, at a glance: coin = shop, sword = arena, bed = rest (hall and inns), crown = rankings.
-const DOOR_ICONS = { shop: 'coin', arena: 'sword', guildHall: 'moon', tavern: 'moon', herald: 'crown', noticeBoard: 'scroll', temple: 'heart', priory: 'moon' };
+const DOOR_ICONS = { house: 'moon', shop: 'coin', arena: 'sword', guildHall: 'moon', tavern: 'moon', herald: 'crown', noticeBoard: 'scroll', temple: 'heart', priory: 'moon' };
 
 /**
  * Walkable map for a town. `hall` ({ asset, label }) swaps the main Guild Hall

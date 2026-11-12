@@ -86,6 +86,14 @@ export const INTERIORS = {
   },
 };
 
+// The founder's house in Dunmere (its painting is the prologue's, scripts/art/interiors.py `house`).
+INTERIORS.house = {
+  id: 'house',
+  art: 'interior.house',
+  spots: [],
+  layout: { spots: {}, hotspots: {}, door: [84, 30, 13, 46] },
+};
+
 // Dawnwatch Temple and the priests' house, at the west end of the Old Road (src/data/wilds/oldRoad.js).
 INTERIORS.temple = {
   id: 'temple',

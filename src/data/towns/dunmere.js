@@ -51,6 +51,8 @@ export default {
     { building: 'tavern', label: 'The Wayfarer', door: [14, 7], asset: 'town.dunmere.tavern' },
     { building: 'guildHall', label: 'Guild Hall', door: [22, 7], asset: 'town.dunmere.guildhall.stage1' },
     { building: 'shop', label: 'Mira’s Supply', door: [34, 7], asset: 'town.dunmere.shop' },
+    // The founder's house (the prologue happens inside): one bed, the hearth, the table.
+    { building: 'house', label: 'Your house', door: [28, 7], asset: 'town.dunmere.house' },
     { building: 'arena', label: 'Dunmere Arena', door: [20, 23], asset: 'town.dunmere.arena' },
   ],
   // `at` is the top-left tile, `size` in tiles. Props block movement unless `walkable`.
