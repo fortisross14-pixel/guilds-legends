@@ -28,6 +28,7 @@ function ContractPanel({ state, mission, actions, navigate }) {
   return (
     <div className="contract-panel">
       <p className="contract-panel__stakes">{mission.stakes || mission.title}</p>
+      {mission.giverName && !mission.accepted ? <p className="contract-panel__where">Pinned by {mission.giverName}, for your guild.</p> : null}
       <p className="contract-panel__where">
         <Icon name="pin" size={14} /> {place.name}
         {days !== null ? (

@@ -20,7 +20,7 @@ import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, f
 import { makeCandidate, recruitObjection } from './candidates.js';
 import { baseSalaryFor, candidateRanges, contractSalary } from './contracts.js';
 import { battleItems } from './inventory.js';
-import { acceptContractInPlace, contractPlace, declineContract, firstStep } from './missions.js';
+import { declineContract, firstStep } from './missions.js';
 
 const MAX_PEOPLE = 7; // a room fits one screen
 const HIRE_YEARS = 2;
@@ -379,6 +379,8 @@ function nextMission(state, person) {
   const status = (mission) => mission.site?.status;
   return {
     open: missions.find((mission) => !mission.unlocked) || null,
+    // Pinned on the notice board for the guild, not taken yet.
+    pinned: missions.find((mission) => mission.unlocked && !mission.accepted) || null,
     working: missions.find((mission) => status(mission) === 'active') || null,
     ready: missions.find((mission) => status(mission) === 'ready') || null,
     failed: missions.find((mission) => status(mission) === 'failed') || null,
@@ -395,7 +397,7 @@ function briefLine(mission) {
 /**
  * Picks a choice in a conversation. Returns the next lines and choices, and
  * `ui` for the screen (open a panel, sign a recruit, close after the last line).
- * Choices: chat, mission, mission.accept:<id>, mission.decline:<id>, hire,
+ * Choices: chat, mission, mission.post:<id> (pins it on the notice board), mission.decline:<id>, hire,
  * hire.about, hire.skills, hire.terms, hire.think, hire.sign, challenge,
  * challenge.fight, service.*, back, bye. Each choice comes with `asked`.
  */
@@ -420,7 +422,7 @@ export function talkToPerson(state, personId, choiceId) {
   } else if (action === 'chat') {
     lines = chatLines(next, person);
   } else if (action === 'mission') {
-    const { open, working, ready, failed } = nextMission(next, person);
+    const { open, pinned, working, ready, failed } = nextMission(next, person);
     if (failed) {
       // A missed deadline: they say so once, and the contract is gone.
       lines = [`You never came back about “${failed.title}”. I found someone else.`];
@@ -430,18 +432,22 @@ export function talkToPerson(state, personId, choiceId) {
       lines = ['You’re back. Well?'];
       choices = [choice(`mission.report:${ready.id}`, 'It’s done.'), choice('back', BACK)];
     } else if (working) lines = [`“${working.title}”: ${firstStep(next, working)?.text || 'you know what to do'}.`];
+    else if (pinned) lines = [`“${pinned.title}” is pinned on the notice board, under your banner. Take it from there.`];
     else if (!open) lines = ['Nothing right now. Ask me next month.'];
     else {
-      lines = [briefLine(open), `It pays ${open.reward} gold. ${RISK_LINES[clamp(open.risk || 1, 1, 5) - 1]}`];
-      choices = [choice(`mission.accept:${open.id}`, 'We’ll take it.'), choice(`mission.decline:${open.id}`, 'Not this one.'), choice('back', BACK)];
+      lines = [briefLine(open), `It pays ${open.reward} gold. ${RISK_LINES[clamp(open.risk || 1, 1, 5) - 1]}`, 'The terms are written up for the notice board. Want me to pin it there for you?'];
+      choices = [choice(`mission.post:${open.id}`, 'Pin it. We’ll read it there.'), choice(`mission.decline:${open.id}`, 'Not this one.'), choice('back', BACK)];
     }
-  } else if (action === 'mission.accept') {
+  } else if (action === 'mission.post') {
+    // The job goes up on the notice board with the giver's name; the guild takes it there (missions.js acceptContract).
     const mission = next.missions.find((item) => item.id === argument);
     if (!mission) return { state, error: 'That contract is gone.' };
-    acceptContractInPlace(next, mission, { id: person.id, name: person.name });
+    mission.unlocked = true;
+    mission.giverId = person.id;
+    mission.giverName = person.name;
     memory.relationship = clamp(memory.relationship + 1, -10, 10);
-    lines = ['Thank you.', `${contractPlace(mission).name}. ${firstStep(next, mission)?.text || ''}. Come back to me when it’s done.`];
-    ui = { notice: `“${mission.title}” is in your Journal.` };
+    lines = ['Good.', `It’ll be on the notice board in the square: “${mission.title}”. Take it there, and come back to me when it’s done.`];
+    ui = { notice: `“${mission.title}” is on the notice board.` };
   } else if (action === 'mission.report') {
     // The reward comes through one moment (outcomes.js reportContract, called by the screen).
     lines = ['Let me see.'];
