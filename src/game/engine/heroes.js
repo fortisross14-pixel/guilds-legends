@@ -14,6 +14,15 @@ export function xpForNextLevel(level) {
 }
 
 /**
+ * XP a fight is worth, before the level gap: a full fight (three foes) of that level;
+ * a training match is worth a little more than a wild fight, a tournament bout more still.
+ */
+export const XP_KIND = { wild: 1, training: 1.2, tournament: 1.5 };
+export function fightXp(level, kind = 'wild', foes = 3) {
+  return Math.round(foes * (28 + (level || 1) * 4) * (XP_KIND[kind] || 1));
+}
+
+/**
  * Battle XP by how strong the foes were next to the hero: a quarter more per level
  * above, a quarter less per level below (at least 15%). Beating level-2 road thugs
  * does little for a level-5 hero; they need stronger foes to grow.

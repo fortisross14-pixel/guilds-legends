@@ -6,7 +6,7 @@
 import { LOCATION_BY_ID, primalCombatModifier } from '../../data/world.js';
 import { SPECIAL_TITLE_BY_ID, TOURNAMENTS } from '../../data/tournaments.js';
 import { MAX_TOURNAMENT_HISTORY, addChronicle, clamp, clone, ensureTournamentCareer, getHero, campaignWeekSerial, dateWeekSerial, pushMoment } from './core.js';
-import { applyXpInPlace, roleRating } from './heroes.js';
+import { applyXpInPlace, fightXp, roleRating } from './heroes.js';
 import {
   guildTournamentRating,
   placementPrize,
@@ -119,9 +119,8 @@ export function resolveGuildRoundInPlace(state, tournament, rng, tactic = 'Measu
         hero.form = clamp(hero.form + (winnerId === 'player' ? 2 : -3), 25, 96);
         hero.career.tournamentBouts += 1;
         if (winnerId === 'player') hero.career.tournamentBoutWins += 1;
-        const xpGain = Math.round(
-          (winnerId === 'player' ? 70 : 38) + tournament.prestige * 0.32 + (forcedPlayerResult ? Math.min(18, (forcedPlayerResult.turns || 0) * 2) : 0),
-        );
+        // A tournament bout is worth the most of any fight of the guild's level (heroes.js fightXp); half for a loss.
+        const xpGain = Math.round(fightXp(hero.level, 'tournament') * (winnerId === 'player' ? 1 : 0.5) + tournament.prestige * 0.32);
         applyXpInPlace(hero, xpGain, state, `${tournament.name} ${roundName.toLowerCase()}`);
         hero.career.xpEarned += xpGain;
       });

@@ -221,8 +221,16 @@ export const ROLE_VOICES = {
 };
 
 /** First words when you walk up to someone new, by what they want from you. */
-/** Sparring partners always at each arena: 2-3 in a town, 4-5 in a city (training matches). */
-export const SPARRING = { dunmere: 3, greenhollow: 2, windmere: 2, ironford: 5 };
+/**
+ * Practice teams at every arena (training matches): three, by level band. Each
+ * team fields as many fighters as that city's tournaments do (2 in an Initiation
+ * town). A guild beyond the top band trains on contracts and real tournaments.
+ */
+export const PRACTICE_TEAMS = [
+  { id: 'novice', name: 'novice team', levels: [4, 6] },
+  { id: 'veteran', name: 'veteran team', levels: [8, 11] },
+  { id: 'master', name: 'masters’ team', levels: [15, 16] },
+];
 
 export const FIRST_LINES = {
   spar: ['Here to train? The ring is free and so am I.', 'Warm-up or a real workout? I do both.', 'Pick a weapon off the rack. We go until someone yields.'],

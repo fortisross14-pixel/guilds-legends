@@ -8,7 +8,7 @@ import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, fi
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
 import { storyDuelResultInPlace } from './story.js';
-import { applyXpInPlace, levelGapFactor, xpForNextLevel } from './heroes.js';
+import { applyXpInPlace, fightXp, levelGapFactor, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
 function xpEntryInPlace(hero, base, state, source, enemyLevel = null) {
@@ -197,8 +197,10 @@ function concludeCombatInner(state, mutate) {
 
   if (encounter.sourceType === 'training') {
     const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
-    const xpEach = { easy: 14, even: 22, hard: 32 }[encounter.sourceMeta?.tier] || 22;
-    const xp = fighters.map((hero) => xpEntryInPlace(hero, combatResult.playerWon ? xpEach : Math.round(xpEach / 2), next, 'a training match'));
+    // A training match is worth a little more than a wild fight of the same level (heroes.js fightXp), by the level gap.
+    const level = encounter.sourceMeta?.level || 4;
+    const xpEach = fightXp(level, 'training');
+    const xp = fighters.map((hero) => xpEntryInPlace(hero, combatResult.playerWon ? xpEach : Math.round(xpEach / 2), next, 'a training match', level));
     if (combatResult.playerWon) pushMoment(next, { type: 'victory', title: `${encounter.title}: won`, gold: 0, xp, loot: [] });
     else next.notifications.push({ id: `training-lost-${encounter.id}`, tone: 'blue', title: 'Training match lost', text: 'Spent, but nobody hurt. The party learned something anyway.' });
     next.activeEncounter = null;

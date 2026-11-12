@@ -9,12 +9,13 @@
 // challenger is a candidate who only joins after you beat them in a bout.
 // Regulars come from src/data/people.js. Only memory is stored, in
 // state.people[id] (met, talks, relationship, interview, last seen).
-import { SPARRING, REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
+import { PRACTICE_TEAMS, REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
 import { INTERIORS } from '../../data/interiors.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { wildBuildings } from '../../data/wilds/index.js';
 import { CLASSES, normalizeClassId } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
+import { TOURNAMENTS } from '../../data/tournaments.js';
 import { createDuelEncounter, createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, freeBeds, hasHall, hashString, rngFor } from './core.js';
 import { makeCandidate, recruitObjection } from './candidates.js';
@@ -140,15 +141,17 @@ export function townPeople(state, locationId) {
       byIssuer.get(key).offers[0].missionIds.push(mission.id);
     });
   people.push(...byIssuer.values());
-  // Sparring partners at the arena: always there, a new set each month, from easy to hard.
+  // Practice teams at the arena (src/data/people.js): three, by level band, a new captain each month.
   if (buildings.includes('arena')) {
     const classes = ['Duelist', 'Guardian', 'Ranger', 'Rogue', 'Mage', 'Cleric'];
-    for (let index = 0; index < (SPARRING[locationId] || 2); index += 1) {
-      const key = `spar-${locationId}-${index}-${campaignMonthSerial(state)}`;
+    const teamSize = Math.max(2, ...TOURNAMENTS.filter((item) => item.locationId === locationId).map((item) => item.teamSize || 2));
+    PRACTICE_TEAMS.forEach((team) => {
+      const key = `spar-${locationId}-${team.id}-${campaignMonthSerial(state)}`;
       const classId = classes[hashString(key) % classes.length];
-      const tier = ['easy', 'even', 'hard', 'even', 'hard'][index];
-      people.push({ id: key, name: visitorName(key, taken), role: `${classId} · sparring partner (${tier})`, locationId, building: 'arena', kind: 'visitor', voice: 'Fighter', sprite: `char.class.${classKey(classId)}`, portrait: `portrait.class.${classKey(classId)}`, classId, sparTier: tier, offers: [{ type: 'spar' }] });
-    }
+      const [low, high] = team.levels;
+      const level = low + (hashString(`${key}:level`) % (high - low + 1));
+      people.push({ id: key, name: visitorName(key, taken), role: `${classId} · ${team.name}, level ${level}`, locationId, building: 'arena', kind: 'visitor', voice: 'Fighter', sprite: `char.class.${classKey(classId)}`, portrait: `portrait.class.${classKey(classId)}`, classId, spar: { team: team.id, level, size: teamSize }, offers: [{ type: 'spar' }] });
+    });
   }
   // A messenger waits at the herald while there is unread news.
   if (buildings.includes('herald') && state.newsUnread) {
@@ -490,7 +493,8 @@ export function talkToPerson(state, personId, choiceId) {
     lines = ['One against one, friendly. First to yield loses.', locked ? 'Beat me and I’ll hear your offer.' : 'Win and the whole town hears about it.'];
     choices = [choice('challenge.fight', `You’re on. (+${BOUT_FAME} fame if we win)`), choice('back', 'Maybe another time.')];
   } else if (action === 'spar') {
-    lines = ['Your fighters against me and a friend. Blunted blades: nobody gets hurt, but you’ll be spent.', 'Good practice, and the whole party learns from it.'];
+    const size = person.spar?.size || 2;
+    lines = [`Your fighters against my team: ${size} of us, level ${person.spar?.level || 4}. Blunted blades: nobody gets hurt, but you’ll be spent.`, 'The stronger we are next to you, the more you learn.'];
     choices = [choice('spar.fight', 'Let’s train.'), choice('back', 'Maybe later.')];
   } else if (action === 'spar.fight') {
     const started = startTrainingInPlace(next, person);
@@ -563,8 +567,8 @@ function startPersonBoutInPlace(state, person, candidate) {
 }
 
 /**
- * A training match at the arena: the fit party against a sparring partner and a
- * friend, levelled easy, even or hard against the guild. XP for everyone who
+ * A training match at the arena: the fit party against a practice team of a set
+ * level (src/data/people.js PRACTICE_TEAMS), as many as the city's tournaments field. XP for everyone who
  * fought; nobody is injured (encounters.js), but the fighters end spent.
  */
 function startTrainingInPlace(state, person) {
@@ -572,9 +576,7 @@ function startTrainingInPlace(state, person) {
   const fighters = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter((hero) => hero?.status === 'available');
   const party = (fighters.length ? fighters : state.heroes.filter((hero) => hero.status === 'available').sort((a, b) => b.power - a.power)).slice(0, 4);
   if (!party.length) return 'Nobody is fit to fight.';
-  const level = Math.round(party.reduce((sum, hero) => sum + hero.level, 0) / party.length);
-  const power = Math.round(party.reduce((sum, hero) => sum + (hero.power || 40), 0) / party.length);
-  const shift = { easy: -1, even: 0, hard: 1 }[person.sparTier] || 0;
+  const level = person.spar?.level || 4;
   const count = state.people?.[person.id]?.bouts || 0;
   state.activeEncounter = createPartyEncounter({
     id: `training-${person.id}-${count}`,
@@ -587,18 +589,18 @@ function startTrainingInPlace(state, person) {
     playerHeroes: party.map((hero) => ({ hero, role: 'Fighter' })),
     opponentName: person.name,
     opponentClassId: person.classId,
-    opponentLevel: clamp(level + shift, 1, 20),
-    opponentPower: Math.round(power * (1 + shift * 0.1)),
-    enemyCount: clamp(party.length, 1, 2),
+    opponentLevel: level,
+    opponentPower: Math.round(38 + level * 2.6),
+    enemyCount: clamp(person.spar?.size || 2, 1, 5),
     risk: 1,
     canFlee: true,
     items: battleItems(state),
   });
-  state.activeEncounter.sourceMeta = { personId: person.id, tier: person.sparTier || 'even' };
-  // The partner by name, and a friend from the ring.
+  state.activeEncounter.sourceMeta = { personId: person.id, team: person.spar?.team, level };
+  // The captain by name, and their team.
   const first = String(person.name).split(' ')[0];
   state.activeEncounter.enemies.forEach((unit, index) => {
-    unit.name = index === 0 ? person.name : `${first}’s friend`;
+    unit.name = index === 0 ? person.name : `${first}’s ${['second', 'third', 'fourth', 'fifth'][index - 1] || 'mate'}`;
   });
   state.people[person.id].bouts = count + 1;
   return null;
