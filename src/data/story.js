@@ -100,7 +100,7 @@ export const STORY_HEROES = {
   },
 };
 
-// Any Initiation tournament counts for mission 4 when the Melee is missed.
+// Initiation events (the 'any' of tournamentPlayed; mission 4 now takes any tournament of the guild's level).
 const regional = TOURNAMENTS.filter((definition) => definition.circuit === 'Initiation').map((definition) => definition.id);
 
 export const STORY_MISSIONS = [
@@ -359,12 +359,12 @@ export const STORY_MISSIONS = [
     locationId: 'dunmere',
     summary: 'A local Duelist thinks your guild is a joke and dares you into the Harvest Melee. Here you will see how strong the real guilds are.',
     gate: { text: 'Answer Bram’s dare (1.8)', if: { storyDone: 'c1-bram' } },
-    alternatives: [{ text: 'Any Initiation tournament counts if you miss the Melee', if: { storyDone: 'c1-bram' } }],
+    alternatives: [{ text: 'Missed the Melee? Any tournament of your level counts: the next one on the calendar', if: { storyDone: 'c1-bram' } }],
     steps: [
       {
         id: 'signup',
         kind: 'check',
-        if: { any: [{ signedUp: 'dunmere-harvest-melee' }, { tournamentPlayed: 'any' }] },
+        if: { any: [{ signedUp: { level: 11 } }, { tournamentPlayed: { level: 11 } }] },
         text: 'Sign up for the Dunmere Harvest Melee at the arena.',
         hint: 'Open the arena, tap the sign-up desk and pick your team (up to 2 heroes).',
         screen: 'tournaments',
@@ -372,12 +372,12 @@ export const STORY_MISSIONS = [
       {
         id: 'fight',
         kind: 'check',
-        if: { tournamentPlayed: 'any' },
-        text: 'Fight the Melee at the arena.',
+        if: { tournamentPlayed: { level: 11 } },
+        text: 'Fight the Melee at the arena (or the next tournament of your level).',
         hint: 'Signing up starts it: tap the fighting ground in the arena for each round.',
         screen: 'tournaments',
       },
-      { id: 'warning', kind: 'scene', scene: 'story.m4.warning', at: 'dunmere', text: 'Someone is waiting for you outside the arena.', hint: 'Stay in Dunmere after the tournament.', screen: 'town' },
+      { id: 'warning', kind: 'scene', scene: 'story.m4.warning', at: 'dunmere', text: 'Someone is waiting for you outside the arena.', hint: 'Come back to Dunmere after the tournament.', screen: 'town' },
     ],
     rewards: { fame: 5, legacy: 4, codex: ['garrick-thorne', 'argent-crown', 'crownfall', 'bram-calder'] },
     endsChapter: 1,

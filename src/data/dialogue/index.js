@@ -32,7 +32,7 @@
 //   evidence: id, evidenceAtLeast: n, codex: id; choice / notChoice: { name: value };
 //   storyHero / notStoryHero: id, storyHeroLoyalty: { id, at }; contractsWon: n;
 //   regionLevel: { region: n }; heroClass: { classId, level }; signedUp: tournamentId;
-//   tournamentPlayed: tournamentId | 'any'; wonTournament: circuit | tournamentId | 'any'; reachedFinal: tournamentId (or list);
+//   tournamentPlayed: tournamentId | 'any' | { level } (any event whose final is at that level or above; signedUp too); wonTournament: circuit | tournamentId | 'any'; reachedFinal: tournamentId (or list);
 //   freeBed, atHome, hallLeased: bool
 //   season: 'spring' | 'summer' | 'autumn' | 'winter' (or a list)
 //   flag: name, notFlag: name  (state.flags.dialogue)

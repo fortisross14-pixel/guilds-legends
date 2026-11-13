@@ -15,6 +15,7 @@ import { LOCATION_BY_ID } from '../../data/world.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { WILD_AREAS } from '../../data/wilds/index.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
+import { TOURNAMENT_BY_ID } from '../../data/tournaments.js';
 import { createDuelEncounter } from '../combat.js';
 import { artifactEffectFromPrestige } from '../legacy.js';
 import {
@@ -93,9 +94,15 @@ function reachedFinal(state, ids) {
   return (state.tournamentHistory || []).some((record) => record.playerResult && record.playerResult.finish <= 2 && list.includes(record.definitionId));
 }
 
-function tournamentPlayed(state, definitionId) {
+/** A tournament "of the guild's level": its final's level is at least `level` (so missing one means the next). */
+const atLevel = (definitionId, level) => (TOURNAMENT_BY_ID[definitionId]?.levels?.[1] || 0) >= level;
+
+/** `value`: an event id, 'any' (an Initiation event), or { level } (any event at that level or above). */
+function tournamentPlayed(state, value) {
   return (state.tournamentHistory || []).some(
-    (record) => record.playerResult && (definitionId === 'any' ? REGIONAL_TOURNAMENTS.includes(record.definitionId) : record.definitionId === definitionId),
+    (record) =>
+      record.playerResult &&
+      (value === 'any' ? REGIONAL_TOURNAMENTS.includes(record.definitionId) : typeof value === 'object' ? atLevel(record.definitionId, value.level) : record.definitionId === value),
   );
 }
 
@@ -200,7 +207,9 @@ export function checkCondition(state, condition, context = {}) {
       case 'heroClass':
         return state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status) && hero.classId === value.classId && hero.level >= (value.level || 1));
       case 'signedUp':
-        return (state.tournaments || []).some((tournament) => tournament.definitionId === value && (tournament.signup || tournament.assignments?.length));
+        return (state.tournaments || []).some(
+          (tournament) => (typeof value === 'object' ? atLevel(tournament.definitionId, value.level) : tournament.definitionId === value) && (tournament.signup || tournament.assignments?.length),
+        );
       case 'wonTournament':
         return tournamentWon(state, value);
       case 'reachedFinal':
