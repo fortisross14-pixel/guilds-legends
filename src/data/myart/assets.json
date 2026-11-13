@@ -402,6 +402,17 @@
    "use": "Hand-painted grassland object (scripts/art/wilds.py)"
   },
   {
+   "id": "deco.pond",
+   "group": "prop",
+   "path": "art/packs/myart/props/deco-pond.png",
+   "w": 256,
+   "h": 256,
+   "aspect": true,
+   "natural": true,
+   "scale": 0.5,
+   "use": "Hand-painted grassland object (scripts/art/wilds.py)"
+  },
+  {
    "id": "deco.rock-big",
    "group": "prop",
    "path": "art/packs/myart/props/deco-rock-big.png",

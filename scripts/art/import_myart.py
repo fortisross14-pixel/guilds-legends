@@ -101,7 +101,7 @@ def ground():
 # --- Wild things (Grassland, Extra Objects): trees, rocks, camps, and props the places name ---
 def wild_things():
     from wilds import DECO, PROPS
-    sheets = {'ExtraObjects': sheet('ExtraObjects', EXTRA), 'Grassland': sheet('Grassland', GRASS)}
+    sheets = {'ExtraObjects': sheet('ExtraObjects', EXTRA), 'Grassland': sheet('Grassland', GRASS), 'Water': sheet('Water', GRASS)}
     for key, spec in [*((f'deco.{name}', spec) for name, spec in DECO.items()), *PROPS.items()]:
         name, c, r, w, h, *rest = spec
         image = trim(tiles(sheets[name], c, r, w, h, skip=rest[0] if rest else ()))

@@ -12,6 +12,8 @@ DECO = {
     # trees (also drawn over the woods, 'T' tiles, by src/explore/sceneMap.js)
     'tree-oak': (EX, 2, 11, 3, 5), 'tree-pine': (EX, 5, 11, 3, 5), 'tree-dead': (EX, 0, 11, 2, 5),
     'tree-broad': (GL, 0, 11, 4, 5, [(0, 14), (0, 15)]), 'tree-dead-small': (EX, 8, 14, 1, 2), 'bush-dead': (EX, 11, 14, 2, 2),
+    # a whole pond: dirt banks, lily pads and a flower (Water sheet), 4 x 4
+    'pond': ('Water', 6, 0, 4, 4),
     # rocks, logs, plants
     'rock-big': (EX, 10, 10, 2, 2), 'standing-stone': (EX, 12, 10, 2, 2), 'rocks': (EX, 14, 13, 1, 1), 'rock-tall': (EX, 15, 12, 1, 2),
     'rock-flat': (EX, 13, 14, 2, 1), 'pebbles': (EX, 15, 14, 1, 1), 'log': (EX, 9, 13, 3, 1), 'log-hollow': (EX, 14, 11, 1, 1),
