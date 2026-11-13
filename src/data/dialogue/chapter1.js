@@ -81,8 +81,24 @@ export default {
           },
           {
             text: 'You’ll give me that token, Sergeant, or the watch will be one man short.',
-            effects: [{ giveItem: { 'watch-token': 1 } }, { standing: { honor: -10, dread: 10, text: 'Threatened Sergeant Hobb of the watch' } }, { flag: 'watchCold' }, { relationship: -5 }],
-            reply: ['…Take it. Take it and get off my bridge.', 'The watch will remember your face.'],
+            effects: [
+              { standing: { honor: -10, dread: 6, text: 'Threatened Sergeant Hobb of the watch' } },
+              { flag: 'watchCold' },
+              { relationship: -5 },
+              {
+                battle: {
+                  id: 'hobb-watch',
+                  name: 'The watch at the west gate',
+                  types: ['shield-thug', 'road-bandit'],
+                  names: ['Sergeant Hobb', 'Watchman', 'Watchman'],
+                  count: 3,
+                  level: 6,
+                  objective: 'Beat the watch, and take Hobb’s token off him.',
+                  onWin: { giveItem: { 'watch-token': 1 }, standing: { dread: 6, text: 'Beat the Dunmere watch at its own gate' } },
+                },
+              },
+            ],
+            reply: ['Then come and take it.', 'Watch! To the gate!'],
           },
         ],
       },
@@ -167,10 +183,11 @@ export default {
     leave: 'Move on',
     variants: [
       {
-        if: { notItem: 'waystone-rubbing', storyStep: 'c1-thornwood.waystone' },
+        if: { notItem: 'waystone-rubbing', storyStep: 'c1-thornwood.waystone', wildBeaten: 'thornwood-edge:waystone-band' },
         lines: ['A mossy waystone, older than the road. Under the moss someone has carved seven small lanterns, and a date: 1183.'],
         choices: [{ text: 'Copy the marks.', effects: [{ giveItem: { 'waystone-rubbing': 1 } }], reply: ['You press paper to the stone and rub it with charcoal. Seven lanterns, and under them, scratched later and in a hurry: “M. knows.”'] }],
       },
+      { if: { storyStep: 'c1-thornwood.waystone', notItem: 'waystone-rubbing' }, lines: ['A mossy waystone with something carved under the moss. Poachers have camped around it; you can’t get close while they’re here.'] },
       { lines: ['A mossy waystone. Seven small lanterns are carved under the moss.'] },
     ],
   },
@@ -228,6 +245,81 @@ export default {
         choices: [{ text: 'None that will set more. (60 gold)', effects: [{ takeItem: { 'poacher-snare': 3 } }, { gold: 60 }, { standing: { honor: 4, text: 'Cleared the poachers’ snares from the Thornwood' } }], reply: ['The wardens owe you one. We don’t forget.'] }],
       },
       { lines: ['Three, I said.'], choices: [{ text: 'Coming.', effects: [{ wait: true }] }] },
+    ],
+  },
+
+  // Corwin Pell: brisk, cheerful, always counting.
+  'story.e3.corwin': {
+    speaker: 'Corwin Pell',
+    portrait: 'portrait.dunmere.merchant',
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['My favourite guild! And my least favourite morning. A bandit and his mates tipped a cart and took my strongbox.', 'They’re camped off the Old Road, south of the stones. Bring it back unopened and I’ll pay well.'],
+        choices: [{ text: 'Unopened. You have my word.', reply: ['Your word and your swords. Good combination.'] }],
+      },
+    ],
+  },
+  'story.e3.corwin.done': {
+    speaker: 'Corwin Pell',
+    portrait: 'portrait.dunmere.merchant',
+    decide: true,
+    leave: false,
+    variants: [
+      {
+        if: { hasItem: { 'corwin-strongbox': 1 } },
+        lines: ['My strongbox! And the lock’s still on it.'],
+        choices: [
+          { text: 'As promised. (50 gold)', effects: [{ takeItem: { 'corwin-strongbox': 1 } }, { gold: 50 }, { standing: { honor: 4, text: 'Returned Corwin’s strongbox unopened' } }], reply: ['An honest guild. I’ll tell everyone. Twice.'] },
+          { text: 'Lighter than it was, I’m afraid. Bandits. (50 gold, and what you took)', effects: [{ takeItem: { 'corwin-strongbox': 1 } }, { gold: 110 }, { standing: { honor: -8, text: 'Skimmed Corwin’s strongbox' } }, { relationship: -3 }], reply: ['…Bandits. Of course. Here’s your fee.'] },
+        ],
+      },
+      { lines: ['No strongbox yet?'], choices: [{ text: 'Soon.', effects: [{ wait: true }] }] },
+    ],
+  },
+  // Orren Pike, the herald: dry, precise, quietly worried.
+  'story.e5.orren': {
+    speaker: 'Orren Pike',
+    portrait: 'portrait.dunmere.herald',
+    decide: true,
+    leave: 'Another time.',
+    variants: [
+      {
+        lines: ['A small thing, but it bothers me. Every morning some of my notices are torn down.', 'Not all of them. Someone out at night is choosing.'],
+        choices: [{ text: 'I’ll find out who.', reply: ['Discreetly, if you can. Dunmere is small.'] }],
+      },
+    ],
+  },
+  'story.e5.orren.done': {
+    speaker: 'Orren Pike',
+    portrait: 'portrait.dunmere.herald',
+    decide: true,
+    leave: false,
+    variants: [
+      {
+        lines: ['Well? Who is tearing up my board?'],
+        choices: [
+          { text: 'Pip. Only the Argent Crown’s notices. They took his brother. (30 gold)', effects: [{ gold: 30 }], reply: ['Pip. Of course it’s Pip.', 'I’ll have a word. A gentle one. And the Crown’s notices can go up a little higher.'] },
+          { text: 'The wind, I think. Nailed them badly. (30 gold)', effects: [{ gold: 30 }, { standing: { honor: 2, text: 'Covered for Pip the lamplighter' } }], reply: ['The wind. Hm. The wind only ever takes the silver-and-grey ones.', 'Fine. Better nails.'] },
+        ],
+      },
+    ],
+  },
+  // Nessa's brother's old camp in the Thornwood (an object card).
+  'wild.thornwood.oldcamp': {
+    speaker: 'An old campsite',
+    portrait: 'portrait.poi',
+    leave: 'Move on',
+    variants: [
+      {
+        if: { storyStep: 'e6-nessa.camp', storyHero: 'nessa' },
+        lines: ['A fire ring gone to moss, and a log someone carved initials into. Nessa kneels by it and doesn’t speak for a while.', 'Under the log, wrapped in oilcloth: a hunter’s knife with a lantern scratched on the hilt.'],
+        choices: [
+          { text: 'Take your time, Nessa.', effects: [{ flag: 'nessaCamp' }, { heroLoyalty: { id: 'nessa', amount: 10 } }, { giveItem: { 'hunting-knife': 1 } }], reply: ['“He was here. He really was here.” She keeps the knife close.'] },
+        ],
+      },
+      { lines: ['A fire ring gone to moss, and a log with initials carved into it.'] },
     ],
   },
 };

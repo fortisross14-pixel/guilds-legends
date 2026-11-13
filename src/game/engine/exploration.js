@@ -11,6 +11,7 @@ import { TILE_SIZE } from '../../data/tiles.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups, areaLinks, findWildGroup } from '../../data/wilds/index.js';
 import { roadForArea } from '../../data/roads.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
+import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
 import { adjustPatronInPlace } from './charter.js';
@@ -206,6 +207,8 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     // Items handed over or received: { giveItem: { 'wolf-pelt': 3 } } gives them to the guild, takeItem takes them.
     if (effect.giveItem) addItemsInPlace(state, effect.giveItem);
     if (effect.takeItem) addItemsInPlace(state, Object.fromEntries(Object.entries(effect.takeItem).map(([id, count]) => [id, -count])));
+    // A fight the conversation starts: { battle: { id, name, types, names, count, level, onWin } }.
+    if (effect.battle) startTalkBattleInPlace(state, effect.battle);
     // Honor and dread (docs/design/PILLARS.md): { standing: { honor: 8, dread: 4, text: 'Handed the thief to the watch' } }.
     if (effect.standing) adjustStandingInPlace(state, effect.standing, effect.standing.text || '');
     if (effect.reputation) adjustRegionReputationInPlace(state, effect.reputation.region, effect.reputation.amount);
@@ -502,6 +505,40 @@ function wildFighters(state) {
   const main = (state.guild.mainParty || []).map((id) => state.heroes.find((hero) => hero.id === id)).filter(fit);
   if (main.length) return main.slice(0, 4);
   return state.heroes.filter(fit).sort((a, b) => b.power - a.power).slice(0, 4);
+}
+
+/** A battle a conversation starts (src/data/dialogue/index.js, the { battle } effect). */
+function startTalkBattleInPlace(state, battle) {
+  const fighters = wildFighters(state);
+  if (!fighters.length || state.activeEncounter) return;
+  const here = state.world?.currentLocationId || 'dunmere';
+  const types = battle.types.map((id) => ENEMY_TYPES[id]).filter(Boolean);
+  const level = battle.level || 1;
+  const count = (state.world?.exploration?.talkBattles || 0) + 1;
+  state.activeEncounter = createPartyEncounter({
+    id: `talk-${battle.id}-${count}`,
+    seed: (state.rngState ^ hashString(`talk:${battle.id}:${count}`)) >>> 0,
+    sourceType: 'talk',
+    sourceId: battle.id,
+    title: battle.name,
+    roundName: LOCATION_BY_ID[here]?.name || 'The street',
+    objective: battle.objective || 'You started this. Finish it.',
+    playerHeroes: fighters.map((hero) => ({ hero, role: 'Fighter' })),
+    opponentName: battle.name,
+    opponentPrimal: LOCATION_BY_ID[here]?.primal || 'Iron',
+    opponentLevel: level,
+    opponentPower: battle.power || Math.min(98, Math.round(38 + 2.25 * level)),
+    enemyCount: clamp(battle.count || 2, 1, 5),
+    enemyTypes: types,
+    risk: 2,
+    canFlee: true,
+    items: battleItems(state),
+  });
+  state.activeEncounter.sourceMeta = { onWin: battle.onWin || null };
+  (battle.names || []).forEach((name, index) => {
+    if (state.activeEncounter.enemies[index]) state.activeEncounter.enemies[index].name = name;
+  });
+  explorationInPlace(state).talkBattles = count;
 }
 
 /** Starts a battle with an enemy group standing in the current wild area. */

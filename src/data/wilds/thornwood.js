@@ -53,9 +53,13 @@ export default {
   props: [
     // The Broken Lantern's waystone (story 1.6): their marks carved in it.
     { id: 'waystone', asset: 'deco.standing-stone', at: [11, 3], size: [1, 1], poi: { name: 'Old waystone', verb: 'Inspect', dialogue: 'wild.thornwood.waystone' } },
+    // Nessa's brother's old camp (errand 1.s6).
+    { id: 'old-camp', asset: 'deco.log-hollow', at: [3, 13], size: [1, 1], poi: { name: 'An old campsite', verb: 'Inspect', dialogue: 'wild.thornwood.oldcamp' } },
     { id: 'ward-marker', asset: 'prop.wardstone', at: [19, 14], size: [1, 1], poi: { name: 'Fallen ward marker', verb: 'Inspect', dialogue: 'wild.thornwood.marker' } }],
-  // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
-  enemies: [],
+  // Bands that jump anyone walking off the road. Standing: the poachers camped at the Lantern's waystone (story 1.6).
+  enemies: [
+    { id: 'waystone-band', name: 'Poachers at the waystone', at: [12, 4], asset: 'enemy.group.stalkers', types: ['thorn-stalker', 'bark-brute', 'thorn-stalker'], count: 3, level: 8, power: 56, respawnWeeks: 100000, reward: { gold: [60, 90], items: { 'poacher-snare': 1 } } },
+  ],
   ambushes: [
     { id: 'stalkers', name: 'Thorn stalkers', types: ['thorn-stalker'], count: 2, level: 7, power: 54, reward: { gold: [48, 80], xp: 80 } },
     { id: 'spores', name: 'Spore callers and a mender', types: ['spore-caller', 'grove-mender'], count: 3, level: 7, power: 54, reward: { gold: [52, 88], xp: 120 } },

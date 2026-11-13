@@ -61,6 +61,8 @@
 //   { patronGift: patronId }                50 gold for standing, once a month
 //   { giveItem: { itemId: n } }, { takeItem: { itemId: n } }   items to or from the guild
 //   { standing: { honor, dread, text } }    honor and dread move; `text` goes in the standing log
+//   { battle: { id, name, types, names?, count, level, objective?, onWin: { giveItem, standing, flag, gold } } }
+//                                           starts a fight (foe types from src/data/enemies.js); lost = the defeat rule
 import dunmere from './dunmere.js';
 import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';

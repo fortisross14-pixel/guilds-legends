@@ -113,8 +113,11 @@ export default {
     { id: 'fern-3', asset: 'deco.fern', at: [54, 7], size: [1, 1], walkable: true },
     { id: 'flowers-4', asset: 'deco.flowers-white', at: [31, 22], size: [1, 1], walkable: true },
   ],
-  // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
-  enemies: [],
+  // Bands that jump anyone walking off the road. Standing: the bandit who robbed Corwin's cart (errand 1.s3),
+  // there only while the errand is on.
+  enemies: [
+    { id: 'cart-robber', name: 'The cart robber and his mates', at: [35, 19], asset: 'enemy.group.bandits', types: ['road-bandit', 'shield-thug', 'road-bandit'], count: 3, level: 4, power: 47, if: { storyStep: 'e3-strongbox.box' }, respawnWeeks: 100000, reward: { gold: [30, 50], items: { 'corwin-strongbox': 1 } } },
+  ],
   ambushes: [
     { id: 'wolves-near', name: 'Wolfskin pair', types: ['wolfskin'], count: 2, level: 2, power: 42, if: { oldRoadCleared: false }, reward: { gold: [24, 48], xp: 64 } },
     { id: 'wolf-pack', name: 'Wolfskins and a bandit', types: ['wolfskin', 'road-bandit'], count: 3, level: 3, power: 45, if: { oldRoadCleared: false }, reward: { gold: [36, 68], xp: 108 } },

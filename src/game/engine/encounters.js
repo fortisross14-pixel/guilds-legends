@@ -31,6 +31,7 @@ import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guil
 import { siteFightConcludedInPlace } from './sites.js';
 import { recordRivalryInPlace, settleChallengeInPlace } from './rivalry.js';
 import { personBoutResultInPlace } from './people.js';
+import { adjustStandingInPlace } from './reputation.js';
 
 /** Plays one battle round. commands: { [partyUnitId]: { action, skillId?, itemId?, targetId? } }. */
 export function performActiveCombatAction(state, commands = {}) {
@@ -86,6 +87,32 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     // The defeat rule: the party wakes in the infirmary at home (hall.js).
     defeatInPlace(next, fighters.map((hero) => hero.id), area.hub);
   }
+  commitRng(next, rng);
+}
+
+/**
+ * A fight a conversation started (a dialogue { battle } effect: threatening Sergeant Hobb).
+ * Won: XP, what the foes drop, and `onWin` ({ giveItem, standing, flag, gold }). Lost: the defeat rule.
+ */
+function concludeTalkBattleInPlace(next, encounter, combatResult) {
+  const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
+  if (!combatResult.playerWon) {
+    defeatInPlace(next, fighters.map((hero) => hero.id), next.world?.currentLocationId);
+    return;
+  }
+  const rng = rngFor(next, `talk-combat:${encounter.id}`);
+  const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, encounter.title));
+  const loot = rollDrops(rng, encounter.enemies);
+  const win = encounter.sourceMeta?.onWin || {};
+  if (win.giveItem) Object.entries(win.giveItem).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
+  addItemsInPlace(next, loot);
+  if (win.gold) earnGoldInPlace(next, win.gold);
+  if (win.standing) adjustStandingInPlace(next, win.standing, win.standing.text || '');
+  if (win.flag) {
+    next.flags.dialogue ||= {};
+    next.flags.dialogue[win.flag] = true;
+  }
+  pushMoment(next, { type: 'victory', title: encounter.title, gold: win.gold || 0, xp, loot: lootList(loot) });
   commitRng(next, rng);
 }
 
@@ -207,6 +234,11 @@ function concludeCombatInner(state, mutate) {
     const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
     // A training match is worth a fifth less than a wild fight of the same strength (heroes.js battleXp); half if lost.
     const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, 'a training match', 'training', combatResult.playerWon ? 1 : 0.5));
+    // A won match against a practice team is remembered (flag practice-<team>-won: errands ask for it).
+    if (combatResult.playerWon && encounter.sourceMeta?.team) {
+      next.flags.dialogue ||= {};
+      next.flags.dialogue[`practice-${encounter.sourceMeta.team}-won`] = true;
+    }
     if (combatResult.playerWon) pushMoment(next, { type: 'victory', title: `${encounter.title}: won`, gold: 0, xp, loot: [] });
     else next.notifications.push({ id: `training-lost-${encounter.id}`, tone: 'blue', title: 'Training match lost', text: 'Spent, but nobody hurt. The party learned something anyway.' });
     next.activeEncounter = null;
@@ -233,6 +265,13 @@ function concludeCombatInner(state, mutate) {
     next.activeEncounter = null;
     evaluateStateInPlace(next);
     return { state: finalize(next), error: null, result: { kind: 'road-combat', combat: combatResult } };
+  }
+
+  if (encounter.sourceType === 'talk') {
+    concludeTalkBattleInPlace(next, encounter, combatResult);
+    next.activeEncounter = null;
+    evaluateStateInPlace(next);
+    return { state: finalize(next), error: null, result: { kind: 'talk-combat', combat: combatResult } };
   }
 
   if (encounter.sourceType === 'wild') {

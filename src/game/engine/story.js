@@ -388,7 +388,7 @@ function completeMissionInPlace(state, mission) {
   addChronicle(state, { type: 'story', importance: 4, title: `Story: ${mission.title}`, text: mission.summary, tags: ['story', `act-${mission.act}`] });
   pushNewsInPlace(state, { title: `Story: ${mission.title} complete`, text: mission.summary, tone: 'purple' });
   state.notifications.push({ id: `story-done-${mission.id}`, tone: 'purple', title: `${mission.title}: complete`, text: 'See the Quest Log for what comes next.' });
-  // The end of Act I is the end of the tutorial.
+  // The end of Chapter 1 (the Harvest Melee) is the end of the tutorial.
   if (mission.id === 'm4' && story.tutorial === 'active') {
     story.tutorial = 'done';
     pushMoment(state, { type: 'tutorialComplete', title: 'Tutorial complete' });
@@ -570,7 +570,9 @@ export function startStoryDuel(state, missionId, heroId = null) {
   if (!champion) return { state, error: 'Nobody is fit to fight.' };
   const next = clone(state);
   const rng = rngFor(next, `story-duel-${missionId}-${next.story.missions[missionId].duelLosses || 0}`);
-  const opponent = generateHero(next, rng, 'veteran', { ...step.opponent, guildId: null, homeLocationId: step.at });
+  // `easierIf` (a story choice, like fighting Bram dirty): the opponent starts two levels down.
+  const easier = step.easierIf && checkCondition(next, step.easierIf);
+  const opponent = generateHero(next, rng, 'veteran', { ...step.opponent, level: Math.max(1, (step.opponent.level || 1) - (easier ? 2 : 0)), guildId: null, homeLocationId: step.at });
   opponent.id = step.opponent.id;
   next.activeEncounter = createDuelEncounter({
     id: `story-duel-${missionId}-${campaignDaySerial(next)}`,

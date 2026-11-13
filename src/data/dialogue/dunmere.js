@@ -243,6 +243,13 @@ export default {
     ],
     topics: [
       { id: 'who', text: 'Who should I meet in town?', lines: ['Corwin, by the Notice Board, has a job. Mara at the Wayfarer knows who wants one.'] },
+      {
+        id: 'notices',
+        text: 'Someone tears down the herald’s notices at night. You’re out at night.',
+        if: { storyStep: 'e5-notices.look' },
+        effects: [{ flag: 'noticesFound' }],
+        lines: ['…Only the silver-and-grey ones. The Argent Crown’s recruiting notices.', 'They took my brother for their levy. He never wrote. I won’t have them taking anyone else’s.'],
+      },
       { id: 'night', text: 'Seen anything odd at night?', if: { prologueDone: true }, lines: ['Men in grey boots on Kiln Row, the night of the knocking. They walked like soldiers.'] },
       { id: 'lamps', text: 'How many lamps do you light?', lines: ['Forty-two. Forty-three if you count the one that never stays lit.'] },
     ],
