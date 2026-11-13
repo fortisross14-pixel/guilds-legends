@@ -44,6 +44,15 @@ export function battleXp(hero, strength, kind = 'wild') {
   return Math.max(1, Math.round((needed / fightsToLevel(hero.level, strength)) * (XP_KIND[kind] || 1)));
 }
 
+/**
+ * Gold from a won fight, by the beaten foes' levels (like XP): about 8 + 3 per level each,
+ * give or take a fifth. Three level-5 bandits pay about 70; three level-30 wraiths about 300.
+ */
+export function battleGold(rng, enemies = []) {
+  const base = enemies.reduce((sum, enemy) => sum + 8 + 3 * Math.max(1, enemy.level || 1), 0);
+  return Math.max(0, Math.round(base * (0.8 + rng.next() * 0.4)));
+}
+
 function rarityFromRoll(rng, bonus = 0) {
   const roll = rng.next() + bonus;
   if (roll > 1.03) return 'Legend';

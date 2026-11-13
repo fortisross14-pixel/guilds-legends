@@ -8,7 +8,7 @@ import { addChronicle, campaignWeekSerial, clone, commitRng, earnGoldInPlace, fi
 import { charterEffect } from './charter.js';
 import { afterBattleInPlace } from './seasons.js';
 import { storyDuelResultInPlace } from './story.js';
-import { applyXpInPlace, battleXp, enemyStrength, xpForNextLevel } from './heroes.js';
+import { applyXpInPlace, battleGold, battleXp, enemyStrength, xpForNextLevel } from './heroes.js';
 
 /** Gives XP and returns the entry the result screen animates (bar from → to, level-ups). */
 /** The fight's strength for the party (heroes.js enemyStrength): every foe's level, shared by the fighters. */
@@ -63,7 +63,7 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
   const wild = (next.world.exploration.wild[areaId] ||= { cleared: {}, gathered: {}, visited: true, bosses: 0 });
   if (combatResult.playerWon) {
     const reward = group.reward || {};
-    const gold = reward.gold ? rng.int(reward.gold[0], reward.gold[1]) : 0;
+    const gold = battleGold(rng, encounter.enemies);
     earnGoldInPlace(next, gold);
     const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, area.name));
     const loot = { ...(reward.items || {}) };
@@ -121,7 +121,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
   const tier = next.guild.tierIndex + 1;
   const rng = rngFor(next, `road-combat:${encounter.id}`);
   if (combatResult.playerWon) {
-    const gold = (30 + rng.int(0, 60)) * tier;
+    const gold = battleGold(rng, encounter.enemies);
     earnGoldInPlace(next, gold);
     const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, 'a road ambush'));
     const loot = rollLoot(rng, next.guild.tierIndex, 0);
