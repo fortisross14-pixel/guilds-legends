@@ -87,6 +87,7 @@ export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
 export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, restAtHall, restAtInn, MAX_REST_DAYS, INN_NIGHT_COST } from './engine/timeActions.js';
+export { itemCount } from './engine/inventory.js';
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero, shopPrice, chestUsed, gearUpgradeCost, upgradeGear } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';
@@ -152,7 +153,7 @@ export {
   offerTerms,
 } from './engine/contracts.js';
 export { makeOffer } from './engine/recruitment.js';
-export { REPUTATION_FAMILIES, REPUTATION_LEVELS, FAMILY_PERKS, getReputationSummary, specializationTitle, reputationLevel } from './engine/reputation.js';
+export { REPUTATION_FAMILIES, REPUTATION_LEVELS, FAMILY_PERKS, getReputationSummary, specializationTitle, reputationLevel, getStanding, standingEpithet, STANDING } from './engine/reputation.js';
 export { nemesisIds, rivalRecord, getNemesisView, challengeNemesis, acceptChallenge, declineChallenge } from './engine/rivalry.js';
 export { declineContract } from './engine/missions.js';
 export { resolveTownEvent, startSideJob, markNewsRead, festivalFor } from './engine/townLife.js';

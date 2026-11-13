@@ -134,3 +134,78 @@ export function boardPerks(state) {
     early: REPUTATION_FAMILIES.filter((family) => familyLevel(state, family) >= 3),
   };
 }
+
+// ---------------------------------------------------------------- standing: honor and dread (docs/design/PILLARS.md)
+
+/** Honor runs −100 (wicked) … +100 (honourable); dread 0 … 100. Both fade toward the middle each month. */
+export const STANDING = { honorLine: 34, dreadLines: [34, 67], margin: 6, fadePerMonth: 2, logSize: 12 };
+
+function standingInPlace(state) {
+  state.guild.standing ||= { honor: 0, dread: 0, honorBand: 'neutral', dreadBand: 'none', log: [] };
+  return state.guild.standing;
+}
+
+/** The guild's standing (read only). */
+export function getStanding(state) {
+  return state.guild?.standing || { honor: 0, dread: 0, honorBand: 'neutral', dreadBand: 'none', log: [] };
+}
+
+// A band changes only once the value is clearly past the line (the margin), so the epithet never flickers.
+function honorBandFor(value, current) {
+  const { honorLine, margin } = STANDING;
+  const pull = (band) => (band === current ? 0 : margin);
+  if (value >= honorLine + pull('honourable')) return 'honourable';
+  if (value <= -(honorLine + pull('wicked'))) return 'wicked';
+  if (current === 'honourable' && value >= honorLine - margin) return 'honourable';
+  if (current === 'wicked' && value <= -(honorLine - margin)) return 'wicked';
+  return 'neutral';
+}
+function dreadBandFor(value, current) {
+  const [feared, dreaded] = STANDING.dreadLines;
+  const { margin } = STANDING;
+  const rank = { none: 0, feared: 1, dreaded: 2 }[current] || 0;
+  const target = value >= dreaded + (rank >= 2 ? -margin : margin) ? 'dreaded' : value >= feared + (rank >= 1 ? -margin : margin) ? 'feared' : 'none';
+  // Stay in the current band until clearly out of it.
+  if (target === current) return current;
+  if (current === 'dreaded' && value >= dreaded - margin) return 'dreaded';
+  if (current === 'feared' && value >= feared - margin && value < dreaded + margin) return 'feared';
+  return target;
+}
+
+/** Moves honor and dread after a deed; `text` goes in the standing log. */
+export function adjustStandingInPlace(state, { honor = 0, dread = 0 } = {}, text = '') {
+  if (!honor && !dread) return;
+  const standing = standingInPlace(state);
+  standing.honor = Math.max(-100, Math.min(100, standing.honor + honor));
+  standing.dread = Math.max(0, Math.min(100, standing.dread + dread));
+  standing.honorBand = honorBandFor(standing.honor, standing.honorBand);
+  standing.dreadBand = dreadBandFor(standing.dread, standing.dreadBand);
+  if (text) standing.log = [{ day: (state.date.year * 12 + state.date.month) * 28 + (state.date.week || 0) * 7 + (state.date.day || 0), text, honor, dread }, ...(standing.log || [])].slice(0, STANDING.logSize);
+}
+
+/** Monthly: honor and dread fade a little toward the middle (a guild is what it has done lately). */
+export function fadeStandingInPlace(state) {
+  const standing = standingInPlace(state);
+  const step = STANDING.fadePerMonth;
+  standing.honor = standing.honor > 0 ? Math.max(0, standing.honor - step) : Math.min(0, standing.honor + step);
+  standing.dread = Math.max(0, standing.dread - step);
+  standing.honorBand = honorBandFor(standing.honor, standing.honorBand);
+  standing.dreadBand = dreadBandFor(standing.dread, standing.dreadBand);
+}
+
+const HONOR_WORDS = { honourable: 'honourable', wicked: 'wicked', neutral: '' };
+const DREAD_WORDS = { feared: 'feared', dreaded: 'dreaded', none: '' };
+
+/**
+ * The epithet the guild has earned: words ('honourable and feared'), the long form
+ * ('the honourable and feared guild of the New Lantern') and the short one ('Honourable New Lantern').
+ * A guild that is neither has none.
+ */
+export function standingEpithet(state) {
+  const standing = getStanding(state);
+  const words = [HONOR_WORDS[standing.honorBand], DREAD_WORDS[standing.dreadBand]].filter(Boolean).join(' and ');
+  const name = state.guild?.name || 'the guild';
+  const bare = name.replace(/^the\s+/i, '');
+  if (!words) return { words: '', long: name, short: name };
+  return { words, long: `the ${words} guild of the ${bare}`, short: `${words[0].toUpperCase()}${words.slice(1)} ${bare}` };
+}

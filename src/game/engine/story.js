@@ -184,6 +184,20 @@ export function checkCondition(state, condition, context = {}) {
         return (state.tournaments || []).some((tournament) => tournament.definitionId === value && (tournament.signup || tournament.assignments?.length));
       case 'tournamentPlayed':
         return tournamentPlayed(state, value);
+      // Items (docs/design/ITEMS.md): { hasItem: { 'wolf-pelt': 3 } }.
+      case 'hasItem':
+        return Object.entries(value).every(([id, count]) => (state.inventory?.[id] || 0) >= count);
+      case 'notItem':
+        return list(value).every((id) => !(state.inventory?.[id] || 0));
+      // Standing (docs/design/PILLARS.md): honor −100…100, dread 0…100, bands with a margin.
+      case 'honorAtLeast':
+        return (state.guild?.standing?.honor || 0) >= value;
+      case 'honorBelow':
+        return (state.guild?.standing?.honor || 0) < value;
+      case 'dreadAtLeast':
+        return (state.guild?.standing?.dread || 0) >= value;
+      case 'honorBand':
+        return list(value).includes(state.guild?.standing?.honorBand || 'neutral');
       case 'freeBed':
         return (freeBeds(state) > 0) === value;
       case 'atHome':

@@ -79,6 +79,24 @@ const ROSTERS = {
   ],
 };
 
+/**
+ * What each kind of foe can leave behind (docs/design/ITEMS.md): { item, chance } per foe,
+ * rolled for every one beaten. "Bring three wolf pelts" means "beat Wolfskins".
+ */
+export const FOE_DROPS = {
+  wolfskin: [{ item: 'wolf-pelt', chance: 0.75 }, { item: 'wolfskin-vest', chance: 0.06 }],
+  'road-bandit': [{ item: 'bandit-dagger', chance: 0.35 }, { item: 'liquor', chance: 0.2 }, { item: 'hunting-knife', chance: 0.05 }],
+  'shield-thug': [{ item: 'liquor', chance: 0.3 }, { item: 'rusty-sword', chance: 0.07 }],
+  'hedge-witch': [{ item: 'feverfew', chance: 0.5 }],
+  'field-priest': [{ item: 'liquor', chance: 0.25 }, { item: 'feverfew', chance: 0.25 }],
+  'thorn-stalker': [{ item: 'poacher-snare', chance: 0.6 }, { item: 'hunting-knife', chance: 0.05 }],
+  'bark-brute': [{ item: 'poacher-snare', chance: 0.3 }],
+  'spore-caller': [{ item: 'feverfew', chance: 0.4 }],
+  'harbor-brute': [{ item: 'liquor', chance: 0.3 }],
+  'reef-raider': [{ item: 'sea-purple', chance: 0.25 }],
+  'cliff-brute': [{ item: 'woad', chance: 0.25 }],
+};
+
 export const REGION_ENEMIES = Object.fromEntries(
   Object.entries(ROSTERS).map(([region, rows]) => [
     region,

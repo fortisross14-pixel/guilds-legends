@@ -45,7 +45,7 @@ import { startScheduledTournamentsInPlace } from './tournamentEntry.js';
 import { runAiTransferMarketInPlace, simulateRivalInstitutionsInPlace, simulateRivals } from './rivals.js';
 import { pushRankingsMomentInPlace, recordRankSnapshotInPlace } from './rankings.js';
 import { processContractsInPlace, processPoachingInPlace, scoutCandidatesInPlace } from './contracts.js';
-import { EXPIRE_PENALTY, adjustRegionReputationInPlace } from './reputation.js';
+import { EXPIRE_PENALTY, adjustRegionReputationInPlace, fadeStandingInPlace } from './reputation.js';
 import { expireChallengeInPlace, maybeIssueChallengeInPlace, nemesisBidsInPlace, rivalTakesContractInPlace, updateNemesesInPlace } from './rivalry.js';
 import { checkBossesInPlace } from './stories.js';
 import { rotateVisitorsInPlace } from './people.js';
@@ -343,6 +343,7 @@ function runMonthInPlace(next, rng) {
   scoutCandidatesInPlace(next, council.scouts);
   monthlyHallInPlace(next, rng);
   monthlyConnectionsInPlace(next, rng);
+  fadeStandingInPlace(next);
   seasonsMonthlyInPlace(next);
   processContractsInPlace(next);
   processPoachingInPlace(next, rng);

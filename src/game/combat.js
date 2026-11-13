@@ -119,7 +119,7 @@ function typedEnemy(encounter, type, { id, name, isBoss = false }) {
     power: base.power + (isBoss ? 8 : -2),
   });
   const mods = isBoss ? { ...role.mods, hp: role.mods.hp * 3.2, atk: role.mods.atk * 1.25, mag: role.mods.mag * 1.25 } : role.mods;
-  return makeCombatant(enemy, 'enemy', {
+  const unit = makeCombatant(enemy, 'enemy', {
     role: isBoss ? 'Boss' : type.role,
     scale: (isBoss ? 1 : 0.85) * base.strength,
     mods,
@@ -128,6 +128,9 @@ function typedEnemy(encounter, type, { id, name, isBoss = false }) {
     profile: role.profile,
     boss: isBoss ? { id: type.id, phase: 0, phases: type.phases || [], charge: type.charge || null, areaSkill: null } : null,
   });
+  // What kind of foe this is, for what it drops (src/data/enemies.js FOE_DROPS).
+  unit.foeType = type.id;
+  return unit;
 }
 
 function living(list) {

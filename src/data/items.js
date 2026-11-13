@@ -1,5 +1,5 @@
-// Consumables and equipment. Prices are in gold; selling returns half.
-// kind: 'consumable' | 'weapon' | 'armor' | 'accessory'
+// Items (docs/design/ITEMS.md). Prices are in gold; selling returns half, except goods (full price).
+// kind: 'consumable' | 'weapon' | 'armor' | 'accessory' (Equipment) | 'good' (sell or hand in) | 'keepsake' (story; never sold)
 // tier: 1 Regional, 2 National, 3 Global (shops stock up to their town's tier).
 // classes: which classes may equip it (omit = everyone).
 // battle: consumable effect in combat. field: effect when used at the Guild Hall.
@@ -104,6 +104,24 @@ const list = [
   { id: 'roc-feather', name: 'Roc Feather', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { spd: 8, atk: 3 } },
   { id: 'frost-heart', name: 'Frost Heart', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { def: 9, hp: 40 } },
   { id: 'veil-mask', name: 'Veil Mask', kind: 'accessory', tier: 9, price: 800, unique: true, stats: { mag: 9, spd: 3 } },
+  // Rough gear off beaten foes (not sold in shops).
+  { id: 'rusty-sword', name: 'Rusty Sword', kind: 'weapon', tier: 0, price: 20, loot: true, stats: { atk: 2 }, classes: ['Guardian', 'Duelist', 'Rogue'] },
+  { id: 'wolfskin-vest', name: 'Wolfskin Vest', kind: 'armor', tier: 0, price: 24, loot: true, stats: { def: 2 } },
+  { id: 'hunting-knife', name: 'Hunting Knife', kind: 'weapon', tier: 0, price: 18, loot: true, stats: { atk: 2, spd: 1 }, classes: ['Rogue', 'Duelist', 'Ranger'] },
+  // Goods: dropped, found or gathered; sold at full price, or handed in for errands.
+  { id: 'wolf-pelt', name: 'Wolf Pelt', kind: 'good', tier: 0, price: 6, use: 'Wolfskins wear them. Corwin and the tanners buy them.' },
+  { id: 'bandit-dagger', name: 'Bandit’s Dagger', kind: 'good', tier: 0, price: 10, use: 'Cheap steel. Any smith buys it for scrap.' },
+  { id: 'feverfew', name: 'Feverfew', kind: 'good', tier: 0, price: 4, use: 'A healing herb from the Old Road. Mira buys it.' },
+  { id: 'liquor', name: 'Bottle of Liquor', kind: 'good', tier: 0, price: 8, use: 'Raiders’ rotgut. The watch drinks it too.' },
+  { id: 'poacher-snare', name: 'Poacher’s Snare', kind: 'good', tier: 0, price: 5, use: 'The Greenhollow wardens want these out of the Thornwood.' },
+  { id: 'ochre', name: 'Ochre', kind: 'good', tier: 0, price: 15, use: 'A yellow-red earth from the Iron Road heights. Scribes use it.' },
+  { id: 'woad', name: 'Woad', kind: 'good', tier: 0, price: 15, use: 'A blue dye plant from the cliff road.' },
+  { id: 'sea-purple', name: 'Sea Purple', kind: 'good', tier: 0, price: 18, use: 'A purple dye from coast-road shells.' },
+  // Keepsakes: story and quest items. Never sold.
+  { id: 'lantern-medal', name: 'The Lantern’s Medal', kind: 'keepsake', tier: 0, price: 0, for: 'The bearer’s medal of the Broken Lantern. Rook gave it to you with the banner.' },
+  { id: 'watch-token', name: 'The Watch’s Token', kind: 'keepsake', tier: 0, price: 0, for: 'Sergeant Hobb’s token of trust. Show it to Prior Aubrey at Dawnwatch.' },
+  { id: 'corwin-strongbox', name: 'Corwin’s Strongbox', kind: 'keepsake', tier: 0, price: 0, for: 'Corwin’s, taken by a bandit on the Old Road. Bring it back to him.' },
+  { id: 'waystone-rubbing', name: 'Waystone Rubbing', kind: 'keepsake', tier: 0, price: 0, for: 'The Lantern’s marks, copied off the waystone in the Thornwood.' },
   // Story rewards (The Last Banner, src/data/story.js).
   { id: 'marens-satchel', name: 'Maren’s Satchel', kind: 'accessory', tier: 9, price: 500, unique: true, stats: { hp: 25, mag: 3 } },
   { id: 'gull-feather', name: 'Halden’s Gull Feather', kind: 'accessory', tier: 9, price: 600, unique: true, stats: { spd: 6, atk: 3 } },
@@ -131,6 +149,13 @@ export const GEAR_UPGRADES = {
   'plate-armor': 'aegis-plate',
 };
 export const ITEM_LIST = list;
+/** Inventory groups (Party → Inventory); everything else is Equipment. */
+export const INVENTORY_KINDS = { consumable: 'Supplies', good: 'Goods', keepsake: 'Keepsakes' };
+/** What an item sells for (goods at full price, keepsakes never). */
+export function sellValue(item) {
+  if (!item || item.kind === 'keepsake') return 0;
+  return item.kind === 'good' ? item.price : Math.floor(item.price * 0.5);
+}
 export const GEAR_SLOTS = ['weapon', 'armor', 'accessory'];
 
 /** The accessory slot holds 'artifact:<id>' when a guild artifact is worn. */

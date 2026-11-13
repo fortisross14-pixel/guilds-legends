@@ -25,7 +25,7 @@ function xpEntryInPlace(hero, encounter, state, source, kind = 'wild', share = 1
   applyXpInPlace(hero, Math.round(amount * charterEffect(state, 'combatXp')), state, source);
   return { heroId: hero.id, name: hero.name, xp: amount, levelBefore, levelAfter: hero.level, from, to: fill() };
 }
-import { addItemsInPlace, lootList, rollLoot, settleBattleItemsInPlace } from './inventory.js';
+import { addItemsInPlace, lootList, rollDrops, rollLoot, settleBattleItemsInPlace } from './inventory.js';
 import { evaluateStateInPlace } from './goals.js';
 import { completeGuildTournamentInPlace, resolveGuildRoundInPlace } from './guildTournaments.js';
 import { siteFightConcludedInPlace } from './sites.js';
@@ -66,6 +66,8 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
     earnGoldInPlace(next, gold);
     const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, area.name));
     const loot = { ...(reward.items || {}) };
+    // What the beaten foes leave behind (wolf pelts off Wolfskins, …).
+    Object.entries(rollDrops(rng, encounter.enemies)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
     if (group.isBoss) Object.entries(rollLoot(rng, next.guild.tierIndex, 1)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
     addItemsInPlace(next, loot);
     if (!group.ambush) wild.cleared[groupId] = campaignWeekSerial(next) + (group.respawnWeeks || WILD_RESPAWN.enemies);
@@ -96,6 +98,7 @@ function concludeRoadCombatInPlace(next, encounter, combatResult) {
     earnGoldInPlace(next, gold);
     const xp = fighters.map((hero) => xpEntryInPlace(hero, encounter, next, 'a road ambush'));
     const loot = rollLoot(rng, next.guild.tierIndex, 0);
+    Object.entries(rollDrops(rng, encounter.enemies)).forEach(([id, count]) => (loot[id] = (loot[id] || 0) + count));
     addItemsInPlace(next, loot);
     pushMoment(next, { type: 'victory', title: 'Ambush repelled', gold, xp, loot: lootList(loot) });
     addChronicle(next, {

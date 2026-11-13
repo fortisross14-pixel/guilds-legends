@@ -20,7 +20,7 @@ import { progressStoryInPlace, skipTutorialInPlace } from './story.js';
  * and no lot (story mission 1 rents one; src/data/lots.js).
  */
 export function startingHome() {
-  return { houseBeds: 1, lots: {}, hqLotId: null, goldHistory: [] };
+  return { houseBeds: 1, lots: {}, hqLotId: null, goldHistory: [], standing: { honor: 0, dread: 0, honorBand: 'neutral', dreadBand: 'none', log: [] } };
 }
 
 export function initialStats() {

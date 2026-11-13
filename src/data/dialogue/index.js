@@ -41,6 +41,9 @@
 //   charter: id (or list)    the founding charter (src/data/charters.js)
 //   patronAtLeast: { patronId: 'contact'|'partner'|'ally' }, patronBelow: { … }
 //   patronRival: patronId, patronGiftReady: patronId (no gift this month and 50 gold)
+//   Items (docs/design/ITEMS.md): hasItem: { itemId: n }, notItem: itemId (or list)
+//   Standing (docs/design/PILLARS.md): honorAtLeast: n, honorBelow: n, dreadAtLeast: n,
+//   honorBand: 'honourable' | 'neutral' | 'wicked' (or a list)
 //
 // Effects:
 //   { gold: n }  { item: { itemId: n } }  { reputation: { region, amount } }
@@ -56,6 +59,8 @@
 //   { recruit: true }                       a keeper's introduction: the tavern's recruits become known, the tavern opens
 //   { patron: { id, amount } }              standing with a patron (src/data/patrons.js)
 //   { patronGift: patronId }                50 gold for standing, once a month
+//   { giveItem: { itemId: n } }, { takeItem: { itemId: n } }   items to or from the guild
+//   { standing: { honor, dread, text } }    honor and dread move; `text` goes in the standing log
 import dunmere from './dunmere.js';
 import greenhollow from './greenhollow.js';
 import ironford from './ironford.js';

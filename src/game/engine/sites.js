@@ -12,7 +12,7 @@ import { normalizeClassId } from '../../data/content.js';
 import { siteFor } from '../../data/missions/index.js';
 import { campaignDaySerial, clamp, clone, commitRng, earnGoldInPlace, finalize, getHero, hashString, pushMoment, rngFor, travellingPartyIds } from './core.js';
 import { applyXpInPlace, battleXp, enemyStrength, xpForNextLevel } from './heroes.js';
-import { addItemsInPlace, battleItems, lootList, rollLoot } from './inventory.js';
+import { addItemsInPlace, battleItems, lootList, rollDrops, rollLoot } from './inventory.js';
 import { defeatInPlace } from './hall.js';
 import { objectiveOpen } from './missions.js';
 import { reportContractInPlace } from './outcomes.js';
@@ -264,6 +264,10 @@ export function siteFightConcludedInPlace(next, encounter, combatResult) {
     applyXpInPlace(hero, Math.round(xpAmount * charterEffect(next, 'combatXp')), next, mission.title);
     return { heroId: hero.id, name: hero.name, xp: xpAmount, levelBefore, levelAfter: hero.level, from, to: fill() };
   });
-  pushMoment(next, { type: 'victory', title: encounter.title, gold: 0, xp, loot: [] });
+  const dropRng = rngFor(next, `site-drops:${encounter.id}`);
+  const drops = rollDrops(dropRng, encounter.enemies);
+  commitRng(next, dropRng);
+  addItemsInPlace(next, drops);
+  pushMoment(next, { type: 'victory', title: encounter.title, gold: 0, xp, loot: lootList(drops) });
   completeInPlace(next, mission, objectiveId);
 }

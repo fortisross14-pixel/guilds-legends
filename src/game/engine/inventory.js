@@ -1,6 +1,7 @@
 // @ts-check
 // Guild inventory, equipment, shops and loot.
-import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, canEquip } from '../../data/items.js';
+import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, canEquip, sellValue } from '../../data/items.js';
+import { FOE_DROPS } from '../../data/enemies.js';
 import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
 import { chestCapacity, clamp, clone, finalize, hashString, roomLevel, tallySpend } from './core.js';
@@ -20,9 +21,25 @@ export function shopPrice(state, itemId) {
   return Math.round((item?.price || 0) * factor);
 }
 
-/** Items in the guild chest (equipped gear does not count). */
+/** Items in the guild chest: supplies and spare gear (equipped gear, goods and keepsakes do not count). */
 export function chestUsed(state) {
-  return Object.values(state.inventory || {}).reduce((sum, count) => sum + count, 0);
+  return Object.entries(state.inventory || {}).reduce((sum, [id, count]) => sum + (['good', 'keepsake'].includes(ITEMS[id]?.kind) ? 0 : count), 0);
+}
+
+/** What the beaten foes leave behind (src/data/enemies.js FOE_DROPS): { itemId: count }. */
+export function rollDrops(rng, enemies = []) {
+  const drops = {};
+  enemies.forEach((unit) => {
+    (FOE_DROPS[unit.foeType] || []).forEach(({ item, chance }) => {
+      if (rng.next() < chance) drops[item] = (drops[item] || 0) + 1;
+    });
+  });
+  return drops;
+}
+
+/** How many of an item the guild holds (chest and goods; worn gear not counted). */
+export function itemCount(state, itemId) {
+  return state.inventory?.[itemId] || 0;
 }
 
 const TIER_INDEX_BY_NAME = { Regional: 0, National: 1, Global: 2 };
@@ -34,7 +51,7 @@ export function shopStock(locationId) {
   const location = LOCATION_BY_ID[locationId];
   if (!location || !locationBuildings(locationId).includes('shop')) return [];
   const maxTier = (TIER_INDEX_BY_NAME[location.tier] ?? 0) + 1;
-  return ITEM_LIST.filter((item) => item.tier <= maxTier && !item.unique)
+  return ITEM_LIST.filter((item) => item.tier >= 1 && item.tier <= maxTier && !item.unique && !['good', 'keepsake'].includes(item.kind))
     .filter((item) => ['potion', 'antidote'].includes(item.id) || hashString(`${locationId}:${item.id}`) % 3 !== 0)
     .map((item) => item.id);
 }
@@ -76,8 +93,9 @@ export function sellItem(state, itemId, quantity = 1) {
   if (error) return { state, error };
   const count = Math.max(1, Math.round(quantity));
   if (!ITEMS[itemId] || (state.inventory?.[itemId] || 0) < count) return { state, error: 'You do not have that many.' };
+  if (ITEMS[itemId].kind === 'keepsake') return { state, error: 'That is not for sale.' };
   const next = clone(state);
-  next.guild.crowns += Math.floor(ITEMS[itemId].price * SELL_RATE) * count;
+  next.guild.crowns += sellValue(ITEMS[itemId]) * count;
   addItemsInPlace(next, { [itemId]: -count });
   return { state: finalize(next), error: null };
 }

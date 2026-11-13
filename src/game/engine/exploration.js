@@ -18,7 +18,7 @@ import { PATRON_DELTAS } from '../../data/patrons.js';
 import { grantPatronRewardsInPlace } from './connections.js';
 import { addItemsInPlace, battleItems, settleBattleItemsInPlace } from './inventory.js';
 import { concludeActiveCombat } from './encounters.js';
-import { adjustRegionReputationInPlace } from './reputation.js';
+import { adjustRegionReputationInPlace, adjustStandingInPlace } from './reputation.js';
 import {
   addEvidenceInPlace,
   checkCondition,
@@ -189,6 +189,11 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
       adjustPatronInPlace(state, effect.patronGift, PATRON_DELTAS.gift);
     }
     if (effect.item) addItemsInPlace(state, effect.item);
+    // Items handed over or received: { giveItem: { 'wolf-pelt': 3 } } gives them to the guild, takeItem takes them.
+    if (effect.giveItem) addItemsInPlace(state, effect.giveItem);
+    if (effect.takeItem) addItemsInPlace(state, Object.fromEntries(Object.entries(effect.takeItem).map(([id, count]) => [id, -count])));
+    // Honor and dread (docs/design/PILLARS.md): { standing: { honor: 8, dread: 4, text: 'Handed the thief to the watch' } }.
+    if (effect.standing) adjustStandingInPlace(state, effect.standing, effect.standing.text || '');
     if (effect.reputation) adjustRegionReputationInPlace(state, effect.reputation.region, effect.reputation.amount);
     if (typeof effect.relationship === 'number' && context.conversationId) {
       exploration.npcs[context.conversationId] = clamp((exploration.npcs[context.conversationId] || 0) + effect.relationship, -10, 10);
