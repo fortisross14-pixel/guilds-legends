@@ -11,11 +11,11 @@
 
 export const ROADS = [
   { id: 'old-road', name: 'The Old Road', ends: ['dunmere', null], area: 'old-road', legs: { dunmere: 1 }, gate: { storyDone: 'm2' }, lockedText: 'Nobody walks the Old Road alone. Hire a companion first (rent the hall, then find one at the Wayfarer).' },
-  { id: 'thornwood-road', name: 'The Thornwood road', ends: ['dunmere', 'greenhollow'], area: 'thornwood-edge', legs: { dunmere: 2, greenhollow: 1 }, gate: { storyDone: 'c1-prior' }, lockedText: 'The Greenhollow wardens keep the Thornwood road shut to unknown banners. See Mother Aveline’s prayer book at Dawnwatch Temple first.' },
+  { id: 'thornwood-road', name: 'The Thornwood road', ends: ['dunmere', 'greenhollow'], area: 'thornwood-edge', legs: { dunmere: 2, greenhollow: 1 } },
   { id: 'iron-road', name: 'The Iron Road', ends: ['greenhollow', 'ironford'], area: 'iron-road', legs: { greenhollow: 2, ironford: 2 } },
   { id: 'cliff-road', name: 'The cliff road', ends: ['ironford', 'windmere'], area: 'cliff-road', legs: { ironford: 1, windmere: 2 } },
   // Windmere back to Dunmere along the coast: the loop Dunmere, Greenhollow, Ironford, Windmere.
-  { id: 'coast-road', name: 'The coast road', ends: ['windmere', 'dunmere'], area: 'coast-road', legs: { dunmere: 1, windmere: 2 }, gate: { storyDone: 'c1-prior' }, lockedText: 'The coast road waits on the same wardens as the Thornwood road. See Mother Aveline’s prayer book first.' },
+  { id: 'coast-road', name: 'The coast road', ends: ['windmere', 'dunmere'], area: 'coast-road', legs: { dunmere: 1, windmere: 2 } },
   // Ironford's third road, east to Mooncourt: Chapter 2 (Champion status).
   { id: 'moon-road', name: 'The Moon Road', ends: ['ironford', 'mooncourt'], days: 4, gate: { chapterAtLeast: 3 }, lockedText: 'The Moon Road to Mooncourt opens in Chapter 3.' },
   { id: 'blackwood-track', name: 'The Blackwood track', ends: ['dunmere', null], area: 'blackwood', legs: { dunmere: 1 } },

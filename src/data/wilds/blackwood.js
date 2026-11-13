@@ -1,9 +1,9 @@
 import { rows } from '../tiles.js';
 import { AREA_BOSSES } from '../enemies.js';
 
-// The Blackwood: dead trees and black mud past the Old Road. In Chapter 1 only
-// its east edge is reachable (after Act I of the story): a wall of dead wood
-// and the Hollow Warden bar the way deeper, where the Broken Lantern fell.
+// The Blackwood: dead trees and black mud past the Old Road. Open from the start, and
+// the most dangerous place in the west (foes around level 30–35): a guild that walks in
+// early is carried home. A wall of dead wood and the Hollow Warden bar the way deeper.
 export default {
   id: 'blackwood',
   kind: 'wild',
@@ -15,8 +15,6 @@ export default {
   battle: 'bg.battle.blackwood',
   map: { x: 8, y: 30 },
   description: 'Dead trees, black mud and lantern light where no one carries a lantern. Only the edge is passable: something vast blocks the way deeper.',
-  unlock: { storyDone: 'm4' },
-  lockedText: 'The wardens keep the Blackwood road closed to unknown banners. Finish Act I of the story first.',
   width: 36,
   height: 22,
   arrive: [33, 9],
@@ -54,8 +52,8 @@ export default {
   // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
   enemies: [],
   ambushes: [
-    { id: 'shades', name: 'Veil wraiths', types: ['veil-wraith', 'mind-thief'], count: 3, level: 5, power: 58, reward: { gold: [110, 170], xp: 144 } },
-    { id: 'hulks', name: 'Void juggernauts', types: ['void-juggernaut', 'hollow-knight'], count: 3, level: 6, power: 60, reward: { gold: [120, 190], xp: 156 } },
+    { id: 'shades', name: 'Veil wraiths', types: ['veil-wraith', 'mind-thief'], count: 3, level: 30, power: 98, reward: { gold: [240, 360] } },
+    { id: 'hulks', name: 'Void juggernauts', types: ['void-juggernaut', 'hollow-knight'], count: 3, level: 33, power: 98, reward: { gold: [260, 400] } },
   ],
   boss: {
     id: 'lantern-brood',
@@ -64,11 +62,11 @@ export default {
     asset: 'enemy.boss.lanterneater',
     types: ['veil-wraith', 'mind-thief'],
     count: 3,
-    level: 7,
-    power: 64,
+    level: 35,
+    power: 98,
     boss: AREA_BOSSES['lantern-brood'],
     respawnWeeks: 20,
-    reward: { gold: [160, 220], xp: 110, items: { 'phoenix-feather': 1 } },
+    reward: { gold: [320, 460], items: { 'phoenix-feather': 1 } },
   },
   gathers: [
     { id: 'black-herbs', kind: 'herb', name: 'Nightcap', at: [29, 12], reward: { items: { ether: 1 } } },

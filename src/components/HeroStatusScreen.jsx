@@ -104,11 +104,11 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
             <p>{CLASSES[classId]?.description}</p>
             {warnings.length ? <p className="hero-status__warnings"><Icon name="alert" size={14} tone="plain" /> {warnings.join(' · ')}</p> : null}
             <ProgressBar
-              value={hero.level >= 20 ? 1 : hero.xp || 0}
-              max={hero.level >= 20 ? 1 : nextXp}
+              value={hero.level >= 60 ? 1 : hero.xp || 0}
+              max={hero.level >= 60 ? 1 : nextXp}
               tone="purple"
               compact
-              label={hero.level >= 20 ? 'Level cap reached' : `XP ${hero.xp || 0}/${nextXp} to level ${(hero.level || 1) + 1}`}
+              label={hero.level >= 60 ? 'Level cap reached' : `XP ${hero.xp || 0}/${nextXp} to level ${(hero.level || 1) + 1}`}
             />
             <ProgressBar value={hero.health ?? 100} max={100} tone={(hero.health ?? 100) >= 50 ? 'green' : 'red'} compact label="Health" />
             <ProgressBar value={hero.fatigue || 0} max={100} tone={(hero.fatigue || 0) >= 60 ? 'red' : 'gold'} compact label="Fatigue" />

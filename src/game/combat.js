@@ -115,7 +115,7 @@ function typedEnemy(encounter, type, { id, name, isBoss = false }) {
     name,
     classId: role.classId,
     primal: base.primal,
-    level: clamp(base.level + (isBoss ? 3 : 0), 1, 20),
+    level: clamp(base.level + (isBoss ? 3 : 0), 1, 60),
     power: base.power + (isBoss ? 8 : -2),
   });
   const mods = isBoss ? { ...role.mods, hp: role.mods.hp * 3.2, atk: role.mods.atk * 1.25, mag: role.mods.mag * 1.25 } : role.mods;
@@ -294,7 +294,7 @@ export function createPartyEncounter({
       name: captain ? `${opponentName} captain` : `${opponentName} ${String.fromCharCode(65 + index - 1)}`,
       classId,
       primal: opponentPrimal,
-      level: clamp(opponentLevel + (captain ? 1 : 0), 1, 20),
+      level: clamp(opponentLevel + (captain ? 1 : 0), 1, 60),
       power: opponentPower + (captain ? 4 : -2 - index),
     });
     encounter.enemies.push(

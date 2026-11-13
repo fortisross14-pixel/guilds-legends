@@ -323,9 +323,12 @@ export function getWildAreaView(state, areaId) {
     return { id: spot.id, name: spot.name, available: until <= serial, weeksLeft: Math.max(0, until - serial) };
   });
   const unlocked = checkCondition(state, area.unlock);
+  // How dangerous the area is: the levels of the bands that wait there (lowest–highest).
+  const levels = [...(area.ambushes || []), ...(area.enemies || []), ...(area.boss ? [area.boss] : []), ...(area.bosses || [])].map((group) => group.level).filter(Boolean);
   return {
     area,
     unlocked,
+    danger: levels.length ? [Math.min(...levels), Math.max(...levels)] : null,
     here: state.world?.wildAreaId === areaId,
     atHub: !state.world?.activeTravel && state.world?.currentLocationId === area.hub,
     visited: Boolean(wild.visited),

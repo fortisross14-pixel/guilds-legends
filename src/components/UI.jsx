@@ -220,10 +220,10 @@ export function RarityBadge({ rarity }) {
 export function LevelBadge({ hero, showXp = false }) {
   const level = hero?.level || 1;
   return (
-    <span className="level-badge" title={showXp && level < 20 ? `${hero.xp || 0} XP toward the next level` : level >= 20 ? 'Maximum level' : `Level ${level}`}>
+    <span className="level-badge" title={showXp && level < 60 ? `${hero.xp || 0} XP toward the next level` : level >= 60 ? 'Maximum level' : `Level ${level}`}>
       <small>LV</small>
       <strong>{level}</strong>
-      {showXp && level < 20 ? <em>{hero.xp || 0} XP</em> : null}
+      {showXp && level < 60 ? <em>{hero.xp || 0} XP</em> : null}
     </span>
   );
 }

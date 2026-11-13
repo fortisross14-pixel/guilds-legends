@@ -226,7 +226,7 @@ export const STORY_MISSIONS = [
     title: 'The Ash Abbot',
     goal: 'Open the road past Dawnwatch Temple.',
     locationId: 'dunmere',
-    summary: 'Brother Malric, a fallen priest, holds the gate of Dawnwatch Temple at the end of the Old Road and sells passage to pilgrims. Until he falls, the wardens keep the Thornwood road to Greenhollow shut to unknown banners.',
+    summary: 'Brother Malric, a fallen priest, holds the gate of Dawnwatch Temple at the end of the Old Road and sells passage to pilgrims. Until he falls, nobody gets into the temple, and the Lantern’s old names stay locked inside.',
     gate: { text: 'Clear the Old Road (1.3)', if: { storyDone: 'm3' } },
     alternatives: [{ text: 'Skipping the tutorial opens the road for you', if: { tutorialSkipped: true } }],
     steps: [

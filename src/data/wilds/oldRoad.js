@@ -116,11 +116,11 @@ export default {
   // Bands that jump anyone walking off the road (no standing groups: only story bosses stand on the map).
   enemies: [],
   ambushes: [
-    { id: 'wolves-near', name: 'Wolfskin pair', types: ['wolfskin'], count: 2, level: 2, power: 41, if: { oldRoadCleared: false }, reward: { gold: [24, 48], xp: 64 } },
-    { id: 'wolf-pack', name: 'Wolfskins and a bandit', types: ['wolfskin', 'road-bandit'], count: 3, level: 3, power: 43, if: { oldRoadCleared: false }, reward: { gold: [36, 68], xp: 108 } },
-    { id: 'bandit-lookouts', name: 'Bandit lookouts', types: ['road-bandit', 'shield-thug'], count: 3, level: 3, power: 44, reward: { gold: [60, 100], xp: 108 } },
-    { id: 'hedge-witch', name: 'Hedge witch and guards', types: ['hedge-witch', 'shield-thug', 'field-priest'], count: 3, level: 5, power: 48, if: { oldRoadCleared: true }, reward: { gold: [68, 112], xp: 120 } },
-    { id: 'renegades', name: 'Renegade priest’s band', types: ['field-priest', 'road-bandit', 'wolfskin'], count: 3, level: 5, power: 48, if: { oldRoadCleared: true }, reward: { gold: [68, 112], xp: 120 } },
+    { id: 'wolves-near', name: 'Wolfskin pair', types: ['wolfskin'], count: 2, level: 2, power: 42, if: { oldRoadCleared: false }, reward: { gold: [24, 48], xp: 64 } },
+    { id: 'wolf-pack', name: 'Wolfskins and a bandit', types: ['wolfskin', 'road-bandit'], count: 3, level: 3, power: 45, if: { oldRoadCleared: false }, reward: { gold: [36, 68], xp: 108 } },
+    { id: 'bandit-lookouts', name: 'Bandit lookouts', types: ['road-bandit', 'shield-thug'], count: 3, level: 3, power: 45, reward: { gold: [60, 100], xp: 108 } },
+    { id: 'hedge-witch', name: 'Hedge witch and guards', types: ['hedge-witch', 'shield-thug', 'field-priest'], count: 3, level: 5, power: 49, if: { oldRoadCleared: true }, reward: { gold: [68, 112], xp: 120 } },
+    { id: 'renegades', name: 'Renegade priest’s band', types: ['field-priest', 'road-bandit', 'wolfskin'], count: 3, level: 5, power: 49, if: { oldRoadCleared: true }, reward: { gold: [68, 112], xp: 120 } },
   ],
   boss: {
     id: 'grey-alpha',
@@ -145,7 +145,7 @@ export default {
       types: ['field-priest', 'shield-thug'],
       count: 3,
       level: 7,
-      power: 56,
+      power: 54,
       boss: AREA_BOSSES['ash-abbot'],
       respawnWeeks: 100000,
       reward: { gold: [140, 190], xp: 90, items: { 'hi-potion': 2 } },

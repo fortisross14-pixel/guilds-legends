@@ -152,7 +152,7 @@ export default {
       {
         lines: [
           'The Old Road ends at Dawnwatch Temple. It used to be the first stop for pilgrims heading east.',
-          'Now a priest called Malric holds its gate and sells passage. The Greenhollow wardens shut the Thornwood road because of him.',
+          'Now a priest called Malric holds its gate and sells passage. Pilgrims have stopped coming at all.',
           'He will not be cheap to beat. Get stronger, buy some proper steel, then go.',
         ],
         choices: [{ text: 'We’ll deal with Malric.', reply: ['“Then I’ll start writing your name in the good ledger. In pencil, for now.”'] }],
@@ -168,7 +168,7 @@ export default {
     portrait: 'portrait.dunmere.herald',
     variants: [
       {
-        lines: ['Malric, gone. The wardens are opening the Thornwood road as we speak.', 'Greenhollow is east, past the gate on Arena Lane’s far end. Go and be famous somewhere new.'],
+        lines: ['Malric, gone. The pilgrims will come back, and they’ll know whose banner made it safe.', 'The old priests will want to thank you. Mother Aveline doesn’t say thank you often.'],
         choices: [{ text: 'We will.', reply: ['“I’ll ink your name. Properly, this time.”'] }],
       },
     ],

@@ -9,8 +9,11 @@ import { charterEstimate, charterOf, patronAtLeast } from './charter.js';
 import { estimateBonus } from './reputation.js';
 
 /** XP to the next level: level 2 comes after a fight or so, level 3 after a couple more; from 4 on it climbs steeply. */
+/** The level cap (docs/design/STORY_DRAFT.md, Levels): the top guilds are 45–50. */
+export const MAX_LEVEL = 60;
+
 export function xpForNextLevel(level) {
-  return level >= 20 ? 0 : Math.round(40 + 60 * level ** 1.6);
+  return level >= MAX_LEVEL ? 0 : Math.round(40 + 60 * level ** 1.6);
 }
 
 /** A training match is worth a fifth less than a wild fight (lives are at stake out there); a tournament bout the most. */
@@ -74,12 +77,12 @@ export function choosePrimal(rng, locationId) {
 }
 
 export function applyXpInPlace(hero, amount, state, source = 'experience') {
-  if (!hero || hero.level >= 20 || amount <= 0) return [];
+  if (!hero || hero.level >= MAX_LEVEL || amount <= 0) return [];
   const gains = [];
   const levelBefore = hero.level;
   const attributesBefore = { ...hero.attributes };
   hero.xp = (hero.xp || 0) + Math.round(amount);
-  while (hero.level < 20) {
+  while (hero.level < MAX_LEVEL) {
     const needed = xpForNextLevel(hero.level);
     if (hero.xp < needed) break;
     hero.xp -= needed;
@@ -152,7 +155,7 @@ export function calculatePower(attributes) {
 
 export function createHeroFromBase(base, state, rng, options = {}) {
   const rarity = base.rarity || options.rarity || 'Common';
-  const level = clamp(base.level || options.level || 1, 1, 20);
+  const level = clamp(base.level || options.level || 1, 1, MAX_LEVEL);
   const primal = base.primal || options.primal || choosePrimal(rng, options.homeLocationId || state.world?.currentLocationId || 'dunmere');
   const basePower = base.power || powerForLevel(level, rarity, rng);
   const attributes = base.attributes || baseAttributes(basePower, base.classId, rng);

@@ -454,6 +454,11 @@ function WildCard({ area, state, actions }) {
         </div>
       </div>
       <p className="region-dossier__identity">{area.description}</p>
+      {view.danger ? (
+        <p className="region-dossier__danger">
+          <Icon name="skull" size={16} tone="plain" /> Bands here: level {view.danger[0] === view.danger[1] ? view.danger[0] : `${view.danger[0]}–${view.danger[1]}`}
+        </p>
+      ) : null}
       {view.unlocked ? (
         <>
           <div className="location-economy-grid">
