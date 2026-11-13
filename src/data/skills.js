@@ -1,6 +1,6 @@
 // Skills, unlocked by level (docs/design/STORY_DRAFT.md, Levels). Used by src/game/combat.js.
 // A hero learns from four sources (heroSkillTree):
-//   class      levels 1, 4–5, ~20, ~35 (level 99: kept for enemies only, never learned by heroes)
+//   class      levels 1, 4–5, ~20, ~35 (level 99: retired, nobody learns it)
 //   element    levels 10, 25, 40 (by the hero's primal)
 //   character  levels 15, 29 (by the hero's personality)
 //   ultimate   level 48: one of three, chosen by the player (hero.ultimate)

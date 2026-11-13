@@ -1,6 +1,6 @@
 // @ts-check
 // Guild inventory, equipment, shops and loot.
-import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, canEquip, sellValue } from '../../data/items.js';
+import { ARTIFACT_PREFIX, GEAR_SLOTS, GEAR_UPGRADES, ITEMS, ITEM_LIST, SHOP_GEAR_LEVEL, SHOWPIECES, canEquip, sellValue } from '../../data/items.js';
 import { FOE_DROPS } from '../../data/enemies.js';
 import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
@@ -52,9 +52,17 @@ export function shopStock(locationId) {
   const location = LOCATION_BY_ID[locationId];
   if (!location || !locationBuildings(locationId).includes('shop')) return [];
   const maxTier = (TIER_INDEX_BY_NAME[location.tier] ?? 0) + 1;
-  return ITEM_LIST.filter((item) => (item.shops ? item.shops.includes(locationId) : item.tier >= 1 && item.tier <= maxTier) && !item.unique && !['good', 'keepsake'].includes(item.kind))
+  const gearLevel = SHOP_GEAR_LEVEL[locationId] ?? SHOP_GEAR_LEVEL[location.tier] ?? 5;
+  const showpieces = SHOWPIECES[locationId] || [];
+  const stocked = (item) => {
+    if (item.shops) return item.shops.includes(locationId);
+    if (GEAR_SLOTS.includes(item.kind)) return item.tier >= 1 && (item.level || 1) <= gearLevel && (item.level || 1) > gearLevel - 25;
+    return item.tier >= 1 && item.tier <= maxTier;
+  };
+  return ITEM_LIST.filter((item) => stocked(item) && !item.unique && !['good', 'keepsake'].includes(item.kind))
     .filter((item) => item.shops || ['potion', 'antidote'].includes(item.id) || hashString(`${locationId}:${item.id}`) % 3 !== 0)
-    .map((item) => item.id);
+    .map((item) => item.id)
+    .concat(showpieces.filter((id) => ITEMS[id]));
 }
 
 function shopError(state) {
@@ -150,6 +158,8 @@ export function upgradeGear(state, heroId, slot) {
   const itemId = hero?.gear?.[slot];
   const cost = itemId ? gearUpgradeCost(state, itemId) : null;
   if (!hero || cost === null) return { state, error: 'That cannot be upgraded.' };
+  const upgraded = ITEMS[gearUpgradeTarget(state, itemId)];
+  if ((upgraded?.level || 1) > (hero.level || 1)) return { state, error: `${upgraded.name} needs level ${upgraded.level}.` };
   if (state.guild.crowns < cost) return { state, error: `The upgrade costs ${cost} gold.` };
   const next = clone(state);
   next.guild.crowns -= cost;
@@ -170,6 +180,7 @@ export function equipItem(state, heroId, itemId) {
   if (!target) return { state, error: 'Choose an active hero.' };
   if (!item || !GEAR_SLOTS.includes(item.kind)) return { state, error: 'That cannot be equipped.' };
   if (!canEquip(item, target.classId)) return { state, error: `A ${target.classId} cannot use ${item.name}.` };
+  if ((item.level || 1) > (target.level || 1)) return { state, error: `${item.name} needs level ${item.level}; ${target.name} is level ${target.level || 1}.` };
   if (!(state.inventory?.[itemId] > 0)) return { state, error: `The guild has no ${item.name}.` };
   if (target.gear?.[item.kind]?.startsWith(ARTIFACT_PREFIX)) return { state, error: 'Return the artifact to the vault before using that slot.' };
   const next = clone(state);

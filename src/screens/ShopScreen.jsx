@@ -135,7 +135,7 @@ export default function ShopScreen({ state, actions, kind = null }) {
                   <h2>{selected.name}</h2>
                   <small>
                     {selected.kind}
-                    {selected.tier ? ` · tier ${selected.tier}` : ''}
+                    {selected.level ? ` · level ${selected.level}` : ''}
                     {selected.classes ? ` · ${selected.classes.join(', ')}` : ''}
                   </small>
                 </div>

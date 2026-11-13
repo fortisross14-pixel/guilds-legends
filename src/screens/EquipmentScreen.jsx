@@ -20,6 +20,7 @@ export function itemPreview(hero, itemId) {
   if (!item || !hero) return null;
   if (item.kind === 'consumable') return item.field ? item.description : 'Battle only';
   if (!canEquip(item, normalizeClassId(hero.classId))) return 'Can’t use this';
+  if ((item.level || 1) > (hero.level || 1)) return `Needs level ${item.level}`;
   const before = gearStats(hero);
   const after = gearStats({ ...hero, gear: { ...(hero.gear || {}), [item.kind]: itemId } });
   const diff = STAT_ORDER.map((key) => [key, (after[key] || 0) - (before[key] || 0)]).filter(([, value]) => value);
@@ -59,7 +60,7 @@ export default function EquipmentScreen({ state, actions }) {
     const item = ITEMS[itemId];
     if (!hero || !item) return;
     if (item.kind === 'consumable') actions.useItem(itemId, heroId);
-    else if (canEquip(item, normalizeClassId(hero.classId))) actions.equipItem(heroId, itemId);
+    else if (canEquip(item, normalizeClassId(hero.classId), hero.level || 1)) actions.equipItem(heroId, itemId);
     else {
       haptic('error', state.settings);
       return;

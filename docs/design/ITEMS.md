@@ -27,6 +27,17 @@ and foes drop nothing of their own.
 Goods carry a `use` line ("Corwin pays for these. Tanners buy them."). Keepsakes carry `for`
 ("Show it to Prior Aubrey.").
 
+## Gear levels (built)
+
+Every piece of gear has a **level**, the hero level needed to wear it (1 to 50): basic gear 1–5,
+steel 15–20, mithril 30–35, legendary 45–50. A shop stocks gear up to its town's level
+(`SHOP_GEAR_LEVEL`: Dunmere and Greenhollow 5, Ironford and Windmere 20, the far towns 35 and 50)
+plus a **showpiece** above it to save for (`SHOWPIECES`: Dunmere's level-20 Plate Armor, 1,200 gold).
+The Armory's upgrade also needs the next piece's level.
+
+Gold from fights follows the foes' levels, like XP: about 8 + 3 per level for each foe beaten
+(`battleGold` in heroes.js). Three level-5 bandits pay about 70, three level-30 wraiths about 300.
+
 ## Where items come from
 
 - **Foes drop goods by who they are**: each foe type has a `drops` list in `src/data/enemies.js`

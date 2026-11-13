@@ -169,7 +169,7 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
               <h3>Equipment</h3>
               {GEAR_SLOTS.map((slot) => {
                 const current = hero.gear?.[slot] || null;
-                const options = inventory.filter(([id]) => ITEMS[id].kind === slot && canEquip(ITEMS[id], classId));
+                const options = inventory.filter(([id]) => ITEMS[id].kind === slot && canEquip(ITEMS[id], classId, hero.level || 1));
                 return (
                   <div key={slot} className="equipment-slot">
                     <span className="equipment-slot__name">{slot}</span>
