@@ -1,11 +1,20 @@
-// Walkable wild areas (Chapter 1). Each is reached from its hub town, either
+// Walkable wild areas: the Chapter 1 roads and woods, then the rest of the world's roads (boxes). Each is reached from its hub town, either
 // through the town's exit or from the world map.
 import oldRoad from './oldRoad.js';
 import thornwood from './thornwood.js';
 import blackwood from './blackwood.js';
 import { cliffRoad, coastRoad, ironRoad } from './emptyRoad.js';
+import { SKELETON_ROADS } from './skeletonRoads.js';
 
-export const WILD_AREAS = { [oldRoad.id]: oldRoad, [thornwood.id]: thornwood, [blackwood.id]: blackwood, [ironRoad.id]: ironRoad, [cliffRoad.id]: cliffRoad, [coastRoad.id]: coastRoad };
+export const WILD_AREAS = {
+  [oldRoad.id]: oldRoad,
+  [thornwood.id]: thornwood,
+  [blackwood.id]: blackwood,
+  [ironRoad.id]: ironRoad,
+  [cliffRoad.id]: cliffRoad,
+  [coastRoad.id]: coastRoad,
+  ...Object.fromEntries(SKELETON_ROADS.map((area) => [area.id, area])),
+};
 export const WILD_AREA_LIST = Object.values(WILD_AREAS);
 
 /** Weeks before a defeated group or used gathering spot comes back. */

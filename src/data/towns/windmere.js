@@ -40,7 +40,7 @@ export default {
     ['W.........', '..........', '..=.......', '.....W'],
     ['W.........', '..........', '..=.......', '.....W'],
     ['W.........', '..........', '..=.......', '.....W'],
-    ['WWWWWWWWWW', 'WWWWWWWWWW', 'WWWWWWWWWW', 'WWWWWW'],
+    ['WWWWWWWWWW', 'WWWWWWWWWW', 'WW=WWWWWWW', 'WWWWWW'],
   ),
   buildings: [
     { building: 'tavern', label: 'The Gull’s Rest', door: [8, 7], asset: 'town.windmere.inn' },
@@ -60,5 +60,6 @@ export default {
   exits: [
     { id: 'exit-cliff-road', area: 'cliff-road', name: 'The cliff road', at: [35, 7], size: [1, 1] },
     { id: 'exit-coast-road', area: 'coast-road', name: 'The coast road', at: [17, 0], size: [2, 1] },
+    { id: 'exit-road-windmere-tidecross', area: 'road-windmere-tidecross', name: 'The Salt Road', at: [22, 23], size: [1, 1] },
   ],
 };

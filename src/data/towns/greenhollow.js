@@ -35,7 +35,7 @@ export default {
     ['T...:.....', '....::....', '..........', '....:....T'],
     ['T...:.....', '....::....', '..........', '....:....T'],
     ['T~~~b~~~~~', '~~~~bb~~~~', '~~~~~~~~~~', '~~~~b~~~~T'],
-    ['T...::::::', '::::::::::', '::::::::::', ':::::....T'],
+    ['T...::::::', '::::::::::', '::::::::::', '::::::::::'],
     ['T...:.....', '....::....', '..........', '....:....T'],
     ['T...:.....', '....::....', '..........', '....:....T'],
     ['T...:.....', '....::....', '..........', '....:....T'],
@@ -68,5 +68,6 @@ export default {
   exits: [
     { id: 'exit-thornwood', area: 'thornwood-edge', name: 'The Thornwood road', at: [14, 0], size: [2, 1] },
     { id: 'exit-iron-road', area: 'iron-road', name: 'The Iron Road', at: [39, 7], size: [1, 1] },
+    { id: 'exit-road-greenhollow-thornwatch', area: 'road-greenhollow-thornwatch', name: 'The Warden’s Path', at: [39, 18], size: [1, 1] },
   ],
 };
