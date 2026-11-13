@@ -176,8 +176,36 @@ def temple():
     return canvas
 
 
+def columned(house):
+    """A house between two white columns with banners (the temple's frame), for halls of learning and prayer."""
+    extra = sheet('ExtraObjects', EXTRA)
+    column = trim(tiles(extra, 8, 9, 1, 2)).resize((int(TS * 0.95), int(TS * 2.4)), Image.LANCZOS)
+    banner = trim(tiles(extra, 9, 8, 1, 2))
+    pad = column.width
+    canvas = Image.new('RGBA', (house.width + pad * 2, house.height))
+    canvas.alpha_composite(house, (pad, 0))
+    for x in (0, canvas.width - column.width):
+        canvas.alpha_composite(column, (x, canvas.height - column.height))
+        canvas.alpha_composite(banner, (x + (column.width - banner.width) // 2, canvas.height - column.height - banner.height + 20))
+    return canvas
+
+
 def buildings():
     B = building
+    # Houses people live in (no door to enter): placed as props in the towns.
+    B('town.house.blue', gable('Town'), 'A town house (blue gable), not entered')
+    B('town.house.orange', gable('TownColor2'), 'A town house (orange gable), not entered')
+    B('town.house.purple', gable('TownColor3'), 'A town house (purple gable), not entered')
+    B('town.house.green', gable('Town Spring'), 'A town house (green gable), not entered')
+    B('town.house.wood', woodhouse('Town 2'), 'A wooden house, not entered')
+    B('town.house.wood-dark', woodhouse('Town 2 Color 3'), 'A dark wooden house, not entered')
+    B('town.house.wood-fall', woodhouse('Town 2 Fall'), 'An autumn-wood house, not entered')
+    B('town.house.thatch', thatch('Town 2'), 'A thatched cottage, not entered')
+    B('town.house.moss', thatch('Town 2 Color 2'), 'A moss-thatched cottage, not entered')
+    B('town.house.hut', hut('Town 2'), 'A fisher’s hut, not entered')
+    B('town.ironford.archive', columned(gable('TownColor3')), 'Ironford: the Smiths’ archive (purple gable between columns)')
+    B('town.windmere.monastery', columned(thatch('Town 2 Color 3')), 'Windmere: the cliff monastery (moss thatch between columns)')
+    B('town.windmere.courier', with_sign(woodhouse('Town 2 Fall'), 'arrow'), 'Windmere: the courier post (the arrow sign)')
     B('town.dunmere.house', woodhouse('Town 2 Fall'), 'Dunmere: your house (a small wooden cottage, autumn wood)')
     assets[-1]['buildingScale'] = 0.34
     B('town.oldroad.temple', temple(), 'The Old Road: Dawnwatch Temple (blue gable house between white columns)')

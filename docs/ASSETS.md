@@ -34,24 +34,38 @@ Phase 7 will add style notes and generation prompts for each entry.
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
 | `town.dunmere.guildhall.stage1` | `art/packs/myart/buildings/dunmere-guildhall-stage1.png` | 393×512 | — | ready | Dunmere: the Guild Hall (wooden house) |
+| `town.windmere.inn` | `art/packs/myart/buildings/windmere-inn.png` | 405×448 | — | ready | Windmere: the inn |
+| `town.windmere.shop` | `art/packs/myart/buildings/windmere-shop.png` | 437×576 | — | ready | Windmere: the shop |
 | `town.dunmere.herald` | `art/packs/myart/buildings/dunmere-herald.png` | 373×576 | — | ready | Dunmere: Herald’s Office (purple gable house) |
+| `town.windmere.arena` | `art/packs/myart/buildings/windmere-arena.png` | 455×512 | — | ready | Windmere: the arena |
 | `town.dunmere.tavern` | `art/packs/myart/buildings/dunmere-tavern.png` | 405×448 | — | ready | Dunmere: The Wayfarer (thatched, the beer sign) |
 | `town.dunmere.shop` | `art/packs/myart/buildings/dunmere-shop.png` | 437×576 | — | ready | Dunmere: Mira’s Supply (orange gable house, the potion sign) |
 | `town.dunmere.arena` | `art/packs/myart/buildings/dunmere-arena.png` | 455×512 | — | ready | Dunmere: the arena (dark wooden house, the sword sign) |
-| `town.greenhollow.lodge` | `art/packs/myart/buildings/greenhollow-lodge.png` | 341×448 | — | ready | Greenhollow: the lodge (moss thatch) |
 | `town.greenhollow.tavern` | `art/packs/myart/buildings/greenhollow-tavern.png` | 405×448 | — | ready | Greenhollow: the tavern |
+| `town.ironford.tavern` | `art/packs/myart/buildings/ironford-tavern.png` | 405×448 | — | ready | Ironford: the tavern |
+| `town.ironford.shop` | `art/packs/myart/buildings/ironford-shop.png` | 435×576 | — | ready | Ironford: the shop (the armor sign) |
+| `town.ironford.herald` | `art/packs/myart/buildings/ironford-herald.png` | 373×576 | — | ready | Ironford: the herald (blue gable house) |
+| `town.ironford.arena` | `art/packs/myart/buildings/ironford-arena.png` | 455×512 | — | ready | Ironford: the arena |
 | `town.greenhollow.shop` | `art/packs/myart/buildings/greenhollow-shop.png` | 437×576 | — | ready | Greenhollow: the shop |
+| `town.dunmere.house` | `art/packs/myart/buildings/dunmere-house.png` | 393×512 | — | ready | Dunmere: your house (a small wooden cottage, autumn wood) |
+| `town.greenhollow.lodge` | `art/packs/myart/buildings/greenhollow-lodge.png` | 341×448 | — | ready | Greenhollow: the lodge (moss thatch) |
 | `town.greenhollow.arena` | `art/packs/myart/buildings/greenhollow-arena.png` | 455×512 | — | ready | Greenhollow: the arena |
 | `town.ironford.offices` | `art/packs/myart/buildings/ironford-offices.png` | 393×512 | — | ready | Ironford: the offices |
-| `town.ironford.herald` | `art/packs/myart/buildings/ironford-herald.png` | 373×576 | — | ready | Ironford: the herald (blue gable house) |
-| `town.ironford.shop` | `art/packs/myart/buildings/ironford-shop.png` | 435×576 | — | ready | Ironford: the shop (the armor sign) |
-| `town.ironford.tavern` | `art/packs/myart/buildings/ironford-tavern.png` | 405×448 | — | ready | Ironford: the tavern |
-| `town.ironford.arena` | `art/packs/myart/buildings/ironford-arena.png` | 455×512 | — | ready | Ironford: the arena |
-| `town.windmere.inn` | `art/packs/myart/buildings/windmere-inn.png` | 405×448 | — | ready | Windmere: the inn |
-| `town.windmere.shop` | `art/packs/myart/buildings/windmere-shop.png` | 437×576 | — | ready | Windmere: the shop |
-| `town.windmere.arena` | `art/packs/myart/buildings/windmere-arena.png` | 455×512 | — | ready | Windmere: the arena |
+| `town.ironford.archive` | `art/packs/myart/buildings/ironford-archive.png` | 493×576 | — | ready | Ironford: the Smiths’ archive (purple gable between columns) |
+| `town.house.blue` | `art/packs/myart/buildings/house-blue.png` | 373×576 | — | ready | A town house (blue gable), not entered |
+| `town.house.wood-dark` | `art/packs/myart/buildings/house-wood-dark.png` | 393×512 | — | ready | A dark wooden house, not entered |
+| `town.house.orange` | `art/packs/myart/buildings/house-orange.png` | 373×576 | — | ready | A town house (orange gable), not entered |
+| `town.house.thatch` | `art/packs/myart/buildings/house-thatch.png` | 341×448 | — | ready | A thatched cottage, not entered |
+| `town.house.purple` | `art/packs/myart/buildings/house-purple.png` | 373×576 | — | ready | A town house (purple gable), not entered |
+| `town.house.green` | `art/packs/myart/buildings/house-green.png` | 373×576 | — | ready | A town house (green gable), not entered |
+| `town.house.wood-fall` | `art/packs/myart/buildings/house-wood-fall.png` | 393×512 | — | ready | An autumn-wood house, not entered |
+| `town.windmere.monastery` | `art/packs/myart/buildings/windmere-monastery.png` | 461×448 | — | ready | Windmere: the cliff monastery (moss thatch between columns) |
+| `town.windmere.courier` | `art/packs/myart/buildings/windmere-courier.png` | 455×512 | — | ready | Windmere: the courier post (the arrow sign) |
+| `town.house.wood` | `art/packs/myart/buildings/house-wood.png` | 393×512 | — | ready | A wooden house, not entered |
+| `town.house.moss` | `art/packs/myart/buildings/house-moss.png` | 341×448 | — | ready | A moss-thatched cottage, not entered |
 | `town.oldroad.temple` | `art/packs/myart/buildings/oldroad-temple.png` | 493×576 | — | ready | The Old Road: Dawnwatch Temple (blue gable house between white columns) |
 | `town.oldroad.priory` | `art/packs/myart/buildings/oldroad-priory.png` | 341×448 | — | ready | The Old Road: the priests’ house (moss thatch) |
+| `town.house.hut` | `art/packs/myart/buildings/house-hut.png` | 128×169 | — | ready | A fisher’s hut, not entered |
 
 ## Interior (`interior`, placeholder #6b4a24)
 
@@ -64,7 +78,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.arena` | `art/packs/myart/interiors/arena.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.herald` | `art/packs/myart/interiors/herald.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.noticeboard` | `art/packs/myart/bg/background_02_home.jpg` | 1920×1080 | — | ready | Backdrop (GUI PRO Kit painted background) |
-| `interior.house` | `art/packs/myart/interiors/house.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.house` | `art/packs/myart/interiors/house.jpg` | 1280×896 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.arena.dunmere` | `art/packs/myart/interiors/arena-dunmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.arena.greenhollow` | `art/packs/myart/interiors/arena-greenhollow.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.arena.ironford` | `art/packs/myart/interiors/arena-ironford.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
@@ -75,6 +89,22 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `interior.inn.greenhollow` | `art/packs/myart/interiors/inn-greenhollow.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.inn.ironford` | `art/packs/myart/interiors/inn-ironford.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.inn.windmere` | `art/packs/myart/interiors/inn-windmere.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
+| `interior.tavern.front0` | `art/packs/myart/interiors/tavern-front0.png` | 281×199 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.tavern.front1` | `art/packs/myart/interiors/tavern-front1.png` | 281×199 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.tavern.front2` | `art/packs/myart/interiors/tavern-front2.png` | 57×57 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.tavern.front3` | `art/packs/myart/interiors/tavern-front3.png` | 64×64 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.greenhollow.front0` | `art/packs/myart/interiors/inn-greenhollow-front0.png` | 281×281 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.greenhollow.front1` | `art/packs/myart/interiors/inn-greenhollow-front1.png` | 281×281 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.greenhollow.front2` | `art/packs/myart/interiors/inn-greenhollow-front2.png` | 57×57 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.greenhollow.front3` | `art/packs/myart/interiors/inn-greenhollow-front3.png` | 64×64 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.ironford.front0` | `art/packs/myart/interiors/inn-ironford-front0.png` | 281×281 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.ironford.front1` | `art/packs/myart/interiors/inn-ironford-front1.png` | 281×281 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.ironford.front2` | `art/packs/myart/interiors/inn-ironford-front2.png` | 57×57 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.ironford.front3` | `art/packs/myart/interiors/inn-ironford-front3.png` | 64×64 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.windmere.front0` | `art/packs/myart/interiors/inn-windmere-front0.png` | 281×281 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.windmere.front1` | `art/packs/myart/interiors/inn-windmere-front1.png` | 281×281 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.windmere.front2` | `art/packs/myart/interiors/inn-windmere-front2.png` | 57×57 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
+| `interior.inn.windmere.front3` | `art/packs/myart/interiors/inn-windmere-front3.png` | 64×64 | — | ready | A piece of a room drawn above the people behind it (scripts/art/interiors.py) |
 | `interior.temple` | `art/packs/myart/interiors/temple.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 | `interior.priory` | `art/packs/myart/interiors/priory.jpg` | 2560×1152 | — | ready | Building interior (hand-painted tiles, scripts/art/interiors.py) |
 
@@ -131,44 +161,48 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `site.marker.collect` | `art/packs/myart/props/site-marker-collect.png` | 62×58 | — | ready | Marker on the walk map (Extra Objects) |
 | `site.marker.destination` | `art/packs/myart/props/site-marker-destination.png` | 64×128 | — | ready | Marker on the walk map (Extra Objects) |
 | `site.marker.door` | `art/packs/myart/props/site-marker-door.png` | 56×118 | — | ready | Marker on the walk map (Extra Objects) |
-| `prop.fountain` | `art/packs/myart/props/fountain.png` | 192×192 | — | ready | Fountain basin |
 | `prop.noticeboard` | `art/packs/myart/props/prop-noticeboard.png` | 123×113 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.lamp` | `art/packs/myart/props/lamp.png` | 61×256 | — | ready | Street lamp |
+| `prop.fountain` | `art/packs/myart/props/fountain.png` | 192×192 | — | ready | Fountain basin |
 | `prop.well` | `art/packs/myart/props/well.png` | 127×166 | — | ready | Well (blue roof) |
 | `prop.kiln` | `art/packs/myart/props/kiln.png` | 64×127 | — | ready | Kiln chimney |
 | `prop.stall` | `art/packs/myart/props/stall.png` | 192×181 | — | ready | Market stall (striped awning) |
-| `prop.lamp` | `art/packs/myart/props/lamp.png` | 61×256 | — | ready | Street lamp |
 | `prop.elderoak` | `art/packs/myart/props/prop-elderoak.png` | 229×316 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.wardstone` | `art/packs/myart/props/prop-wardstone.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.herbcart` | `art/packs/myart/props/prop-herbcart.png` | 96×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.beehives` | `art/walk/props/beehives.png` | 64×64 | — | placeholder | Greenhollow: beehives |
 | `prop.forge` | `art/packs/myart/props/prop-forge.png` | 61×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `prop.plaque` | `art/packs/myart/props/prop-plaque.png` | 114×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `prop.statue` | `art/packs/myart/props/prop-statue.png` | 62×115 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.anvil` | `art/packs/myart/props/prop-anvil.png` | 62×50 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.log-pile` | `art/packs/myart/props/deco-log-pile.png` | 128×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.statue` | `art/packs/myart/props/prop-statue.png` | 62×115 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.cart` | `art/packs/myart/props/deco-cart.png` | 96×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.crates` | `art/packs/myart/props/crates.png` | 124×63 | — | ready | Crate and barrel |
-| `prop.windbell` | `art/walk/props/windbell.png` | 64×96 | — | placeholder | Windmere: The wind bell |
+| `deco.barrel` | `art/packs/myart/props/deco-barrel.png` | 62×61 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.sacks` | `art/packs/myart/props/deco-sacks.png` | 64×89 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `prop.plaque` | `art/packs/myart/props/prop-plaque.png` | 114×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.haystack` | `art/packs/myart/props/deco-haystack.png` | 125×109 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.bench` | `art/packs/myart/props/deco-bench.png` | 127×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.grave-cross` | `art/packs/myart/props/deco-grave-cross.png` | 61×94 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.grave` | `art/packs/myart/props/deco-grave.png` | 60×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.banner` | `art/packs/myart/props/deco-banner.png` | 64×128 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.signpost` | `art/packs/myart/props/deco-signpost.png` | 64×125 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.milestone` | `art/packs/myart/props/prop-milestone.png` | 94×121 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.firewood` | `art/packs/myart/props/deco-firewood.png` | 52×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.pond` | `art/packs/myart/props/deco-pond.png` | 256×256 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tent` | `art/packs/myart/props/deco-tent.png` | 192×256 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.log` | `art/packs/myart/props/deco-log.png` | 176×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.spit` | `art/packs/myart/props/deco-spit.png` | 123×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.cart` | `art/packs/myart/props/deco-cart.png` | 96×120 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.signpost` | `art/packs/myart/props/deco-signpost.png` | 64×125 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.signpost-2` | `art/packs/myart/props/deco-signpost-2.png` | 64×82 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.rock-big` | `art/packs/myart/props/deco-rock-big.png` | 117×119 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stump` | `art/packs/myart/props/deco-stump.png` | 55×62 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.rocks` | `art/packs/myart/props/deco-rocks.png` | 63×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.standing-stone` | `art/packs/myart/props/deco-standing-stone.png` | 94×121 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.banner` | `art/packs/myart/props/deco-banner.png` | 64×128 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.skull-pike` | `art/packs/myart/props/deco-skull-pike.png` | 34×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.campfire` | `art/packs/myart/props/deco-campfire.png` | 62×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.crate` | `art/packs/myart/props/deco-crate.png` | 126×77 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.firewood` | `art/packs/myart/props/deco-firewood.png` | 52×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.sacks` | `art/packs/myart/props/deco-sacks.png` | 64×89 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.grave-cross` | `art/packs/myart/props/deco-grave-cross.png` | 61×94 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.ruin-column` | `art/packs/myart/props/deco-ruin-column.png` | 62×115 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.log-hollow` | `art/packs/myart/props/deco-log-hollow.png` | 60×58 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stump-moss` | `art/packs/myart/props/deco-stump-moss.png` | 62×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.grave` | `art/packs/myart/props/deco-grave.png` | 60×93 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.flowers-white` | `art/packs/myart/props/deco-flowers-white.png` | 57×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.flowers-pink` | `art/packs/myart/props/deco-flowers-pink.png` | 44×57 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.flowers-red` | `art/packs/myart/props/deco-flowers-red.png` | 53×63 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
@@ -180,19 +214,15 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `deco.bush` | `art/packs/myart/props/deco-bush.png` | 64×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `prop.hollowwarden` | `art/walk/props/hollowwarden.png` | 32×64 | — | placeholder | The Blackwood: The Hollow Warden |
 | `prop.brokenlantern` | `art/walk/props/brokenlantern.png` | 32×64 | — | placeholder | The Blackwood: Broken lantern |
+| `deco.rock-tall` | `art/packs/myart/props/deco-rock-tall.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
+| `deco.rock-flat` | `art/packs/myart/props/deco-rock-flat.png` | 120×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tree-oak` | `art/packs/myart/props/deco-tree-oak.png` | 191×298 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tree-pine` | `art/packs/myart/props/deco-tree-pine.png` | 186×311 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tree-dead` | `art/packs/myart/props/deco-tree-dead.png` | 117×302 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tree-broad` | `art/packs/myart/props/deco-tree-broad.png` | 229×316 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.tree-dead-small` | `art/packs/myart/props/deco-tree-dead-small.png` | 47×116 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.bush-dead` | `art/packs/myart/props/deco-bush-dead.png` | 118×111 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.rock-tall` | `art/packs/myart/props/deco-rock-tall.png` | 61×107 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.rock-flat` | `art/packs/myart/props/deco-rock-flat.png` | 120×59 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stump-big` | `art/packs/myart/props/deco-stump-big.png` | 116×127 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.haystack` | `art/packs/myart/props/deco-haystack.png` | 125×109 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.barrel` | `art/packs/myart/props/deco-barrel.png` | 62×61 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.log-pile` | `art/packs/myart/props/deco-log-pile.png` | 128×124 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
-| `deco.bench` | `art/packs/myart/props/deco-bench.png` | 127×60 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.fence` | `art/packs/myart/props/deco-fence.png` | 171×64 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.stocks` | `art/packs/myart/props/deco-stocks.png` | 114×83 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
 | `deco.crystals` | `art/packs/myart/props/deco-crystals.png` | 59×111 | — | ready | Hand-painted grassland object (scripts/art/wilds.py) |
@@ -241,24 +271,37 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.dunmere.nessa` | `art/packs/myart/chars/npc-dunmere-nessa.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.dunmere.traveler` | `art/packs/myart/chars/npc-dunmere-traveler.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.dunmere.herald` | `art/packs/myart/chars/npc-dunmere-herald.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.dunmere.rowe` | `art/walk/npcs/dunmere-rowe.png` | 26×36 | — | placeholder | Dunmere: Tavish Rowe, The Dawnriders (walk sprite) |
+| `npc.dunmere.hobb` | `art/walk/npcs/dunmere-hobb.png` | 26×36 | — | placeholder | Dunmere: Sergeant Hobb, Watch sergeant (walk sprite) |
 | `npc.dunmere.kilnmaster` | `art/packs/myart/chars/npc-dunmere-kilnmaster.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.dunmere.lamplighter` | `art/packs/myart/chars/npc-dunmere-lamplighter.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.greenhollow.herbalist` | `art/packs/myart/chars/npc-greenhollow-herbalist.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.greenhollow.quell` | `art/walk/npcs/greenhollow-quell.png` | 26×36 | — | placeholder | Greenhollow: Morra Quell, The Black Thistle (walk sprite) |
 | `npc.greenhollow.warden` | `art/packs/myart/chars/npc-greenhollow-warden.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.greenhollow.storyteller` | `art/packs/myart/chars/npc-greenhollow-storyteller.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.greenhollow.stablehand` | `art/packs/myart/chars/npc-greenhollow-stablehand.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.greenhollow.cleric` | `art/packs/myart/chars/npc-greenhollow-cleric.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.ironford.foreman` | `art/packs/myart/chars/npc-ironford-foreman.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
-| `npc.ironford.tollkeeper` | `art/packs/myart/chars/npc-ironford-tollkeeper.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.ironford.smith` | `art/packs/myart/chars/npc-ironford-smith.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
-| `npc.ironford.guard` | `art/packs/myart/chars/npc-ironford-guard.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
-| `npc.ironford.scholar` | `art/packs/myart/chars/npc-ironford-scholar.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.ironford.apprentice` | `art/packs/myart/chars/npc-ironford-apprentice.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.ironford.archivist` | `art/packs/myart/chars/npc-ironford-archivist.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
-| `npc.windmere.courier` | `art/packs/myart/chars/npc-windmere-courier.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.ironford.tollkeeper` | `art/packs/myart/chars/npc-ironford-tollkeeper.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.ironford.docker` | `art/packs/myart/chars/npc-ironford-docker.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.ironford.guard` | `art/packs/myart/chars/npc-ironford-guard.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.ironford.caravan` | `art/packs/myart/chars/npc-ironford-caravan.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.ironford.scholar` | `art/packs/myart/chars/npc-ironford-scholar.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.windmere.monk` | `art/packs/myart/chars/npc-windmere-monk.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.windmere.novice` | `art/packs/myart/chars/npc-windmere-novice.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.windmere.courier` | `art/packs/myart/chars/npc-windmere-courier.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.windmere.lookout` | `art/packs/myart/chars/npc-windmere-lookout.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.windmere.dace` | `art/walk/npcs/windmere-dace.png` | 26×36 | — | placeholder | Windmere: Overseer Dace, Dock overseer (walk sprite) |
+| `npc.windmere.fisher` | `art/packs/myart/chars/npc-windmere-fisher.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.windmere.cass` | `art/walk/npcs/windmere-cass.png` | 26×36 | — | placeholder | Windmere: Cass Vey, Fence (walk sprite) |
 | `npc.role.high-priestess` | `art/packs/myart/chars/npc-role-high-priestess.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.role.temple-acolyte` | `art/packs/myart/chars/npc-role-temple-acolyte.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.priest` | `art/packs/myart/chars/npc-role-priest.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.dunmere.innkeeper` | `art/packs/myart/chars/npc-dunmere-innkeeper.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `npc.role.traveller` | `art/packs/myart/chars/npc-role-traveller.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.shopkeeper` | `art/packs/myart/chars/npc-role-shopkeeper.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.registrar` | `art/packs/myart/chars/npc-role-registrar.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.referee` | `art/packs/myart/chars/npc-role-referee.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
@@ -272,9 +315,7 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `npc.role.courier-supplier` | `art/packs/myart/chars/npc-role-courier-supplier.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.council-steward` | `art/packs/myart/chars/npc-role-council-steward.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.watch-sergeant` | `art/packs/myart/chars/npc-role-watch-sergeant.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
-| `npc.role.temple-acolyte` | `art/packs/myart/chars/npc-role-temple-acolyte.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.trader` | `art/packs/myart/chars/npc-role-trader.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
-| `npc.role.traveller` | `art/packs/myart/chars/npc-role-traveller.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.role.messenger` | `art/packs/myart/chars/npc-role-messenger.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.story.rook` | `art/packs/myart/chars/npc-story-rook.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `npc.story.thorne` | `art/packs/myart/chars/npc-story-thorne.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
@@ -314,23 +355,36 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.dunmere.nessa` | `art/portraits/npcs/dunmere-nessa.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-nessa-bust.png` | borrowed | Dunmere: Nessa Thornfield, Hunter (dialogue portrait) |
 | `portrait.dunmere.traveler` | `art/portraits/npcs/dunmere-traveler.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-traveler-bust.png` | borrowed | Dunmere: Iven Quill, Traveler (dialogue portrait) |
 | `portrait.dunmere.herald` | `art/portraits/npcs/dunmere-herald.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-herald-bust.png` | borrowed | Dunmere: Orren Pike, Herald (dialogue portrait) |
+| `portrait.dunmere.rowe` | `art/portraits/npcs/dunmere-rowe.png` | 160×160 | — | placeholder | Dunmere: Tavish Rowe, The Dawnriders (dialogue portrait) |
+| `portrait.dunmere.hobb` | `art/portraits/npcs/dunmere-hobb.png` | 160×160 | — | placeholder | Dunmere: Sergeant Hobb, Watch sergeant (dialogue portrait) |
 | `portrait.dunmere.kilnmaster` | `art/portraits/npcs/dunmere-kilnmaster.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-kilnmaster-bust.png` | borrowed | Dunmere: Hesta Coal, Kiln-master (dialogue portrait) |
 | `portrait.dunmere.lamplighter` | `art/portraits/npcs/dunmere-lamplighter.png` | 160×160 | `art/packs/myart/chars/npc-dunmere-lamplighter-bust.png` | borrowed | Dunmere: Pip, Lamplighter (dialogue portrait) |
 | `portrait.greenhollow.herbalist` | `art/portraits/npcs/greenhollow-herbalist.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-herbalist-bust.png` | borrowed | Greenhollow: Maren Bell, Herbalist (dialogue portrait) |
+| `portrait.greenhollow.quell` | `art/portraits/npcs/greenhollow-quell.png` | 160×160 | — | placeholder | Greenhollow: Morra Quell, The Black Thistle (dialogue portrait) |
 | `portrait.greenhollow.warden` | `art/portraits/npcs/greenhollow-warden.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-warden-bust.png` | borrowed | Greenhollow: Warden Tamsin, Forest warden (dialogue portrait) |
 | `portrait.greenhollow.storyteller` | `art/portraits/npcs/greenhollow-storyteller.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-storyteller-bust.png` | borrowed | Greenhollow: Old Fen, Storyteller (dialogue portrait) |
 | `portrait.greenhollow.stablehand` | `art/portraits/npcs/greenhollow-stablehand.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-stablehand-bust.png` | borrowed | Greenhollow: Kit, Stablehand (dialogue portrait) |
 | `portrait.greenhollow.cleric` | `art/portraits/npcs/greenhollow-cleric.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-cleric-bust.png` | borrowed | Greenhollow: Brother Alder, Grove cleric (dialogue portrait) |
 | `portrait.ironford.foreman` | `art/portraits/npcs/ironford-foreman.png` | 160×160 | `art/packs/myart/chars/npc-ironford-foreman-bust.png` | borrowed | Ironford: Dagna Hale, Foundry foreman (dialogue portrait) |
-| `portrait.ironford.tollkeeper` | `art/portraits/npcs/ironford-tollkeeper.png` | 160×160 | `art/packs/myart/chars/npc-ironford-tollkeeper-bust.png` | borrowed | Ironford: Ansel Brook, Bridge toll-keeper (dialogue portrait) |
 | `portrait.ironford.smith` | `art/portraits/npcs/ironford-smith.png` | 160×160 | `art/packs/myart/chars/npc-ironford-smith-bust.png` | borrowed | Ironford: Corr Anvilson, Smith (dialogue portrait) |
-| `portrait.ironford.guard` | `art/portraits/npcs/ironford-guard.png` | 160×160 | `art/packs/myart/chars/npc-ironford-guard-bust.png` | borrowed | Ironford: Ysolde Marr, Caravan guard (dialogue portrait) |
-| `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | `art/packs/myart/chars/npc-ironford-scholar-bust.png` | borrowed | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
+| `portrait.ironford.apprentice` | `art/portraits/npcs/ironford-apprentice.png` | 160×160 | `art/packs/myart/chars/npc-ironford-apprentice-bust.png` | borrowed | Ironford: Tibb, Smith’s apprentice (dialogue portrait) |
 | `portrait.ironford.archivist` | `art/portraits/npcs/ironford-archivist.png` | 160×160 | `art/packs/myart/chars/npc-ironford-archivist-bust.png` | borrowed | Ironford: Oswin Tull, Archive keeper (dialogue portrait) |
-| `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | `art/packs/myart/chars/npc-windmere-courier-bust.png` | borrowed | Windmere: Sela Wick, Courier (dialogue portrait) |
+| `portrait.ironford.tollkeeper` | `art/portraits/npcs/ironford-tollkeeper.png` | 160×160 | `art/packs/myart/chars/npc-ironford-tollkeeper-bust.png` | borrowed | Ironford: Ansel Brook, Bridge toll-keeper (dialogue portrait) |
+| `portrait.ironford.docker` | `art/portraits/npcs/ironford-docker.png` | 160×160 | `art/packs/myart/chars/npc-ironford-docker-bust.png` | borrowed | Ironford: Rhoswen Tarr, Dock hand (dialogue portrait) |
+| `portrait.ironford.guard` | `art/portraits/npcs/ironford-guard.png` | 160×160 | `art/packs/myart/chars/npc-ironford-guard-bust.png` | borrowed | Ironford: Ysolde Marr, Caravan guard (dialogue portrait) |
+| `portrait.ironford.caravan` | `art/portraits/npcs/ironford-caravan.png` | 160×160 | `art/packs/myart/chars/npc-ironford-caravan-bust.png` | borrowed | Ironford: Haskel Dunn, Caravan master (dialogue portrait) |
+| `portrait.ironford.scholar` | `art/portraits/npcs/ironford-scholar.png` | 160×160 | `art/packs/myart/chars/npc-ironford-scholar-bust.png` | borrowed | Ironford: Venn Ashby, Visiting scholar (dialogue portrait) |
 | `portrait.windmere.monk` | `art/portraits/npcs/windmere-monk.png` | 160×160 | `art/packs/myart/chars/npc-windmere-monk-bust.png` | borrowed | Windmere: Brother Hale, Monastery keeper (dialogue portrait) |
+| `portrait.windmere.novice` | `art/portraits/npcs/windmere-novice.png` | 160×160 | `art/packs/myart/chars/npc-windmere-novice-bust.png` | borrowed | Windmere: Sister Anwen, Monastery novice (dialogue portrait) |
+| `portrait.windmere.courier` | `art/portraits/npcs/windmere-courier.png` | 160×160 | `art/packs/myart/chars/npc-windmere-courier-bust.png` | borrowed | Windmere: Sela Wick, Courier (dialogue portrait) |
+| `portrait.windmere.lookout` | `art/portraits/npcs/windmere-lookout.png` | 160×160 | `art/packs/myart/chars/npc-windmere-lookout-bust.png` | borrowed | Windmere: Old Maud, Retired duelist (dialogue portrait) |
+| `portrait.windmere.dace` | `art/portraits/npcs/windmere-dace.png` | 160×160 | — | placeholder | Windmere: Overseer Dace, Dock overseer (dialogue portrait) |
+| `portrait.windmere.fisher` | `art/portraits/npcs/windmere-fisher.png` | 160×160 | `art/packs/myart/chars/npc-windmere-fisher-bust.png` | borrowed | Windmere: Jory Pell, Fisher (dialogue portrait) |
+| `portrait.windmere.cass` | `art/portraits/npcs/windmere-cass.png` | 160×160 | — | placeholder | Windmere: Cass Vey, Fence (dialogue portrait) |
 | `portrait.role.high-priestess` | `art/portraits/roles/high-priestess.png` | 160×160 | `art/packs/myart/chars/npc-role-high-priestess-bust.png` | borrowed | Dialogue portrait: High priestess |
+| `portrait.role.temple-acolyte` | `art/portraits/npcs/role-temple-acolyte.png` | 160×160 | `art/packs/myart/chars/npc-role-temple-acolyte-bust.png` | borrowed | Dialogue portrait: Scribe |
 | `portrait.role.priest` | `art/portraits/roles/priest.png` | 160×160 | `art/packs/myart/chars/npc-role-priest-bust.png` | borrowed | Dialogue portrait: Priest |
+| `portrait.role.regular` | `art/portraits/roles/regular.png` | 160×160 | — | placeholder | Dialogue portrait: Regular |
 | `portrait.role.shopkeeper` | `art/portraits/roles/shopkeeper.png` | 160×160 | `art/packs/myart/chars/npc-role-shopkeeper-bust.png` | borrowed | Dialogue portrait: Shopkeeper |
 | `portrait.role.herald-s-clerk` | `art/portraits/roles/herald-s-clerk.png` | 160×160 | `art/packs/myart/chars/npc-role-herald-s-clerk-bust.png` | borrowed | Dialogue portrait: Herald’s clerk |
 | `portrait.greenhollow.innkeeper` | `art/portraits/npcs/greenhollow-innkeeper.png` | 160×160 | `art/packs/myart/chars/npc-greenhollow-innkeeper-bust.png` | borrowed | Dialogue portrait: Innkeeper |
@@ -342,7 +396,6 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `portrait.role.courier-supplier` | `art/portraits/roles/courier-supplier.png` | 160×160 | `art/packs/myart/chars/npc-role-courier-supplier-bust.png` | borrowed | Dialogue portrait: Courier supplier |
 | `portrait.role.council-steward` | `art/portraits/roles/council-steward.png` | 160×160 | `art/packs/myart/chars/npc-role-council-steward-bust.png` | borrowed | Dialogue portrait by role: council steward |
 | `portrait.role.watch-sergeant` | `art/portraits/roles/watch-sergeant.png` | 160×160 | `art/packs/myart/chars/npc-role-watch-sergeant-bust.png` | borrowed | Dialogue portrait by role: watch sergeant |
-| `portrait.role.temple-acolyte` | `art/portraits/roles/temple-acolyte.png` | 160×160 | `art/packs/myart/chars/npc-role-temple-acolyte-bust.png` | borrowed | Dialogue portrait by role: temple acolyte |
 | `portrait.role.trader` | `art/portraits/roles/trader.png` | 160×160 | `art/packs/myart/chars/npc-role-trader-bust.png` | borrowed | Dialogue portrait by role: trader |
 | `portrait.role.traveller` | `art/portraits/roles/traveller.png` | 160×160 | `art/packs/myart/chars/npc-role-traveller-bust.png` | borrowed | Dialogue portrait by role: traveller |
 | `portrait.role.messenger` | `art/portraits/roles/messenger.png` | 160×160 | `art/packs/myart/chars/npc-role-messenger-bust.png` | borrowed | Dialogue portrait by role: messenger |
@@ -396,24 +449,24 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `trophy.title` | `art/packs/myart/emblems/trophy-title.png` | 136×101 | — | ready | Emblem (GUI PRO Kit icon) |
 | `trophy.record` | `art/packs/myart/emblems/trophy-record.png` | 116×112 | — | ready | Emblem (GUI PRO Kit icon) |
 | `trophy.hall` | `art/packs/myart/emblems/trophy-hall.png` | 93×117 | — | ready | Emblem (GUI PRO Kit icon) |
-| `ui.overworld` | `ui/overworld.png` | 200×125 | — | ready | World map terrain |
+| `ui.overworld` | `art/packs/myart/worldmap.jpg` | 2400×1500 | — | ready | World map: ink on parchment (scripts/art/worldmap.py) |
 
 ## Enemy on the map (`enemy`, placeholder #7a3a22)
 
 | Id | Path | Size | Borrows | Status | Used for |
 |---|---|---|---|---|---|
-| `enemy.group.wolfskins` | `art/packs/myart/foes/group-wolfskins.png` | 386×301 | — | ready | Enemy group on the map: wolfskin, road-bandit, wolfskin |
 | `enemy.group.bandits` | `art/packs/myart/foes/group-bandits.png` | 398×283 | — | ready | Enemy group on the map: road-bandit, shield-thug, field-priest |
-| `enemy.group.witch` | `art/packs/myart/foes/group-witch.png` | 435×328 | — | ready | Enemy group on the map: hedge-witch, shield-thug |
 | `enemy.boss.alpha` | `art/packs/myart/foes/boss-alpha.png` | 184×330 | — | ready | Boss on the map: grey-alpha |
 | `enemy.boss.abbot` | `art/packs/myart/foes/boss-abbot.png` | 194×328 | — | ready | Boss on the map: ash-abbot |
 | `enemy.group.stalkers` | `art/packs/myart/foes/group-stalkers.png` | 297×286 | — | ready | Enemy group on the map: thorn-stalker, thorn-stalker |
+| `enemy.boss.captain` | `art/packs/myart/foes/boss-captain.png` | 194×307 | — | ready | Boss on the map: bandit-captain |
+| `enemy.boss.lanterneater` | `art/packs/myart/foes/boss-lanterneater.png` | 210×285 | — | ready | Boss on the map: lantern-brood |
+| `enemy.group.wolfskins` | `art/packs/myart/foes/group-wolfskins.png` | 386×301 | — | ready | Enemy group on the map: wolfskin, road-bandit, wolfskin |
+| `enemy.group.witch` | `art/packs/myart/foes/group-witch.png` | 435×328 | — | ready | Enemy group on the map: hedge-witch, shield-thug |
 | `enemy.group.spores` | `art/packs/myart/foes/group-spores.png` | 359×294 | — | ready | Enemy group on the map: spore-caller, grove-mender |
 | `enemy.group.barkhides` | `art/packs/myart/foes/group-barkhides.png` | 317×330 | — | ready | Enemy group on the map: bark-brute, moss-warden |
-| `enemy.boss.captain` | `art/packs/myart/foes/boss-captain.png` | 194×307 | — | ready | Boss on the map: bandit-captain |
 | `enemy.group.wraiths` | `art/packs/myart/foes/group-wraiths.png` | 398×291 | — | ready | Enemy group on the map: veil-wraith, mind-thief, veil-wraith |
 | `enemy.group.hollow` | `art/packs/myart/foes/group-hollow.png` | 373×327 | — | ready | Enemy group on the map: hollow-knight, void-juggernaut |
-| `enemy.boss.lanterneater` | `art/packs/myart/foes/boss-lanterneater.png` | 210×285 | — | ready | Boss on the map: lantern-brood |
 
 ## Battle sprite (`battler`, placeholder #6a3a1a)
 

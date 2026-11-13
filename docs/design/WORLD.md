@@ -25,8 +25,8 @@ chapter's story and places together).
 |---|---|---|---|---|
 | Dunmere | Crownlands | Regional | tavern, noticeBoard, arena, shop, herald | built |
 | Greenhollow | Verdant Marches | Regional | tavern, noticeBoard, arena, shop | built |
-| Ironford | Crownlands | Regional | tavern, noticeBoard, arena, shop, herald | built |
-| Windmere | Crownlands | Regional | tavern, noticeBoard, arena, shop | built |
+| Ironford | Crownlands | Regional | tavern, noticeBoard, arena, shop, herald | built: 48×32; Foundry Row, Archive Square, the docks and pier, Market Square, the caravan yard, Gate Square |
+| Windmere | Crownlands | Regional | tavern, noticeBoard, arena, shop | built: 44×33; Monastery Terrace and the duelists' graves, Courier Steps, the Cliff Ring and lookout, the docks under the cliff |
 | Tidecross | Ember Coast | National | tavern, noticeBoard, arena, shop, herald | box |
 | Sunspire | Sun Kingdoms | National | tavern, noticeBoard, arena, shop, herald | box |
 | Thornwatch | Verdant Marches | National | tavern, noticeBoard | box |

@@ -170,4 +170,103 @@ export default {
     leave: 'Move on',
     variants: [{ lines: ['An iron figure with a hammer raised, worn smooth where children touch its boot for luck.'] }],
   },
+
+  // ---------------------------------------------------------------- the bigger Ironford: places
+  'ironford.archive': {
+    speaker: 'The Smiths’ Archive',
+    portrait: 'portrait.poi',
+    leave: 'Move on',
+    variants: [
+      { if: { storyDone: 'm6' }, lines: ['The archive doors are shut again. Someone has oiled the hinges since you were inside.'] },
+      { lines: ['Two white columns, a purple gable and a door with three locks. A brass plate: “Records of the Smiths’ Guild. Not open to the public.”'] },
+    ],
+  },
+  'ironford.orecart': {
+    speaker: 'Ore cart',
+    portrait: 'portrait.poi',
+    leave: 'Move on',
+    variants: [{ lines: ['A cart heaped with ore from the Iron Road, still red with the hill’s dust.', 'Chalked on the side: “Hale. Do not touch. Yes, you.”'] }],
+  },
+  'ironford.docks': {
+    speaker: 'The docks',
+    portrait: 'portrait.poi',
+    leave: 'Move on',
+    variants: [{ lines: ['Crates stamped with the hammer of the Smiths’ Guild wait for the river barges.', 'The river runs brown with slag below the pier.'] }],
+  },
+  'ironford.caravans': {
+    speaker: 'The caravan yard',
+    portrait: 'portrait.poi',
+    leave: 'Move on',
+    variants: [{ lines: ['Wagons, oxen and hay. Every caravan for the Moon Road and the far towns leaves from this yard.', 'A board lists departures. Half of them say “when the road is safe”.'] }],
+  },
+
+  // ---------------------------------------------------------------- the bigger Ironford: people
+  // Tibb: the smith's apprentice; eager, burnt fingers, hero-worships fighters.
+  'ironford.apprentice': {
+    speaker: 'Tibb',
+    portrait: P('apprentice'),
+    variants: [
+      { if: { talked: true, quadrant: 'fear' }, lines: ['Oh! I mean, hello. I didn’t touch your gear. I swear I didn’t.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['It’s you! I told Master Anvilson you’d come back. He said I talk too much.'] },
+      { if: { talked: true }, lines: ['Back again? I’m still sweeping. One day it’ll be swords.'] },
+      {
+        lines: ['Careful, the slag’s still hot there. I’m Tibb. Apprentice. Mostly I sweep.', 'Are you real fighters? With a guild and everything?'],
+        choices: [
+          { text: 'We are. A guild and everything.', effects: [{ relationship: 1 }], reply: ['I knew it! You walk like fighters. Master Anvilson walks like a door.'] },
+          { text: 'We’re working on it.', reply: ['Everybody starts somewhere. I started with a broom.'] },
+        ],
+      },
+    ],
+    topics: [
+      { id: 'forge', text: 'What’s it like working the forge?', lines: ['Hot. Loud. I love it. My fingers don’t, but my fingers aren’t in charge.'] },
+      { id: 'gear', text: 'Where do I buy good gear here?', lines: ['The Forge-Mart, up the street. The good stuff is behind the counter. Ask for it by name.'] },
+    ],
+    bye: { text: 'Back to your sweeping, then.', lines: ['One day it’ll be swords!'] },
+  },
+
+  // Rhoswen Tarr: dock hand; wry, unhurried, has seen every cargo there is.
+  'ironford.docker': {
+    speaker: 'Rhoswen Tarr',
+    portrait: P('docker'),
+    variants: [
+      { if: { talked: true, quadrant: 'disgust' }, lines: ['Your lot again. Nothing here’s for sale, and nothing here goes missing. Understood?'] },
+      { if: { talked: true, quadrant: 'compassion' }, lines: ['The kind ones are back. Sit on a crate. They’re sturdier than they look.'] },
+      { if: { talked: true }, lines: ['Still not a barge, I see. Nothing comes in till the river rises.'] },
+      {
+        lines: ['Mind the edge. The river keeps what falls in.', 'Rhoswen Tarr. I load the barges, when there are barges.'],
+        choices: [
+          { text: 'Slow day?', reply: ['Slow year. The river’s low and the barge guilds are worse.'] },
+          { text: 'What goes out on the barges?', reply: ['Steel downriver. Gold back up. Secrets both ways, but those don’t weigh much.'] },
+        ],
+      },
+    ],
+    topics: [
+      { id: 'river', text: 'Where does the river go?', lines: ['South to the coast and the salt towns. Three days with the current, nine against.'] },
+      { id: 'secrets', text: 'What secrets?', lines: ['The sealed kind. A crate with a Crown seal doesn’t get opened, and it doesn’t get weighed.'] },
+    ],
+    bye: { text: 'I’ll let you get back to it.', lines: ['To what? Oh, the waiting. Yes.'] },
+  },
+
+  // Haskel Dunn: caravan master; a grumbling old road hand, counts everything.
+  'ironford.caravan': {
+    speaker: 'Haskel Dunn',
+    portrait: P('caravan'),
+    variants: [
+      { if: { talked: true, quadrant: 'fear' }, lines: ['You again. My wagons pay their toll to the road, not to you. Please.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['The guild that keeps the roads clear. My drivers drink to you, you know.'] },
+      { if: { talked: true }, lines: ['Eleven wagons, nine oxen, one cat. Everyone’s accounted for. What do you need?'] },
+      {
+        lines: ['Don’t stand behind the oxen. They have opinions.', 'Haskel Dunn, caravan master. If it rolls out of Ironford, I counted it.'],
+        choices: [
+          { text: 'Where do your caravans go?', reply: ['East, over the Moon Road to Mooncourt. South to the cliffs. Wherever pays.'] },
+          { text: 'Need guards?', reply: ['Always. Ysolde takes the hard runs. Ask at the notice board for the rest.'] },
+        ],
+      },
+    ],
+    topics: [
+      { id: 'moon', text: 'What’s on the Moon Road?', lines: ['Hills, then worse hills, then Mooncourt. The bands up there are no novices.'] },
+      { id: 'safe', text: 'Why “when the road is safe”?', lines: ['Because it never is, but you have to write something on the board.'] },
+    ],
+    bye: { text: 'Safe roads.', lines: ['Ha. Count your heroes before you leave, and when you get back.'] },
+  },
 };

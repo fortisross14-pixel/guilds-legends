@@ -75,6 +75,136 @@
    "use": "Ground tiles (hand-painted), painted into each walkable map by src/explore/groundPaint.js"
   },
   {
+   "id": "town.house.blue",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-blue.png",
+   "w": 373,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A town house (blue gable), not entered"
+  },
+  {
+   "id": "town.house.orange",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-orange.png",
+   "w": 373,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A town house (orange gable), not entered"
+  },
+  {
+   "id": "town.house.purple",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-purple.png",
+   "w": 373,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A town house (purple gable), not entered"
+  },
+  {
+   "id": "town.house.green",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-green.png",
+   "w": 373,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A town house (green gable), not entered"
+  },
+  {
+   "id": "town.house.wood",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-wood.png",
+   "w": 393,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A wooden house, not entered"
+  },
+  {
+   "id": "town.house.wood-dark",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-wood-dark.png",
+   "w": 393,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A dark wooden house, not entered"
+  },
+  {
+   "id": "town.house.wood-fall",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-wood-fall.png",
+   "w": 393,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "An autumn-wood house, not entered"
+  },
+  {
+   "id": "town.house.thatch",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-thatch.png",
+   "w": 341,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A thatched cottage, not entered"
+  },
+  {
+   "id": "town.house.moss",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-moss.png",
+   "w": 341,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A moss-thatched cottage, not entered"
+  },
+  {
+   "id": "town.house.hut",
+   "group": "building",
+   "path": "art/packs/myart/buildings/house-hut.png",
+   "w": 128,
+   "h": 169,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "A fisher\u2019s hut, not entered"
+  },
+  {
+   "id": "town.ironford.archive",
+   "group": "building",
+   "path": "art/packs/myart/buildings/ironford-archive.png",
+   "w": 493,
+   "h": 576,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Ironford: the Smiths\u2019 archive (purple gable between columns)"
+  },
+  {
+   "id": "town.windmere.monastery",
+   "group": "building",
+   "path": "art/packs/myart/buildings/windmere-monastery.png",
+   "w": 461,
+   "h": 448,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Windmere: the cliff monastery (moss thatch between columns)"
+  },
+  {
+   "id": "town.windmere.courier",
+   "group": "building",
+   "path": "art/packs/myart/buildings/windmere-courier.png",
+   "w": 455,
+   "h": 512,
+   "aspect": true,
+   "scale": 0.5,
+   "use": "Windmere: the courier post (the arrow sign)"
+  },
+  {
    "id": "town.dunmere.house",
    "group": "building",
    "path": "art/packs/myart/buildings/dunmere-house.png",
@@ -1923,6 +2053,102 @@
    "path": "art/packs/myart/chars/npc-windmere-monk.png",
    "still": "art/packs/myart/chars/npc-windmere-monk-still.png",
    "bust": "art/packs/myart/chars/npc-windmere-monk-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.docker",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-docker.png",
+   "still": "art/packs/myart/chars/npc-ironford-docker-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-docker-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.caravan",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-caravan.png",
+   "still": "art/packs/myart/chars/npc-ironford-caravan-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-caravan-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.ironford.apprentice",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-ironford-apprentice.png",
+   "still": "art/packs/myart/chars/npc-ironford-apprentice-still.png",
+   "bust": "art/packs/myart/chars/npc-ironford-apprentice-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.windmere.lookout",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-windmere-lookout.png",
+   "still": "art/packs/myart/chars/npc-windmere-lookout-still.png",
+   "bust": "art/packs/myart/chars/npc-windmere-lookout-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.windmere.fisher",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-windmere-fisher.png",
+   "still": "art/packs/myart/chars/npc-windmere-fisher-still.png",
+   "bust": "art/packs/myart/chars/npc-windmere-fisher-bust.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "npc.windmere.novice",
+   "group": "npc",
+   "path": "art/packs/myart/chars/npc-windmere-novice.png",
+   "still": "art/packs/myart/chars/npc-windmere-novice-still.png",
+   "bust": "art/packs/myart/chars/npc-windmere-novice-bust.png",
    "w": 112,
    "h": 120,
    "sheet": {
