@@ -237,6 +237,9 @@ Waves 1, 4 and 6 don't depend on each other; 2 needs 1, 3 needs 1, 5 needs 4.
 - Wicked play is **its own path with its own darker ending** (Ending C): not harder overall, with harder and easier parts (`VERDICTS.md`, the darker path).
 - Verdict scenes: a first draft by an agent, adjusted by the author: [`VERDICTS.md`](VERDICTS.md).
 
-## Open
-- How fast the standing name changes: proposed, one big deed can move it, but it changes only
-  once the guild is clearly past the line (a margin of 6 points), so it never flickers back and forth.
+- **The standing is an epithet the guild earns**, not a replacement name: a prefix or a "the
+  … guild of" form, from the grid's cell ("the feared guild of the New Lantern", "Honourable New
+  Lantern"). It changes once the guild is clearly past a line (a margin of 6 points), so it never
+  flickers. Neutral in both earns no epithet.
+- The main story draft (four chapters, primary and secondary missions in the Journal, mission
+  types, the turn and the two paths): [`STORY_DRAFT.md`](STORY_DRAFT.md).
