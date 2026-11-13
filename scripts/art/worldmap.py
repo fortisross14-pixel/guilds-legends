@@ -59,9 +59,11 @@ field = land * 0.9 + n * 0.42 + (bays - 0.5) * 0.5 - 0.52
 # keep a sea margin round the edges, a little ragged
 # land runs along every road (src/data/roads.js) and the main route east, so roads never cross the sea
 BYID = {p['id']: p for p in PL}
-links = re.findall(r"ends: \['([a-z-]+)', '([a-z-]+)'\]", open(os.path.join(GAME, 'src', 'data', 'roads.js')).read())
-chain = ['windmere', 'tidecross', 'sunspire', 'mooncourt', 'thornwatch']
-links += list(zip(chain, chain[1:]))
+roads_src = open(os.path.join(GAME, 'src', 'data', 'roads.js')).read()
+links = re.findall(r"ends: \['([a-z-]+)', '([a-z-]+)'\]", roads_src)
+# The world skeleton's roads: WORLD_ROADS rows ['from', 'to', 'Name', [levels]].
+links += re.findall(r"\['([a-z-]+)', '([a-z-]+)', '", roads_src)
+road_near = np.zeros((H, W), dtype=bool)
 for a, b in links:
     if a not in BYID or b not in BYID:
         continue
@@ -70,12 +72,15 @@ for a, b in links:
     t = np.clip(((xx - ax) * vx + (yy - ay) * vy) / (vx * vx + vy * vy), 0, 1)
     dist = np.hypot(xx - (ax + t * vx), yy - (ay + t * vy))
     field += 0.55 * np.exp(-(dist / 80) ** 2)
+    road_near |= dist < 34
 edge = np.minimum.reduce([xx, W - xx, yy, H - yy]) / 230.0
 field -= np.clip(1 - edge, 0, 1) * 0.6
 is_land = field > 0
 # a channel cuts the Storm Isles off from the mainland
 channel = np.abs(xx - (0.76 * W + (noise(200, 3) - 0.5) * 420 + np.sin(yy / 90) * 30)) < 30
 is_land &= ~(channel & (yy > 0.18 * H) & (yy < 0.86 * H))
+# Every road keeps a strip of land: a causeway or a ford where it crosses the channel.
+is_land |= road_near
 
 # ---------------------------------------------------------------- parchment (one colour; ink does the rest)
 pts = np.array([[p['x'], p['y']] for p in PL])

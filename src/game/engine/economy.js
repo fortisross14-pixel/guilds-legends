@@ -4,7 +4,7 @@ import { ROOM_BY_ID } from '../../data/rooms.js';
 import { statusName } from '../../data/tournaments.js';
 import { LOT_BY_ID } from '../../data/lots.js';
 import { charterEffect } from './charter.js';
-import { LOCATION_BY_ID, travelDays, unlockedLocations } from '../../data/world.js';
+import { LOCATION_BY_ID, travelDays } from '../../data/world.js';
 import { roadBetween, roadsFrom } from '../../data/roads.js';
 import {
   addChronicle,
@@ -38,7 +38,8 @@ const DEBT_WALKOUT_LOYALTY = 50;
 export function getTravelQuote(state, destinationId) {
   const fromId = state.world?.currentLocationId || 'dunmere';
   const destination = LOCATION_BY_ID[destinationId];
-  const unlocked = unlockedLocations(state.guild.tierIndex).some((location) => location.id === destinationId);
+  // The open world: every place is open to every guild (danger, not status, keeps them away).
+  const unlocked = Boolean(destination);
   const road = roadBetween(fromId, destinationId);
   const days = destination ? road?.days || travelDays(fromId, destinationId) : 0;
   const party = Math.max(1, travellingPartyIds(state, true).length);

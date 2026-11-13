@@ -4,10 +4,9 @@
 export const SLICE = {
   enabled: true,
   chapter: 1,
-  // Travel destinations on the world map.
-  locations: ['dunmere', 'greenhollow', 'ironford', 'windmere'],
-  // Walkable wild areas, built in Phase 1. Listed here so later phases share one source.
-  wildAreas: ['old-road', 'thornwood-edge', 'blackwood', 'iron-road', 'cliff-road', 'coast-road'],
+  // Travel destinations on the world map: null = the whole world (the open world, with the
+  // world skeleton's box towns and roads; docs/design/STORY_DRAFT.md).
+  locations: null,
   // Highest guild tier with content in the slice (0 = Regional).
   maxTier: 0,
   // Systems kept in code but not surfaced in Chapter 1.
@@ -26,7 +25,7 @@ export function sliceHides(system) {
 
 /** True when a location can be reached in this build. */
 export function inSlice(locationId) {
-  return !SLICE.enabled || SLICE.locations.includes(locationId);
+  return !SLICE.enabled || !SLICE.locations || SLICE.locations.includes(locationId);
 }
 
 /** Caps a tier index at the slice's highest tier. */

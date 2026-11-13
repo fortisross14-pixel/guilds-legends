@@ -11,18 +11,10 @@ import { useAssetUrl } from '../components/Asset.jsx';
 import { BEYOND_TEASER, inSlice } from '../data/slice.js';
 import Icon from '../components/Icon.jsx';
 
-const TIER_ORDER = { Regional: 0, National: 1, Global: 2 };
 
-// Road network as chains of location ids. Paths are built from each location's
-// x/y (percent of the map), so routes always meet the nodes.
-// The roads of src/data/roads.js (drawn bright), then the routes of later chapters (dim).
-const MAP_ROUTES = [
-  ...ROADS.filter((road) => !road.area && road.ends.every(Boolean)).map((road) => ({ dim: Boolean(road.gate?.chapterAtLeast), chain: road.ends })),
-  { dim: true, chain: ['windmere', 'tidecross', 'sunspire', 'mooncourt', 'thornwatch', 'skyreach', 'beaststeppe', 'irondeep'] },
-  { dim: true, chain: ['tidecross', 'brasshaven', 'coral-crown', 'cloud-monastery', 'ashen-caldera', 'starfall-archive', 'far-veil'] },
-  { dim: true, chain: ['thornwatch', 'verdant-citadel', 'irondeep'] },
-  { dim: true, chain: ['skyreach', 'ashen-caldera', 'cloud-monastery'] },
-];
+// Road network as chains of location ids: roads travelled from the map (no walkable area).
+// Walkable roads are drawn as spurs from each known end to their marker (below).
+const MAP_ROUTES = ROADS.filter((road) => !road.area && road.ends.every(Boolean)).map((road) => ({ dim: Boolean(road.gate?.chapterAtLeast), chain: road.ends }));
 
 /**
  * Where a wild area sits on the map: a road between two places sits halfway along it;
@@ -57,7 +49,8 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const questTitle = story.active?.title || '';
   const knowledge = getWorldKnowledge(state);
   const selectedBeyond = !inSlice(selected.id);
-  const unlocked = TIER_ORDER[selected.tier] <= state.guild.tierIndex && !selectedBeyond;
+  // The open world: every place can be reached; danger, not status, keeps a guild away.
+  const unlocked = !selectedBeyond;
   const overworld = useAssetUrl('ui.overworld');
   // Drag to pan, pinch (or wheel) to zoom; a tap still picks a location.
   const panZoom = usePanZoom({ max: 3 });
@@ -176,7 +169,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
               ) : null}
               {LOCATIONS.filter((location) => known(location.id)).map((location) => {
                 const beyond = !inSlice(location.id);
-                const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
+                const canReach = !beyond;
                 const isCurrent = location.id === currentLocationId;
                 const isDestination = travel?.toId === location.id;
                 const knowledgeStatus = knowledge[location.id] || 'unknown';
@@ -409,7 +402,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
         {/* Places in a later chapter share one row. */}
         {LOCATIONS.filter((location) => known(location.id) && inSlice(location.id)).map((location) => {
           const beyond = !inSlice(location.id);
-          const canReach = TIER_ORDER[location.tier] <= state.guild.tierIndex && !beyond;
+          const canReach = !beyond;
           const knowledgeStatus = knowledge[location.id] || 'unknown';
           return (
             <button
