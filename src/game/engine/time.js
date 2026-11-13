@@ -30,7 +30,7 @@ import {
 } from './core.js';
 import { applyXpInPlace, calculatePower, generateHero } from './heroes.js';
 import { makeCandidate, refreshCandidatesForLocationInPlace, updatePromiseDeadlinesInPlace } from './candidates.js';
-import { refreshMissionsInPlace } from './universe.js';
+import { growStoryRivalsInPlace, refreshMissionsInPlace } from './universe.js';
 import { ensureGuildmasterInPlace, evaluateHeroAmbitionsInPlace, retireHeroInPlace, simulateBranchesInPlace } from './institution.js';
 import { evaluateStateInPlace } from './goals.js';
 import { applyDebtInPlace, monthlyUpkeep, progressTravelInPlace, upkeepBreakdown } from './economy.js';
@@ -344,6 +344,7 @@ function runMonthInPlace(next, rng) {
   monthlyHallInPlace(next, rng);
   monthlyConnectionsInPlace(next, rng);
   fadeStandingInPlace(next);
+  growStoryRivalsInPlace(next);
   seasonsMonthlyInPlace(next);
   processContractsInPlace(next);
   processPoachingInPlace(next, rng);

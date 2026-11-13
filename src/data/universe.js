@@ -1,4 +1,42 @@
+/**
+ * The two story rivals (docs/design/PILLARS.md): new guilds founded the same year as yours,
+ * one honourable (Dunmere) and one wicked (Greenhollow). They grow with the guild, enter the
+ * same tournaments and meet it in the story; the one whose standing is opposite yours is your
+ * great rival. Ids: STORY_RIVALS.
+ */
+export const STORY_RIVALS = { honourable: 'rival-dawn', wicked: 'rival-thistle' };
+
 export const GUILD_BLUEPRINTS = [
+  {
+    name: 'The Dawnriders',
+    storyId: 'rival-dawn',
+    creed: 'honourable',
+    motto: 'Ride toward the trouble.',
+    archetype: 'Popular Crew',
+    color: '#e8c36a',
+    strategy: 'fame',
+    risk: 0.45,
+    specialty: 'Guardian',
+    tierIndex: 0,
+    homeLocationId: 'dunmere',
+    founded: 1187,
+    star: { name: 'Tavish Rowe', classId: 'Guardian', primal: 'Fire', rarity: 'Rare', level: 3, age: 22, personality: 'Honorable', hook: 'Dunmere’s golden boy: a smith’s son with a borrowed shield who founded the Dawnriders the same summer you raised your banner.' },
+  },
+  {
+    name: 'The Black Thistle',
+    storyId: 'rival-thistle',
+    creed: 'wicked',
+    motto: 'Every root finds a throat.',
+    archetype: 'Shadow Guild',
+    color: '#4a2f55',
+    strategy: 'spend',
+    risk: 0.6,
+    specialty: 'Rogue',
+    tierIndex: 0,
+    homeLocationId: 'greenhollow',
+    founded: 1187,
+    star: { name: 'Morra Quell', classId: 'Rogue', primal: 'Plant', rarity: 'Rare', level: 4, age: 25, personality: 'Jealous', hook: 'A Greenhollow poacher’s daughter who bought her first fighters with stolen silver, and means to buy a crown the same way.' },
+  },
   {
     name: 'Silver Falcons',
     motto: 'Higher than fear.',

@@ -7,6 +7,7 @@ import { LOCATION_BY_ID, LOCATIONS, PRIMAL_IDS, unlockedLocations } from '../../
 import { SLICE } from '../../data/slice.js';
 import {
   GUILD_BLUEPRINTS,
+  STORY_RIVALS,
   HISTORIC_LEGENDS,
   WORLD_ARTIFACT_SEEDS,
 } from '../../data/universe.js';
@@ -31,6 +32,47 @@ function pickTemplate(state, pool, rng) {
 }
 
 const RIVAL_CREEDS = ['honourable', 'neutral', 'wicked'];
+
+/** The great rival: the story rival whose standing is opposite the guild's (the wicked one for a neutral guild). */
+export function greatRivalId(state) {
+  const storyId = (state.guild?.standing?.honorBand || 'neutral') === 'wicked' ? STORY_RIVALS.honourable : STORY_RIVALS.wicked;
+  return storyId;
+}
+
+/** A story rival guild by its storyId (rival-dawn, rival-thistle). */
+export function storyRival(state, storyId) {
+  return (state.rivals || []).find((rival) => rival.storyId === storyId) || null;
+}
+
+/**
+ * The story rivals grow with the guild: their star a level above the guild's best hero (the great
+ * rival two), their fighters a level or two below, as strong as heroes of that level; their fame
+ * and status keep pace. Run monthly and before any fight with them.
+ */
+export function growStoryRivalsInPlace(state) {
+  const best = Math.max(1, ...state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status)).map((hero) => hero.level || 1));
+  const great = greatRivalId(state);
+  Object.values(STORY_RIVALS).forEach((storyId) => {
+    const rival = storyRival(state, storyId);
+    if (!rival) return;
+    const lift = (hero, level) => {
+      if (!hero || (hero.level || 1) >= level) return;
+      const target = Math.min(98, Math.round(38 + 2.25 * level));
+      const gain = Math.max(0, target - (hero.power || 50));
+      hero.level = level;
+      hero.attributes = Object.fromEntries(Object.entries(hero.attributes || {}).map(([key, value]) => [key, clamp(Math.round(value + gain), 20, 99)]));
+      hero.power = Math.max(hero.power || 50, target);
+    };
+    const top = best + (storyId === great ? 2 : 1);
+    lift(rival.star, top);
+    (rival.members || []).forEach((member, index) => lift(member, Math.max(1, top - 1 - (index % 3))));
+    rival.power = Math.max(rival.power || 0, rival.star?.power || 0);
+    rival.fame = Math.max(rival.fame || 0, Math.round((state.guild.fame || 0) * 0.9) + 10);
+    rival.tierIndex = Math.max(rival.tierIndex || 0, state.guild.tierIndex || 0);
+  });
+}
+
+
 
 function createRival(blueprint, state, rng, index) {
   const tierIndex = clamp(blueprint.tierIndex ?? 0, 0, TIERS.length - 1);

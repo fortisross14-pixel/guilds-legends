@@ -170,3 +170,5 @@ export {
   readHistoryBoard,
   storyNpcsHere,
 } from './engine/story.js';
+
+export { greatRivalId, storyRival } from './engine/universe.js';

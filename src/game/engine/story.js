@@ -40,7 +40,9 @@ import { adjustPatronInPlace, applyCharterInPlace, patronAtLeast, patronLevel } 
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { adjustRegionReputationInPlace, missionFamily, regionLevel, standingQuadrant } from './reputation.js';
-import { instantiateMission } from './universe.js';
+import { growStoryRivalsInPlace, instantiateMission, storyRival } from './universe.js';
+import { recordRivalryInPlace } from './rivalry.js';
+import { STORY_RIVALS } from '../../data/universe.js';
 import { makeContract } from './contracts.js';
 import { rentLotInPlace } from './hall.js';
 
@@ -287,6 +289,11 @@ export function currentStep(state, missionId) {
   const record = state.story?.missions?.[missionId];
   if (!mission || record?.status !== 'active') return null;
   return mission.steps[record.step] || null;
+}
+
+/** The great rival's storyId: the story rival opposite the guild's standing (the wicked one for a neutral guild). */
+function greatRivalStoryId(state) {
+  return (state.guild?.standing?.honorBand || 'neutral') === 'wicked' ? STORY_RIVALS.honourable : STORY_RIVALS.wicked;
 }
 
 /** True when '<missionId>.<stepId>' is a mission's current step. */
@@ -601,8 +608,17 @@ export function startStoryDuel(state, missionId, heroId = null) {
   const rng = rngFor(next, `story-duel-${missionId}-${next.story.missions[missionId].duelLosses || 0}`);
   // `easierIf` (a story choice, like fighting Bram dirty): the opponent starts two levels down.
   const easier = step.easierIf && checkCondition(next, step.easierIf);
-  const opponent = generateHero(next, rng, 'veteran', { ...step.opponent, level: Math.max(1, (step.opponent.level || 1) - (easier ? 2 : 0)), guildId: null, homeLocationId: step.at });
-  opponent.id = step.opponent.id;
+  // `rival: 'great'`: the great rival's star (universe.js), grown to the guild's level.
+  let opponent;
+  if (step.rival) {
+    growStoryRivalsInPlace(next);
+    const rival = storyRival(next, step.rival === 'great' ? greatRivalStoryId(next) : step.rival);
+    if (!rival?.star) return { state, error: 'Your rival is nowhere to be found.' };
+    opponent = { ...clone(rival.star), id: `duel-${rival.id}` };
+  } else {
+    opponent = generateHero(next, rng, 'veteran', { ...step.opponent, level: Math.max(1, (step.opponent.level || 1) - (easier ? 2 : 0)), guildId: null, homeLocationId: step.at });
+    opponent.id = step.opponent.id;
+  }
   next.activeEncounter = createDuelEncounter({
     id: `story-duel-${missionId}-${campaignDaySerial(next)}`,
     seed: (next.rngState ^ hashString(`story-duel:${missionId}:${campaignDaySerial(next)}`)) >>> 0,
@@ -624,6 +640,12 @@ export function storyDuelResultInPlace(state, missionId, won) {
   const mission = STORY_MISSION_BY_ID[missionId];
   const record = missionState(storyInPlace(state), missionId);
   if (!mission || currentStep(state, missionId)?.kind !== 'duel') return;
+  // A duel with a story rival counts in the rivalry (the record on the Guild screen).
+  const step = currentStep(state, missionId);
+  if (step?.rival) {
+    const rival = storyRival(state, step.rival === 'great' ? greatRivalStoryId(state) : step.rival);
+    if (rival) recordRivalryInPlace(state, rival.id, won ? 'boutWon' : 'boutLost');
+  }
   if (won) {
     advanceStepInPlace(state, mission);
     addChronicle(state, { type: 'story', importance: 3, title: `${mission.title}: the duel is won`, text: 'The old champion lowers his blade and nods.', tags: ['story', 'duel'] });

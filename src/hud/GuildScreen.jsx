@@ -1,7 +1,7 @@
 import GuildBanner from '../components/GuildBanner.jsx';
 import React from 'react';
 import { CHARTERS } from '../data/charters.js';
-import { getConnectionsView, getPathScores, getPromotionRequirement, getReputationSummary, getStatusTitle, specializationTitle, getStanding, standingEpithet } from '../game/engine.js';
+import { getConnectionsView, getPathScores, getPromotionRequirement, getReputationSummary, getStatusTitle, specializationTitle, getStanding, standingEpithet, storyRival, greatRivalId } from '../game/engine.js';
 import { Badge, Button, ProgressBar } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
@@ -202,11 +202,54 @@ function StandingTab({ state }) {
   );
 }
 
+const CREED_LABEL = { honourable: 'Honourable', neutral: 'Neither', wicked: 'Wicked' };
+
+/** Guild → Rivals: the two story rivals who grow with the guild, and the record against each. */
+function StoryRivals({ state }) {
+  const great = greatRivalId(state);
+  const rivals = ['rival-dawn', 'rival-thistle'].map((id) => storyRival(state, id)).filter(Boolean);
+  if (!rivals.length) return null;
+  return (
+    <section className="story-rivals">
+      <h3 className="guild-subhead">Your rivals</h3>
+      <ul>
+        {rivals.map((rival) => {
+          const record = state.rivalries?.[rival.id] || {};
+          const met = state.story?.missions?.[rival.storyId === 'rival-dawn' ? 'r1-dawn' : 'r2-thistle']?.status === 'done';
+          return (
+            <li key={rival.id} className={`story-rival${rival.storyId === great ? ' is-great' : ''}`} style={{ '--rival-color': rival.color }}>
+              <span className="story-rival__crest" aria-hidden="true" />
+              <span className="story-rival__text">
+                <strong>
+                  {rival.name}
+                  {rival.storyId === great ? <em> · your great rival</em> : null}
+                </strong>
+                <small>
+                  {met ? `${rival.star?.name}, level ${rival.star?.level} ${rival.star?.classId} (${rival.star?.primal}) · ${CREED_LABEL[rival.creed] || 'Neither'}` : 'Not met yet'}
+                </small>
+              </span>
+              <span className="story-rival__record num" title="Bouts and duels won and lost against them">
+                {record.boutsWon || 0}–{record.boutsLost || 0}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export default function GuildScreen({ state, actions, tab = 'charter' }) {
   if (tab === 'standing') return <StandingTab state={state} />;
   if (tab === 'reputation') return <ReputationTab state={state} />;
   if (tab === 'patrons') return <PatronsTab state={state} actions={actions} />;
-  if (tab === 'rivals') return <NemesisView state={state} actions={actions} />;
+  if (tab === 'rivals')
+    return (
+      <>
+        <StoryRivals state={state} />
+        <NemesisView state={state} actions={actions} />
+      </>
+    );
   if (tab === 'finances') return <Treasury state={state} actions={actions} />;
   return <CharterTab state={state} />;
 }

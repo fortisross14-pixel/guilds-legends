@@ -15,6 +15,8 @@ import { fulfillPromisesInPlace } from './candidates.js';
 import { expectedFinishForSeed, getTournamentAccess, guildTournamentRating, seedEntrants, tournamentRequirements } from './tournaments.js';
 import { tournamentTeamEstimate } from './guildTournaments.js';
 import { battleItems } from './inventory.js';
+import { growStoryRivalsInPlace } from './universe.js';
+import { STORY_RIVALS } from '../../data/universe.js';
 
 /** How long sign-up stays open, in weeks from a tournament's date. */
 export const REGISTRATION_WEEKS = 2;
@@ -61,9 +63,12 @@ function presentAt(state, locationId) {
 function seatTeamInPlace(next, tournament, heroes) {
   tournament.assignments = heroes.map((hero) => ({ heroId: hero.id, role: 'Fighter' }));
   const estimate = tournamentTeamEstimate(next, tournament.assignments);
-  const entrants = tournament.initialEntrants.filter((id) => id !== 'player');
-  if (entrants.length >= tournament.size) entrants.pop();
-  entrants.push('player');
+  // The two story rivals (universe.js) sign up wherever the guild does, grown to its level.
+  growStoryRivalsInPlace(next);
+  const rivals = Object.values(STORY_RIVALS).map((storyId) => next.rivals.find((rival) => rival.storyId === storyId)?.id).filter(Boolean);
+  const entrants = tournament.initialEntrants.filter((id) => id !== 'player' && !rivals.includes(id));
+  while (entrants.length > tournament.size - 1 - rivals.length) entrants.pop();
+  entrants.push(...rivals, 'player');
   tournament.initialEntrants = seedEntrants(next, tournament, entrants, (id) => (id === 'player' ? estimate.power : guildTournamentRating(next, id)));
   tournament.activeEntrants = [...tournament.initialEntrants];
   tournament.currentRoundSize = tournament.activeEntrants.length;
@@ -223,6 +228,7 @@ export function beginTournamentBout(state, tournamentId) {
   if (!tournament || tournament.status !== 'active' || !tournament.assignments?.length) return { state, error: 'No tournament under way.' };
   const opponent = next.rivals.find((guild) => guild.id === mirroredOpponentId(tournament.activeEntrants, 'player'));
   if (!opponent) return { state, error: 'The opposing guild could not be prepared.' };
+  if (opponent.storyId) growStoryRivalsInPlace(next);
   const playerHeroes = tournament.assignments.map((assignment) => ({ hero: getHero(next, assignment.heroId), role: assignment.role })).filter((item) => item.hero);
   // Both teams field the same number of heroes, up to the circuit's size.
   const size = clamp(playerHeroes.length, 1, tournament.teamSize || 5);

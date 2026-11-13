@@ -76,6 +76,8 @@ export default {
     { id: 'traveler', name: 'Iven Quill', role: 'Traveler', at: [4, 18], dialogue: 'dunmere.traveler' },
     { id: 'herald', name: 'Orren Pike', role: 'Herald', at: [7, 8], dialogue: 'dunmere.herald' },
     // Sergeant Hobb keeps the west gate by the bridge (the watch's token, story 1.5).
+    // Tavish Rowe of the Dawnriders, the other new guild (the story rivals).
+    { id: 'rowe', name: 'Tavish Rowe', role: 'The Dawnriders', at: [33, 17], dialogue: 'dunmere.rowe', asset: 'char.class.guardian' },
     { id: 'hobb', name: 'Sergeant Hobb', role: 'Watch sergeant', at: [4, 14], dialogue: 'dunmere.hobb', asset: 'npc.role.watch-sergeant' },
     { id: 'kilnmaster', name: 'Hesta Coal', role: 'Kiln-master', at: [35, 21], dialogue: 'dunmere.kilnmaster' },
     { id: 'lamplighter', name: 'Pip', role: 'Lamplighter', at: [27, 10], dialogue: 'dunmere.lamplighter' },

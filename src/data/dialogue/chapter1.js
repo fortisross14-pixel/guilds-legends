@@ -371,4 +371,68 @@ export default {
       },
     ],
   },
+
+  // ---------------------------------------------------------------- The story rivals
+  // Tavish Rowe (the Dawnriders): earnest, cheerful, fiercely competitive; hates cruelty.
+  'dunmere.rowe': {
+    speaker: 'Tavish Rowe',
+    portrait: 'portrait.class.guardian',
+    variants: [
+      { if: { talked: true, honorBand: 'wicked' }, lines: ['I’ve heard what your guild does on the roads. Stay out of my way, or I’ll put you out of it.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['{epithet}! You’re making this hard. Good. I like hard.'] },
+      { if: { talked: true }, lines: ['Still behind me on the ladder? Not for long, I’d bet. That’s what makes it fun.'] },
+      { lines: ['Tavish Rowe, the Dawnriders. Same age as your guild, give or take a week.'] },
+    ],
+    topics: [
+      { id: 'race', text: 'Is Dunmere big enough for two new guilds?', lines: ['For now. One of us will outgrow it first. I mean to.'] },
+      { id: 'thistle', text: 'Heard of the Black Thistle?', if: { storyDone: 'r2-thistle' }, lines: ['Greenhollow’s new lot. They buy fighters with stolen silver. If you see Morra Quell, count your purse.'] },
+    ],
+    bye: { text: 'See you in the ring, Tavish.', lines: ['Count on it.'] },
+  },
+  'story.r1.rowe': {
+    speaker: 'Tavish Rowe',
+    portrait: 'portrait.class.guardian',
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['So you’re the other new banner! Tavish Rowe. The Dawnriders. We signed our charter the same week you did.', 'Two new guilds in one town. We’ll be fighting for the same contracts, the same crowds, the same tournaments.'],
+        choices: [
+          { text: 'Then may the better guild win.', effects: [{ relationship: 2 }], reply: ['Ha! That’s the spirit. I’ll see you on the ladder. Above you, I hope.'] },
+          { text: 'Stay out of our way.', effects: [{ relationship: -2 }], reply: ['Charming. All right: I’ll stay ahead of it instead.'] },
+        ],
+      },
+    ],
+  },
+  // Morra Quell (the Black Thistle): sly, contemptuous, ambitious; respects only fear.
+  'greenhollow.quell': {
+    speaker: 'Morra Quell',
+    portrait: 'portrait.class.rogue',
+    variants: [
+      { if: { talked: true, honorBand: 'wicked' }, lines: ['Our kind of guild. Shame there’s only room for one at the top.'] },
+      { if: { talked: true, honorBand: 'honourable' }, lines: ['The saints are back. Still feeding beggars? It won’t win you a single bout.'] },
+      { if: { talked: true }, lines: ['You again. Come to see what a real guild looks like?'] },
+      { lines: ['Morra Quell. The Black Thistle. You’ll be hearing the name.'] },
+    ],
+    topics: [
+      { id: 'how', text: 'How did you found a guild so fast?', lines: ['Silver. Doesn’t matter whose.'] },
+      { id: 'dawn', text: 'Heard of the Dawnriders?', if: { storyDone: 'r1-dawn' }, lines: ['Rowe’s little sunbeams. They’ll make lovely trophies.'] },
+    ],
+    bye: { text: 'Goodbye, Morra.', lines: ['Watch your back. Someone should.'] },
+  },
+  'story.r2.quell': {
+    speaker: 'Morra Quell',
+    portrait: 'portrait.class.rogue',
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['So you’re the Dunmere banner everyone whispers about. I expected taller.', 'Morra Quell. The Black Thistle. Founded the same summer as you, with better money.'],
+        choices: [
+          { text: 'Money doesn’t win bouts.', reply: ['No. Fear does. Money just buys it.'] },
+          { text: 'We could work together, you and I.', if: { honorBand: 'wicked' }, effects: [{ relationship: 2 }], reply: ['Maybe. Until there’s only one prize left. Then we’ll see.'] },
+        ],
+      },
+    ],
+  },
 };

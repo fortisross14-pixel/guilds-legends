@@ -60,6 +60,8 @@ export default {
   ],
   npcs: [
     { id: 'herbalist', name: 'Maren Bell', role: 'Herbalist', at: [18, 11], dialogue: 'greenhollow.herbalist' },
+    // Morra Quell of the Black Thistle (the story rivals).
+    { id: 'quell', name: 'Morra Quell', role: 'The Black Thistle', at: [24, 20], dialogue: 'greenhollow.quell', asset: 'char.class.rogue' },
     { id: 'warden', name: 'Warden Tamsin', role: 'Forest warden', at: [16, 2], dialogue: 'greenhollow.warden' },
     { id: 'storyteller', name: 'Old Fen', role: 'Storyteller', at: [21, 14], dialogue: 'greenhollow.storyteller' },
     { id: 'stablehand', name: 'Kit', role: 'Stablehand', at: [6, 19], dialogue: 'greenhollow.stablehand' },
