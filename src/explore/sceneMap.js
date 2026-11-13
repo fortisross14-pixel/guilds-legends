@@ -124,7 +124,13 @@ function exitTarget(exit, extra = {}) {
 
 // The woods ('T' tiles) grow trees: one on every other tile, staggered row by row,
 // so their crowns overlap. Each place has its own kinds (Blackwood is dead wood).
-const TREES = { blackwood: ['deco.tree-dead', 'deco.tree-dead', 'deco.tree-pine'], 'thornwood-edge': ['deco.tree-pine', 'deco.tree-pine', 'deco.tree-oak'], default: ['deco.tree-oak', 'deco.tree-oak', 'deco.tree-pine', 'deco.tree-broad'] };
+const TREES = {
+  blackwood: ['deco.tree-dead', 'deco.tree-dead', 'deco.tree-pine'],
+  'thornwood-edge': ['deco.tree-pine', 'deco.tree-pine', 'deco.tree-oak'],
+  // Chapter 2: pine hills on the Iron Road, wind-bent pines and dead trees on the cliffs, salt oaks on the coast.
+  'iron-road': ['deco.tree-pine', 'deco.tree-pine', 'deco.tree-broad'],
+  'cliff-road': ['deco.tree-pine', 'deco.tree-dead', 'deco.tree-pine'],
+  'coast-road': ['deco.tree-oak', 'deco.tree-broad', 'deco.tree-oak'], default: ['deco.tree-oak', 'deco.tree-oak', 'deco.tree-pine', 'deco.tree-broad'] };
 function treeProps(place) {
   if (!ASSETS['deco.tree-oak']) return [];
   const kinds = TREES[place.id] || TREES.default;
@@ -324,7 +330,7 @@ export function wildMap(area) {
   // One exit per end of the road: back the way you came, or on to the next town.
   const links = areaLinks(area).map((link) => exitTarget({ at: link.at, size: link.size, name: link.name }, { id: link.town === area.hub ? 'exit' : `exit:${link.town}`, hub: area.hub, town: link.town }));
   map.targets = [camp, ...buildings.doors, ...props.targets, ...groups, ...gathers, ...links];
-  map.props = [...clearOfTrees(treeProps(area), map, WILD_ANCHORS[area.id]), ...map.props];
+  map.props = [...clearOfTrees(treeProps(area), map, WILD_ANCHORS[area.id] || area.anchors), ...map.props];
   // Where ambushes can happen: walkable ground that is not the road ('1'), for the walk engine.
   if (area.ambushes?.length) {
     const road = new Set([':', '=', 'b', '#']);

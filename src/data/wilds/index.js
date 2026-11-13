@@ -3,7 +3,7 @@
 import oldRoad from './oldRoad.js';
 import thornwood from './thornwood.js';
 import blackwood from './blackwood.js';
-import { cliffRoad, coastRoad, ironRoad } from './emptyRoad.js';
+import { cliffRoad, coastRoad, ironRoad } from './chapter2Roads.js';
 import { SKELETON_ROADS } from './skeletonRoads.js';
 
 export const WILD_AREAS = {

@@ -77,7 +77,7 @@ function slotsFor(state, mission, place, objectives) {
     });
     return slots;
   }
-  const anchors = place.kind === 'wild' ? WILD_ANCHORS[place.id] || [] : TOWN_ANCHORS[place.id] || [];
+  const anchors = place.kind === 'wild' ? WILD_ANCHORS[place.id] || WILD_AREAS[place.id]?.anchors || [] : TOWN_ANCHORS[place.id] || [];
   objectives.forEach((objective, index) => {
     slots[objective.id] = { tile: anchors[(others * objectives.length + index) % Math.max(1, anchors.length)] || [2, 2] };
   });

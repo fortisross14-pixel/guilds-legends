@@ -1,7 +1,8 @@
 # The world — skeleton
 
-Every place and road of the game, for all four chapters. The four Chapter 1 towns and the
-Old Road, the Thornwood and the Blackwood are built; everything else is a **box**: walkable, with
+Every place and road of the game, for all four chapters. The four Chapter 1 towns, the
+Old Road, the Thornwood, the Blackwood and the three Chapter 2 roads (laid out by
+`src/data/wilds/roadLayout.js`, specs in `chapter2Roads.js`, 96 × 34 each) are built; everything else is a **box**: walkable, with
 its buildings, its gates and its bands, waiting for the chapter that uses it to get its real
 layout, art, people and places (docs/design/STORY_DRAFT.md: world skeleton first, then each
 chapter's story and places together).
@@ -47,9 +48,9 @@ chapter's story and places together).
 |---|---|---|---|---|
 | The Old Road | Dunmere (dead end) | Dunmere 1 | 2–7 | built |
 | The Thornwood road | Dunmere → Greenhollow | Dunmere 2, Greenhollow 1 | 7–9 | built |
-| The Iron Road | Greenhollow → Ironford | Greenhollow 2, Ironford 2 | 13–18 | box |
-| The cliff road | Ironford → Windmere | Ironford 1, Windmere 2 | 18–24 | box |
-| The coast road | Windmere → Dunmere | Dunmere 1, Windmere 2 | 10–14 | box |
+| The Iron Road | Greenhollow → Ironford | Greenhollow 2, Ironford 2 | 13–18 | built |
+| The cliff road | Ironford → Windmere | Ironford 1, Windmere 2 | 18–24 | built |
+| The coast road | Windmere → Dunmere | Dunmere 1, Windmere 2 | 10–14 | built |
 | The Blackwood track | Dunmere (dead end) | Dunmere 1 | 30–35 | built |
 | The Moon Road | Ironford → Mooncourt | Ironford 2, Mooncourt 1 | 22–28 | box |
 | The Warden’s Path | Greenhollow → Thornwatch | Greenhollow 1, Thornwatch 1 | 16–22 | box |
