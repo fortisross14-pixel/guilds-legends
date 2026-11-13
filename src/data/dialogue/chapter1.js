@@ -322,4 +322,53 @@ export default {
       { lines: ['A fire ring gone to moss, and a log with initials carved into it.'] },
     ],
   },
+
+  // ---------------------------------------------------------------- Errands for one standing only
+  'story.g1.aveline': {
+    speaker: 'Mother Aveline',
+    portrait: AVELINE,
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['The pilgrims are coming back, and half of them are coughing.', 'Two potions and three bundles of feverfew would see them through. I ask it of you because you’ve earned the asking.'],
+        choices: [{ text: 'We’ll bring them.', reply: ['The Dawn sees what you do. So do I.'] }],
+      },
+    ],
+  },
+  'story.g1.aveline.done': {
+    speaker: 'Mother Aveline',
+    portrait: AVELINE,
+    decide: true,
+    leave: false,
+    variants: [
+      {
+        if: { hasItem: { potion: 2, feverfew: 3 } },
+        lines: ['You came back with all of it. Of course you did.'],
+        choices: [{ text: 'For the pilgrims.', effects: [{ takeItem: { potion: 2, feverfew: 3 } }, { standing: { honor: 6, text: 'Brought medicine for Dawnwatch’s pilgrims' } }], reply: ['Take these. Hi-potions from the old stores. You’ll need them more than we will.'] }],
+      },
+      { lines: ['Two potions, three bundles of feverfew.'], choices: [{ text: 'Coming.', effects: [{ wait: true }] }] },
+    ],
+  },
+  'story.w1.ebb': {
+    speaker: 'Old Ebb',
+    portrait: EBB,
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['A peddler sold me a watered cask and laughed about it. He camps by the bridge with two big friends.', 'I hear your guild is the sort people pay quickly. Collect for me, and keep most of it.'],
+        choices: [
+          {
+            text: 'We’ll collect.',
+            effects: [
+              { standing: { honor: -4, dread: 6, text: 'Shook down a peddler for Old Ebb' } },
+              { battle: { id: 'peddler-guards', name: 'The peddler and his friends', types: ['road-bandit', 'shield-thug', 'road-bandit'], names: ['The peddler', 'A large friend', 'A larger friend'], count: 3, level: 6, objective: 'Collect Old Ebb’s money.', onWin: { flag: 'peddlerBeaten' } } },
+            ],
+            reply: ['Ha! Remind him whose cask it was.'],
+          },
+        ],
+      },
+    ],
+  },
 };

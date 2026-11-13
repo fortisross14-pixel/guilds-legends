@@ -178,6 +178,7 @@ export const coastRoad = walkedRoad({
   // 2.5 the wreckers Windmere wants gone; 2.4 the shell-pickers by the sea purple; the wreck (errand).
   enemies: [
     group('wreckers', 'The wreckers of the coast road', 'wreckers', ['harbor-brute', 'reef-raider', 'tide-caller'], 19, [160, 220], { if: { storyStep: 'c2-windmere.wreckers' } }),
+    group('press-gang', 'The press-gang and their prisoners', 'dunes', ['harbor-brute', 'shell-guard', 'harbor-brute'], 17, [140, 190], { if: { storyStep: 'g2-pressgang.fight' } }),
     group('shell-band', 'Shell-pickers with knives', 'shells', ['reef-raider', 'brine-cleric', 'reef-raider'], 18, [120, 170], { offset: [-3, 0] }),
   ],
   gathers: [{ id: 'sea-purple', kind: 'herb', name: 'Purple shells', spot: 'shells', offset: [3, 0], if: { wildBeaten: 'coast-road:shell-band' }, guarded: 'The shell-pickers won’t let anyone near their shells.', respawnWeeks: 8, reward: { items: { 'sea-purple': 1 } } }],

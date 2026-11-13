@@ -136,7 +136,21 @@ export default {
     variants: [
       {
         lines: ['There they are! Three Wolfskin pelts. My drivers will sleep tonight.', 'Here. And my name on your door, if anyone asks. I’ll tell the temple you’re honest folk, too.'],
-        choices: [{ text: 'Business is welcome.', effects: [{ takeItem: { 'wolf-pelt': 3 } }, { gold: 40 }], reply: ['“The Trade House will hear about this. So will Dunmere.”'] }],
+        choices: [
+          { text: 'Business is welcome.', effects: [{ takeItem: { 'wolf-pelt': 3 } }, { gold: 40 }], reply: ['“The Trade House will hear about this. So will Dunmere.”'] },
+          {
+            text: 'Keep the coin. Give it to your drivers’ families.',
+            if: { honorBand: 'honourable' },
+            effects: [{ takeItem: { 'wolf-pelt': 3 } }, { standing: { honor: 6, text: 'Gave Corwin’s fee to his drivers’ families' } }, { reputation: { region: 'Crownlands', amount: 8 } }],
+            reply: ['He stares at you. “…The drivers won’t believe me. Thank you.”'],
+          },
+          {
+            text: 'Pay double, or the Wolfskins find their way back.',
+            if: { honorBand: 'wicked' },
+            effects: [{ takeItem: { 'wolf-pelt': 3 } }, { gold: 90 }, { standing: { honor: -8, dread: 6, text: 'Squeezed Corwin for double' } }, { patron: { id: 'trade', amount: -6 } }],
+            reply: ['He pays, counting it out slowly. “Double. Of course.”'],
+          },
+        ],
       },
     ],
     leave: false,

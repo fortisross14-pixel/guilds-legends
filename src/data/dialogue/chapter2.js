@@ -266,4 +266,39 @@ export default {
       { lines: ['A wrecked wagon, picked clean.'] },
     ],
   },
+
+  // ---------------------------------------------------------------- Errands for one standing only
+  'story.g2.dace': {
+    speaker: 'Overseer Dace',
+    portrait: DACE,
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['A press-gang has been taking fishermen off the coast road and selling them to ships. The law is slow.', 'You aren’t. Free them, and Windmere will remember your name kindly.'],
+        choices: [{ text: 'We’ll free them.', reply: ['They camp in the dunes at the east end, by the water.'] }],
+      },
+    ],
+  },
+  'story.w2.cass': {
+    speaker: 'Cass Vey',
+    portrait: CASS,
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        lines: ['The lighthouse keeper owes me for six months of oil. His sons think that makes them clever.', 'Go and explain arithmetic to them. Keep a fifth.'],
+        choices: [
+          {
+            text: 'Arithmetic it is.',
+            effects: [
+              { standing: { honor: -6, dread: 6, text: 'Collected a debt for Cass Vey with fists' } },
+              { battle: { id: 'keeper-sons', name: 'The lighthouse keeper’s sons', types: ['harbor-brute', 'shell-guard', 'harbor-brute'], names: ['Big Tam', 'Little Tam', 'Rolf'], count: 3, level: 17, objective: 'Teach them arithmetic.', onWin: { flag: 'keeperCollected' } } },
+            ],
+            reply: ['Don’t break the lamp. I sell the oil.'],
+          },
+        ],
+      },
+    ],
+  },
 };

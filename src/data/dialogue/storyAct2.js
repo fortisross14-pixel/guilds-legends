@@ -47,6 +47,18 @@ export default {
       ...variant,
       choices: [
         { text: 'Then I’ll find your son.', reply: ['“Tobin is at the arena most days. Tell him I sent you. He’ll know what to do.”'] },
+        {
+          text: 'The Lantern’s medal came with this banner. We carry it honestly.',
+          if: { honorBand: 'honourable', hasItem: { 'lantern-medal': 1 } },
+          effects: [{ flag: 'marenTrusts' }],
+          reply: ['She holds the medal a long time. “Aldric wore this.”', '“Your name has reached Greenhollow, and it’s a good one. Sit. I’ll tell you.”'],
+        },
+        {
+          text: 'Talk, or your son gets hurt in that ring.',
+          if: { honorBand: 'wicked' },
+          effects: [{ flag: 'marenTrusts' }, { standing: { honor: -10, dread: 8, text: 'Threatened Maren’s son to make her talk' } }],
+          reply: ['Her face goes grey. “…You’re what they warned me about.”', '“Sit. Ask your questions, and then leave my house.”'],
+        },
         { text: 'Tobin. Ilse. Aldric. These names were in our banner. Did you know them?', if: { flag: 'knowsSeven' }, effects: [{ flag: 'marenTrusts' }], reply: ['Her hands shake. “Tobin. Ilse. I stitched them both.”', 'She sits down. “Ask.”'] },
         {
           text: 'The families we’ve helped will vouch for us.',
