@@ -40,6 +40,7 @@ import {
   getDashboardSummary,
   getReport,
   getStoryView,
+  trackQuest,
   hasHall,
   HOME_LOCATION_ID,
   INN_NIGHT_COST,
@@ -794,6 +795,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       },
       // Story scenes (src/data/dialogue/story.js): play one now, or close the one showing.
       playStoryScene: (missionId) => applyResult(playStoryScene(state, missionId)),
+      trackQuest: (key) => applyResult(trackQuest(state, key)),
       finishStoryScene: (conversationId) => commitState(finishStoryScene(state, conversationId)),
       // Walkable scenes (src/explore). talk/chooseDialogue return UI follow-ups ({ open, recruit }).
       talk: (id, visit) => {

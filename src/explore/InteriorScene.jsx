@@ -71,7 +71,8 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
   });
 
   // The goal line, as in town: talk to the story person here, or head out when the step is elsewhere.
-  const step = state.settings?.questMarker === false ? null : getStoryView(state).active?.current;
+  const view = getStoryView(state);
+  const step = state.settings?.questMarker === false || view.trackedContract ? null : view.tracked?.current;
   const goalLine = step ? (
     <button type="button" className="goal-line" onClick={() => (questPerson ? talkTo(questPerson) : setAsk(true))} aria-label={`Goal: ${step.text}`}>
       <Icon name="alert" size={14} tone="plain" />

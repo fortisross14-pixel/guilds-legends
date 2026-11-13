@@ -138,12 +138,12 @@ function NowTab({ state, actions, navigate }) {
 
 // ---------------------------------------------------------------- Quests
 
-function goStep(state, story, actions, navigate) {
-  const step = story.active?.current;
+function goStep(state, mission, actions, navigate) {
+  const step = mission?.current;
   if (!step) return;
   const here = (state.world?.currentLocationId || 'dunmere') === (step.at === 'hall' ? 'dunmere' : step.at);
-  if (step.canTalk) return actions.playStoryScene(story.active.id);
-  if (step.canDuel) return actions.startStoryDuel(story.active.id);
+  if (step.canTalk) return actions.playStoryScene(mission.id);
+  if (step.canDuel) return actions.startStoryDuel(mission.id);
   if (!here && step.at) return navigate({ view: 'map', pin: step.at === 'hall' ? 'dunmere' : step.at });
   if (step.kind === 'contract') return navigate('missions');
   return navigate('town');
@@ -178,6 +178,17 @@ function sideEntries(state, story) {
   return entries;
 }
 
+/** Follow this quest: the goal line and the map pin show it. Tracked: a tag (tap the primary's to go back to it). */
+function TrackButton({ story, questKey, actions, small = false }) {
+  const tracked = story.trackedKey === questKey;
+  if (tracked) return <span className={`quest-tracked${small ? ' quest-tracked--sm' : ''}`}><Icon name="pin" size={14} tone="plain" /> Tracked</span>;
+  return (
+    <Button size="sm" onClick={() => actions.trackQuest(questKey)} aria-label="Track this quest">
+      Track
+    </Button>
+  );
+}
+
 function QuestsTab({ state, actions, navigate }) {
   const story = getStoryView(state);
   const { active, next } = story;
@@ -189,8 +200,14 @@ function QuestsTab({ state, actions, navigate }) {
   // Clues: what the lead has turned up so far (its finished steps), newest last.
   const clues = active ? active.steps.filter((item) => item.done && !item.skipped) : [];
   const contracts = activeContracts(state).filter((mission) => !mission.story);
+  const following = story.trackedContract?.title || (story.tracked && story.tracked !== active ? story.tracked.title : null);
   return (
     <div className="journal">
+      {following ? (
+        <p className="journal__tracking">
+          <Icon name="pin" size={14} tone="plain" /> Tracking: {following}
+        </p>
+      ) : null}
       {active ? (
         <article className="quest-card">
           <header>
@@ -213,9 +230,10 @@ function QuestsTab({ state, actions, navigate }) {
             </p>
           ) : null}
           <div className="quest-card__actions">
-            <Button size="sm" variant="primary" disabled={step?.canDuel && Boolean(state.activeEncounter)} onClick={() => goStep(state, story, actions, navigate)}>
+            <Button size="sm" variant="primary" disabled={step?.canDuel && Boolean(state.activeEncounter)} onClick={() => goStep(state, active, actions, navigate)}>
               Go
             </Button>
+            <TrackButton story={story} questKey={active.id} actions={actions} />
             {active.pin ? (
               <Button size="sm" onClick={() => navigate({ view: 'map', pin: active.pin })}>
                 <Icon name="pin" size={14} tone="plain" /> Show on map
@@ -261,11 +279,15 @@ function QuestsTab({ state, actions, navigate }) {
         <Block title="Secondary" count={story.secondary.length + contracts.length + side.length}>
           {story.secondary.map((mission) => (
             <Row key={mission.id} icon="flag" title={mission.title} meta={mission.current?.text || mission.goal}>
+              <TrackButton story={story} questKey={mission.id} actions={actions} small />
               <MapLink locationId={mission.pin} navigate={navigate} />
             </Row>
           ))}
           {contracts.map((mission) => (
-            <Row key={mission.id} icon="scroll" title={mission.title} meta={`${contractPlace(mission).name}${mission.giverName ? ` · for ${mission.giverName}` : ''}`} onClick={() => navigate({ section: 'journal', tab: 'contracts' })} />
+            <Row key={mission.id} icon="scroll" title={mission.title} meta={`${firstStep(state, mission)?.text || contractPlace(mission).name}${mission.giverName ? ` · for ${mission.giverName}` : ''}`}>
+              <TrackButton story={story} questKey={`contract:${mission.id}`} actions={actions} small />
+              <MapLink locationId={mission.locationId} navigate={navigate} />
+            </Row>
           ))}
           {side.map((entry) => (
             <Row key={entry.id} icon="quill" title={entry.title} meta={entry.text}>

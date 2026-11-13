@@ -812,6 +812,13 @@ function stepView(state, mission, step, index, record) {
 }
 
 /** Everything the Quest Log, the map marker and the objective ribbon need. */
+/** Journal → Quests: follow this quest (a story mission id, or 'contract:<id>'); null goes back to the primary. */
+export function trackQuest(state, key) {
+  const next = clone(state);
+  storyState(next).tracked = key || null;
+  return { state: next, error: null };
+}
+
 export function getStoryView(state) {
   const story = storyState(state);
   const missions = STORY_MISSIONS.map((mission) => {
@@ -833,13 +840,23 @@ export function getStoryView(state) {
   const active = missions.find((mission) => mission.status === 'active' && !mission.secondary) || null;
   const secondary = missions.filter((mission) => mission.status === 'active' && mission.secondary);
   const next = active ? null : missions.find((mission) => mission.status === 'locked' && !mission.locked && !mission.secondary) || null;
+  // The tracked quest (Journal → Quests: Track): an active story mission or a taken contract; the
+  // goal line and the map pin follow it. Unset, gone or finished: the primary mission.
+  const trackedId = story.tracked || null;
+  const trackedContract = trackedId?.startsWith('contract:') ? (state.missions || []).find((mission) => `contract:${mission.id}` === trackedId && mission.accepted && mission.site) || null : null;
+  const trackedMission = trackedContract ? null : missions.find((mission) => mission.id === trackedId && mission.status === 'active') || null;
+  const tracked = trackedContract || trackedMission ? null : active;
   return {
     missions,
     active,
     secondary,
     next,
+    // What the goal line follows: a story mission (`tracked`) or a contract (`trackedContract`).
+    tracked: trackedMission || tracked,
+    trackedContract,
+    trackedKey: trackedContract ? `contract:${trackedContract.id}` : (trackedMission || tracked)?.id || null,
     chapter: story.chapter || 1,
-    pin: active?.pin || null,
+    pin: trackedContract ? trackedContract.locationId : (trackedMission || active)?.pin || null,
     tutorial: story.tutorial,
     prologue: story.prologue,
     chapterDone: story.chapterDone,

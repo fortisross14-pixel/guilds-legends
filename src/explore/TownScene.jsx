@@ -265,10 +265,11 @@ function PeekCard({ state, town, target, onClose, onGo }) {
 function QuestChip({ state, actions, town, beacons, contractTargets = [], onGo, onMap }) {
   if (state.settings?.questMarker === false) return null;
   const story = getStoryView(state);
-  const step = story.active?.current;
-  if (!step) return null;
-  // A story contract being played: its next site step (missions-in-world), and the way to it.
-  const contract = step.kind === 'contract' ? activeContracts(state).find((mission) => mission.story?.startsWith(`${story.active.id}.`)) : null;
+  const quest = story.tracked;
+  const step = quest?.current;
+  // A tracked contract, or a story contract being played: its next site step (missions-in-world), and the way to it.
+  const contract = story.trackedContract || (step?.kind === 'contract' ? activeContracts(state).find((mission) => mission.story?.startsWith(`${quest.id}.`)) : null);
+  if (!step && !contract) return null;
   if (contract) {
     const next = firstStep(state, contract);
     const there = contract.locationId === town.id;
@@ -282,7 +283,7 @@ function QuestChip({ state, actions, town, beacons, contractTargets = [], onGo, 
   const here = step.at === town.id || (step.at === 'hall' && town.id === 'dunmere');
   const go = () => {
     if (!here) return onMap(step.at === 'hall' ? 'dunmere' : step.at);
-    if (step.canTalk && !beacons[0]) return actions.playStoryScene(story.active.id);
+    if (step.canTalk && !beacons[0]) return actions.playStoryScene(quest.id);
     if (beacons[0]) return onGo(beacons[0]);
     if (step.at === 'hall' || step.screen === 'rest' || step.screen === 'hall') return onGo('door:guildHall');
     if (step.screen === 'tournaments' || step.kind === 'duel') return onGo('door:arena');

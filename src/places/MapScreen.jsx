@@ -46,7 +46,7 @@ export default function MapScreen({ state, actions, navigate, place }) {
   const story = getStoryView(state);
   // The main quest marker: where the current story step happens (it can be hidden in the Quest Log).
   const questId = state.settings?.questMarker === false ? null : story.pin;
-  const questTitle = story.active?.title || '';
+  const questTitle = story.trackedContract?.title || story.tracked?.title || '';
   const knowledge = getWorldKnowledge(state);
   const selectedBeyond = !inSlice(selected.id);
   // The open world: every place can be reached; danger, not status, keeps a guild away.

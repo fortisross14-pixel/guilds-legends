@@ -117,3 +117,6 @@ button.journal-row:hover, button.journal-row:focus-visible { border-color: var(-
 .story-rival__text em { color: var(--gold-bright); font-style: normal; font-size: var(--fs-1); }
 .story-rival__text small { color: var(--text-dim); }
 .story-rival__record { color: var(--gold-bright); font: 700 var(--fs-3) var(--font-ui); }
+.quest-tracked { display: inline-flex; align-items: center; gap: 4px; color: var(--gold-bright); font-size: var(--fs-1); white-space: nowrap; }
+.quest-tracked--sm { padding: 0 4px; }
+.journal__tracking { margin: 0 0 8px; font-size: var(--fs-1); color: var(--gold-bright); }

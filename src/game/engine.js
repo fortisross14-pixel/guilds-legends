@@ -161,6 +161,7 @@ export { resolveTownEvent, startSideJob, markNewsRead, festivalFor } from './eng
 export { bossForMission } from './engine/stories.js';
 export {
   getStoryView,
+  trackQuest,
   getLoreCodex,
   completePrologue,
   getChapterSummary,
