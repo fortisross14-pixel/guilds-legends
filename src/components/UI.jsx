@@ -367,7 +367,7 @@ export function Modal({ open, title, eyebrow = undefined, children, onClose = un
   // Bottom panels: swipe the header down to close (when the panel can close).
   const swipe = useRef(null);
   const onHeaderDown = (event) => {
-    if (preventClose || event.target.closest('button')) return;
+    if (preventClose || event.pointerType === 'mouse' || event.target.closest('button')) return;
     swipe.current = { y: event.clientY };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };

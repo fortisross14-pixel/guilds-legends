@@ -55,7 +55,8 @@ export default function Section({
 
   const ignore = (target) => target.closest?.('input, select, textarea, [data-drop], .draggable, .world-map, .rest-dial, .tabs, [data-no-swipe]');
   const onPointerDown = (event) => {
-    if (!tabs || tabs.length < 2 || ignore(event.target) || event.clientX < 32) {
+    // Swiping between tabs is for fingers; a mouse drag selects text or scrolls (the tabs are a click away).
+    if (!tabs || tabs.length < 2 || event.pointerType === 'mouse' || ignore(event.target) || event.clientX < 32) {
       swipe.current = null;
       return;
     }

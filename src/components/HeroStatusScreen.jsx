@@ -50,7 +50,13 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
     },
     onPointerUp: () => window.clearTimeout(pressTimer.current),
     onPointerLeave: () => window.clearTimeout(pressTimer.current),
-    onContextMenu: (event) => event.preventDefault(),
+    // A mouse: hover shows the line, a right-click opens it.
+    title: text,
+    onContextMenu: (event) => {
+      event.preventDefault();
+      window.clearTimeout(pressTimer.current);
+      setDetail(text);
+    },
   });
   const hero = heroId ? getHero(state, heroId) : null;
   if (!hero) return null;

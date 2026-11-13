@@ -26,7 +26,7 @@
 .new-campaign__skip small { color: var(--text-dim); }
 .new-campaign__name { display: grid; gap: 6px; grid-column: 1 / -1; font-weight: 600; }
 /* The founding card (name, motto, charter) scrolls inside the screen on small phones. */
-.opening-identity { overflow: hidden; padding: calc(var(--safe-t) + 12px) calc(var(--safe-r) + 12px) calc(var(--safe-b) + 12px) calc(var(--safe-l) + 12px); }
+.opening-identity { overflow: hidden; padding: calc(var(--safe-t) + 72px) calc(var(--safe-r) + 12px) calc(var(--safe-b) + 12px) calc(var(--safe-l) + 12px); }
 .opening-identity__card { width: min(100%, 860px); max-height: 100%; overflow: auto; overscroll-behavior: contain; }
 .opening-identity__banner { width: 84px; height: 112px; }
 .opening-identity .charter-picker { margin-top: 18px; }

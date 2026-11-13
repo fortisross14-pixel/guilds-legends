@@ -53,6 +53,10 @@
 .new-campaign__crest { display: grid; place-items: center; align-content: start; padding-top: 6px; }
 .new-campaign--founder .new-campaign__crest { grid-row: 1 / span 2; }
 .new-campaign__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+/* The fields take the whole row (the founder card has no crest beside them). */
+.new-campaign--founder > .new-campaign__fields { grid-column: 1 / -1; }
+.new-campaign__fields label { display: grid; gap: 6px; min-width: 0; font-weight: 600; }
+.new-campaign__fields input, .new-campaign__fields select { min-height: 48px; font-size: var(--fs-3); }
 .new-campaign__premise { padding: 14px 0; }
 .new-campaign__premise strong { display: block; margin-bottom: 4px; font-family: var(--font-display); font-size: var(--fs-4); }
 .new-campaign__premise p { margin: 0; }

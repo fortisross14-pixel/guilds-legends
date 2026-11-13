@@ -236,7 +236,14 @@ function CreateCampaignModal({ open, onClose, onCreate }) {
 
   return (
     <Modal open={open} title="Who are you?" onClose={onClose} width="medium">
-      <div className="new-campaign new-campaign--founder">
+      {/* A form, so Enter in the name field begins (laptops). */}
+      <form
+        className="new-campaign new-campaign--founder"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (founderName.trim()) onCreate({ founderName: founderName.trim(), founderClass, skipTutorial });
+        }}
+      >
         <div className="new-campaign__fields">
           <label>
             Your name
@@ -256,10 +263,10 @@ function CreateCampaignModal({ open, onClose, onCreate }) {
           <input type="checkbox" checked={skipTutorial} onChange={(event) => setSkipTutorial(event.target.checked)} />
           <span>Skip the tutorial</span>
         </label>
-        <Button variant="primary" size="lg" disabled={!founderName.trim()} onClick={() => onCreate({ founderName: founderName.trim(), founderClass, skipTutorial })}>
+        <Button type="submit" variant="primary" size="lg" disabled={!founderName.trim()}>
           Begin
         </Button>
-      </div>
+      </form>
     </Modal>
   );
 }

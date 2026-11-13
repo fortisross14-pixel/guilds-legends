@@ -297,7 +297,9 @@ button.ranking-star,
   white-space: nowrap;
   transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), color var(--fast) var(--ease), transform var(--fast) var(--ease);
 }
-.button:hover:not(:disabled), .button:focus-visible { border-color: var(--brass); box-shadow: 0 0 0 1px rgba(201, 166, 107, .25), 0 0 18px rgba(246, 210, 140, .18); }
+.button:focus-visible { border-color: var(--brass); box-shadow: 0 0 0 1px rgba(201, 166, 107, .25), 0 0 18px rgba(246, 210, 140, .18); }
+/* Hover only where there is a real pointer: on touch screens it sticks after a tap. */
+@media (hover: hover) { .button:hover:not(:disabled) { border-color: var(--brass); box-shadow: 0 0 0 1px rgba(201, 166, 107, .25), 0 0 18px rgba(246, 210, 140, .18); } }
 .button:active:not(:disabled) { transform: translateY(1px); }
 .button--primary { border-color: rgba(230, 191, 110, .75); background: linear-gradient(180deg, rgba(230, 191, 110, .26), rgba(230, 191, 110, .08)); color: var(--gold-bright); text-shadow: 0 0 12px rgba(246, 210, 140, .35); }
 .button--primary:hover:not(:disabled), .button--primary:focus-visible { border-color: var(--gold-bright); box-shadow: 0 0 0 1px rgba(246, 220, 154, .35), 0 0 24px rgba(246, 210, 140, .32); }

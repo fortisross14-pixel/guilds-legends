@@ -596,7 +596,11 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
     onPointerDown: (event) => onUnitPointerDown(unit, event, fromSprite),
     // Taps are handled on pointer up; the click must not reach the stage (which cancels).
     onClick: (event) => event.stopPropagation(),
-    onContextMenu: (event) => event.preventDefault(),
+    // A mouse inspects with a right-click.
+    onContextMenu: (event) => {
+      event.preventDefault();
+      if (event.nativeEvent?.pointerType !== 'touch') setInfo(unit.id);
+    },
     onDragStart: (event) => event.preventDefault(),
   });
 
@@ -892,7 +896,13 @@ function longPressOnly(onLongPress) {
     },
     onPointerUp: clear,
     onPointerLeave: clear,
-    onContextMenu: (event) => event.preventDefault(),
+    onContextMenu: (event) => {
+      event.preventDefault();
+      if (event.nativeEvent?.pointerType !== 'touch') {
+        clear();
+        onLongPress();
+      }
+    },
   };
 }
 

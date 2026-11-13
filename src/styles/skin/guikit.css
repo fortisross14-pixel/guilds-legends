@@ -68,7 +68,8 @@ h1, h2, h3, .section__title, .modal__header h2, .panel__header h2 { font-family:
 .button--primary { border-image-source: url('/art/packs/myart/gui/btn-gold.png'); color: #4a2c06; text-shadow: 0 1px 0 rgba(255, 240, 190, .6); }
 .button--danger { border-image-source: url('/art/packs/myart/gui/btn-red.png'); color: #fff; }
 .button--secondary { border-image-source: url('/art/packs/myart/gui/btn-slate.png'); }
-.button:hover:not(:disabled), .button:focus-visible { filter: brightness(1.1); box-shadow: none; border-color: transparent; }
+.button:focus-visible { filter: brightness(1.1); box-shadow: none; border-color: transparent; }
+@media (hover: hover) { .button:hover:not(:disabled) { filter: brightness(1.1); box-shadow: none; border-color: transparent; } }
 .button--primary:hover:not(:disabled), .button--primary:focus-visible, .button--danger:hover:not(:disabled), .button--danger:focus-visible { box-shadow: none; }
 .button:active:not(:disabled) { transform: translateY(2px); filter: brightness(.95); }
 .button:disabled { border-image-source: url('/art/packs/myart/gui/btn-gray.png'); color: #a6a0b4; text-shadow: none; opacity: .8; }

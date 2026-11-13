@@ -463,6 +463,14 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
         scene?.marker?.setVisible(false);
       }
       state.nearId = undefined;
+      // While a menu, a talk or a fight covers the scene, stop drawing it (after one last
+      // frame): a canvas redrawn 60 times a second under a blurred panel made every menu slow.
+      window.clearTimeout(state.sleepTimer);
+      if (paused) {
+        state.sleepTimer = window.setTimeout(() => {
+          if (!dead && state.paused && scene?.player) game.loop.sleep();
+        }, 120);
+      } else if (game.loop.sleeping) game.loop.wake();
     },
     /** Which targets exist right now (e.g. the door only after the dialogue). */
     setActiveTargets(ids) {
@@ -484,6 +492,7 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     },
     destroy() {
       dead = true;
+      window.clearTimeout(state.sleepTimer);
       game.destroy(true);
     },
   };

@@ -64,7 +64,14 @@ export function useLongPress(onLongPress, onTap = null, ms = LONG_PRESS_MS) {
       }
       onTap?.(event);
     },
-    onContextMenu: (event) => event.preventDefault(),
+    // A mouse inspects with a right-click (a long-press is awkward with a mouse).
+    onContextMenu: (event) => {
+      event.preventDefault();
+      if (event.nativeEvent?.pointerType === 'mouse' || !event.nativeEvent?.pointerType) {
+        if (!fired.current) onLongPress?.(event);
+        clear();
+      }
+    },
   };
 }
 
@@ -73,7 +80,8 @@ export function useSwipe({ onLeft, onRight, onUp, onDown } = {}, threshold = 60)
   const start = useRef(null);
   return {
     onPointerDown: (event) => {
-      start.current = { x: event.clientX, y: event.clientY, t: Date.now() };
+      // Fingers swipe; a mouse uses the buttons (a mouse drag selects text instead).
+      start.current = event.pointerType === 'mouse' ? null : { x: event.clientX, y: event.clientY, t: Date.now() };
     },
     onPointerUp: (event) => {
       const from = start.current;
