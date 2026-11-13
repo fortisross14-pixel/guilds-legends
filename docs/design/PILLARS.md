@@ -232,8 +232,11 @@ New story text is the author's; agents draft only with the author's say-so (`doc
 
 Waves 1, 4 and 6 don't depend on each other; 2 needs 1, 3 needs 1, 5 needs 4.
 
-## Open questions for the author
-- Should honor and dread decay over time, or stay as earned?
-- Can a guild change its standing name quickly (one big verdict), or only over a season?
-- Should wicked play be a full path to the end (a darker Ending C), or always harder?
-- Verdict text: write the first dozen, or have an agent draft them for review?
+## Decisions (the author, 2026-11-13)
+- Honor and dread **fade** toward the middle over time.
+- Wicked play is **its own path with its own darker ending** (Ending C): not harder overall, with harder and easier parts (`VERDICTS.md`, the darker path).
+- Verdict scenes: a first draft by an agent, adjusted by the author: [`VERDICTS.md`](VERDICTS.md).
+
+## Open
+- How fast the standing name changes: proposed, one big deed can move it, but it changes only
+  once the guild is clearly past the line (a margin of 6 points), so it never flickers back and forth.
