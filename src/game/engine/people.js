@@ -9,7 +9,7 @@
 // challenger is a candidate who only joins after you beat them in a bout.
 // Regulars come from src/data/people.js. Only memory is stored, in
 // state.people[id] (met, talks, relationship, interview, last seen).
-import { PRACTICE_TEAMS, REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
+import { PRACTICE_LEVELS, PRACTICE_TEAMS, REGULARS, REGULAR_BY_ID, VISITOR_FIRST, VISITOR_LAST, PETITIONER_ROLES, FIRST_LINES, PERSONALITY_VOICES, ROLE_VOICES, CHAT_TEXT, DREAM_LINES, FLAW_LINES, ORIGIN_LINES, RISK_LINES } from '../../data/people.js';
 import { INTERIORS } from '../../data/interiors.js';
 import { TOWNS } from '../../data/towns/index.js';
 import { wildBuildings } from '../../data/wilds/index.js';
@@ -149,7 +149,7 @@ export function townPeople(state, locationId) {
     PRACTICE_TEAMS.forEach((team) => {
       const key = `spar-${locationId}-${team.id}-${campaignMonthSerial(state)}`;
       const classId = classes[hashString(key) % classes.length];
-      const [low, high] = team.levels;
+      const [low, high] = PRACTICE_LEVELS[LOCATION_BY_ID[locationId]?.tier]?.[team.id] || team.levels;
       const level = low + (hashString(`${key}:level`) % (high - low + 1));
       people.push({ id: key, name: visitorName(key, taken), role: `${classId} · ${team.name}, level ${level}`, locationId, building: 'arena', kind: 'visitor', voice: 'Fighter', sprite: `char.class.${classKey(classId)}`, portrait: `portrait.class.${classKey(classId)}`, classId, spar: { team: team.id, level, size: teamSize }, offers: [{ type: 'spar' }] });
     });

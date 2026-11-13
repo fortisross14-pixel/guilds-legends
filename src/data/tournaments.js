@@ -18,7 +18,28 @@ export const CIRCUIT_BY_TIER = Object.fromEntries(CIRCUIT_LIST.map((circuit) => 
 export const STATUS_NAMES = { Regional: 'Initiation', National: 'Champion', Global: 'Elite' };
 export const statusName = (tier) => STATUS_NAMES[tier] || tier;
 
+// The opposing teams' levels at each event (docs/design/STORY_DRAFT.md, Levels): the
+// quarterfinal team at the low end, the final's at the high end.
+const LEVELS = {
+  'dunmere-harvest-melee': [8, 11],
+  'lantern-night-bouts': [10, 13],
+  'greenhollow-thorn-cup': [10, 13],
+  'hollow-lights-trial': [12, 15],
+  'deepforge-brawl': [13, 16],
+  'ironford-hammer-trials': [15, 18],
+  'gale-games': [16, 19],
+  'windmere-cliff-duels': [19, 22],
+  'tidecross-open': [24, 30],
+  'sunspire-royal-arena': [28, 34],
+  'mooncourt-mindblade': [32, 37],
+  crownfall: [36, 42],
+  'grand-companies': [42, 46],
+  'caldera-crown': [44, 48],
+  'world-conclave-championship': [46, 50],
+};
+
 const event = (id, name, circuit, locationId, month, week, extra) => ({
+  levels: LEVELS[id] || [10, 14],
   id,
   name,
   circuit,

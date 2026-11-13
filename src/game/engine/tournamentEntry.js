@@ -7,7 +7,7 @@
 // tournament begins at once; each round is a team battle against another guild.
 // When the window closes without the guild, it plays out on its own.
 import { LOCATION_BY_ID, travelDays } from '../../data/world.js';
-import { CIRCUITS, TOURNAMENTS } from '../../data/tournaments.js';
+import { CIRCUITS, TOURNAMENTS, TOURNAMENT_BY_ID } from '../../data/tournaments.js';
 import { inSlice } from '../../data/slice.js';
 import { createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignDaySerial, clamp, clone, dateDaySerial, ensureTournamentCareer, finalize, getHero, hashString, tallySpend } from './core.js';
@@ -226,10 +226,21 @@ export function beginTournamentBout(state, tournamentId) {
   const playerHeroes = tournament.assignments.map((assignment) => ({ hero: getHero(next, assignment.heroId), role: assignment.role })).filter((item) => item.hero);
   // Both teams field the same number of heroes, up to the circuit's size.
   const size = clamp(playerHeroes.length, 1, tournament.teamSize || 5);
+  // The opposing team at this event's level for this round (src/data/tournaments.js levels):
+  // their best heroes, lifted to that level and to the strength of a hero of that level.
+  const [low, high] = TOURNAMENT_BY_ID[tournament.definitionId]?.levels || [10, 14];
+  const round = { 8: 0, 4: 1, 2: 2 }[tournament.currentRoundSize || tournament.activeEntrants.length] ?? 0;
+  const level = Math.round(low + ((high - low) * round) / 2);
+  const target = Math.min(98, Math.round(38 + 2.25 * level));
   const opponentRoster = [opponent.star, ...(opponent.members || [])]
     .filter((hero) => hero && !['dead', 'retired'].includes(hero.status))
     .sort((a, b) => (b.power || 0) - (a.power || 0))
-    .slice(0, size);
+    .slice(0, size)
+    .map((hero) => {
+      const lift = Math.max(0, target - (hero.power || 50));
+      const attributes = Object.fromEntries(Object.entries(hero.attributes || {}).map(([key, value]) => [key, clamp(Math.round(value + lift), 20, 99)]));
+      return { ...hero, level: Math.max(hero.level || 1, level), attributes, power: Math.max(hero.power || 50, target) };
+    });
   if (!playerHeroes.length || !opponentRoster.length) return { state, error: 'Both teams need someone to fight.' };
   next.activeEncounter = createPartyEncounter({
     items: battleItems(next),

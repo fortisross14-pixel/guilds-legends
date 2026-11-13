@@ -219,15 +219,21 @@ export const ROLE_VOICES = {
 
 /** First words when you walk up to someone new, by what they want from you. */
 /**
- * Practice teams at every arena (training matches): three, by level band. Each
+ * Practice teams at every arena (training matches): three, by level band (by the town's tier). Each
  * team fields as many fighters as that city's tournaments do (2 in an Initiation
  * town). A guild beyond the top band trains on contracts and real tournaments.
  */
 export const PRACTICE_TEAMS = [
   { id: 'novice', name: 'novice team', levels: [4, 6] },
-  { id: 'veteran', name: 'veteran team', levels: [8, 11] },
-  { id: 'master', name: 'masters’ team', levels: [15, 16] },
+  { id: 'veteran', name: 'veteran team', levels: [10, 14] },
+  { id: 'master', name: 'masters’ team', levels: [18, 22] },
 ];
+/** Practice teams at a town's tier (an arena in Champion or Elite country trains stronger guilds). */
+export const PRACTICE_LEVELS = {
+  Regional: { novice: [4, 6], veteran: [10, 14], master: [18, 22] },
+  National: { novice: [20, 26], veteran: [28, 34], master: [36, 40] },
+  Global: { novice: [38, 42], veteran: [44, 47], master: [48, 50] },
+};
 
 export const FIRST_LINES = {
   spar: ['Here to train? The ring is free and so am I.', 'Warm-up or a real workout? I do both.', 'Pick a weapon off the rack. We go until someone yields.'],
