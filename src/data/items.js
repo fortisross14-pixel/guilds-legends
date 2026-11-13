@@ -104,6 +104,13 @@ const list = [
   { id: 'roc-feather', name: 'Roc Feather', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { spd: 8, atk: 3 } },
   { id: 'frost-heart', name: 'Frost Heart', kind: 'accessory', tier: 9, price: 700, unique: true, stats: { def: 9, hp: 40 } },
   { id: 'veil-mask', name: 'Veil Mask', kind: 'accessory', tier: 9, price: 800, unique: true, stats: { mag: 9, spd: 3 } },
+  // Sold only to guilds of one standing (`creed`), at a few shops (`shops`): not basic gear.
+  { id: 'oathkeeper', name: 'Oathkeeper', kind: 'weapon', tier: 2, price: 240, creed: 'honourable', shops: ['dunmere', 'ironford'], stats: { atk: 9, def: 3 }, classes: ['Guardian', 'Duelist'], description: 'A plain, perfect blade the Dunmere smiths sell only to guilds who keep their word.' },
+  { id: 'dawn-bow', name: 'Dawnwatch Bow', kind: 'weapon', tier: 2, price: 230, creed: 'honourable', shops: ['greenhollow'], stats: { atk: 9, spd: 2 }, classes: ['Ranger'], description: 'Blessed at Dawnwatch. The Greenhollow fletchers keep it for people they trust.' },
+  { id: 'pilgrim-staff', name: 'Pilgrim’s Staff', kind: 'weapon', tier: 2, price: 230, creed: 'honourable', shops: ['windmere'], stats: { mag: 9, mp: 8 }, classes: ['Mage', 'Cleric', 'Scholar'], description: 'Walked a thousand miles to the cliff monasteries. Sold to kind hands only.' },
+  { id: 'cutthroat-kris', name: 'Cutthroat’s Kris', kind: 'weapon', tier: 2, price: 220, creed: 'wicked', shops: ['ironford', 'windmere'], stats: { atk: 9, spd: 3 }, classes: ['Rogue', 'Duelist'], description: 'Sold under the counter, to buyers who won’t say what it’s for.' },
+  { id: 'bonebreaker', name: 'Bonebreaker', kind: 'weapon', tier: 2, price: 240, creed: 'wicked', shops: ['dunmere', 'greenhollow'], stats: { atk: 11, spd: -1 }, classes: ['Guardian', 'Artificer'], description: 'A maul with a name. The shopkeeper only shows it to people who frighten them.' },
+  { id: 'hexed-rod', name: 'Hexed Rod', kind: 'weapon', tier: 2, price: 230, creed: 'wicked', shops: ['ironford'], stats: { mag: 11 }, classes: ['Mage', 'Scholar'], description: 'It hums. Honest folk won’t touch it, and the seller won’t sell it to them.' },
   // Rough gear off beaten foes (not sold in shops).
   { id: 'rusty-sword', name: 'Rusty Sword', kind: 'weapon', tier: 0, price: 20, loot: true, stats: { atk: 2 }, classes: ['Guardian', 'Duelist', 'Rogue'] },
   { id: 'wolfskin-vest', name: 'Wolfskin Vest', kind: 'armor', tier: 0, price: 24, loot: true, stats: { def: 2 } },

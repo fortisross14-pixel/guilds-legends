@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip, sellValue } from '../data/items.js';
-import { chestCapacity, chestUsed, roomLevel, shopPrice, shopStock } from '../game/engine.js';
+import { chestCapacity, chestUsed, roomLevel, shopPrice, shopStock, creedAllows, haggleOptions } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, toast } from '../components/UI.jsx';
 import { useDraggable } from '../components/useDraggable.js';
 import { dragEnabled } from '../components/gestures.js';
@@ -183,10 +183,20 @@ export default function ShopScreen({ state, actions, kind = null }) {
                 <p className="muted">Nobody in the guild can use this.</p>
               ) : null}
               <div className="shop-detail__actions">
-                {mode === 'buy' ? (
-                  <Button variant="primary" disabled={state.guild.crowns < price || chestUsed(state) >= chestCapacity(state)} onClick={() => actions.buyItem(selected.id)}>
-                    {chestUsed(state) >= chestCapacity(state) ? 'The chest is full' : `Buy for ${price} G`}
-                  </Button>
+                {mode === 'buy' && !creedAllows(state, selected) ? (
+                  <p className="muted">{selected.creed === 'wicked' ? 'Only shown to guilds people fear and despise.' : 'Sold only to guilds with an honest name.'}</p>
+                ) : mode === 'buy' ? (
+                  <>
+                    <Button variant="primary" disabled={state.guild.crowns < price || chestUsed(state) >= chestCapacity(state)} onClick={() => actions.buyItem(selected.id)}>
+                      {chestUsed(state) >= chestCapacity(state) ? 'The chest is full' : `Buy for ${price} G`}
+                    </Button>
+                    {/* Haggling by standing: threaten (feared and wicked) or the humble price (honourable, unfeared). */}
+                    {haggleOptions(state).map((option) => (
+                      <Button key={option.id} variant={option.id === 'threaten' ? 'danger' : 'secondary'} disabled={state.guild.crowns < Math.round(price * option.factor) || chestUsed(state) >= chestCapacity(state)} onClick={() => actions.buyItem(selected.id, option.id)}>
+                        {option.id === 'threaten' ? `Threaten them: ${Math.round(price * option.factor)} G` : `Ask the humble price: ${Math.round(price * option.factor)} G`}
+                      </Button>
+                    ))}
+                  </>
                 ) : (
                   <Button variant="primary" disabled={!ownedCount} onClick={() => actions.sellItem(selected.id)}>
                     Sell for {sellValue(selected)} G

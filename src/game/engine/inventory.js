@@ -6,6 +6,7 @@ import { LOCATION_BY_ID, locationBuildings } from '../../data/world.js';
 
 import { chestCapacity, clamp, clone, finalize, hashString, roomLevel, tallySpend } from './core.js';
 import { patronAtLeast } from './charter.js';
+import { adjustStandingInPlace, standingQuadrant } from './reputation.js';
 import { ARMORY } from '../../data/rooms.js';
 
 /** Shop price after discounts: the Armory, the Trade House, the Temple (healing) and the Smiths (gear). */
@@ -51,8 +52,8 @@ export function shopStock(locationId) {
   const location = LOCATION_BY_ID[locationId];
   if (!location || !locationBuildings(locationId).includes('shop')) return [];
   const maxTier = (TIER_INDEX_BY_NAME[location.tier] ?? 0) + 1;
-  return ITEM_LIST.filter((item) => item.tier >= 1 && item.tier <= maxTier && !item.unique && !['good', 'keepsake'].includes(item.kind))
-    .filter((item) => ['potion', 'antidote'].includes(item.id) || hashString(`${locationId}:${item.id}`) % 3 !== 0)
+  return ITEM_LIST.filter((item) => (item.shops ? item.shops.includes(locationId) : item.tier >= 1 && item.tier <= maxTier) && !item.unique && !['good', 'keepsake'].includes(item.kind))
+    .filter((item) => item.shops || ['potion', 'antidote'].includes(item.id) || hashString(`${locationId}:${item.id}`) % 3 !== 0)
     .map((item) => item.id);
 }
 
@@ -71,13 +72,32 @@ export function addItemsInPlace(state, items) {
   });
 }
 
-export function buyItem(state, itemId, quantity = 1) {
+/**
+ * Haggling by standing (docs/design/PILLARS.md): a feared, wicked guild can threaten the
+ * shopkeeper (a quarter off, and a little more dread); an honourable guild nobody fears can
+ * ask for the humble price (15% off). Null when the guild can do neither.
+ */
+export const HAGGLE = { threaten: { quadrant: 'fear', factor: 0.75 }, humble: { quadrant: 'compassion', factor: 0.85 } };
+export function haggleOptions(state) {
+  const quadrant = standingQuadrant(state);
+  return Object.entries(HAGGLE).filter(([, rule]) => rule.quadrant === quadrant).map(([id, rule]) => ({ id, factor: rule.factor }));
+}
+
+/** Whether the guild's standing lets it buy an item sold to one creed only. */
+export function creedAllows(state, item) {
+  return !item?.creed || (state.guild?.standing?.honorBand || 'neutral') === item.creed;
+}
+
+export function buyItem(state, itemId, quantity = 1, haggle = null) {
   const error = shopError(state);
   if (error) return { state, error };
   const item = ITEMS[itemId];
   const count = Math.max(1, Math.round(quantity));
   if (!item || !shopStock(state.world.currentLocationId).includes(itemId)) return { state, error: 'This shop does not sell that.' };
-  const cost = shopPrice(state, itemId) * count;
+  if (!creedAllows(state, item)) return { state, error: item.creed === 'wicked' ? 'The shopkeeper won’t show that to a guild like yours.' : 'That is sold only to guilds with an honest name.' };
+  const rule = haggle ? haggleOptions(state).find((option) => option.id === haggle) : null;
+  if (haggle && !rule) return { state, error: 'Nobody here takes you seriously enough for that.' };
+  const cost = Math.round(shopPrice(state, itemId) * (rule?.factor || 1)) * count;
   if (state.guild.crowns < cost) return { state, error: `That costs ${cost} gold.` };
   if (chestUsed(state) + count > chestCapacity(state))
     return { state, error: `The chest is full (${chestUsed(state)}/${chestCapacity(state)}). Sell something${roomLevel(state, 'armory') ? '' : ' or build an Armory'}.` };
@@ -85,6 +105,8 @@ export function buyItem(state, itemId, quantity = 1) {
   next.guild.crowns -= cost;
   tallySpend(next, 'shop', cost);
   addItemsInPlace(next, { [itemId]: count });
+  // A threat is remembered (a little more dread, a little less honor).
+  if (haggle === 'threaten') adjustStandingInPlace(next, { honor: -1, dread: 1 });
   return { state: finalize(next), error: null };
 }
 

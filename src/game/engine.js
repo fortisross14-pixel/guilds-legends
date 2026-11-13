@@ -87,7 +87,7 @@ export { compactForSave, migrateGame, validateGame } from './engine/save.js';
 export { simulateAutoplay } from './engine/autoplay.js';
 export { getUpcomingEvents } from './engine/dashboard.js';
 export { planRoadEvents, travelTo, continueJourney, resolveRoadEvent, restAtHall, restAtInn, MAX_REST_DAYS, INN_NIGHT_COST } from './engine/timeActions.js';
-export { itemCount } from './engine/inventory.js';
+export { itemCount, haggleOptions, creedAllows } from './engine/inventory.js';
 export { shopStock, buyItem, sellItem, equipItem, unequipItem, useItemOnHero, shopPrice, chestUsed, gearUpgradeCost, upgradeGear } from './engine/inventory.js';
 export { acknowledgeMoment } from './engine/dashboard.js';
 export { concludeCombatAndContinue } from './engine/timeActions.js';

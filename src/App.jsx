@@ -923,7 +923,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
       },
       combatRound: (commands) => applyResult(performActiveCombatAction(state, commands)),
       fleeCombat: () => applyResult(fleeActiveCombat(state)),
-      buyItem: (itemId) => applyResult(buyItem(state, itemId)),
+      buyItem: (itemId, haggle = null) => applyResult(buyItem(state, itemId, 1, haggle), haggle === 'threaten' ? 'The shopkeeper takes a quarter off, and doesn’t meet your eye.' : haggle === 'humble' ? 'The shopkeeper smiles and knocks something off for you.' : undefined),
       sellItem: (itemId) => applyResult(sellItem(state, itemId)),
       equipItem: (heroId, itemId) => applyResult(equipItem(state, heroId, itemId)),
       unequipItem: (heroId, slot) => applyResult(unequipItem(state, heroId, slot)),
