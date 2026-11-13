@@ -48,9 +48,9 @@ chapter's story and places together).
 |---|---|---|---|---|
 | The Old Road | Dunmere (dead end) | Dunmere 1 | 2–7 | built |
 | The Thornwood road | Dunmere → Greenhollow | Dunmere 2, Greenhollow 1 | 7–9 | built |
-| The Iron Road | Greenhollow → Ironford | Greenhollow 2, Ironford 2 | 13–18 | built |
-| The cliff road | Ironford → Windmere | Ironford 1, Windmere 2 | 18–24 | built |
-| The coast road | Windmere → Dunmere | Dunmere 1, Windmere 2 | 10–14 | built |
+| The Iron Road | Greenhollow → Ironford | Greenhollow 2, Ironford 2 | 12–16 | built |
+| The cliff road | Ironford → Windmere | Ironford 1, Windmere 2 | 17–22 | built |
+| The coast road | Windmere → Dunmere | Dunmere 1, Windmere 2 | 14–19 | built |
 | The Blackwood track | Dunmere (dead end) | Dunmere 1 | 30–35 | built |
 | The Moon Road | Ironford → Mooncourt | Ironford 2, Mooncourt 1 | 22–28 | box |
 | The Warden’s Path | Greenhollow → Thornwatch | Greenhollow 1, Thornwatch 1 | 16–22 | box |
