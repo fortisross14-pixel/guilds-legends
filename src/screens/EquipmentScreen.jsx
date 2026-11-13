@@ -70,7 +70,7 @@ export default function EquipmentScreen({ state, actions }) {
 
   return (
     <div className="equipment">
-      <Panel title="Chest" eyebrow={dragEnabled(state.settings) ? 'Drag onto a hero · or tap, then tap the hero' : 'Tap an item, then tap a hero'}>
+      <Panel title="Gear and supplies" eyebrow={dragEnabled(state.settings) ? 'Drag onto a hero · or tap, then tap the hero' : 'Tap an item, then tap a hero'}>
         {inventory.length ? (
           <div className="item-chips">
             {inventory.map(([id, count]) => (

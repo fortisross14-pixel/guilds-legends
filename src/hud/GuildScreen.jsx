@@ -1,7 +1,7 @@
 import GuildBanner from '../components/GuildBanner.jsx';
 import React from 'react';
 import { CHARTERS } from '../data/charters.js';
-import { getConnectionsView, getPathScores, getPromotionRequirement, getReputationSummary, getStatusTitle, specializationTitle } from '../game/engine.js';
+import { getConnectionsView, getPathScores, getPromotionRequirement, getReputationSummary, getStatusTitle, specializationTitle, getStanding, standingEpithet } from '../game/engine.js';
 import { Badge, Button, ProgressBar } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
@@ -14,6 +14,7 @@ import { Treasury } from '../places/GuildHallRooms.jsx';
 
 export const GUILD_TABS = [
   { id: 'charter', label: 'Charter', icon: 'banner' },
+  { id: 'standing', label: 'Standing', icon: 'heart' },
   { id: 'reputation', label: 'Reputation', icon: 'shield' },
   { id: 'patrons', label: 'Patrons', icon: 'letter' },
   { id: 'rivals', label: 'Rivals', icon: 'swords' },
@@ -149,7 +150,60 @@ function PatronsTab({ state, actions }) {
 }
 
 /** The Guild section body; the section owns the tabs (GUILD_TABS). */
+const HONOR_LABEL = { honourable: 'Honourable', neutral: 'Neither', wicked: 'Wicked' };
+const DREAD_LABEL = { none: 'Not feared', feared: 'Feared', dreaded: 'Dreaded' };
+
+/** Guild → Standing: honor (wicked ↔ honourable) and dread, the epithet they earn, and the deeds behind them. */
+function StandingTab({ state }) {
+  const standing = getStanding(state);
+  const epithet = standingEpithet(state);
+  const needle = (standing.honor + 100) / 2;
+  return (
+    <div className="guild-screen standing">
+      <header className="standing__epithet">
+        <strong>{epithet.words ? epithet.short : state.guild.name}</strong>
+        <small>{epithet.words ? `People call you ${epithet.long}.` : 'Nobody has a word for your guild yet. Your choices will give it one.'}</small>
+      </header>
+      <div className="standing__scale" aria-label={`Honor ${standing.honor}`}>
+        <span>Wicked</span>
+        <div className="standing__track">
+          <i className="standing__needle" style={{ left: `${needle}%` }} />
+        </div>
+        <span>Honourable</span>
+      </div>
+      <Line icon="heart" label="Honor" value={`${standing.honor > 0 ? '+' : ''}${standing.honor} · ${HONOR_LABEL[standing.honorBand] || 'Neither'}`} />
+      <div className="standing__dread" aria-label={`Dread ${standing.dread} of 100`}>
+        {[0, 1, 2, 3, 4].map((index) => (
+          <span key={index} className={standing.dread >= (index + 1) * 20 ? 'is-on' : ''}>
+            <Icon name="skull" size={18} tone="plain" />
+          </span>
+        ))}
+      </div>
+      <Line icon="skull" label="Dread" value={`${standing.dread} · ${DREAD_LABEL[standing.dreadBand] || 'Not feared'}`} />
+      <p className="muted">Both fade a little each month: a guild is what it has done lately.</p>
+      <h3 className="guild-subhead">Deeds</h3>
+      {(standing.log || []).length ? (
+        <ul className="standing__log">
+          {standing.log.map((deed, index) => (
+            <li key={`${deed.day}-${index}`}>
+              <span>{deed.text}</span>
+              <small className="num">
+                {deed.honor ? `honor ${deed.honor > 0 ? '+' : ''}${deed.honor}` : ''}
+                {deed.honor && deed.dread ? ' · ' : ''}
+                {deed.dread ? `dread ${deed.dread > 0 ? '+' : ''}${deed.dread}` : ''}
+              </small>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted">No deeds yet. What you choose at the end of a job, or in the story, will show here.</p>
+      )}
+    </div>
+  );
+}
+
 export default function GuildScreen({ state, actions, tab = 'charter' }) {
+  if (tab === 'standing') return <StandingTab state={state} />;
   if (tab === 'reputation') return <ReputationTab state={state} />;
   if (tab === 'patrons') return <PatronsTab state={state} actions={actions} />;
   if (tab === 'rivals') return <NemesisView state={state} actions={actions} />;

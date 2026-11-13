@@ -3,6 +3,7 @@ import Section from './Section.jsx';
 import { Button, SceneBackdrop } from '../components/UI.jsx';
 import HeroesScreen from '../screens/HeroesScreen.jsx';
 import EquipmentScreen from '../screens/EquipmentScreen.jsx';
+import InventoryScreen from '../screens/InventoryScreen.jsx';
 import GuildHallRooms from '../places/GuildHallRooms.jsx';
 import MainPartyScreen from '../screens/MainPartyScreen.jsx';
 import JournalScreen, { JOURNAL_TABS } from '../places/JournalScreen.jsx';
@@ -34,6 +35,7 @@ export function sectionTabs(state, id) {
 
 export const SECTION_TABS = {
   guild: GUILD_TABS,
+  items: tabs(['equipment', 'Equipment', 'swords'], ['inventory', 'Inventory', 'bag']),
   journal: JOURNAL_TABS,
   records: tabs(['rankings', 'Rankings', 'trophy'], ['seasons', 'Seasons', 'hourglass'], ['book', 'Record book', 'star'], ['fame', 'Hall of fame', 'crown'], ['log', 'Mission log', 'scroll'], ['codex', 'Codex', 'book']),
   system: tabs(['game', 'Game', 'save'], ['settings', 'Settings', 'gear'], ['credits', 'Credits', 'info']),
@@ -42,7 +44,7 @@ export const SECTION_TABS = {
 // One short help line per section (docs/UX.md): a gesture or where things are, never a rule.
 const HELP = {
   party: 'Tap a hero for their page.',
-  items: 'Drag an item onto a hero, or tap the item, then the hero.',
+  items: 'Equipment: drag an item onto a hero, or tap it, then the hero. Sell goods at a shop.',
   hall: 'Tap a slot to build or manage a room.',
   journal: 'Swipe sideways to change tab.',
   contacts: 'Tap a person to see where they are.',
@@ -97,7 +99,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
   if (id === 'items') {
     return (
       <Section {...common}>
-        <EquipmentScreen {...props} />
+        {tab === 'inventory' ? <InventoryScreen {...props} /> : <EquipmentScreen {...props} />}
       </Section>
     );
   }

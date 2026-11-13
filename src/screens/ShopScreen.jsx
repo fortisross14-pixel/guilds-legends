@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { normalizeClassId } from '../data/content.js';
-import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
+import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip, sellValue } from '../data/items.js';
 import { chestCapacity, chestUsed, roomLevel, shopPrice, shopStock } from '../game/engine.js';
 import { Badge, Button, EmptyState, HeroPortrait, toast } from '../components/UI.jsx';
 import { useDraggable } from '../components/useDraggable.js';
@@ -51,7 +51,7 @@ function DraggableItem({ state, id, onPick, className, children, ...rest }) {
 export default function ShopScreen({ state, actions, kind = null }) {
   const [shelf, setShelf] = useState(kind);
   const stock = shopStock(state.world?.currentLocationId).filter((id) => !shelf || ITEMS[id]?.kind === shelf);
-  const owned = Object.entries(state.inventory || {}).filter(([id, count]) => ITEMS[id] && count > 0);
+  const owned = Object.entries(state.inventory || {}).filter(([id, count]) => ITEMS[id] && count > 0 && ITEMS[id].kind !== 'keepsake');
   const [mode, setMode] = useState('buy');
   const [selectedId, setSelectedId] = useState(null);
   if (!stock.length) return <EmptyState icon="⚖" title="No shop here" text="Larger towns have shops." />;
@@ -61,7 +61,7 @@ export default function ShopScreen({ state, actions, kind = null }) {
   const ownedCount = selected ? state.inventory?.[selected.id] || 0 : 0;
   const heroes = state.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
   const wearers = selected && GEAR_SLOTS.includes(selected.kind) ? heroes.filter((hero) => canEquip(selected, normalizeClassId(hero.classId))) : [];
-  const price = selected ? (mode === 'buy' ? shopPrice(state, selected.id) : Math.floor(selected.price / 2)) : 0;
+  const price = selected ? (mode === 'buy' ? shopPrice(state, selected.id) : sellValue(selected)) : 0;
 
   return (
     <div className="shop">
@@ -116,7 +116,7 @@ export default function ShopScreen({ state, actions, kind = null }) {
                         {item.name}
                         {count ? <span className="shop-item__count"> ×{count}</span> : null}
                       </span>
-                      <span className="shop-item__price num">{mode === 'buy' ? shopPrice(state, item.id) : Math.floor(item.price / 2)} G</span>
+                      <span className="shop-item__price num">{mode === 'buy' ? shopPrice(state, item.id) : sellValue(item)} G</span>
                     </DraggableItem>
                   </li>
                 );
@@ -189,7 +189,7 @@ export default function ShopScreen({ state, actions, kind = null }) {
                   </Button>
                 ) : (
                   <Button variant="primary" disabled={!ownedCount} onClick={() => actions.sellItem(selected.id)}>
-                    Sell for {Math.floor(selected.price / 2)} G
+                    Sell for {sellValue(selected)} G
                   </Button>
                 )}
                 <small>You own {ownedCount}.</small>

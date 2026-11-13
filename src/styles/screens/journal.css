@@ -90,3 +90,18 @@ button.journal-row:hover, button.journal-row:focus-visible { border-color: var(-
 .journal-contract header { display: grid; }
 .journal-contract header strong { font: 700 var(--fs-3) var(--font-display); }
 .journal-contract header small { color: var(--text-dim); font-size: var(--fs-1); }
+
+/* Guild → Standing: the honor needle, the dread marks, the epithet and the deeds. */
+.standing__epithet { display: grid; gap: 2px; }
+.standing__epithet strong { color: var(--gold-bright); font: 700 var(--fs-4) var(--font-display); }
+.standing__epithet small { color: var(--text-dim); }
+.standing__scale { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; font-size: var(--fs-1); color: var(--text-dim); }
+.standing__track { position: relative; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #8a2a22, #5a4a3a 50%, #c9a24a); }
+.standing__needle { position: absolute; top: -5px; width: 4px; height: 20px; border-radius: 2px; background: #fff4dc; box-shadow: 0 0 4px #000; transform: translateX(-50%); }
+.standing__dread { display: flex; gap: 6px; }
+.standing__dread span { opacity: .25; color: #e9d9b8; }
+.standing__dread span.is-on { opacity: 1; color: #e06a55; }
+.guild-subhead { margin: 8px 0 0; color: var(--gold-bright); font: 700 var(--fs-2) var(--font-ui); }
+.standing__log { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.standing__log li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line-soft); }
+.standing__log small { color: var(--text-dim); white-space: nowrap; }

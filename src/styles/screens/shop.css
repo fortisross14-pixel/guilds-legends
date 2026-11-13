@@ -55,3 +55,11 @@
   .shop-layout { grid-template-columns: 1fr; grid-template-areas: 'list' 'detail' 'gold'; }
   .shop-detail { position: static; }
 }
+
+/* Items → Inventory: supplies, goods, keepsakes (src/screens/InventoryScreen.jsx). */
+.inventory { display: grid; gap: 12px; }
+.inventory__list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.inventory__item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(246, 210, 140, .04); }
+.inventory__text { display: grid; min-width: 0; }
+.inventory__text small { color: var(--text-dim); }
+.inventory__value { color: var(--gold-bright); font-size: var(--fs-1); white-space: nowrap; }
