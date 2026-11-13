@@ -67,14 +67,14 @@ src/places/               MapScreen (world map, wild-area cards), RestDial (the 
 src/components/           UI primitives and scene backdrop (UI.jsx), the icon set (Icon.jsx + iconPaths.js: game-icons.net and Phosphor), modals (combat, council, moments, road events), HeroStatusScreen, heroStatus.js, Prologue (the knock at the door: a walkable room), ChapterEnd; touch: gestures.js (long-press, swipe, vibration), useDraggable.js (drag and drop onto data-drop targets), usePanZoom.js, DraggableHero.jsx
 src/screens/              Building/page content rendered inside places (Missions, Heroes, MainPartyScreen (Party → Main party, saved formations), Rankings + RivalryScreens, HistoryScreens, CodexScreen (Lore, Almanac, Bestiary, Guilds), ArenaScreen + GuildChampionships, …)
 src/data/                 Static content: classes, missions, formations, world map + buildings, rival universe, skills, items, road events, events (town events, side jobs, festivals), enemies (rosters, bosses), story
-  towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp)
+  towns/, wilds/          Walkable town and wild-area layouts (tile rows, buildings, props, NPCs, enemy groups, gathering spots, camp); places and roads not built yet are boxes (towns/boxTown.js, wilds/skeletonRoads.js; the world: docs/design/WORLD.md)
   dialogue/               Data-driven conversations (opener variants, hub topics, goodbyes; choices with effects); format in dialogue/index.js, style and voices in docs/DIALOGUE.md; story.js and storyAct2.js hold the story scenes
   missions/               Contract sites (missions-in-world): index.js (each template's and story contract's place and objectives: fight, talk with stat tests, inspect, collect, escort; extras, par days, deadlines; family-built sites for the rest), places.js (free tiles in wild areas and towns, painted sites behind a door)
   story.js, lore.js       The Last Banner (docs/STORY.md): missions, steps, gates, evidence, story heroes, the prologue; the Broken Lantern's seven, the official story, the Lore codex
   tiles.js                Ground tiles for walkable layouts (the player's house is a small walkable room: INTERIORS.house, scripts/art/interiors.py `house`)
   interiors.js, people.js Building interiors as painted scenes (the painting per town, spots, hotspots and the door in percentages: interiorLayout); the regulars in each building and visitor name pools
   assets.js               Asset registry (every visual by id; real file → borrowed → placeholder); docs/ASSETS.md via scripts/assets-doc.mjs
-  slice.js                Chapter 1 slice flag: reachable places and hidden systems
+  slice.js                Slice flag: hidden systems and the tier cap (every place is reachable: the open world)
   rooms.js, lots.js       Room types with three tiers (cost, weeks, upkeep, what each gives), training equipment, the defeat, injury, Crown Room, Armory and visitor numbers; lots (slots, rent, deposit, purchase price, starter cabin, expansion steps; several cities supported)
   tournaments.js          The tournament calendar: three circuits (Initiation, Champion, Elite), 15 events, histories, the special titles, status names
   charters.js, patrons.js Founding charters and run paths; the three patrons, their levels, unlocks and rivalries
