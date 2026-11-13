@@ -36,8 +36,21 @@ Levels run from 1 to about **53**; the level cap becomes 60.
 - Levels in the tables below are the **party's level for a fair fight** (the foes' levels added
   up and shared among your fighters, as the XP rule reads them).
 - Practice teams move with the scale (to set when Chapter 2 is built): about 6–10, 18–24, 30–36, 45–48.
-- To change before Chapter 2 is built: hero level cap (20 → 60), attribute and power caps, rival
-  rosters by circuit, enemy levels in wild areas.
+- Done: hero level cap 60; foe strength follows level (power 38 + 2.25 per level, capped at 98).
+- To change before Chapter 2 is built: rival rosters by circuit (opposing teams' levels), practice teams.
+
+**The open world.** After Dunmere every road is open (only the Old Road waits on a companion).
+Each area has its danger, shown on its map card; walking into one far above the guild sends it
+home beaten (the defeat rule):
+
+| Area | Bands (level) |
+|---|---|
+| The Old Road | 2–7 |
+| The Thornwood | 7–9 |
+| The coast road | 10–14 |
+| The Iron Road | 13–18 |
+| The cliff road | 18–24 |
+| The Blackwood | 30–35 (the highest in the wild) |
 
 ## The Journal
 
@@ -90,20 +103,19 @@ right reasons means dread +, honor + or none. Paying moves neither.
 *Chapter end:* the warning; your first epithet ("the honourable guild of the New Lantern"); Ironford is next.
 
 **Build notes (Chapter 1, 2026-11-13).** Built as planned, with these choices:
-- 1.5: **Mother Aveline** keeps the prayer book (she already lives at Dawnwatch), not a new Prior Aubrey. Threatening Sergeant Hobb gives the token without a fight for now (honor −10, dread +10, the watch turns cold); a fight with the watch needs a "start a battle" dialogue effect, still to build.
-- 1.6: the waystone stands north of the Thornwood road; it is not guarded yet (no standing band there).
+- 1.5: **Mother Aveline** keeps the prayer book (she already lives at Dawnwatch), not a new Prior Aubrey. Threatening Sergeant Hobb starts a fight with the watch (level 6); win and the token is yours.
+- 1.6: poachers camp at the waystone (level 8); beat them to copy the marks.
 - 1.7: Tobin's test is a one-on-one duel at the Greenhollow arena (the story duel), not a two-a-side bout.
-- 1.8: "fight dirty" moves honor; it doesn't make the duel easier yet.
-- Secondary: Hesta's feverfew (1.s1) and the wardens' snares (1.s2) are built; Corwin's strongbox, the arena master's novice team, Orren's notices and Nessa's camp are still to do.
-- Mission ids in code: 1.1 `c1-ask`, 1.2 `c1-road` (with `m1` and `m2` as its secondary tasks), 1.3 `m3`, 1.4 `temple`, 1.5 `c1-prior`, 1.6 `c1-thornwood`, 1.7 `m5`, 1.8 `c1-bram`, 1.9 `m4` (ends the chapter).
+- 1.8: fighting dirty costs honor and starts Bram two levels down.
+- Mission ids in code: 1.1 `c1-ask`, 1.2 `c1-road` (with `m1` and `m2` as its secondary tasks), 1.3 `m3`, 1.4 `temple`, 1.5 `c1-prior`, 1.6 `c1-thornwood`, 1.7 `m5`, 1.8 `c1-bram`, 1.9 `m4` (ends the chapter); errands `e1-feverfew` … `e6-nessa`.
 
 **Secondary missions in Chapter 1** (people's errands, straightforward):
 - ✅ Hesta Coal (the kiln): "Bring me three bundles of feverfew from the Old Road" (gather, 3).
-- Corwin: "A bandit took my strongbox on the Old Road. Get it back" (errand fight, 4).
-- The arena master: "Beat my novice team" (training, 5).
-- Orren the herald: "Someone's been tearing down notices at night. Find out who" (search in town).
+- ✅ Corwin: "A bandit took my strongbox on the Old Road. Get it back" (errand fight, 4; return it whole or skim it).
+- ✅ Holt Varga, the arena's referee: "Beat my novice team" (training, 4–6).
+- ✅ Orren the herald: "Someone's been tearing down notices at night. Find out who" (ask around: it's Pip).
 - ✅ Greenhollow's wardens: "Poachers in the Thornwood. Bring back their snares" (gather + fight, 8).
-- Nessa (loyalty): "My brother's old camp is past the Thornwood's creek. Come with me" (search, 8).
+- ✅ Nessa (loyalty): "My brother's old camp is in the Thornwood. Come with me" (search, 8).
 
 ---
 
