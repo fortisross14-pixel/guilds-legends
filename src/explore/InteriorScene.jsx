@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { founderArt } from '../components/UI.jsx';
 import { getStoryView, hasHall, peopleIn, shortLabels, storyNpcsHere } from '../game/engine.js';
 import Icon from '../components/Icon.jsx';
 import Asset from '../components/Asset.jsx';
@@ -121,6 +122,7 @@ export default function InteriorScene({ building, state, actions, onLeave, onOpe
     };
     return (
       <WalkableScene
+        playerAsset={founderArt(state)}
         key={peopleKey}
         map={roomMap}
         start={lastSpot.current || roomMap.spawn}

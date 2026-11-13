@@ -243,6 +243,14 @@ Phase 7 will add style notes and generation prompts for each entry.
 | `char.class.mage` | `art/packs/myart/chars/char-class-mage.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `char.class.scholar` | `art/packs/myart/chars/char-class-scholar.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 | `char.class.artificer` | `art/packs/myart/chars/char-class-artificer.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.guardian` | `art/packs/myart/chars/char-founder-guardian.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.duelist` | `art/packs/myart/chars/char-founder-duelist.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.ranger` | `art/packs/myart/chars/char-founder-ranger.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.rogue` | `art/packs/myart/chars/char-founder-rogue.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.cleric` | `art/packs/myart/chars/char-founder-cleric.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.mage` | `art/packs/myart/chars/char-founder-mage.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.scholar` | `art/packs/myart/chars/char-founder-scholar.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
+| `char.founder.artificer` | `art/packs/myart/chars/char-founder-artificer.png` | 112×120 | — | ready | Walking character (HeroEditor parts, scripts/art/characters.py) |
 
 ## Battle background (`battle`, placeholder #6a2f34)
 

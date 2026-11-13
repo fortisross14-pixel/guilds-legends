@@ -18,7 +18,7 @@ import {
 import { HALL_EXTERIOR } from '../data/rooms.js';
 import { BUILDINGS } from '../data/world.js';
 import { REGULARS } from '../data/people.js';
-import { Button } from '../components/UI.jsx';
+import { Button, founderArt } from '../components/UI.jsx';
 import { siteDoorTarget, siteTargets, townMap } from './sceneMap.js';
 import SiteCard from './SiteCard.jsx';
 import WalkableScene from './WalkableScene.jsx';
@@ -137,6 +137,7 @@ export default function TownScene({
   return (
     <>
       <WalkableScene
+        playerAsset={founderArt(state)}
         key={`${town.id}-${siteKey}`}
         map={map}
         start={start}

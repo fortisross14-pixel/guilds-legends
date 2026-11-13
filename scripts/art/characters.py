@@ -26,6 +26,15 @@ def _eye_for(spec):
 # Who wears what. Keys are part names inside the HeroEditor folders (Basic sets).
 R = {
     'char.founder': dict(hair='ShortHair', hc='brown', skin='light', armor='HunterTunic', weapon='Sword/ShortIronKatana [Paint]', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal'),
+    # The founder by class: the same face, each class's kit (src/components/UI.jsx founderArt).
+    'char.founder.guardian': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='KnightArmor [Paint]', shield='KnightShield', weapon='Sword/ShortIronKatana [Paint]', cape='CotttonCape [Paint]'),
+    'char.founder.duelist': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='MercenaryArmor [Paint]', weapon='Sword/ShortIronKatana [Paint]', cape='CotttonCape [Paint]'),
+    'char.founder.ranger': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='HunterLightArmor', back='ArrowQuiver', cape='CotttonCape [Paint]'),
+    'char.founder.rogue': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='ThiefArmor', weapon='Dagger', cape='OldCape2 [Paint]'),
+    'char.founder.cleric': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='Cleric [Paint]', shield='CardinalBook', cape='CotttonCape [Paint]'),
+    'char.founder.mage': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='FireWizardArmor', weapon='Wand', cape='CotttonCape [Paint]'),
+    'char.founder.scholar': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='Robe', shield='CardinalBook', cape='OldCape2 [Paint]'),
+    'char.founder.artificer': dict(hair='ShortHair', hc='brown', skin='light', eyes='Male', ec='brown', brows='Eyebrows2', mouth='Normal', armor='LeatherRivetedArmor', weapon='Hammer', cape='CotttonCape [Paint]'),
     'npc.dunmere.merchant': dict(hair='PushedBack', hc='chestnut', skin='tan', armor='Nomad', helmet='GypsyHat', eyes='Male', beard=True, mouth='Smirk'),
     'npc.dunmere.fighter': dict(hair='Slicked', hc='black', skin='light', armor='GladiatorArmor', weapon='Sword/ShortIronKatana [Paint]', eyes='Male', brows='Angry', mouth='Smirk'),
     'npc.dunmere.stablemaster': dict(hair='Shaggy', hc='grey', skin='tan', armor='FarmerClothes', helmet='StrawHat', eyes='Male', beard=True),

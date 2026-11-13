@@ -1726,6 +1726,142 @@
    "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
   },
   {
+   "id": "char.founder.guardian",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-guardian.png",
+   "still": "art/packs/myart/chars/char-founder-guardian-still.png",
+   "bust": "art/packs/myart/chars/char-founder-guardian-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-guardian-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.duelist",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-duelist.png",
+   "still": "art/packs/myart/chars/char-founder-duelist-still.png",
+   "bust": "art/packs/myart/chars/char-founder-duelist-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-duelist-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.ranger",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-ranger.png",
+   "still": "art/packs/myart/chars/char-founder-ranger-still.png",
+   "bust": "art/packs/myart/chars/char-founder-ranger-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-ranger-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.rogue",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-rogue.png",
+   "still": "art/packs/myart/chars/char-founder-rogue-still.png",
+   "bust": "art/packs/myart/chars/char-founder-rogue-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-rogue-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.cleric",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-cleric.png",
+   "still": "art/packs/myart/chars/char-founder-cleric-still.png",
+   "bust": "art/packs/myart/chars/char-founder-cleric-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-cleric-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.mage",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-mage.png",
+   "still": "art/packs/myart/chars/char-founder-mage-still.png",
+   "bust": "art/packs/myart/chars/char-founder-mage-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-mage-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.scholar",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-scholar.png",
+   "still": "art/packs/myart/chars/char-founder-scholar-still.png",
+   "bust": "art/packs/myart/chars/char-founder-scholar-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-scholar-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
+   "id": "char.founder.artificer",
+   "group": "char",
+   "path": "art/packs/myart/chars/char-founder-artificer.png",
+   "still": "art/packs/myart/chars/char-founder-artificer-still.png",
+   "bust": "art/packs/myart/chars/char-founder-artificer-bust.png",
+   "battle": "art/packs/myart/chars/char-founder-artificer-battle.png",
+   "w": 112,
+   "h": 120,
+   "sheet": {
+    "frameWidth": 112,
+    "frameHeight": 120
+   },
+   "sideOnly": true,
+   "walker": true,
+   "use": "Walking character (HeroEditor parts, scripts/art/characters.py)"
+  },
+  {
    "id": "npc.dunmere.merchant",
    "group": "npc",
    "path": "art/packs/myart/chars/npc-dunmere-merchant.png",

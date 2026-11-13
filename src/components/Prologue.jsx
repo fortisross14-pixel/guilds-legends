@@ -10,7 +10,7 @@ import { interiorLayout } from '../data/interiors.js';
 import Icon from './Icon.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
 import Asset from './Asset.jsx';
-import { Button } from './UI.jsx';
+import { Button, founderArt } from './UI.jsx';
 import { prefersInstantText, useTypewriter } from '../explore/useTypewriter.js';
 import TypedLine from '../explore/TypedLine.jsx';
 
@@ -93,6 +93,7 @@ export default function Prologue({ state, onComplete }) {
   const objective = coarse ? 'Someone is knocking. Walk to the door.' : 'Someone is knocking. Walk to the door (click it).';
   return (
     <WalkableScene
+        playerAsset={founderArt(state)}
       key={rookIn ? 'rook' : 'alone'}
       map={map}
       start={map.founderAt}

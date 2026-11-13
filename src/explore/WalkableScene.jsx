@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
+import { ASSETS } from '../data/assets.js';
+import { personSize } from './sceneMap.js';
 
 const JOYSTICK_RADIUS = 48;
 
@@ -46,7 +48,7 @@ export function useCoarsePointer() {
  * The game is created once per mount: `map` and `start` are read only then.
  * Changing props (`activeTargets`, `paused`, `onInteract`) never rebuilds it.
  */
-export default function WalkableScene({ map, start, activeTargets, beacons = [], paused = false, joystick = false, onInteract, onPeek = null, onWander = null, className = '', label, apiRef = null, children }) {
+export default function WalkableScene({ map, start, playerAsset = null, activeTargets, beacons = [], paused = false, joystick = false, onInteract, onPeek = null, onWander = null, className = '', label, apiRef = null, children }) {
   // Long-press a label to peek (who is inside, what is for sale…) without walking there.
   const peekTimer = useRef(0);
   const peeked = useRef(false);
@@ -74,7 +76,8 @@ export default function WalkableScene({ map, start, activeTargets, beacons = [],
     const timer = window.setInterval(read, 500);
     return () => window.clearInterval(timer);
   }, []);
-  const initial = useRef({ map, start: start || map.spawn });
+  // `playerAsset`: the founder's drawing for their class (src/components/UI.jsx founderArt).
+  const initial = useRef({ map: playerAsset && ASSETS[playerAsset] ? { ...map, player: { ...map.player, asset: playerAsset, ...personSize(playerAsset) } } : map, start: start || map.spawn });
   const coarse = useCoarsePointer();
   const coarseRef = useRef(coarse);
   const [ready, setReady] = useState(false);

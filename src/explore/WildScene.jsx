@@ -5,7 +5,7 @@ import SiteCard from './SiteCard.jsx';
 import WalkableScene from './WalkableScene.jsx';
 import DialogueBox from './DialogueBox.jsx';
 import { PlaceTag } from '../hud/Hud.jsx';
-import { Button } from '../components/UI.jsx';
+import { Button, founderArt } from '../components/UI.jsx';
 
 /**
  * A walkable wild area (src/data/wilds). Enemy groups stand on the map:
@@ -63,6 +63,7 @@ export default function WildScene({ area, state, actions, paused = false, apiRef
   return (
     <>
       <WalkableScene
+        playerAsset={founderArt(state)}
         key={`${area.id}-${siteKey}`}
         map={map}
         start={start}

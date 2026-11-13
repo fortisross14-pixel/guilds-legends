@@ -56,7 +56,18 @@ export function heroArtKey(hero = {}) {
 const STORY_WALKERS = { nessa: 'npc.dunmere.nessa', bram: 'npc.dunmere.fighter' };
 function heroLook(hero) {
   const id = hero.heroId || hero.id;
-  return ASSETS[id === 'founder-player' ? 'char.founder' : STORY_WALKERS[hero.storyId] || `char.class.${heroArtKey(hero)}`] || null;
+  return ASSETS[id === 'founder-player' ? founderArtFor(hero.classId) : STORY_WALKERS[hero.storyId] || `char.class.${heroArtKey(hero)}`] || null;
+}
+
+/** The founder's drawing for their class (scripts/art/characters.py char.founder.<class>). */
+function founderArtFor(classId) {
+  const id = `char.founder.${normalizeClassId(classId || 'Guardian').toLowerCase()}`;
+  return ASSETS[id] ? id : 'char.founder';
+}
+
+/** The walking founder in every scene: their class's drawing. */
+export function founderArt(state) {
+  return founderArtFor((state?.heroes || []).find((hero) => hero.id === 'founder-player')?.classId);
 }
 function heroBust(hero) {
   return heroLook(hero)?.bust || null;
