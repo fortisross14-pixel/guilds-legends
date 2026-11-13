@@ -30,6 +30,8 @@ function pickTemplate(state, pool, rng) {
   return pool.find((_, index) => (roll -= weights[index]) < 0) || pool[pool.length - 1];
 }
 
+const RIVAL_CREEDS = ['honourable', 'neutral', 'wicked'];
+
 function createRival(blueprint, state, rng, index) {
   const tierIndex = clamp(blueprint.tierIndex ?? 0, 0, TIERS.length - 1);
   const quality = tierIndex === 2 ? 'elite' : tierIndex === 1 ? (rng.chance(0.72) ? 'elite' : 'veteran') : index < 2 ? 'veteran' : 'normal';
@@ -104,6 +106,8 @@ function createRival(blueprint, state, rng, index) {
     name: blueprint.name,
     motto: blueprint.motto,
     archetype: blueprint.archetype,
+    // Its standing (docs/design/PILLARS.md): honourable, neutral or wicked; the Argent Crown is wicked.
+    creed: blueprint.creed || (blueprint.storyId === 'argent-crown' ? 'wicked' : RIVAL_CREEDS[[...String(blueprint.name)].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 3]),
     color: blueprint.color,
     strategy: blueprint.strategy,
     risk: blueprint.risk,

@@ -107,6 +107,15 @@ export function resolveGuildRoundInPlace(state, tournament, rng, tactic = 'Measu
       chance = clamp(Math.round(100 / (1 + Math.exp(-(playerRating - opponentRating) / 8))), 7, 93);
       winnerId = forcedPlayerResult ? (forcedPlayerResult.playerWon ? 'player' : opponentId) : rng.next() * 100 < chance ? 'player' : opponentId;
       usedTactic = forcedPlayerResult ? 'Turn-based' : tactic;
+      const band = state.guild.standing?.honorBand || 'neutral';
+      const opposed = band !== 'neutral' && opponent?.creed && opponent.creed !== 'neutral' && opponent.creed !== band;
+      if (opposed)
+        state.notifications.push({
+          id: `opposed-${tournament.id}-${opponentId}-${roundName}`,
+          tone: 'purple',
+          title: `${opponent.name}: ${opponent.creed === 'wicked' ? 'a wicked guild' : 'an honourable guild'}`,
+          text: 'Fighting a guild of the opposite standing sharpened your fighters: a quarter more experience from this bout.',
+        });
       heroes.forEach((hero) => {
         const fatigueCost = forcedPlayerResult
           ? clamp(5 + (forcedPlayerResult.turns || 4) * 2, 8, 22)
@@ -120,7 +129,8 @@ export function resolveGuildRoundInPlace(state, tournament, rng, tactic = 'Measu
         hero.career.tournamentBouts += 1;
         if (winnerId === 'player') hero.career.tournamentBoutWins += 1;
         // A tournament bout counts as a fight a level under the hero's, worth the most of any kind (heroes.js battleXp); half for a loss.
-        const xpGain = Math.round(battleXp(hero, hero.level - 1, 'tournament') * (winnerId === 'player' ? 1 : 0.5));
+        // Against a guild of the opposite standing, fighters learn a quarter more.
+        const xpGain = Math.round(battleXp(hero, hero.level - 1, 'tournament') * (winnerId === 'player' ? 1 : 0.5) * (opposed ? 1.25 : 1));
         applyXpInPlace(hero, xpGain, state, `${tournament.name} ${roundName.toLowerCase()}`);
         hero.career.xpEarned += xpGain;
       });
