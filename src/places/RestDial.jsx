@@ -60,6 +60,25 @@ export default function RestDial({ state, disabled, onRest }) {
       <Button variant="primary" size="lg" disabled={disabled} why="Something needs you first (a fight, a decision or a road event)." onClick={() => onRest(days)}>
         Rest {spanLabel(days)}
       </Button>
+      {events.length ? (
+        <div className="rest-dial__ahead">
+          <strong>Coming up</strong>
+          <ul>
+            {events.slice(0, 5).map((entry) => (
+              <li key={`ahead-${entry.kind}-${entry.id}`}>
+                <Icon name={EVENT_ICONS[entry.kind] || 'star'} size={16} />
+                <span>
+                  {entry.title}
+                  <small>in {spanLabel(entry.day)}</small>
+                </span>
+                <Button size="sm" disabled={disabled} onClick={() => onRest(entry.day - 1)}>
+                  Rest until the day before
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }

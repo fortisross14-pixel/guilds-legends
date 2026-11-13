@@ -855,7 +855,8 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         const result = restAtHall(state, 0, {}, until);
         const serial = (date) => ((date.year * 12 + date.month) * 4 + (date.week || 0)) * 7 + (date.day || 0);
         const days = result.error ? 0 : serial(result.state.date) - serial(before);
-        applyResult(result, `${days} day${days === 1 ? '' : 's'} pass at the hall: ${until === 'fit' ? 'everyone is fit' : 'everyone is at full health'}.`);
+        const why = { fit: 'everyone is fit', full: 'everyone is at full health', tournament: 'the next tournament is here' }[until];
+        applyResult(result, `${days} day${days === 1 ? '' : 's'} pass at the hall: ${why}.`);
       },
       restAtInn: (nights) => applyResult(restAtInn(state, nights), 'Rested at the inn.'),
       advanceToDate: (date) => applyResult(advanceToDate(state, date)),

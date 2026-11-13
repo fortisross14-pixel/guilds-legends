@@ -2,7 +2,7 @@ import GuildBanner from '../components/GuildBanner.jsx';
 import React, { useState } from 'react';
 import { MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { HOUSE } from '../data/rooms.js';
-import { HOME_LOCATION_ID, activityAvailable, atHome, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, upkeepBreakdown } from '../game/engine.js';
+import { HOME_LOCATION_ID, activityAvailable, atHome, chestCapacity, chestUsed, getHallView, getPatronLoanOffer, isHeroAway, nextTournamentStop, upkeepBreakdown } from '../game/engine.js';
 import { Badge, Button, HeroPortrait, Panel, ProgressBar } from '../components/UI.jsx';
 import { activeRoster, heroStatus } from '../components/heroStatus.js';
 import Icon from '../components/Icon.jsx';
@@ -473,6 +473,7 @@ function RestPanel({ state, hall, actions, onDone = null }) {
   const activities = MONTHLY_ACTIVITIES.filter((activity) => activityAvailable(state, activity.id));
   const taskOf = (hero) => draft[hero.id] || (activityAvailable(state, hero.monthlyActivity || 'Rest') ? hero.monthlyActivity || 'Rest' : 'Rest');
   const paused = state.activeEncounter || state.pendingRoadEvent;
+  const tournamentStop = nextTournamentStop(state);
   return (
     <div className="rest-room">
       <RoomOutputs state={state} hall={hall} />
@@ -501,6 +502,11 @@ function RestPanel({ state, hall, actions, onDone = null }) {
         }}
       />
       <div className="rest-room__until">
+        {tournamentStop ? (
+          <Button size="sm" variant="primary" disabled={Boolean(paused)} onClick={() => { actions.restUntil('tournament'); onDone?.(); }}>
+            Rest until the next tournament ({tournamentStop.tournament.name}: {tournamentStop.what})
+          </Button>
+        ) : null}
         <Button size="sm" disabled={Boolean(paused)} onClick={() => { actions.restUntil('fit'); onDone?.(); }}>
           Rest until fit
         </Button>

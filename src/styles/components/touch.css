@@ -120,3 +120,10 @@ button:not(:disabled):active, .button:not(:disabled):active { transform: scale(.
 .gesture-tip__hand { display: inline-block; font-size: var(--fs-4); animation: tip-nudge 1.6s ease-in-out infinite; }
 @keyframes tip-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .gesture-tip__hand { animation: none; } }
+/* What is coming up on the rest dial, each with a way to rest up to it. */
+.rest-dial__ahead { display: grid; gap: 6px; }
+.rest-dial__ahead > strong { color: var(--gold-bright); font: 700 var(--fs-2) var(--font-display); }
+.rest-dial__ahead ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.rest-dial__ahead li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line-soft); border-radius: var(--r-1); background: rgba(246, 210, 140, .05); }
+.rest-dial__ahead li span { display: grid; min-width: 0; }
+.rest-dial__ahead li small { color: var(--text-dim); }

@@ -29,6 +29,24 @@ export function tournamentCloseDay(tournament) {
   return tournamentStartDay(tournament) + REGISTRATION_WEEKS * 7;
 }
 
+/**
+ * The next tournament day worth resting to: the day sign-up opens for the next
+ * tournament, or the day the guild's own tournament starts (sign-up closes). Null if none this year.
+ */
+export function nextTournamentStop(state) {
+  const today = campaignDaySerial(state);
+  return (
+    (state.tournaments || [])
+      .filter((tournament) => tournament.status === 'registration')
+      .map((tournament) => {
+        const signed = Boolean(tournament.signup?.heroIds?.length);
+        return { tournament, day: signed ? tournamentCloseDay(tournament) : tournamentStartDay(tournament), what: signed ? 'starts' : 'sign-up opens' };
+      })
+      .filter((stop) => stop.day > today)
+      .sort((a, b) => a.day - b.day)[0] || null
+  );
+}
+
 /** Open for sign-up today. */
 function registrationOpen(state, tournament) {
   const today = campaignDaySerial(state);

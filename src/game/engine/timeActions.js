@@ -6,7 +6,7 @@ import { ROAD_EVENTS } from '../../data/roadEvents.js';
 import { INJURY } from '../../data/rooms.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
-import { HOME_LOCATION_ID, activityAvailable, addChronicle, atHome, clamp, clone, commitRng, finalize, hashString, rngFor, tallySpend, travellingPartyIds, uid } from './core.js';
+import { HOME_LOCATION_ID, activityAvailable, campaignDaySerial, addChronicle, atHome, clamp, clone, commitRng, finalize, hashString, rngFor, tallySpend, travellingPartyIds, uid } from './core.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
 import { makeCandidate } from './candidates.js';
 import { startTravel } from './economy.js';
@@ -14,6 +14,7 @@ import { checkCondition } from './story.js';
 import { roadBetween } from '../../data/roads.js';
 import { concludeActiveCombat } from './encounters.js';
 import { advanceDays } from './time.js';
+import { nextTournamentStop } from './tournamentEntry.js';
 import { charterEffect } from './charter.js';
 
 /**
@@ -198,10 +199,17 @@ export const INN_NIGHT_COST = 6;
  * dial: 1 day to 13 weeks). Room activities resolve at each month start.
  */
 /**
- * Rests at the Guild Hall: a number of days, or `until` 'fit' (nobody injured) or
+ * Rests at the Guild Hall: a number of days, or `until` 'tournament' (the next tournament day), 'fit' (nobody injured) or
  * 'full' (nobody injured and everyone at full HP), for at most MAX_REST_DAYS.
  */
 export function restAtHall(state, days, tasks = {}, until = null) {
+  if (until === 'tournament') {
+    // Up to the next tournament day: its sign-up opening, or the start of the one the guild signed up for.
+    if (!atHome(state)) return { state, error: `Rest at the Guild Hall in ${LOCATION_BY_ID[HOME_LOCATION_ID].name}, or at an inn while away.` };
+    const stop = nextTournamentStop(state);
+    if (!stop) return { state, error: 'No more tournaments this year.' };
+    return advanceDays(clone(state), stop.day - campaignDaySerial(state), true);
+  }
   if (until === 'fit' || until === 'full') {
     const roster = (s) => s.heroes.filter((hero) => !['dead', 'retired'].includes(hero.status));
     const fit = (s) => roster(s).every((hero) => hero.status !== 'injured');
