@@ -331,10 +331,17 @@ export function wildMap(area) {
   const links = areaLinks(area).map((link) => exitTarget({ at: link.at, size: link.size, name: link.name }, { id: link.town === area.hub ? 'exit' : `exit:${link.town}`, hub: area.hub, town: link.town }));
   map.targets = [camp, ...buildings.doors, ...props.targets, ...groups, ...gathers, ...links];
   map.props = [...clearOfTrees(treeProps(area), map, WILD_ANCHORS[area.id] || area.anchors), ...map.props];
-  // Where ambushes can happen: walkable ground that is not the road ('1'), for the walk engine.
+  // Where ambushes happen, for the walk engine: never on the road ('0'), seldom right beside it
+  // ('2', a tile either side), often out in the open ('1'). Paths keep to '0' and '2'.
   if (area.ambushes?.length) {
     const road = new Set([':', '=', 'b', '#']);
-    map.offRoad = { tile: T, rows: area.tiles.map((line) => [...line].map((char) => (road.has(char) ? '0' : '1')).join('')) };
+    const isRoad = (x, y) => road.has(area.tiles[y]?.[x]);
+    map.offRoad = {
+      tile: T,
+      rows: area.tiles.map((line, y) =>
+        [...line].map((char, x) => (road.has(char) ? '0' : [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => isRoad(x + dx, y + dy))) ? '2' : '1')).join(''),
+      ),
+    };
   }
   map.spawn = tileCenter(area.arrive);
   return map;

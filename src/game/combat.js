@@ -1122,6 +1122,13 @@ export function attemptFlee(encounterInput) {
   const encounter = clone(encounterInput);
   if (!encounter || encounter.status !== 'active' || !encounter.canFlee) return encounter;
   encounter.events = [];
+  // A dreaded guild (src/game/engine/encounters.js): the foes step aside.
+  if (encounter.dreadEscape) {
+    encounter.log.push({ turn: encounter.turn, tone: 'good', text: 'They see whose banner it is, lower their weapons and let you go.' });
+    finish(encounter, false, 'withdrew');
+    encounter.result = { ...encounter.result, dreadEscape: true };
+    return encounter;
+  }
   const avg = (units) => units.reduce((sum, unit) => sum + unit.spd, 0) / Math.max(1, units.length);
   const chance = clamp(0.5 + (avg(living(encounter.party)) - avg(living(encounter.enemies))) / 50, 0.2, 0.9);
   if (random(encounter, 'flee') < chance) {

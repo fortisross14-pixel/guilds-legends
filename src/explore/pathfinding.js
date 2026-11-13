@@ -2,10 +2,11 @@
 // ({ x, y, w, h }, top-left) in world pixels. The walker is a point (its feet)
 // kept `pad` pixels away from every block and from the map edge.
 
-export function buildGrid(size, blocks, { cell = 16, pad = 10, edge = 0 } = {}) {
+export function buildGrid(size, blocks, { cell = 16, pad = 10, edge = 0, ground = null } = {}) {
   const cols = Math.ceil(size.width / cell);
   const rows = Math.ceil(size.height / cell);
-  const grid = { cell, cols, rows, pad, edge, width: size.width, height: size.height, blocks, blocked: new Uint8Array(cols * rows) };
+  // `ground` (a wild area's map.offRoad): paths keep to the road, where bands rarely attack.
+  const grid = { cell, cols, rows, pad, edge, width: size.width, height: size.height, blocks, ground, blocked: new Uint8Array(cols * rows) };
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
       grid.blocked[row * cols + col] = isFree(grid, (col + 0.5) * cell, (row + 0.5) * cell) ? 0 : 1;
@@ -22,6 +23,23 @@ export function isFree(grid, x, y) {
     if (x > block.x - pad && x < block.x + block.w + pad && y > block.y - pad && y < block.y + block.h + pad) return false;
   }
   return true;
+}
+
+/** True when (x, y) is on the road (always, where the map has no road layer). */
+function onRoad(grid, x, y) {
+  if (!grid.ground) return true;
+  return grid.ground.rows[Math.floor(y / grid.ground.tile)]?.[Math.floor(x / grid.ground.tile)] !== '1';
+}
+
+/** Straight walks a path may take: free, and not cutting from the road across open ground and back. */
+function pathLine(grid, a, b) {
+  if (!lineFree(grid, a, b)) return false;
+  if (!grid.ground) return true;
+  const distance = Math.hypot(b.x - a.x, b.y - a.y);
+  const steps = Math.max(1, Math.ceil(distance / 8));
+  let road = 0;
+  for (let i = 0; i <= steps; i += 1) if (onRoad(grid, a.x + ((b.x - a.x) * i) / steps, a.y + ((b.y - a.y) * i) / steps)) road += 1;
+  return road === 0 || road === steps + 1;
 }
 
 /** True when a straight walk from a to b stays free (sampled every few pixels). */
@@ -78,7 +96,7 @@ export function findPath(grid, from, to) {
   const goalPoint = nearestFree(grid, to);
   const startPoint = nearestFree(grid, from) || from;
   if (!goalPoint) return [];
-  if (lineFree(grid, startPoint, goalPoint)) return [goalPoint];
+  if (pathLine(grid, startPoint, goalPoint)) return [goalPoint];
   const startCell = cellOf(grid, startPoint);
   const goalCell = cellOf(grid, goalPoint);
   const start = startCell.row * grid.cols + startCell.col;
@@ -116,7 +134,9 @@ export function findPath(grid, from, to) {
         const next = nr * grid.cols + nc;
         if (grid.blocked[next] || closed[next]) continue;
         if (dx && dy && (grid.blocked[row * grid.cols + nc] || grid.blocked[nr * grid.cols + col])) continue;
-        const cost = g[current] + (dx && dy ? 1.414 : 1);
+        // Off the road costs more, so a path follows the road where it can.
+        const ground = grid.ground && !onRoad(grid, (nc + 0.5) * grid.cell, (nr + 0.5) * grid.cell) ? 2 : 1;
+        const cost = g[current] + (dx && dy ? 1.414 : 1) * ground;
         if (cost < g[next]) {
           g[next] = cost;
           f[next] = cost + h(next);
@@ -155,7 +175,7 @@ export function findPath(grid, from, to) {
   while (index < raw.length) {
     let furthest = index;
     for (let j = raw.length - 1; j > index; j -= 1) {
-      if (lineFree(grid, anchor, raw[j])) {
+      if (pathLine(grid, anchor, raw[j])) {
         furthest = j;
         break;
       }

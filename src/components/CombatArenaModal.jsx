@@ -736,7 +736,7 @@ export default function CombatArenaModal({ encounter, actions, locationPrimal, s
 
           {finished && !replaying && !quickWin ? (
             <section className={`battle-result battle-result--${encounter.result?.playerWon ? 'won' : 'lost'} panel`} onClick={(event) => event.stopPropagation()}>
-              <h3>{encounter.result?.playerWon ? 'Victory!' : encounter.result?.method === 'withdrew' ? 'You withdrew' : 'Defeat'}</h3>
+              <h3>{encounter.result?.playerWon ? 'Victory!' : encounter.result?.method === 'withdrew' ? (encounter.result?.dreadEscape ? 'They let you go' : 'You withdrew') : 'Defeat'}</h3>
               <ul className="battle-result__hp" aria-label="Your heroes after the fight">
                 {encounter.party.map((unit) => (
                   <li key={unit.id} className={unit.ko ? 'is-ko' : ''}>

@@ -73,7 +73,7 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
         }),
     ),
   );
-  const grid = buildGrid(map.size, map.blocks, { pad: map.pad ?? 10, edge: map.edge ?? 0 });
+  const grid = buildGrid(map.size, map.blocks, { pad: map.pad ?? 10, edge: map.edge ?? 0, ground: map.offRoad || null });
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const size = () => ({ width: Math.max(1, parent.clientWidth), height: Math.max(1, parent.clientHeight) });
 
@@ -208,14 +208,16 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       }
       player.setDepth(player.y);
       if (this.walker) animateWalker(this, player);
-      // Off the road in a wild area: every so often a band jumps the party (src/explore/WildScene.jsx).
+      // In a wild area: every so often a band jumps a party off the road (src/explore/WildScene.jsx).
       if (map.offRoad && !state.paused) {
         const moved = Math.hypot(player.x - (this.wanderFrom?.x ?? player.x), player.y - (this.wanderFrom?.y ?? player.y));
         this.wanderFrom = { x: player.x, y: player.y };
         const col = Math.floor(player.x / map.offRoad.tile);
         const row = Math.floor(player.y / map.offRoad.tile);
-        if (moved > 0 && map.offRoad.rows[row]?.[col] === '1') {
-          this.wandered = (this.wandered || 0) + moved;
+        // On the road: never. Right beside it ('2'): a quarter as often. Out in the open: in full.
+        const ground = map.offRoad.rows[row]?.[col];
+        if (moved > 0 && (ground === '1' || ground === '2')) {
+          this.wandered = (this.wandered || 0) + moved * (ground === '1' ? 1 : 0.25);
           this.wanderAt ||= map.offRoad.tile * (10 + Math.random() * 14);
           if (this.wandered >= this.wanderAt) {
             this.wandered = 0;

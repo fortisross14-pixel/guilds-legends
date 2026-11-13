@@ -46,6 +46,9 @@ export function fleeActiveCombat(state) {
   if (!state.activeEncounter || state.activeEncounter.status !== 'active') return { state, error: 'There is no battle to flee.' };
   if (!state.activeEncounter.canFlee) return { state, error: 'There is no running from this fight.' };
   const next = clone(state);
+  // A dreaded guild walks away: once the band sees whose banner it is, it lets them go (not a boss).
+  const dreaded = next.guild.standing?.dreadBand === 'dreaded' && !next.activeEncounter.sourceMeta?.boss;
+  if (dreaded) next.activeEncounter.dreadEscape = true;
   next.activeEncounter = attemptFlee(next.activeEncounter);
   return { state: finalize(next), error: null, encounter: next.activeEncounter };
 }
