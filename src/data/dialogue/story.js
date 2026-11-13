@@ -135,8 +135,8 @@ export default {
     portrait: 'portrait.dunmere.merchant',
     variants: [
       {
-        lines: ['There they are! My wagons made the run at dawn, and every driver knew whose work made it possible.', 'Here. And my name on your door, if anyone asks.'],
-        choices: [{ text: 'Business is welcome.', effects: [{ gold: 40 }], reply: ['“The Trade House will hear about this. So will Dunmere.”'] }],
+        lines: ['There they are! Three Wolfskin pelts. My drivers will sleep tonight.', 'Here. And my name on your door, if anyone asks. I’ll tell the temple you’re honest folk, too.'],
+        choices: [{ text: 'Business is welcome.', effects: [{ takeItem: { 'wolf-pelt': 3 } }, { gold: 40 }], reply: ['“The Trade House will hear about this. So will Dunmere.”'] }],
       },
     ],
     leave: false,
@@ -183,23 +183,22 @@ export default {
     leave: 'I’ll think about it.',
     variants: [
       {
-        lines: ['So you’re the guild everybody’s whispering about. A banner, a hunter and a house. Terrifying.', 'The Harvest Melee is coming. Sign up, and I’ll show you what a Duelist looks like.'],
+        lines: ['So you’re the guild with the dead guild’s banner. A banner, a hunter and a house. Terrifying.', 'A banner like that belongs to real fighters. Duel me at the arena, and we’ll see if you’re one.'],
         choices: [
           {
-            text: 'See you in the ring.',
-            effects: [{ choice: { bram: 'respect' } }, { flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'Bram Calder dared you into the Harvest Melee.' } }, { open: 'arena' }],
-            reply: ['“Ha. Good. Don’t embarrass me by losing early.”'],
-          },
-          {
-            text: 'Why wait for the Melee?',
-            if: { charter: 'free' },
-            effects: [{ choice: { bram: 'respect' } }, { flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'Bram Calder dared you into the Harvest Melee.' } }, { open: 'arena' }],
-            reply: ['He grins. “Because the Melee has a crowd. Save it for the ring, Free Company.”'],
+            text: 'You’re on. First to yield, no tricks.',
+            effects: [{ choice: { bram: 'respect' } }, { flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'Bram Calder dared you into the Harvest Melee.' } }],
+            reply: ['“Ha. Good. Then the Harvest Melee, if you’re still standing.”'],
           },
           {
             text: 'We’re not here to impress you.',
-            effects: [{ choice: { bram: 'rival' } }, { flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'Bram Calder dared you into the Harvest Melee.' } }, { open: 'arena' }],
+            effects: [{ choice: { bram: 'rival' } }, { flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'Bram Calder dared you into the Harvest Melee.' } }],
             reply: ['“Everyone says that. Then they meet me.”'],
+          },
+          {
+            text: 'Whatever wins.',
+            effects: [{ choice: { bram: 'dirty' } }, { standing: { honor: -8, text: 'Fought Bram Calder dirty' } }, { flag: 'harvestMeleeIntroduced' }, { event: { id: 'dunmere-harvest-melee', note: 'Bram Calder dared you into the Harvest Melee.' } }],
+            reply: ['His grin goes thin. “So that’s the kind of guild you are.”', '“Fine. The whole arena will see it.”'],
           },
         ],
       },

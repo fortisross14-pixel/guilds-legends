@@ -76,25 +76,33 @@ right reasons means dread +, honor + or none. Paying moves neither.
 
 | # | Mission | Types | What happens | Fights (party level) | Status |
 |---|---|---|---|---|---|
-| 1.0 | **The Knock at the Door** | scene | Rook, the banner and the medal, the promise. You paint your colours on it. | — | ⬜ |
-| 1.1 | **Who Remembers the Lantern?** | ask around, trade | Ask in Dunmere. Most shrug ("cursed, gone"). Old Ebb at the Wayfarer will talk for a beer (2 gold): the Lantern prayed at Dawnwatch Temple before every trip west, and the old priests kept their names. | — | ⬜ |
-| 1.2 | **A Roof and a Sword** | find someone ×2 | The watch won't let a lone walker onto the Old Road. *Needs:* rent a hall (Gideon's yard) and hire a companion (Mara points to Nessa). | — | ⬜ |
-| 1.3 | **Wolfskins on the Old Road** | errand fight, gather | Corwin the merchant: drive off the Wolfskins and bring him three wolf pelts as proof; he'll vouch for you at the temple. Verdict: the Wolfskin handler. | the pair (2), the camp (3), the handler and his pack (4) | ⬜ |
-| 1.4 | **The Ash Abbot** | fight | Brother Malric holds the temple gate and sells passage. Get ready (level 5, a weapon from Mira's), then beat him. Verdict: Malric yields. | the acolytes (5), Malric and two acolytes (7) | ⬜ |
-| 1.5 | **The Prior's Silence** | gate, trade / convince / fight | Prior Aubrey keeps the Lantern's prayer book, and shows it only to someone the Dunmere watch trusts. Sergeant Hobb will give you the watch's token: **pay** him (80 gold; neither honor nor dread), **bring** three bottles of liquor from the Wolfskin den (dread +, honor +), or **threaten** him (a fight with the watch: honor −, dread +). In the book a name is circled: Maren, herbalist, Greenhollow. | the den (7), or the watch (6) | ⬜ |
-| 1.6 | **The Thornwood Road** | search | The Thornwood road opens. Walk it to Greenhollow; on the way, find the Lantern's waystone (their marks carved in it) off the path, guarded by poachers. | poachers (7), the waystone's band (8) | ⬜ |
-| 1.7 | **The Herbalist's Son** | find someone, **fight me first** | Maren won't talk to a stranger with a borrowed banner. Her son Tobin, a warden, will test your arm in a training bout. Then she tells you: she treated two Lantern survivors after the Blackwood, and one spoke of a ledger kept at Ironford. Evidence: the herbalist's testimony. Verdict: Maren's safety. | Tobin and a warden (9) | ⬜ |
-| 1.8 | **Bram's Dare** | fight | Back in Dunmere, Bram Calder says the banner belongs to real fighters and dares you to a duel. Verdict: fair or dirty. | Bram, one on one (9) | ⬜ |
-| 1.9 | **The Harvest Melee** | tournament | Fight the Dunmere Harvest Melee; win at least one bout. After it the Argent Crown's man warns you to retire the banner. | Initiation teams of two (9–11) | ⬜ |
+| 1.0 | **The Knock at the Door** | scene | Rook, the banner and the medal, the promise. You paint your colours on it. | — | ✅ |
+| 1.1 | **Who Remembers the Lantern?** | ask around, trade | Ask in Dunmere. Most shrug ("cursed, gone"). Old Ebb at the Wayfarer will talk for a beer (2 gold): the Lantern prayed at Dawnwatch Temple before every trip west, and the old priests kept their names. | — | ✅ |
+| 1.2 | **A Roof and a Sword** | find someone ×2 | The watch won't let a lone walker onto the Old Road. *Needs:* rent a hall (Gideon's yard) and hire a companion (Mara points to Nessa). | — | ✅ |
+| 1.3 | **Wolfskins on the Old Road** | errand fight, gather | Corwin the merchant: drive off the Wolfskins and bring him three wolf pelts as proof; he'll vouch for you at the temple. Verdict: the Wolfskin handler. | the pair (2), the camp (3), the handler and his pack (4) | ✅ |
+| 1.4 | **The Ash Abbot** | fight | Brother Malric holds the temple gate and sells passage. Get ready (level 5, a weapon from Mira's), then beat him. Verdict: Malric yields. | the acolytes (5), Malric and two acolytes (7) | ✅ |
+| 1.5 | **The Prior's Silence** | gate, trade / convince / fight | Prior Aubrey keeps the Lantern's prayer book, and shows it only to someone the Dunmere watch trusts. Sergeant Hobb will give you the watch's token: **pay** him (80 gold; neither honor nor dread), **bring** three bottles of liquor from the Wolfskin den (dread +, honor +), or **threaten** him (a fight with the watch: honor −, dread +). In the book a name is circled: Maren, herbalist, Greenhollow. | the den (7), or the watch (6) | ✅ |
+| 1.6 | **The Thornwood Road** | search | The Thornwood road opens. Walk it to Greenhollow; on the way, find the Lantern's waystone (their marks carved in it) off the path, guarded by poachers. | poachers (7), the waystone's band (8) | ✅ |
+| 1.7 | **The Herbalist's Son** | find someone, **fight me first** | Maren won't talk to a stranger with a borrowed banner. Her son Tobin, a warden, will test your arm in a training bout. Then she tells you: she treated two Lantern survivors after the Blackwood, and one spoke of a ledger kept at Ironford. Evidence: the herbalist's testimony. Verdict: Maren's safety. | Tobin and a warden (9) | ✅ |
+| 1.8 | **Bram's Dare** | fight | Back in Dunmere, Bram Calder says the banner belongs to real fighters and dares you to a duel. Verdict: fair or dirty. | Bram, one on one (9) | ✅ |
+| 1.9 | **The Harvest Melee** | tournament | Fight the Dunmere Harvest Melee; win at least one bout. After it the Argent Crown's man warns you to retire the banner. | Initiation teams of two (9–11) | ✅ |
 
 *Chapter end:* the warning; your first epithet ("the honourable guild of the New Lantern"); Ironford is next.
 
+**Build notes (Chapter 1, 2026-11-13).** Built as planned, with these choices:
+- 1.5: **Mother Aveline** keeps the prayer book (she already lives at Dawnwatch), not a new Prior Aubrey. Threatening Sergeant Hobb gives the token without a fight for now (honor −10, dread +10, the watch turns cold); a fight with the watch needs a "start a battle" dialogue effect, still to build.
+- 1.6: the waystone stands north of the Thornwood road; it is not guarded yet (no standing band there).
+- 1.7: Tobin's test is a one-on-one duel at the Greenhollow arena (the story duel), not a two-a-side bout.
+- 1.8: "fight dirty" moves honor; it doesn't make the duel easier yet.
+- Secondary: Hesta's feverfew (1.s1) and the wardens' snares (1.s2) are built; Corwin's strongbox, the arena master's novice team, Orren's notices and Nessa's camp are still to do.
+- Mission ids in code: 1.1 `c1-ask`, 1.2 `c1-road` (with `m1` and `m2` as its secondary tasks), 1.3 `m3`, 1.4 `temple`, 1.5 `c1-prior`, 1.6 `c1-thornwood`, 1.7 `m5`, 1.8 `c1-bram`, 1.9 `m4` (ends the chapter).
+
 **Secondary missions in Chapter 1** (people's errands, straightforward):
-- Mira: "Bring me three bundles of feverfew from the Old Road" (gather, 3).
+- ✅ Hesta Coal (the kiln): "Bring me three bundles of feverfew from the Old Road" (gather, 3).
 - Corwin: "A bandit took my strongbox on the Old Road. Get it back" (errand fight, 4).
 - The arena master: "Beat my novice team" (training, 5).
 - Orren the herald: "Someone's been tearing down notices at night. Find out who" (search in town).
-- Greenhollow's wardens: "Poachers in the Thornwood. Bring back their snares" (gather + fight, 8).
+- ✅ Greenhollow's wardens: "Poachers in the Thornwood. Bring back their snares" (gather + fight, 8).
 - Nessa (loyalty): "My brother's old camp is past the Thornwood's creek. Come with me" (search, 8).
 
 ---

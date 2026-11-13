@@ -186,15 +186,27 @@ function QuestsTab({ state, actions, navigate }) {
   const found = story.evidence.filter((item) => item.found);
   const done = story.missions.filter((mission) => mission.status === 'done');
   const step = active?.current;
+  // Clues: what the lead has turned up so far (its finished steps), newest last.
+  const clues = active ? active.steps.filter((item) => item.done && !item.skipped) : [];
+  const contracts = activeContracts(state).filter((mission) => !mission.story);
   return (
     <div className="journal">
       {active ? (
         <article className="quest-card">
           <header>
-            <span className="eyebrow num">Main · {active.number}</span>
+            <span className="eyebrow num">Primary · {active.number}</span>
             <h3>{active.title}</h3>
             <p>{active.goal || active.summary}</p>
           </header>
+          {clues.length ? (
+            <ul className="quest-card__clues" aria-label="Found so far">
+              {clues.map((item) => (
+                <li key={item.id}>
+                  <Icon name="check" size={14} tone="plain" /> {item.text}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {step ? (
             <p className="quest-card__step">
               <Icon name="play" size={14} tone="plain" /> {step.text}
@@ -243,8 +255,26 @@ function QuestsTab({ state, actions, navigate }) {
           </details>
         </article>
       ) : (
-        <p className="journal__quiet">Chapter 1 is over.</p>
+        <p className="journal__quiet">The story continues in a later chapter. Keep playing in the meantime.</p>
       )}
+      {story.secondary.length || contracts.length || side.length ? (
+        <Block title="Secondary" count={story.secondary.length + contracts.length + side.length}>
+          {story.secondary.map((mission) => (
+            <Row key={mission.id} icon="flag" title={mission.title} meta={mission.current?.text || mission.goal}>
+              <MapLink locationId={mission.pin} navigate={navigate} />
+            </Row>
+          ))}
+          {contracts.map((mission) => (
+            <Row key={mission.id} icon="scroll" title={mission.title} meta={`${contractPlace(mission).name}${mission.giverName ? ` · for ${mission.giverName}` : ''}`} onClick={() => navigate({ section: 'journal', tab: 'contracts' })} />
+          ))}
+          {side.map((entry) => (
+            <Row key={entry.id} icon="quill" title={entry.title} meta={entry.text}>
+              {typeof entry.progress === 'number' ? <span className="journal-row__count num">{entry.progress}/{entry.target}</span> : null}
+              <MapLink locationId={entry.locationId} navigate={navigate} />
+            </Row>
+          ))}
+        </Block>
+      ) : null}
       {found.length || story.prologue === 'done' ? (
         <Block title="Evidence" count={found.length}>
           {found.length ? (
@@ -252,16 +282,6 @@ function QuestsTab({ state, actions, navigate }) {
           ) : (
             <p className="journal__quiet">Nothing yet.</p>
           )}
-        </Block>
-      ) : null}
-      {side.length ? (
-        <Block title="Side" count={side.length}>
-          {side.map((entry) => (
-            <Row key={entry.id} icon="quill" title={entry.title} meta={entry.text}>
-              {typeof entry.progress === 'number' ? <span className="journal-row__count num">{entry.progress}/{entry.target}</span> : null}
-              <MapLink locationId={entry.locationId} navigate={navigate} />
-            </Row>
-          ))}
         </Block>
       ) : null}
       {!hasHall(state) || upgrade ? (

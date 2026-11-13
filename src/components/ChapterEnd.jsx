@@ -4,12 +4,12 @@ import { Button, Modal } from './UI.jsx';
 import Asset from './Asset.jsx';
 import Icon from './Icon.jsx';
 
-// The end of Chapter 1: a short card sequence in the style of the season
+// The end of a chapter: a short card sequence in the style of the season
 // review (what happened, what the guild chose, where it stands), then the
 // Chapter 2 teaser. Free play continues afterwards.
-export default function ChapterEnd({ state, onClose }) {
+export default function ChapterEnd({ state, chapter = null, onClose }) {
   const [index, setIndex] = useState(0);
-  const summary = getChapterSummary(state);
+  const summary = getChapterSummary(state, chapter);
   const cards = ['story', 'choices', 'guild', 'teaser'];
   const card = cards[index];
   const last = index === cards.length - 1;

@@ -231,6 +231,8 @@ export function townMap(town, hall = null) {
 }
 
 function npcTarget(placeId, npc) {
+  // A town person's walker: its own art (npc.<town>.<id>), or `asset` (a role's walker).
+  const art = npc.asset || `npc.${placeId}.${npc.id}`;
   const { x } = tileCenter(npc.at);
   const feet = (npc.at[1] + 1) * T - 2;
   return {
@@ -243,14 +245,14 @@ function npcTarget(placeId, npc) {
     icon: 'letter',
     if: npc.if || null,
     hideWhenInactive: Boolean(npc.if),
-    faceWalker: Boolean(ASSETS[`npc.${placeId}.${npc.id}`]?.walker),
+    faceWalker: Boolean(ASSETS[art]?.walker),
     x,
     y: feet,
-    asset: `npc.${placeId}.${npc.id}`,
-    ...personSize(`npc.${placeId}.${npc.id}`),
+    asset: art,
+    ...personSize(art),
     bob: true,
     approach: { x, y: feet + 22 },
-    labelAt: { x, y: feet - personSize(`npc.${placeId}.${npc.id}`).h - 18 },
+    labelAt: { x, y: feet - personSize(art).h - 18 },
     reach: 38,
   };
 }

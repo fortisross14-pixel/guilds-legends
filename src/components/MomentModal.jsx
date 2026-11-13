@@ -350,7 +350,7 @@ export default function MomentModal({ moment, state, onClose }) {
   }
 
   if (moment.type === 'chapterEnd') {
-    return <ChapterEnd key={moment.id} state={state} onClose={onClose} />;
+    return <ChapterEnd key={moment.id} state={state} chapter={moment.chapter} onClose={onClose} />;
   }
 
   if (moment.type === 'tutorialComplete') {

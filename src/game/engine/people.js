@@ -22,6 +22,7 @@ import { makeCandidate, recruitObjection } from './candidates.js';
 import { baseSalaryFor, candidateRanges, contractSalary } from './contracts.js';
 import { battleItems } from './inventory.js';
 import { declineContract, firstStep } from './missions.js';
+import { askAroundHere, askAroundReply, askedAroundInPlace } from './story.js';
 
 const MAX_PEOPLE = 7; // a room fits one screen
 const HIRE_YEARS = 2;
@@ -260,6 +261,9 @@ function hubChoices(state, person) {
   const chat = person.kind === 'regular' ? person.chat?.[0] : CHAT_TEXT[visitorKind(person)];
   if (chat && visitorKind(person) !== 'mission') choices.push(choice('chat', chat, Boolean(asked.chat)));
   choices.push(...serviceChoices(person, state, asked));
+  // A story "ask around" step in this town: anyone here can be asked.
+  const around = (state.world?.currentLocationId || 'dunmere') === person.locationId ? askAroundHere(state, person.id) : null;
+  if (around) choices.push(choice('lantern', around.text, Boolean(asked.lantern)));
   person.offers.forEach((offer) => {
     if (offer.type === 'mission') choices.push(nextMission(state, person).ready ? choice('mission', 'It’s done.') : choice('mission', 'Need anything done?', Boolean(asked.mission)));
     if (offer.type === 'hire') choices.push(choice('hire', 'Looking for work?', Boolean(asked.hire)));
@@ -416,12 +420,17 @@ export function talkToPerson(state, personId, choiceId) {
   let lines = [];
   let choices = null;
   let ui = null;
-  if (['chat', 'mission', 'hire', 'challenge', 'service.rumor'].includes(action)) memory.asked[action] = true;
+  if (['chat', 'mission', 'hire', 'challenge', 'service.rumor', 'lantern'].includes(action)) memory.asked[action] = true;
 
   if (action === 'bye') {
     return { state: finalize(next), error: null, lines: [voice.bye], choices: [], ui: { close: true } };
   } else if (action === 'back') {
     lines = [voice.more];
+  } else if (action === 'lantern') {
+    const around = askAroundHere(next, person.id);
+    if (!around) return { state, error: 'They have nothing to say about that.' };
+    lines = askAroundReply(next, around, person.id);
+    askedAroundInPlace(next, around, person.id);
   } else if (action === 'chat') {
     lines = chatLines(next, person);
   } else if (action === 'mission') {

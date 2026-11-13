@@ -31,7 +31,7 @@ export default {
     topics: [
       { id: 'silverleaf', text: 'Can I help with anything?', if: { notFlag: 'marenErrand' }, effects: [{ flag: 'marenErrand' }, { relationship: 1 }, { item: { potion: 1 } }], lines: ['Silverleaf grows past the ward stones. My knees won’t take me there anymore.', 'Take this for the walk. Silver underside, mind. Don’t bring me nettles.'] },
       { id: 'herbs', text: 'What do you sell?', effects: [{ open: 'shop' }], lines: ['Remedies that work, at prices that hurt less than the wound. Come and look.'] },
-      { id: 'lantern', text: 'Did you ever meet the Broken Lantern?', if: { storyDone: 'm4', notStoryDone: 'm5' }, lines: ['…Who sent you to ask me that?', 'Never mind. Not here, not now.'] },
+      { id: 'lantern', text: 'Did you ever meet the Broken Lantern?', if: { storyDone: 'c1-thornwood', notStoryDone: 'm5' }, lines: ['…Who sent you to ask me that?', 'Never mind. Not here, not now.'] },
     ],
     bye: { text: 'Thank you, Maren.', lines: ['Go on. And keep your people in one piece; I’m busy enough.'] },
   },

@@ -75,7 +75,7 @@ export default function Prologue({ state, onComplete }) {
   };
 
   // The room: the founder by the bed; once the door is open, Rook lies on the floor inside it.
-  const rookIn = phase !== 'knock' && phase !== 'door';
+  const rookIn = phase === 'rook';
   const map = useMemo(() => {
     const layout = interiorLayout('house', 'dunmere');
     const people = rookIn ? [{ id: 'rook', spot: 'rook', sprite: 'npc.house.rook', name: 'Cassian Rook', role: 'Wounded stranger', met: true }] : [];

@@ -18,12 +18,7 @@ const reg = (locationId, building, spot, id, name, role, extra = {}) => ({ id: `
 export const REGULARS = [
   // Dawnwatch Temple, at the end of the Old Road (its buildings count as Dunmere's).
   // Mother Aveline: tired, dry, unafraid; she has waited a long time for someone to come.
-  reg('dunmere', 'temple', 'altar', 'aveline', 'Mother Aveline', 'High priestess', {
-    hello: ['You came past Malric, so you are either brave or lost.', 'I am Aveline. This was a house of the Dawn, before.'],
-    again: ['The lamps are lit again. Small mercies.'],
-    chat: ['What happened here?', ['Malric was one of us. He found that pilgrims pay more to pass than to pray.']],
-    bye: 'Walk in the light. Or near it, at least.',
-  }),
+  reg('dunmere', 'temple', 'altar', 'aveline', 'Mother Aveline', 'High priestess', { dialogue: 'dunmere.aveline', sprite: 'npc.role.high-priestess' }),
   // Brother Tamas: young, nervous, kind; he fed the pilgrims while Malric held the gate.
   reg('dunmere', 'priory', 'table', 'tamas', 'Brother Tamas', 'Priest', {
     hello: ['Oh. Visitors. Real ones.', 'Tamas. I keep the pot on and the cots clean.'],
@@ -33,6 +28,8 @@ export const REGULARS = [
   }),
   // Dunmere
   reg('dunmere', 'tavern', 'bar', 'mara', 'Mara Fen', 'Innkeeper', { dialogue: 'dunmere.innkeeper', sprite: 'npc.dunmere.innkeeper', portrait: 'portrait.story.mara' }),
+  // Old Ebb: a regular at the corner table; drank with every guild that passed through (story 1.1).
+  reg('dunmere', 'tavern', 't1a', 'ebb', 'Old Ebb', 'Regular', { dialogue: 'dunmere.ebb', sprite: 'npc.role.traveller' }),
   // Mira Holt: brisk, protective of her stock.
   reg('dunmere', 'shop', 'counter', 'mira', 'Mira Holt', 'Shopkeeper', {
     service: 'shop',

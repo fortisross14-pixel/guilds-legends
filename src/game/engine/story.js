@@ -8,10 +8,12 @@ import { cleanBanner } from '../../data/banner.js';
 import { CHAPTERS, EVIDENCE, PROLOGUE, REGIONAL_TOURNAMENTS, STORY_HEROES, STORY_MISSIONS, STORY_MISSION_BY_ID } from '../../data/story.js';
 import { PATHS } from '../../data/charters.js';
 import { DIALOGUES, SEASON_MONTHS, TOP_LEVEL_FLAGS } from '../../data/dialogue/index.js';
+import { ASK_AROUND } from '../../data/dialogue/askAround.js';
 import { LORE_BY_ID, PLACE_LORE } from '../../data/lore.js';
 import { MISSION_TEMPLATES } from '../../data/content.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { TOWNS } from '../../data/towns/index.js';
+import { WILD_AREAS } from '../../data/wilds/index.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { createDuelEncounter } from '../combat.js';
 import { artifactEffectFromPrestige } from '../legacy.js';
@@ -156,6 +158,10 @@ export function checkCondition(state, condition, context = {}) {
         return list(value).every((id) => storyDone(state, id));
       case 'notStoryDone':
         return !storyDone(state, value);
+      case 'storyStep':
+        return atStoryStep(state, value);
+      case 'visitedPlace':
+        return (state.world?.visitedLocationIds || []).includes(value) || state.world?.currentLocationId === value;
       case 'storyActive':
         return story.missions?.[value]?.status === 'active';
       case 'evidence':
@@ -266,6 +272,46 @@ export function currentStep(state, missionId) {
   return mission.steps[record.step] || null;
 }
 
+/** True when '<missionId>.<stepId>' is a mission's current step. */
+export function atStoryStep(state, key) {
+  const [missionId, stepId] = String(key).split('.');
+  return currentStep(state, missionId)?.id === stepId;
+}
+
+/**
+ * An "ask around" step current in this town (src/data/dialogue/askAround.js), or null:
+ * { key, text, …entry }. Asked of anyone but the one who knows (the step's npc).
+ */
+export function askAroundHere(state, askerKey = '') {
+  const here = state.world?.wildAreaId || state.world?.activeTravel ? null : state.world?.currentLocationId || 'dunmere';
+  for (const [key, entry] of Object.entries(ASK_AROUND)) {
+    if (entry.locationId !== here || !atStoryStep(state, key)) continue;
+    const [missionId] = key.split('.');
+    if (currentStep(state, missionId)?.npc === askerKey) continue;
+    return { key, ...entry };
+  }
+  return null;
+}
+
+/** What someone says when asked around (the hint once enough people were asked). */
+export function askAroundReply(state, entry, askerKey) {
+  const asked = state.story?.asked?.[entry.key] || 0;
+  const [low, high] = entry.after || [2, 4];
+  const need = low + (hashString(`${state.seed}:${entry.key}`) % (high - low + 1));
+  if (asked + 1 >= need) return entry.pointer;
+  return entry.lines[hashString(`${entry.key}:${askerKey}`) % entry.lines.length];
+}
+
+/** Counts one more person asked (only the first time each one is asked). */
+export function askedAroundInPlace(state, entry, askerKey) {
+  state.story.asked ||= {};
+  state.story.askedBy ||= {};
+  const seen = (state.story.askedBy[entry.key] ||= []);
+  if (seen.includes(askerKey)) return;
+  seen.push(askerKey);
+  state.story.asked[entry.key] = (state.story.asked[entry.key] || 0) + 1;
+}
+
 /** The active mission whose current step is `kind` with `field` = value, and that step. */
 function activeStepWhere(state, test) {
   for (const mission of STORY_MISSIONS) {
@@ -348,9 +394,12 @@ function completeMissionInPlace(state, mission) {
     pushMoment(state, { type: 'tutorialComplete', title: 'Tutorial complete' });
   }
   if (mission.endsChapter) {
-    story.chapterDone = true;
-    pushMoment(state, { type: 'chapterEnd', chapter: mission.endsChapter, title: 'Chapter 1 complete' });
-    addChronicle(state, { type: 'story', importance: 5, title: 'The end of Chapter 1', text: 'Wren has seen the banner. The names they erased are known again. The Crown must fall.', tags: ['story', 'chapter'] });
+    // A chapter ends; the next one opens (its missions are gated on chapterAtLeast or on this one).
+    const chapter = mission.endsChapter;
+    story.chapterDone = chapter;
+    story.chapter = Math.max(story.chapter || 1, chapter + 1);
+    pushMoment(state, { type: 'chapterEnd', chapter, title: `Chapter ${chapter} complete` });
+    addChronicle(state, { type: 'story', importance: 5, title: `The end of ${CHAPTERS[chapter]?.title || `Chapter ${chapter}`}`, text: CHAPTERS[chapter]?.teaser || mission.summary, tags: ['story', 'chapter'] });
   }
 }
 
@@ -402,11 +451,13 @@ function storyPassInPlace(state) {
 }
 
 function walkable(locationId) {
-  return Boolean(TOWNS[locationId]);
+  return Boolean(TOWNS[locationId] || WILD_AREAS[locationId]);
 }
 
 function stepPlaceHere(state, step) {
-  if (state.world?.activeTravel || state.world?.wildAreaId) return false;
+  if (state.world?.activeTravel) return false;
+  // A step can happen in a wild area (Dawnwatch Temple stands at the end of the Old Road).
+  if (state.world?.wildAreaId) return step.at === state.world.wildAreaId;
   if (step.at === 'hall') return atHome(state);
   return (state.world?.currentLocationId || 'dunmere') === step.at;
 }
@@ -666,7 +717,7 @@ export function skipTutorialInPlace(state, guildName) {
   foundGuildInPlace(state, guildName);
   rentLotInPlace(state, undefined, 0);
   storyRecruitInPlace(state, 'nessa');
-  ['m1', 'm2', 'm3', 'temple'].forEach((id) => {
+  ['c1-ask', 'm1', 'm2', 'c1-road', 'm3', 'temple'].forEach((id) => {
     const record = missionState(story, id);
     record.status = 'done';
     record.step = STORY_MISSION_BY_ID[id].steps.length;
@@ -709,16 +760,21 @@ export function getStoryView(state) {
       route: record.route || null,
       steps,
       current,
-      pin: current?.at === 'hall' ? 'dunmere' : current?.at || mission.locationId,
+      // The map pin is a town; a step in a wild area pins the mission's town.
+      pin: current?.at === 'hall' ? 'dunmere' : LOCATION_BY_ID[current?.at] ? current.at : mission.locationId,
       gateMet: record.status !== 'locked' || gateOpen(state, mission),
     };
   });
-  const active = missions.find((mission) => mission.status === 'active') || null;
-  const next = active ? null : missions.find((mission) => mission.status === 'locked' && !mission.locked) || null;
+  // Primary: the story lead (one at a time). Secondary: the guild tasks the story asks for (rent a hall, hire).
+  const active = missions.find((mission) => mission.status === 'active' && !mission.secondary) || null;
+  const secondary = missions.filter((mission) => mission.status === 'active' && mission.secondary);
+  const next = active ? null : missions.find((mission) => mission.status === 'locked' && !mission.locked && !mission.secondary) || null;
   return {
     missions,
     active,
+    secondary,
     next,
+    chapter: story.chapter || 1,
     pin: active?.pin || null,
     tutorial: story.tutorial,
     prologue: story.prologue,
@@ -736,14 +792,15 @@ const OUTCOME_TEXT = {
   nessa: { together: 'Nessa trusts you with her brother’s story.', hurt: 'Nessa told you late; you told her so.' },
 };
 
-/** The end of Chapter 1, season-review style: what the guild did and chose, and what comes next. */
-export function getChapterSummary(state) {
+/** The end of a chapter, season-review style: what the guild did and chose, and what comes next. */
+export function getChapterSummary(state, chapter = null) {
   const story = storyState(state);
+  const number = chapter || (typeof story.chapterDone === 'number' ? story.chapterDone : 1);
   const years = state.date.year - 1187;
   return {
-    title: CHAPTERS[1].title,
+    title: CHAPTERS[number]?.title || `Chapter ${number}`,
     span: `${MONTHS_SHORT[5]} 1187 → ${MONTHS_SHORT[state.date.month]} ${state.date.year}${years ? ` (${years} year${years === 1 ? '' : 's'})` : ''}`,
-    missions: STORY_MISSIONS.filter((mission) => mission.chapter === 1).map((mission) => ({ number: mission.number, title: mission.title, done: storyDone(state, mission.id) })),
+    missions: STORY_MISSIONS.filter((mission) => mission.chapter === number && !mission.secondary).map((mission) => ({ number: mission.number, title: mission.title, done: storyDone(state, mission.id) })),
     evidence: EVIDENCE.filter((item) => story.evidence[item.id]).map((item) => item.name),
     recruits: Object.keys(STORY_HEROES).filter((id) => storyHero(state, id)).map((id) => STORY_HEROES[id].name),
     choices: Object.entries(OUTCOME_TEXT).map(([key, texts]) => texts[story.choices[key]]).filter(Boolean),
@@ -756,7 +813,7 @@ export function getChapterSummary(state) {
     },
     path: PATHS[state.paths?.best]?.name || null,
     codex: Object.keys(story.codex).length,
-    teaser: { title: CHAPTERS[2].title, text: CHAPTERS[2].teaser },
+    teaser: { title: CHAPTERS[number + 1]?.title || 'What comes next', text: CHAPTERS[number]?.teaser || '' },
   };
 }
 

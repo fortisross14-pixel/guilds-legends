@@ -28,7 +28,7 @@ import {
   storyRouteInPlace,
   storySceneChoiceInPlace,
   unlockCodexInPlace,
-} from './story.js';
+  askAroundHere, askAroundReply, askedAroundInPlace } from './story.js';
 import { rentLotInPlace } from './hall.js';
 import { HOME_LOT_ID } from '../../data/lots.js';
 import { advanceDays } from './time.js';
@@ -97,7 +97,7 @@ export function getDialogueView(state, requestedId) {
   // The hub: topics the player can ask about, in any order. Several entries can
   // share an id (versions for different situations): the first one that holds is used.
   const seen = new Set();
-  const topics = (conversation.topics || [])
+  const topics = topicsOf(state, conversationId)
     .filter((topic) => checkCondition(state, topic.if, context))
     .filter((topic) => (seen.has(topic.id) ? false : seen.add(topic.id)))
     .map((topic) => ({ id: topic.id, text: fillText(state, topic.text), asked: Boolean(asked[topic.id]) }));
@@ -125,9 +125,22 @@ function explorationOf(state) {
   return state.world?.exploration || {};
 }
 
-function topicOf(state, conversationId, topicId) {
+// "Ask around" (src/data/dialogue/askAround.js): while such a story step is current, every
+// town conversation with a hub gets the question; not story scenes, and not the one who knows.
+function askTopicFor(state, conversationId) {
   const conversation = DIALOGUES[conversationId];
-  return (conversation?.topics || []).find((topic) => topic.id === topicId && checkCondition(state, topic.if, { conversationId })) || null;
+  if (!conversation?.topics || conversation.decide || conversationId.startsWith('story.')) return null;
+  const entry = askAroundHere(state, conversationId);
+  return entry ? { id: 'ask-around', text: entry.text, lines: askAroundReply(state, entry, conversationId), askAround: entry } : null;
+}
+
+function topicsOf(state, conversationId) {
+  const ask = askTopicFor(state, conversationId);
+  return [...(ask ? [ask] : []), ...(DIALOGUES[conversationId]?.topics || [])];
+}
+
+function topicOf(state, conversationId, topicId) {
+  return topicsOf(state, conversationId).find((topic) => topic.id === topicId && checkCondition(state, topic.if, { conversationId })) || null;
 }
 
 /** A hub topic's answer, filled in. */
@@ -142,6 +155,7 @@ export function askDialogueTopic(state, conversationId, topicId) {
   const topic = topicOf(state, conversationId, topicId);
   if (!topic) return { state, error: 'They have nothing to say about that.' };
   const next = clone(state);
+  if (topic.askAround) askedAroundInPlace(next, topic.askAround, conversationId);
   const ui = applyEffectsInPlace(next, topic.effects, { conversationId, speaker: conversation.speaker });
   const exploration = explorationInPlace(next);
   exploration.asked ||= {};

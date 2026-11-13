@@ -46,18 +46,18 @@ export default {
     ).map((variant) => ({
       ...variant,
       choices: [
-        { text: 'We’ll bring your nightcap.', reply: ['“Mind the stalkers. They like healers’ messengers.”'] },
-        { text: 'Tobin. Ilse. Aldric. These names were in our banner. Did you know them?', if: { flag: 'knowsSeven' }, effects: [{ route: 'patients' }], reply: ['Her hands shake. “Tobin. Ilse. I stitched them both.”', 'She sits down. “Ask.”'] },
+        { text: 'Then I’ll find your son.', reply: ['“Tobin is at the arena most days. Tell him I sent you. He’ll know what to do.”'] },
+        { text: 'Tobin. Ilse. Aldric. These names were in our banner. Did you know them?', if: { flag: 'knowsSeven' }, effects: [{ flag: 'marenTrusts' }], reply: ['Her hands shake. “Tobin. Ilse. I stitched them both.”', 'She sits down. “Ask.”'] },
         {
           text: 'The families we’ve helped will vouch for us.',
           if: { charter: 'shield' },
-          effects: [{ route: 'patients' }],
+          effects: [{ flag: 'marenTrusts' }],
           reply: ['Three of her patients speak for your guild before she can refuse.', 'Maren sighs. “Fine. Sit.”'],
         },
       ],
     })),
     topics: [
-      { id: 'price', text: 'What would it take for you to talk?', lines: ['I’ve a sick village up the valley and no nightcap. The Thornwood edge is full of it.', 'Bring me a basket, and I’ll tell you what I saw.'] },
+      { id: 'price', text: 'What would it take for you to talk?', lines: ['You carry a dead guild’s banner, and you want me to trust you with what I saw.', 'My son Tobin is a warden. Let him test your arm in the ring. If he says you’re honest steel, I’ll talk.'] },
       { id: 'afraid', text: 'Who are you afraid of?', lines: ['People with good boots and plain cloaks. You’ll know them when you see them.'] },
     ],
   },
