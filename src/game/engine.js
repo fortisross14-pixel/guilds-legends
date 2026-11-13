@@ -68,6 +68,7 @@ export {
   releaseHero,
   refoundGuild,
   setHeroMonthlyActivity,
+  chooseUltimate,
   renameGuild,
   renameFounderHero,
   appointHero,

@@ -4,7 +4,7 @@ import { CLASSES, FLAW_PROFILES, PERSONALITY_PROFILES, APPOINTMENTS, normalizeCl
 import { MONTHLY_ACTIVITIES } from '../data/activities.js';
 import { EQUIPMENT_BY_ID, TIER_NAMES } from '../data/rooms.js';
 import { ARTIFACT_PREFIX, GEAR_SLOTS, ITEMS, canEquip } from '../data/items.js';
-import { CLASS_SKILLS, skillLabel } from '../data/skills.js';
+import { SKILLS, ULTIMATES, ULTIMATE_LEVEL, heroSkillTree, skillLabel } from '../data/skills.js';
 import { MAIN_PARTY_SIZE, activityAvailable, contractMonthsLeft, getHero, hallRooms, offerTerms, renewalTerms, xpForNextLevel } from '../game/engine.js';
 import { heroBattleStats } from '../game/combat.js';
 import { Badge, Button, HeroPortrait, Modal, PrimalBadge, ProgressBar, RarityBadge, Tabs } from './UI.jsx';
@@ -33,6 +33,8 @@ function gearName(state, id) {
 
 // JRPG-style status screen for one hero. Opens from anywhere; Prev/Next flip
 // through the active roster. Non-roster heroes (rivals, legends) are read-only.
+const SKILL_SOURCE = { Element: 'Element', Character: 'Character', Ultimate: 'Ultimate' };
+
 export default function HeroStatusScreen({ state, heroId, onClose, onSelect, actions }) {
   const [tab, setTab] = useState('status');
   // Long-press a stat or a skill for what it means.
@@ -197,12 +199,27 @@ export default function HeroStatusScreen({ state, heroId, onClose, onSelect, act
             <section className="hero-status__skills">
               <h3>Skills</h3>
               <ul>
-                {(CLASS_SKILLS[classId] || []).map((skill) => (
+                {heroSkillTree({ ...hero, classId }).map((skill) => (
                   <li key={skill.id} className={skill.level <= (hero.level || 1) ? 'is-unlocked' : 'is-locked'} {...inspect(`${skillLabel(skill, hero.primal)}: ${skill.description}`)}>
-                    <strong>{skillLabel(skill, hero.primal)}</strong> · {skill.mp} MP{skill.level <= (hero.level || 1) ? '' : ` · Lv ${skill.level}`}
+                    <strong>{skillLabel(skill, hero.primal)}</strong> · {SKILL_SOURCE[skill.classId] || 'Class'} · {skill.mp} MP{skill.level <= (hero.level || 1) ? '' : ` · Lv ${skill.level}`}
                   </li>
                 ))}
+                {!hero.ultimate ? (
+                  <li className="is-locked">
+                    <strong>Ultimate</strong> · one of three · Lv {ULTIMATE_LEVEL}
+                  </li>
+                ) : null}
               </ul>
+              {own && !hero.ultimate && (hero.level || 1) >= ULTIMATE_LEVEL ? (
+                <div className="hero-status__ultimates">
+                  <p>Choose {hero.name}’s ultimate. The choice is for good.</p>
+                  {ULTIMATES.map((id) => (
+                    <Button key={id} size="sm" variant="primary" onClick={() => actions.chooseUltimate(hero.id, id)} {...inspect(SKILLS[id].description)}>
+                      {SKILLS[id].name}: {SKILLS[id].description}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </section>
 
             {own ? (

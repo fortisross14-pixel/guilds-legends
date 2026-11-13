@@ -39,6 +39,17 @@ Levels run from 1 to about **53**; the level cap becomes 60.
 - Done: hero level cap 60; foe strength follows level (power 38 + 2.25 per level, capped at 98).
 - To change before Chapter 2 is built: rival rosters by circuit (opposing teams' levels), practice teams.
 
+**Skills (built).** A hero learns from four sources (`src/data/skills.js`, `heroSkillTree`):
+
+| Source | Levels | What |
+|---|---|---|
+| Class (Guardian, Duelist, Ranger…) | 1, 4–5, 20, 35 | the class's own moves |
+| Element (the hero's primal) | 10, 25, 40 | a strike, a group skill, a great one |
+| Character (personality) | 15, 29 | Brave stands fast, Merciful heals, Witty taunts… |
+| Ultimate | 48 | one of three, chosen for good: The Last Banner (great party heal), Cataclysm (element on every foe), Executioner (one huge blow) |
+
+The old middle class skills (levels 8–18) are kept for enemies only.
+
 **The open world.** After Dunmere every road is open (only the Old Road waits on a companion).
 Each area has its danger, shown on its map card; walking into one far above the guild sends it
 home beaten (the defeat rule):

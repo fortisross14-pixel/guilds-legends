@@ -1,4 +1,9 @@
-// Class skills, unlocked by level. Used by src/game/combat.js.
+// Skills, unlocked by level (docs/design/STORY_DRAFT.md, Levels). Used by src/game/combat.js.
+// A hero learns from four sources (heroSkillTree):
+//   class      levels 1, 4–5, ~20, ~35 (level 99: kept for enemies only, never learned by heroes)
+//   element    levels 10, 25, 40 (by the hero's primal)
+//   character  levels 15, 29 (by the hero's personality)
+//   ultimate   level 48: one of three, chosen by the player (hero.ultimate)
 //
 // target: 'enemy' | 'allEnemies' | 'ally' | 'allAllies' | 'self' | 'koAlly'
 // effect: 'damage' | 'heal' | 'buff' | 'status' | 'revive' | 'cure' | 'steal'
@@ -50,7 +55,7 @@ const list = [
   {
     id: 'rally',
     classId: 'Guardian',
-    level: 9,
+    level: 20,
     name: 'Rally',
     mp: 8,
     target: 'allAllies',
@@ -61,7 +66,7 @@ const list = [
   {
     id: 'bulwark',
     classId: 'Guardian',
-    level: 13,
+    level: 99,
     name: 'Bulwark',
     mp: 10,
     target: 'allAllies',
@@ -72,7 +77,7 @@ const list = [
   {
     id: 'earthshaker',
     classId: 'Guardian',
-    level: 17,
+    level: 35,
     name: 'Earthshaker',
     mp: 16,
     target: 'allEnemies',
@@ -112,7 +117,7 @@ const list = [
   {
     id: 'blade-dance',
     classId: 'Duelist',
-    level: 8,
+    level: 99,
     name: 'Blade Dance',
     mp: 10,
     target: 'allEnemies',
@@ -124,7 +129,7 @@ const list = [
   {
     id: 'flurry',
     classId: 'Duelist',
-    level: 13,
+    level: 20,
     name: 'Flurry',
     mp: 12,
     target: 'enemy',
@@ -136,7 +141,7 @@ const list = [
   {
     id: 'finale',
     classId: 'Duelist',
-    level: 18,
+    level: 35,
     name: 'Finale',
     mp: 18,
     target: 'enemy',
@@ -175,7 +180,7 @@ const list = [
   {
     id: 'volley',
     classId: 'Ranger',
-    level: 9,
+    level: 20,
     name: 'Volley',
     mp: 9,
     target: 'allEnemies',
@@ -187,7 +192,7 @@ const list = [
   {
     id: 'pinning-shot',
     classId: 'Ranger',
-    level: 13,
+    level: 99,
     name: 'Pinning Shot',
     mp: 8,
     target: 'enemy',
@@ -200,7 +205,7 @@ const list = [
   {
     id: 'arrow-storm',
     classId: 'Ranger',
-    level: 17,
+    level: 35,
     name: 'Arrow Storm',
     mp: 16,
     target: 'allEnemies',
@@ -238,7 +243,7 @@ const list = [
   {
     id: 'venom',
     classId: 'Rogue',
-    level: 10,
+    level: 99,
     name: 'Venom',
     mp: 6,
     target: 'enemy',
@@ -251,7 +256,7 @@ const list = [
   {
     id: 'shadowstep',
     classId: 'Rogue',
-    level: 14,
+    level: 20,
     name: 'Shadowstep',
     mp: 10,
     target: 'enemy',
@@ -264,7 +269,7 @@ const list = [
   {
     id: 'assassinate',
     classId: 'Rogue',
-    level: 18,
+    level: 35,
     name: 'Assassinate',
     mp: 16,
     target: 'enemy',
@@ -290,7 +295,7 @@ const list = [
   {
     id: 'purify',
     classId: 'Cleric',
-    level: 7,
+    level: 99,
     name: 'Purify',
     mp: 3,
     target: 'ally',
@@ -298,11 +303,11 @@ const list = [
     power: 0.3,
     description: 'Remove poison and stun, with a small heal.',
   },
-  { id: 'cura', classId: 'Cleric', level: 9, name: 'Cura', mp: 9, target: 'allAllies', effect: 'heal', power: 0.7, description: 'Heal the whole party.' },
+  { id: 'cura', classId: 'Cleric', level: 20, name: 'Cura', mp: 9, target: 'allAllies', effect: 'heal', power: 0.7, description: 'Heal the whole party.' },
   {
     id: 'raise',
     classId: 'Cleric',
-    level: 12,
+    level: 35,
     name: 'Raise',
     mp: 14,
     target: 'koAlly',
@@ -313,7 +318,7 @@ const list = [
   {
     id: 'holy',
     classId: 'Cleric',
-    level: 15,
+    level: 99,
     name: 'Holy',
     mp: 14,
     target: 'enemy',
@@ -325,7 +330,7 @@ const list = [
   {
     id: 'curaga',
     classId: 'Cleric',
-    level: 18,
+    level: 99,
     name: 'Curaga',
     mp: 20,
     target: 'allAllies',
@@ -364,7 +369,7 @@ const list = [
   {
     id: 'sleep',
     classId: 'Mage',
-    level: 9,
+    level: 99,
     name: 'Sleep',
     mp: 8,
     target: 'enemy',
@@ -375,7 +380,7 @@ const list = [
   {
     id: 'greater-bolt',
     classId: 'Mage',
-    level: 13,
+    level: 20,
     name: 'Greater Bolt',
     mp: 12,
     target: 'enemy',
@@ -388,7 +393,7 @@ const list = [
   {
     id: 'meteor',
     classId: 'Mage',
-    level: 18,
+    level: 35,
     name: 'Meteor',
     mp: 24,
     target: 'allEnemies',
@@ -422,11 +427,11 @@ const list = [
     status: { type: 'atkDown', turns: 3, chance: 0.9 },
     description: 'Cuts the target’s attack by 30% for 3 rounds.',
   },
-  { id: 'mend', classId: 'Scholar', level: 8, name: 'Mend', mp: 6, target: 'ally', effect: 'heal', power: 0.7, description: 'Heal one ally.' },
+  { id: 'mend', classId: 'Scholar', level: 99, name: 'Mend', mp: 6, target: 'ally', effect: 'heal', power: 0.7, description: 'Heal one ally.' },
   {
     id: 'battle-plan',
     classId: 'Scholar',
-    level: 10,
+    level: 20,
     name: 'Battle Plan',
     mp: 10,
     target: 'allAllies',
@@ -437,7 +442,7 @@ const list = [
   {
     id: 'mind-spike',
     classId: 'Scholar',
-    level: 14,
+    level: 35,
     name: 'Mind Spike',
     mp: 12,
     target: 'enemy',
@@ -475,11 +480,11 @@ const list = [
     status: { type: 'burn', turns: 2, chance: 0.3 },
     description: 'Explosives hit every enemy and may set them burning.',
   },
-  { id: 'repair-kit', classId: 'Artificer', level: 8, name: 'Field Kit', mp: 6, target: 'ally', effect: 'heal', power: 0.8, description: 'Patch up one ally.' },
+  { id: 'repair-kit', classId: 'Artificer', level: 99, name: 'Field Kit', mp: 6, target: 'ally', effect: 'heal', power: 0.8, description: 'Patch up one ally.' },
   {
     id: 'overclock',
     classId: 'Artificer',
-    level: 12,
+    level: 20,
     name: 'Overclock',
     mp: 10,
     target: 'ally',
@@ -490,7 +495,7 @@ const list = [
   {
     id: 'cannon',
     classId: 'Artificer',
-    level: 16,
+    level: 35,
     name: 'Hand Cannon',
     mp: 16,
     target: 'enemy',
@@ -632,6 +637,68 @@ list.push(
   },
 );
 
+
+// ---------------------------------------------------------------- element skills (10, 25, 40)
+const el = (id, element, level, name, mp, target, effect, extra, description) => ({ id, classId: 'Element', element, elemental: effect === 'damage', level, name, mp, target, effect, ...extra, description });
+list.push(
+  el('cinder-lash', 'Fire', 10, 'Cinder Lash', 6, 'enemy', 'damage', { power: 1.3, status: { type: 'burn', turns: 2, chance: 0.4 } }, 'A whip of fire that may set them burning.'),
+  el('firestorm', 'Fire', 25, 'Firestorm', 12, 'allEnemies', 'damage', { power: 1.0, status: { type: 'burn', turns: 2, chance: 0.3 } }, 'Fire across every enemy.'),
+  el('sunfall', 'Fire', 40, 'Sunfall', 20, 'allEnemies', 'damage', { power: 1.7, status: { type: 'burn', turns: 3, chance: 0.5 } }, 'The sky itself burns down on them.'),
+  el('riptide', 'Water', 10, 'Riptide', 6, 'enemy', 'damage', { power: 1.3, status: { type: 'stun', turns: 1, chance: 0.25 } }, 'A pull of water that may knock them off their feet.'),
+  el('healing-rain', 'Water', 25, 'Healing Rain', 12, 'allAllies', 'heal', { power: 0.6 }, 'Soft rain that heals the whole party.'),
+  el('deluge', 'Water', 40, 'Deluge', 20, 'allEnemies', 'damage', { power: 1.7 }, 'A wall of water over every enemy.'),
+  el('gust', 'Air', 10, 'Gust', 6, 'enemy', 'damage', { power: 1.2, status: { type: 'stun', turns: 1, chance: 0.3 } }, 'A blast of wind that may stagger them.'),
+  el('thunderclap', 'Air', 25, 'Thunderclap', 12, 'allEnemies', 'damage', { power: 1.1, status: { type: 'stun', turns: 1, chance: 0.2 } }, 'Thunder over every enemy; some may reel.'),
+  el('tempest', 'Air', 40, 'Tempest', 20, 'allEnemies', 'damage', { power: 1.8 }, 'A storm that tears through their line.'),
+  el('thornwhip', 'Plant', 10, 'Thornwhip', 6, 'enemy', 'damage', { power: 1.2, status: { type: 'poison', turns: 3, chance: 0.5 } }, 'A lash of thorns that may poison.'),
+  el('overgrowth', 'Plant', 25, 'Overgrowth', 12, 'allAllies', 'buff', { status: { type: 'regen', turns: 3, chance: 1 } }, 'Green life knits the whole party for 3 rounds.'),
+  el('worldroot', 'Plant', 40, 'Worldroot', 20, 'allEnemies', 'damage', { power: 1.5, status: { type: 'poison', turns: 3, chance: 0.5 } }, 'Roots burst from the ground under every enemy.'),
+  el('iron-skin', 'Iron', 10, 'Iron Skin', 6, 'self', 'buff', { status: { type: 'guard', turns: 2, chance: 1 } }, 'Skin like plate for 2 rounds.'),
+  el('shrapnel', 'Iron', 25, 'Shrapnel', 12, 'allEnemies', 'damage', { physical: true, power: 1.1 }, 'A burst of steel into every enemy.'),
+  el('juggernaut', 'Iron', 40, 'Juggernaut', 20, 'enemy', 'damage', { physical: true, power: 2.6 }, 'An unstoppable blow.'),
+  el('feral-bite', 'Animal', 10, 'Feral Bite', 6, 'enemy', 'damage', { physical: true, power: 1.4 }, 'Teeth and claws, or near enough.'),
+  el('pack-howl', 'Animal', 25, 'Pack Howl', 12, 'allAllies', 'buff', { status: { type: 'atkUp', turns: 3, chance: 1 } }, 'The whole party hunts harder for 3 rounds.'),
+  el('primal-rampage', 'Animal', 40, 'Primal Rampage', 20, 'allEnemies', 'damage', { physical: true, power: 1.6 }, 'A rampage through every enemy.'),
+  el('mind-prick', 'Psychic', 10, 'Mind Prick', 6, 'enemy', 'damage', { power: 1.2, status: { type: 'atkDown', turns: 2, chance: 0.6 } }, 'A needle in the mind that weakens their blows.'),
+  el('dread-vision', 'Psychic', 25, 'Dread Vision', 12, 'allEnemies', 'status', { status: { type: 'stun', turns: 1, chance: 0.35 } }, 'Every enemy sees its death; some freeze.'),
+  el('mindbreak', 'Psychic', 40, 'Mindbreak', 20, 'allEnemies', 'damage', { power: 1.6, status: { type: 'atkDown', turns: 2, chance: 0.5 } }, 'Their thoughts shatter.'),
+);
+
+// ---------------------------------------------------------------- character skills (15, 29): by personality
+const ch = (id, personality, level, name, mp, target, effect, extra, description) => ({ id, classId: 'Character', personality, level, name, mp, target, effect, ...extra, description });
+list.push(
+  ch('stand-fast', 'Brave', 15, 'Stand Fast', 8, 'self', 'buff', { status: { type: 'atkUp', turns: 3, chance: 1 } }, 'Plant your feet and fight harder.'),
+  ch('brave-charge', 'Brave', 29, 'Charge of the Brave', 16, 'allEnemies', 'damage', { physical: true, power: 1.2 }, 'Straight at all of them.'),
+  ch('showboat', 'Vain', 15, 'Showboat', 8, 'self', 'buff', { status: { type: 'atkUp', turns: 3, chance: 1 } }, 'Play to the crowd; hit harder for it.'),
+  ch('crowd-pleaser', 'Vain', 29, 'Crowd Pleaser', 16, 'enemy', 'damage', { physical: true, power: 2.0 }, 'A flourish that ends badly for them.'),
+  ch('bide', 'Patient', 15, 'Bide', 8, 'self', 'buff', { status: { type: 'regen', turns: 3, chance: 1 } }, 'Breathe, wait, recover.'),
+  ch('perfect-moment', 'Patient', 29, 'The Perfect Moment', 16, 'enemy', 'damage', { power: 2.3 }, 'Wait for it. Then strike.'),
+  ch('spite', 'Jealous', 15, 'Spite', 8, 'enemy', 'status', { status: { type: 'atkDown', turns: 3, chance: 0.9 } }, 'Make sure they don’t shine either.'),
+  ch('spotlight', 'Jealous', 29, 'Steal the Spotlight', 16, 'enemy', 'damage', { physical: true, power: 1.9, status: { type: 'stun', turns: 1, chance: 0.3 } }, 'Their moment, taken.'),
+  ch('mercy', 'Merciful', 15, 'Mercy', 8, 'ally', 'heal', { power: 0.9 }, 'Tend a friend in the thick of it.'),
+  ch('grace', 'Merciful', 29, 'Grace', 16, 'allAllies', 'heal', { power: 0.7 }, 'Kindness for the whole party.'),
+  ch('study-foe', 'Obsessive', 15, 'Study the Foe', 8, 'enemy', 'status', { status: { type: 'atkDown', turns: 3, chance: 1 } }, 'Learn their every habit.'),
+  ch('relentless', 'Obsessive', 29, 'Relentless', 16, 'enemy', 'damage', { physical: true, power: 2.2 }, 'Again. And again. And again.'),
+  ch('brace', 'Cautious', 15, 'Brace', 8, 'self', 'buff', { status: { type: 'guard', turns: 2, chance: 1 } }, 'Take no chances for 2 rounds.'),
+  ch('measured-strike', 'Cautious', 29, 'Measured Strike', 16, 'enemy', 'damage', { physical: true, power: 1.9 }, 'Exactly as hard as needed. Which is very.'),
+  ch('jest', 'Witty', 15, 'Taunting Jest', 8, 'enemy', 'status', { status: { type: 'atkDown', turns: 2, chance: 0.9 } }, 'A joke that throws them off.'),
+  ch('sharp-tongue', 'Witty', 29, 'Sharp Tongue', 16, 'allEnemies', 'status', { status: { type: 'atkDown', turns: 2, chance: 0.7 } }, 'Everyone gets a remark.'),
+  ch('oath', 'Honorable', 15, 'Oath', 8, 'ally', 'buff', { status: { type: 'atkUp', turns: 3, chance: 1 } }, 'Swear it with them; they fight harder.'),
+  ch('rally-line', 'Honorable', 29, 'Rally the Line', 16, 'allAllies', 'buff', { status: { type: 'atkUp', turns: 3, chance: 1 } }, 'The whole party fights for the oath.'),
+  ch('quickstep', 'Restless', 15, 'Quickstep', 8, 'enemy', 'damage', { physical: true, power: 1.5 }, 'In and out before they turn.'),
+  ch('whirlwind', 'Restless', 29, 'Whirlwind', 16, 'allEnemies', 'damage', { physical: true, power: 1.1 }, 'Everywhere at once.'),
+);
+
+// ---------------------------------------------------------------- ultimates (48): one of three, chosen
+const ul = (id, name, target, effect, extra, description) => ({ id, classId: 'Ultimate', ultimate: true, level: 48, name, mp: 30, target, effect, ...extra, description });
+list.push(
+  ul('last-banner', 'The Last Banner', 'allAllies', 'heal', { power: 1.6 }, 'Every ally rises under the banner: a great heal for the whole party.'),
+  ul('cataclysm', 'Cataclysm', 'allEnemies', 'damage', { power: 2.6, elemental: true }, 'The hero’s element unleashed on every enemy at once.'),
+  ul('executioner', 'Executioner', 'enemy', 'damage', { physical: true, power: 5.0 }, 'One blow, and it is over.'),
+);
+export const ULTIMATES = ['last-banner', 'cataclysm', 'executioner'];
+export const ULTIMATE_LEVEL = 48;
+
 export const SKILLS = Object.fromEntries(list.map((skill) => [skill.id, skill]));
 
 /** @type {Record<string, any[]>} */
@@ -640,17 +707,34 @@ export const CLASS_SKILLS = list.reduce((byClass, skill) => {
   return byClass;
 }, {});
 
-/** Skills a hero of this class knows at this level, in unlock order. */
+/**
+ * Everything a hero can learn, in level order: their class's skills, their element's, their
+ * personality's, and the ultimate they chose (or, before choosing, none). `hero`: { classId, primal, personality, ultimate }.
+ */
+export function heroSkillTree(hero) {
+  const classSkills = (CLASS_SKILLS[hero.classId] || CLASS_SKILLS.Guardian).filter((skill) => skill.level < 99);
+  const element = (CLASS_SKILLS.Element || []).filter((skill) => skill.element === hero.primal);
+  const character = (CLASS_SKILLS.Character || []).filter((skill) => skill.personality === hero.personality);
+  const ultimate = hero.ultimate && SKILLS[hero.ultimate] ? [SKILLS[hero.ultimate]] : [];
+  return [...classSkills, ...element, ...character, ...ultimate].sort((a, b) => a.level - b.level);
+}
+
+/** Skills a hero knows at their level, in unlock order. */
+export function skillsForHero(hero) {
+  return heroSkillTree(hero).filter((skill) => skill.level <= (hero.level || 1));
+}
+
+/** Skills a class knows at this level (enemies built from a class, with no personality or element). */
 export function skillsForLevel(classId, level) {
   return (CLASS_SKILLS[classId] || CLASS_SKILLS.Guardian).filter((skill) => skill.level <= (level || 1));
 }
 
-/** Skills newly learned when going from levelBefore to levelAfter. */
-export function skillsUnlockedBetween(classId, levelBefore, levelAfter) {
-  return (CLASS_SKILLS[classId] || []).filter((skill) => skill.level > levelBefore && skill.level <= levelAfter);
+/** Skills a hero newly learns going from levelBefore to levelAfter. */
+export function skillsUnlockedFor(hero, levelBefore, levelAfter) {
+  return heroSkillTree(hero).filter((skill) => skill.level > levelBefore && skill.level <= levelAfter);
 }
 
 /** Display name; elemental spells take the caster's primal ("Fire Bolt"). */
 export function skillLabel(skill, primal) {
-  return skill.elemental && primal ? `${primal} ${skill.name}` : skill.name;
+  return skill.elemental && primal && !skill.element && !skill.ultimate ? `${primal} ${skill.name}` : skill.name;
 }

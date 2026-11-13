@@ -12,7 +12,7 @@
 // Pure and deterministic: all randomness comes from the encounter seed.
 import { primalCombatModifier } from '../data/world.js';
 import { normalizeClassId } from '../data/content.js';
-import { SKILLS, skillLabel, skillsForLevel } from '../data/skills.js';
+import { SKILLS, skillLabel, skillsForHero } from '../data/skills.js';
 import { ITEMS, gearStats } from '../data/items.js';
 import { CLASS_PROFILES, ENEMY_ROLES, ENEMY_TYPES } from '../data/enemies.js';
 
@@ -77,7 +77,7 @@ function makeCombatant(hero, side, { role = null, sprite = null, scale = 1, mods
     def: Math.round((get('Endurance') * 0.3 + get('Spirit') * 0.1 + level * 0.5 + gear.def) * m.def),
     mag: Math.round((get('Mind') * 0.4 + get('Spirit') * 0.3 + level * 0.8 + gear.mag) * scale * m.mag),
     spd: Math.round((get('Finesse') * 0.5 + get('Presence') * 0.15 + gear.spd) * m.spd),
-    skills: skills || skillsForLevel(classId, level).map((skill) => skill.id),
+    skills: skills || skillsForHero({ classId, level, primal: hero.primal, personality: hero.personality, ultimate: hero.ultimate }).map((skill) => skill.id),
     status: {},
     ko: false,
     fled: false,

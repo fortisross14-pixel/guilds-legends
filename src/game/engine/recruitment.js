@@ -1,6 +1,7 @@
 // @ts-check
 // Player roster actions: recruit, release, refound, training, appointments, identity.
 import { APPOINTMENTS, CLASSES } from '../../data/content.js';
+import { SKILLS, ULTIMATES, ULTIMATE_LEVEL } from '../../data/skills.js';
 import { LOCATION_BY_ID, PRIMALS } from '../../data/world.js';
 import {
   activeHeroCount,
@@ -244,6 +245,19 @@ export function setHeroMonthlyActivity(state, heroId, activity) {
   if (!hero || ['dead', 'retired', 'mission', 'tournament'].includes(hero.status) || !allowed.includes(activity) || !activityAvailable(next, activity)) return next;
   hero.monthlyActivity = activity;
   return finalize(next);
+}
+
+/** At level 48 a hero picks one of the three ultimates (src/data/skills.js ULTIMATES); the choice is for good. */
+export function chooseUltimate(state, heroId, skillId) {
+  const next = clone(state);
+  const hero = getHero(next, heroId);
+  if (!hero || hero.guildId !== 'player') return { state, error: 'No such hero.' };
+  if ((hero.level || 1) < ULTIMATE_LEVEL) return { state, error: `${hero.name} needs level ${ULTIMATE_LEVEL} to learn an ultimate.` };
+  if (hero.ultimate) return { state, error: `${hero.name} already knows an ultimate.` };
+  if (!ULTIMATES.includes(skillId)) return { state, error: 'No such ultimate.' };
+  hero.ultimate = skillId;
+  addHeroHistory(hero, next, { type: 'level', title: `Learned ${SKILLS[skillId].name}`, text: `${hero.name} learned the ultimate ${SKILLS[skillId].name}.` });
+  return { state: finalize(next), error: null };
 }
 
 export function renameGuild(state, name) {

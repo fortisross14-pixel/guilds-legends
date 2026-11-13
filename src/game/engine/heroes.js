@@ -1,6 +1,6 @@
 // @ts-check
 // Hero generation, XP and levels, relationships, party role ratings and estimates.
-import { skillLabel, skillsUnlockedBetween } from '../../data/skills.js';
+import { ULTIMATE_LEVEL, skillLabel, skillsUnlockedFor } from '../../data/skills.js';
 import { CLASSES, normalizeClassId, FIRST_NAMES, PRIMAL_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
@@ -121,6 +121,14 @@ export function applyXpInPlace(hero, amount, state, source = 'experience') {
       });
     }
   }
+  if (state && hero.guildId === 'player' && levelBefore < ULTIMATE_LEVEL && hero.level >= ULTIMATE_LEVEL && !hero.ultimate) {
+    state.notifications.push({
+      id: `ultimate-${hero.id}`,
+      tone: 'purple',
+      title: `${hero.name} can learn an ultimate`,
+      text: 'Open their status and choose one of three ultimate skills.',
+    });
+  }
   if (state && gains.length && hero.guildId === 'player') {
     const statGains = Object.fromEntries(
       Object.keys(hero.attributes)
@@ -135,7 +143,7 @@ export function applyXpInPlace(hero, amount, state, source = 'experience') {
       levelBefore,
       levelAfter: hero.level,
       statGains,
-      newSkills: skillsUnlockedBetween(normalizeClassId(hero.classId), levelBefore, hero.level).map((skill) => skillLabel(skill, hero.primal)),
+      newSkills: skillsUnlockedFor({ ...hero, classId: normalizeClassId(hero.classId) }, levelBefore, hero.level).map((skill) => skillLabel(skill, hero.primal)),
     });
   }
   return gains;

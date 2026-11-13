@@ -59,6 +59,7 @@ import {
   renameGuild,
   saveFormation,
   setHeroMonthlyActivity,
+  chooseUltimate,
   beginTournamentBout,
   travelTo,
   concludeCombatAndContinue,
@@ -892,6 +893,7 @@ function GameShell({ state, setState, slot, onReturnHome, onDeleteCurrent, onSlo
         applyResult(result, result.accepted ? 'The offer was accepted.' : null);
       },
       setMonthlyActivity: (id, activity) => commitState(setHeroMonthlyActivity(state, id, activity)),
+      chooseUltimate: (id, skillId) => applyResult(chooseUltimate(state, id, skillId), 'A new ultimate is learned.'),
       acknowledgeCouncilReport: () => commitState(acknowledgeCouncilReport(state)),
       renameGuild: (name) => applyResult(renameGuild(state, name), 'Guild identity updated.'),
       renameFounder: (name) => applyResult(renameFounderHero(state, name), 'Founder record updated.'),
