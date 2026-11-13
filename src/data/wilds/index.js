@@ -1,8 +1,6 @@
 // Walkable wild areas: the Chapter 1 roads and woods, then the rest of the world's roads (boxes). Each is reached from its hub town, either
 // through the town's exit or from the world map.
-import oldRoad from './oldRoad.js';
-import thornwood from './thornwood.js';
-import blackwood from './blackwood.js';
+import { blackwood, oldRoad, thornwood } from './chapter1Roads.js';
 import { cliffRoad, coastRoad, ironRoad } from './chapter2Roads.js';
 import { SKELETON_ROADS } from './skeletonRoads.js';
 

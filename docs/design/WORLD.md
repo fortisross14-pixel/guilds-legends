@@ -1,8 +1,9 @@
 # The world — skeleton
 
 Every place and road of the game, for all four chapters. The four Chapter 1 towns, the
-Old Road, the Thornwood, the Blackwood and the three Chapter 2 roads (laid out by
-`src/data/wilds/roadLayout.js`, specs in `chapter2Roads.js`, 96 × 34 each) are built; everything else is a **box**: walkable, with
+Old Road, the Thornwood, the Blackwood and the three Chapter 2 roads are built, all laid out by
+`src/data/wilds/roadLayout.js` (specs in `chapter1Roads.js` and `chapter2Roads.js`; 96 × 34, the
+Blackwood 80 × 30; the Old Road and the Blackwood are dead ends); everything else is a **box**: walkable, with
 its buildings, its gates and its bands, waiting for the chapter that uses it to get its real
 layout, art, people and places (docs/design/STORY_DRAFT.md: world skeleton first, then each
 chapter's story and places together).

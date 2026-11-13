@@ -24,7 +24,9 @@ function line([x0, y0], [x1, y1]) {
 /**
  * spec: { width, height, salt, path: [[x, y], …] (from the west edge to the east edge),
  *   clearings: [{ id, x, y, rx, ry }], river?: { x, width }, sea?: { y } (the sea below row y),
- *   verge: tiles of open ground each side of the road, dressing: [asset ids], rocky: 0..1 }
+ *   verge: tiles of open ground each side of the road, dressing: [asset ids], rocky: 0..1,
+ *   deadEnd?: 'west' | 'east' (that end stops in the woods: the Old Road at the temple),
+ *   open?: [{ x, y, w, h }] (cleared ground for buildings and plazas), wall?: { x, w, char } (an impassable band) }
  * Returns { tiles, spots, props, ends: { west: [x, y], east: [x, y] }, anchors }.
  */
 export function layRoad(spec) {
@@ -74,6 +76,15 @@ export function layRoad(spec) {
       });
     });
   });
+  // Cleared ground (buildings, a plaza), kept free of trees and dressing.
+  const cleared = new Set();
+  (spec.open || []).forEach((box) => {
+    for (let y = box.y; y < box.y + box.h; y += 1)
+      for (let x = box.x; x < box.x + box.w; x += 1) {
+        set(x, y, '.');
+        cleared.add(`${x},${y}`);
+      }
+  });
   // The road itself, two tiles wide (over everything).
   road.forEach(([x, y]) => {
     set(x, y, ':');
@@ -105,8 +116,12 @@ export function layRoad(spec) {
   }
   for (let y = 0; y < H; y += 1) {
     const roadRow = (end) => y === end[1] || y === end[1] + 1;
-    if (!roadRow(ends.west) && grid[y][0] !== '~') grid[y][0] = 'T';
-    if (!roadRow(ends.east) && grid[y][W - 1] !== '~') grid[y][W - 1] = 'T';
+    if ((spec.deadEnd === 'west' || !roadRow(ends.west)) && grid[y][0] !== '~') grid[y][0] = 'T';
+    if ((spec.deadEnd === 'east' || !roadRow(ends.east)) && grid[y][W - 1] !== '~') grid[y][W - 1] = 'T';
+  }
+  // A band nothing passes (the Blackwood's wall of dead wood).
+  if (spec.wall) {
+    for (let y = 0; y < H; y += 1) for (let x = spec.wall.x; x < spec.wall.x + spec.wall.w; x += 1) grid[y][x] = spec.wall.char || 'x';
   }
   // Dressing: small things on open ground (walkable), a few rocks (solid), away from the road and spots.
   const props = [];
@@ -117,7 +132,7 @@ export function layRoad(spec) {
       if (grid[y][x] !== '.' && grid[y][x] !== ',') continue;
       const nearSpot = Object.values(spots).some(([sx, sy]) => Math.abs(sx - x) <= 3 && Math.abs(sy - y) <= 3);
       const nearRoad = [-1, 0, 1, 2].some((dy) => [-1, 0, 1].some((dx) => grid[y + dy]?.[x + dx] === ':' || grid[y + dy]?.[x + dx] === 'b'));
-      if (nearSpot || nearRoad || trail.has(`${x},${y}`)) continue;
+      if (nearSpot || nearRoad || trail.has(`${x},${y}`) || cleared.has(`${x},${y}`)) continue;
       const r = hash(x, y, salt + 11);
       if (r < 0.035) props.push({ id: `d-${x}-${y}`, asset: dressing[Math.floor(hash(x, y, salt + 13) * dressing.length)], at: [x, y], size: [1, 1], walkable: true });
       else if (r > 1 - (spec.rocky ?? 0.012)) props.push({ id: `r-${x}-${y}`, asset: solid[Math.floor(hash(x, y, salt + 17) * solid.length)], at: [x, y], size: [1, 1] });

@@ -9,11 +9,9 @@
 //   with people at `spots` and clues in `boxes` (percentages of the painting).
 // Tiles were picked with a reachability script (docs/PLAYTEST_CH1.md, session 4).
 
-export const WILD_ANCHORS = {
-  'old-road': [[40, 22], [53, 19], [25, 6], [21, 21], [56, 6], [33, 21], [50, 23], [27, 4], [11, 21]],
-  'thornwood-edge': [[24, 10], [17, 10], [27, 13], [13, 15], [9, 11], [23, 14], [17, 17], [6, 14], [18, 6]],
-  blackwood: [[31, 8], [30, 7], [32, 10], [26, 12], [31, 13]],
-};
+// Laid-out roads (src/data/wilds/roadLayout.js) bring their own `anchors` (open tiles in their
+// clearings); this lists any hand-picked tiles that override them.
+export const WILD_ANCHORS = {};
 
 export const TOWN_ANCHORS = {
   dunmere: [[10, 10], [14, 11], [17, 14], [27, 15], [9, 14], [30, 12], [13, 15], [33, 15]],

@@ -94,7 +94,7 @@ INTERIORS.house = {
   layout: { spots: {}, hotspots: {}, door: [37, 86, 26, 14] },
 };
 
-// Dawnwatch Temple and the priests' house, at the west end of the Old Road (src/data/wilds/oldRoad.js).
+// Dawnwatch Temple and the priests' house, at the west end of the Old Road (src/data/wilds/chapter1Roads.js).
 INTERIORS.temple = {
   id: 'temple',
   art: 'interior.temple',

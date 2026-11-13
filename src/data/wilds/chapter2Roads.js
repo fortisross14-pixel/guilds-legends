@@ -5,19 +5,32 @@ import { power, roadBands } from './emptyRoad.js';
 // Old Road (96 x 34 against its 64 x 30), each with its own element, ground and dressing,
 // and the chapter's places on named clearings (docs/design/STORY_DRAFT.md, Chapter 2).
 
-/** A walked road between two towns, from its layout and the places on it. */
-function walkedRoad({ id, name, region, primal, west, east, map, description, battle, layout, bands, enemies = [], gathers = [], props = [], camp }) {
+/**
+ * A walked road from its layout and the places on it. Two ends (`west`, `east`: { town, name }),
+ * or a dead end (`deadEnd: 'west'`, the town at the east end). Things on it name a clearing
+ * (`spot`, plus an `offset`); `ambushes` can be given as they are, or as `bands` (roadBands).
+ */
+export function walkedRoad({ id, name, region, primal, west = null, east = null, hub = null, tagline = null, map, description, battle, layout, bands = null, ambushes = null, enemies = [], gathers = [], props = [], buildings = [], boss = null, bosses = [], camp, campName = 'A place to rest' }) {
   const laid = layRoad(layout);
-  const at = (spot, dx = 0, dy = 0) => [laid.spots[spot][0] + dx, laid.spots[spot][1] + dy];
+  const at = (spot, dx = 0, dy = 0) => {
+    if (!laid.spots[spot]) throw new Error(`${id}: no clearing named ${spot}`);
+    return [laid.spots[spot][0] + dx, laid.spots[spot][1] + dy];
+  };
+  const placed = (thing) => (thing.spot ? { ...thing, at: at(thing.spot, ...(thing.offset || [0, 0])) } : thing);
   const W = layout.width;
-  const [wx, wy] = laid.ends.west;
+  const [, wy] = laid.ends.west;
   const [ex, ey] = laid.ends.east;
+  const links = [
+    ...(west ? [{ town: west.town, at: [0, wy], size: [1, 2], name: `To ${west.name}`, arrive: [2, wy] }] : []),
+    ...(east ? [{ town: east.town, at: [W - 1, ey], size: [1, 2], name: `To ${east.name}`, arrive: [ex - 2, ey] }] : []),
+  ];
+  const home = links.find((link) => link.town === (hub || links[0].town)) || links[0];
   return {
     id,
     kind: 'wild',
     name,
-    tagline: `The road between ${west.name} and ${east.name}`,
-    hub: west.town,
+    tagline: tagline || `The road between ${west?.name} and ${east?.name}`,
+    hub: home.town,
     region,
     primal,
     battle,
@@ -25,19 +38,20 @@ function walkedRoad({ id, name, region, primal, west, east, map, description, ba
     description,
     width: W,
     height: layout.height,
-    arrive: [wx + 2, wy],
+    arrive: home.arrive,
     tiles: laid.tiles,
-    exit: { at: [0, wy], size: [1, 2], name: `To ${west.name}` },
-    links: [
-      { town: west.town, at: [0, wy], size: [1, 2], name: `To ${west.name}`, arrive: [2, wy] },
-      { town: east.town, at: [W - 1, ey], size: [1, 2], name: `To ${east.name}`, arrive: [ex - 2, ey] },
-    ],
-    camp: { at: at(camp, -1, -1), size: [2, 2], name: 'A place to rest' },
-    props: [...props.map((prop) => ({ ...prop, at: at(prop.spot, ...(prop.offset || [0, 0])) })), ...laid.props],
-    enemies: enemies.map((group) => ({ ...group, at: at(group.spot, ...(group.offset || [0, 0])) })),
-    ambushes: roadBands(bands.name, bands.types, bands.levels),
-    gathers: gathers.map((spot) => ({ ...spot, at: at(spot.spot, ...(spot.offset || [0, 0])) })),
-    anchors: laid.anchors,
+    exit: { at: home.at, size: home.size, name: links.length > 1 ? home.name : `Back to ${(west || east).name}` },
+    links: links.length > 1 ? links : undefined,
+    camp: { at: at(camp, -1, -1), size: [2, 2], name: campName },
+    buildings: buildings.map((building) => (building.spot ? { ...building, door: at(building.spot, ...(building.offset || [0, 0])) } : building)),
+    props: [...props.map(placed), ...laid.props],
+    enemies: enemies.map(placed),
+    ambushes: ambushes || roadBands(bands.name, bands.types, bands.levels),
+    boss: boss ? placed(boss) : undefined,
+    bosses: bosses.map(placed),
+    gathers: gathers.map(placed),
+    // Contract objectives stand on open clearing tiles, never under a prop (the Old Road's pond).
+    anchors: laid.anchors.filter(([x, y]) => !props.map(placed).some((prop) => !prop.walkable && x >= prop.at[0] && x < prop.at[0] + prop.size[0] && y >= prop.at[1] && y < prop.at[1] + prop.size[1])),
   };
 }
 
@@ -88,7 +102,7 @@ export const ironRoad = walkedRoad({
     { id: 'herbs', kind: 'herb', name: 'Hill sage', spot: 'glade-1', respawnWeeks: 4, reward: { items: { potion: 1 } } },
   ],
   props: [
-    { id: 'sign-west', asset: 'deco.signpost', spot: 'pit', offset: [-4, -6], size: [1, 1] },
+    { id: 'sign-west', asset: 'deco.signpost', spot: 'pit', offset: [-4, -2], size: [1, 1] },
     { id: 'pit-cart', asset: 'deco.cart', spot: 'pit', offset: [-3, 1], size: [2, 1] },
     { id: 'heights-tent', asset: 'deco.tent', spot: 'heights', offset: [-6, -1], size: [2, 1] },
     { id: 'heights-fire', asset: 'deco.campfire', spot: 'heights', offset: [0, 2], size: [1, 1] },
