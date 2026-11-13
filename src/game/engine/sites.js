@@ -11,6 +11,8 @@ import { WILD_AREAS } from '../../data/wilds/index.js';
 import { normalizeClassId } from '../../data/content.js';
 import { CONTRACT_BASE, CONTRACT_BASE_BY_TIER, siteFor } from '../../data/missions/index.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
+import { VERDICTS_BY_FAMILY } from '../../data/dialogue/verdicts.js';
+import { missionFamily } from './reputation.js';
 import { campaignDaySerial, clamp, clone, commitRng, earnGoldInPlace, finalize, getHero, hashString, pushMoment, rngFor, travellingPartyIds } from './core.js';
 import { applyXpInPlace, battleXp, enemyStrength, xpForNextLevel } from './heroes.js';
 import { addItemsInPlace, battleItems, lootList, rollDrops, rollLoot } from './inventory.js';
@@ -101,7 +103,19 @@ function completeInPlace(state, mission, objectiveId) {
   if (required.every((objective) => mission.site.done[objective.id]) && mission.site.status === 'active') {
     mission.site.status = 'ready';
     if (mission.story) reportContractInPlace(state, mission);
-    else state.notifications.push({ id: `contract-ready-${mission.id}`, tone: 'green', title: mission.title, text: `Done. Report to ${mission.giverName || 'the Notice Board'}.` });
+    else {
+      // The end-of-job choice for this contract's family (src/data/dialogue/verdicts.js), never the same one twice running.
+      const list = VERDICTS_BY_FAMILY[missionFamily(mission)] || [];
+      const seen = (state.story.verdictsSeen ||= []);
+      const fresh = list.filter((id) => !seen.slice(-Math.max(1, list.length - 1)).includes(id));
+      const pool = fresh.length ? fresh : list;
+      if (pool.length) {
+        mission.site.verdict = pool[hashString(mission.id) % pool.length];
+        seen.push(mission.site.verdict);
+        state.story.verdictsSeen = seen.slice(-12);
+      }
+    }
+    if (!mission.story) state.notifications.push({ id: `contract-ready-${mission.id}`, tone: 'green', title: mission.title, text: `Done. Report to ${mission.giverName || 'the Notice Board'}.` });
   }
 }
 

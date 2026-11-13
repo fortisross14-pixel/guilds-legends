@@ -14,7 +14,7 @@ import { ENEMY_TYPES } from '../../data/enemies.js';
 import { ITEMS } from '../../data/items.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
-import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
+import { addChronicle, campaignDaySerial, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
 import { adjustPatronInPlace } from './charter.js';
 import { PATRON_DELTAS } from '../../data/patrons.js';
 import { grantPatronRewardsInPlace } from './connections.js';
@@ -208,10 +208,18 @@ function applyEffectsInPlace(state, effects = [], context = {}) {
     // Items handed over or received: { giveItem: { 'wolf-pelt': 3 } } gives them to the guild, takeItem takes them.
     if (effect.giveItem) addItemsInPlace(state, effect.giveItem);
     if (effect.takeItem) addItemsInPlace(state, Object.fromEntries(Object.entries(effect.takeItem).map(([id, count]) => [id, -count])));
+    // A choice the Journal remembers (Quests → What you chose).
+    if (effect.ledger) {
+      state.story.ledger = [{ day: campaignDaySerial(state), text: effect.ledger }, ...(state.story.ledger || [])].slice(0, 40);
+    }
     // A fight the conversation starts: { battle: { id, name, types, names, count, level, onWin } }.
     if (effect.battle) startTalkBattleInPlace(state, effect.battle);
     // Honor and dread (docs/design/PILLARS.md): { standing: { honor: 8, dread: 4, text: 'Handed the thief to the watch' } }.
-    if (effect.standing) adjustStandingInPlace(state, effect.standing, effect.standing.text || '');
+    if (effect.standing) {
+      adjustStandingInPlace(state, effect.standing, effect.standing.text || '');
+      // A choice that moves standing is remembered in the Journal too (unless it says so itself).
+      if (effect.standing.text && !effects.some((item) => item.ledger)) state.story.ledger = [{ day: campaignDaySerial(state), text: effect.standing.text }, ...(state.story.ledger || [])].slice(0, 40);
+    }
     if (effect.reputation) adjustRegionReputationInPlace(state, effect.reputation.region, effect.reputation.amount);
     if (typeof effect.relationship === 'number' && context.conversationId) {
       exploration.npcs[context.conversationId] = clamp((exploration.npcs[context.conversationId] || 0) + effect.relationship, -10, 10);

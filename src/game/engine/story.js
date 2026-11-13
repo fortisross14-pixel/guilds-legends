@@ -491,7 +491,13 @@ function triggerSceneInPlace(state) {
       stepPlaceHere(state, step) &&
       (story.missions[mission.id]?.snooze || 0) <= today,
   );
-  if (found) story.scene = { conversation: found.step.scene, missionId: found.mission.id, stepId: found.step.id };
+  if (found) {
+    story.scene = { conversation: found.step.scene, missionId: found.mission.id, stepId: found.step.id };
+    return;
+  }
+  // A contract whose work is done waits on its verdict (src/data/dialogue/verdicts.js): it plays next.
+  const verdict = (state.missions || []).find((mission) => mission.accepted && mission.site?.verdict && !mission.site.verdictDone && DIALOGUES[mission.site.verdict]);
+  if (verdict) story.scene = { conversation: verdict.site.verdict, verdictFor: verdict.id };
 }
 
 /** Runs after every engine action: opens gates, walks steps, posts contracts, queues scenes. */
@@ -551,7 +557,13 @@ export function storyChoiceInPlace(state, choices) {
 export function finishStoryScene(state, conversationId) {
   if (state.story?.scene?.conversation !== conversationId) return state;
   const next = clone(state);
+  const verdictFor = next.story.scene.verdictFor;
   next.story.scene = null;
+  if (verdictFor) {
+    const mission = next.missions.find((item) => item.id === verdictFor);
+    if (mission?.site) mission.site.verdictDone = true;
+    return finalize(next);
+  }
   const found = activeStepWhere(next, (step) => step.kind === 'scene' && step.scene === conversationId);
   if (found) {
     const variant = DIALOGUES[conversationId]?.variants?.find((item) => checkCondition(next, item.if, { conversationId }));
@@ -801,6 +813,8 @@ export function getStoryView(state) {
     doneCount: missions.filter((mission) => mission.status === 'done').length,
     evidence: EVIDENCE.map((item) => ({ ...item, found: Boolean(story.evidence[item.id]) })),
     choices: story.choices,
+    // What the guild chose (verdicts and story choices with a { ledger }), newest first.
+    ledger: story.ledger || [],
   };
 }
 

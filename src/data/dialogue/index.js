@@ -62,6 +62,7 @@
 //   { patronGift: patronId }                50 gold for standing, once a month
 //   { giveItem: { itemId: n } }, { takeItem: { itemId: n } }   items to or from the guild
 //   { standing: { honor, dread, text } }    honor and dread move; `text` goes in the standing log
+//   { ledger: text }                        a choice remembered in the Journal (Quests → What you chose)
 //   { battle: { id, name, types, names?, count, level, objective?, onWin: { giveItem, standing, flag, gold } } }
 //                                           starts a fight (foe types from src/data/enemies.js); lost = the defeat rule
 import dunmere from './dunmere.js';
@@ -73,8 +74,9 @@ import story from './story.js';
 import storyAct2 from './storyAct2.js';
 import chapter1 from './chapter1.js';
 import chapter2 from './chapter2.js';
+import { STORY_VERDICTS, VERDICTS } from './verdicts.js';
 
-export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...windmere, ...wilds, ...story, ...storyAct2, ...chapter1, ...chapter2 };
+export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...windmere, ...wilds, ...story, ...storyAct2, ...chapter1, ...chapter2, ...VERDICTS, ...STORY_VERDICTS };
 
 /** Flags that live at state.flags[name] (other systems read them), not in state.flags.dialogue. */
 export const TOP_LEVEL_FLAGS = ['oldRoadIntroduced', 'harvestMeleeIntroduced'];

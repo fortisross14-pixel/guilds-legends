@@ -292,6 +292,13 @@ function QuestsTab({ state, actions, navigate }) {
         ) : null}
       </Block>
       ) : null}
+      {story.ledger.length ? (
+        <Block title="What you chose" count={story.ledger.length}>
+          {story.ledger.slice(0, 12).map((entry, index) => (
+            <Row key={`${entry.day}-${index}`} icon="scroll" title={entry.text} />
+          ))}
+        </Block>
+      ) : null}
       {done.length ? (
         <details className="journal-details">
           <summary>Done ({done.length})</summary>
