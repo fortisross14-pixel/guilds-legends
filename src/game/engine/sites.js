@@ -9,7 +9,8 @@ import { createPartyEncounter } from '../combat.js';
 import { BOSSES, ENEMY_TYPES } from '../../data/enemies.js';
 import { WILD_AREAS } from '../../data/wilds/index.js';
 import { normalizeClassId } from '../../data/content.js';
-import { siteFor } from '../../data/missions/index.js';
+import { CONTRACT_BASE, CONTRACT_BASE_BY_TIER, siteFor } from '../../data/missions/index.js';
+import { LOCATION_BY_ID } from '../../data/world.js';
 import { campaignDaySerial, clamp, clone, commitRng, earnGoldInPlace, finalize, getHero, hashString, pushMoment, rngFor, travellingPartyIds } from './core.js';
 import { applyXpInPlace, battleXp, enemyStrength, xpForNextLevel } from './heroes.js';
 import { addItemsInPlace, battleItems, lootList, rollDrops, rollLoot } from './inventory.js';
@@ -203,6 +204,10 @@ function siteEncounterInPlace(next, mission, fight, objectiveId, attempt) {
   const boss = fight.bossId ? BOSSES[fight.bossId] || Object.values(BOSSES).find((item) => item.id === fight.bossId) || null : null;
   const types = (fight.enemies || []).map((id) => ENEMY_TYPES[id]).filter(Boolean);
   const alarm = mission.site.alarm ? 1.2 : 1;
+  // The fight's level where the contract is (src/data/missions/index.js CONTRACT_BASE), unless fixed.
+  const base = CONTRACT_BASE[mission.locationId] ?? CONTRACT_BASE_BY_TIER[LOCATION_BY_ID[mission.locationId]?.tier] ?? 3;
+  const level = fight.fixed ? fight.level || 2 : Math.max(1, base + (fight.level || 2) - 2);
+  const power = fight.fixed ? fight.power || 40 : Math.min(98, Math.round(38 + 2.25 * level));
   // The story's first contract fight (mission 3) is a gentle one, and always winnable.
   const scripted = mission.story === 'm3.contract';
   next.activeEncounter = createPartyEncounter({
@@ -216,8 +221,8 @@ function siteEncounterInPlace(next, mission, fight, objectiveId, attempt) {
     playerHeroes: fighters.map((hero) => ({ hero, role: 'Fighter' })),
     opponentName: fight.name,
     opponentPrimal: area?.primal || 'Iron',
-    opponentLevel: fight.level || 2,
-    opponentPower: Math.round((fight.power || 40) * alarm),
+    opponentLevel: level,
+    opponentPower: Math.round(power * alarm),
     enemyCount: clamp(fight.count || 3, 1, 5),
     enemyTypes: types.length ? types : null,
     boss,

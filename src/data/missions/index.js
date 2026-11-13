@@ -17,6 +17,14 @@ import { TOWN_PAINTED, TOWN_WILD } from './places.js';
 
 export { WILD_ANCHORS, TOWN_ANCHORS, PAINTED_SITES } from './places.js';
 
+/**
+ * Contract fights scale with where the contract is (the open world's danger): a fight's
+ * `level` is its offset from level 2 at the town's base. `fixed: true` keeps the level as written
+ * (story fights placed on the level plan, docs/design/STORY_DRAFT.md).
+ */
+export const CONTRACT_BASE = { dunmere: 3, greenhollow: 8, ironford: 14, windmere: 19 };
+export const CONTRACT_BASE_BY_TIER = { Regional: 6, National: 28, Global: 38 };
+
 const fight = (id, name, enemies, extra = {}) => ({ id, kind: 'fight', name, enemies, count: 3, level: 2, power: 40, ...extra });
 const inspect = (id, name, text, extra = {}) => ({ id, kind: 'inspect', name, text, ...extra });
 const collect = (id, name, count, extra = {}) => ({ id, kind: 'collect', name, count, ...extra });
@@ -160,8 +168,8 @@ export const STORY_SITES = {
       place: { painted: 'ironford-archive' },
       par: 2,
       objectives: [
-        fight('enforcers', 'Argent Crown enforcers', ['shield-thug', 'road-bandit', 'field-priest'], { count: 3, level: 3, power: 46 }),
-        fight('captain', 'Their captain', ['shield-thug', 'field-priest'], { count: 2, level: 4, power: 50, boss: true, after: 'enforcers' }),
+        fight('enforcers', 'Argent Crown enforcers', ['shield-thug', 'road-bandit', 'field-priest'], { count: 3, level: 14, power: 70, fixed: true }),
+        fight('captain', 'Their captain', ['shield-thug', 'field-priest'], { count: 2, level: 15, power: 72, boss: true, after: 'enforcers', fixed: true }),
         inspect('vault', 'The vault', 'The ledger, still warm from their hands.', { after: 'captain' }),
       ],
     },
@@ -182,8 +190,8 @@ export const STORY_SITES = {
       deadline: 7,
       objectives: [
         inspect('hut', 'The trapper’s hut', 'Snares cut. She heard them coming.'),
-        fight('hunters', 'Argent Crown hunters', ['thorn-stalker', 'road-bandit', 'shield-thug'], { count: 3, level: 3, power: 48, after: 'hut' }),
-        fight('leader', 'The hunt leader', ['shield-thug', 'thorn-stalker'], { count: 2, level: 4, power: 50, boss: true, after: 'hunters' }),
+        fight('hunters', 'Argent Crown hunters', ['thorn-stalker', 'road-bandit', 'shield-thug'], { count: 3, level: 24, power: 92, after: 'hut', fixed: true }),
+        fight('leader', 'The hunt leader', ['shield-thug', 'thorn-stalker'], { count: 2, level: 25, power: 94, boss: true, after: 'hunters', fixed: true }),
         escort('wren', 'Linnet', 'Trapper', 'You’re the banner people. Fine. Walk me out.', 'exit', { after: 'leader' }),
       ],
     },
