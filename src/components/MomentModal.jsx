@@ -355,7 +355,7 @@ export default function MomentModal({ moment, state, onClose }) {
 
   if (moment.type === 'tutorialComplete') {
     return (
-      <Modal open title="Tutorial complete" eyebrow="The end of Act I" onClose={onClose} width="medium" className="modal--ceremony">
+      <Modal open title="Tutorial complete" eyebrow="The end of Chapter 1" onClose={onClose} width="medium" className="modal--ceremony">
         <div className={`moment moment--story ${skipClass}`} onClick={skip}>
           <Ceremony fx="burst">
             <Asset id="relic.banner" className="moment__relic" alt="" />

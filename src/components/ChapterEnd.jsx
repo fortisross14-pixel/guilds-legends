@@ -6,7 +6,7 @@ import Icon from './Icon.jsx';
 
 // The end of a chapter: a short card sequence in the style of the season
 // review (what happened, what the guild chose, where it stands), then the
-// Chapter 2 teaser. Free play continues afterwards.
+// next chapter's teaser. Free play continues afterwards.
 export default function ChapterEnd({ state, chapter = null, onClose }) {
   const [index, setIndex] = useState(0);
   const summary = getChapterSummary(state, chapter);
@@ -75,10 +75,10 @@ export default function ChapterEnd({ state, chapter = null, onClose }) {
           {card === 'teaser' ? (
             <>
               <Asset id="crest.argent-crown" className="season-card__crest" alt="The Argent Crown" />
-              <p className="season-card__eyebrow">Chapter 2</p>
-              <p className="season-card__headline season-card__headline--small">The Crown Must Fall</p>
+              <p className="season-card__eyebrow">Coming next</p>
+              <p className="season-card__headline season-card__headline--small">{summary.teaser.title}</p>
               <blockquote className="season-card__quote">{summary.teaser.text}</blockquote>
-              <p className="muted">The story continues in a later chapter. Your guild doesn’t have to wait: keep playing.</p>
+              <p className="muted">The story goes on from here. Your guild doesn’t have to wait: the whole map is open.</p>
             </>
           ) : null}
         </article>

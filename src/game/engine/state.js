@@ -72,7 +72,7 @@ export function createNewGame(options = {}) {
     rngState: seed,
     createdAt: new Date().toISOString(),
     lastPlayedAt: new Date().toISOString(),
-    // Early summer: the Dunmere Harvest Melee is about five weeks away (Act I, mission 4).
+    // Early summer: the Dunmere Harvest Melee is about five weeks away (story 1.9).
     date: { year: 1187, month: 5, week: 0, day: 0 },
     guild: {
       id: 'player',
