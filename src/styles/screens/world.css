@@ -194,3 +194,4 @@
 .map-contract.is-ready { border-color: rgba(143, 211, 152, .8); color: var(--good); }
 .map-contract .icon { width: 14px; height: 14px; }
 .region-dossier__danger { display: flex; align-items: center; gap: 6px; margin: 0; color: #f0b9a8; font-weight: 700; }
+.region-dossier__element { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; color: var(--text-dim); }

@@ -447,6 +447,11 @@ function WildCard({ area, state, actions }) {
         </div>
       </div>
       <p className="region-dossier__identity">{area.description}</p>
+      {PRIMALS[area.primal] ? (
+        <p className="region-dossier__element">
+          <PrimalBadge primal={area.primal} /> Foes here fight with {area.primal}: strong against {PRIMALS[area.primal].beats}, weak to {PRIMALS[area.primal].weakTo}.
+        </p>
+      ) : null}
       {view.danger ? (
         <p className="region-dossier__danger">
           <Icon name="skull" size={16} tone="plain" /> Bands here: level {view.danger[0] === view.danger[1] ? view.danger[0] : `${view.danger[0]}–${view.danger[1]}`}
