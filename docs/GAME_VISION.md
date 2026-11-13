@@ -1,6 +1,8 @@
 # Guilds of Legend — Game Vision (Waves 2–7)
 
 > **Current plan:** see [`docs/PROJECT_PLAN.md`](PROJECT_PLAN.md) (Chapter 1 vertical slice, Phases 0–8). It replaces Wave 8 onwards in this file.
+>
+> **The three pillars** (standing: fame, honor and dread; the tournament circuit and its records; the story's consequences) and the waves that build them: [`docs/design/PILLARS.md`](design/PILLARS.md).
 
 
 This replaces waves 2–6 of `docs/AUDIT_v1.9.md`. Waves 0–1 (stabilize, code split) are done; see the audit and `CHANGELOG.md`.

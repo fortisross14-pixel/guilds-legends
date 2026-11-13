@@ -2,7 +2,7 @@
 
 `CLAUDE.md` and `AGENTS.md` have the same content. If you change one, change the other too.
 
-A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation engine is pure and deterministic. The UI is a thin layer on top of it. The game direction and current waves are in [`docs/GAME_VISION.md`](docs/GAME_VISION.md) (it replaces waves 2–6 of `docs/AUDIT_v1.9.md`).
+A browser guild-management RPG (React 18 + Vite 5, plain JS/JSX). The simulation engine is pure and deterministic. The UI is a thin layer on top of it. The game direction and current waves are in [`docs/GAME_VISION.md`](docs/GAME_VISION.md) (it replaces waves 2–6 of `docs/AUDIT_v1.9.md`); the three pillars (standing, the tournament circuit, the story) are designed in [`docs/design/PILLARS.md`](docs/design/PILLARS.md).
 
 ## Ground rules
 
