@@ -134,6 +134,38 @@ function roundLabel(size) {
   return size === 8 ? 'Quarterfinal' : size === 4 ? 'Semifinal' : 'Final';
 }
 
+/**
+ * The tale of the tape before a bout: both teams (names, levels, elements), the two guilds'
+ * meetings and form, and the odds (from the ratings). Null when no bout is waiting.
+ */
+export function getTaleOfTape(state, tournamentId) {
+  const tournament = (state.tournaments || []).find((item) => item.id === tournamentId);
+  if (!tournament || tournament.status !== 'active') return null;
+  const opponent = state.rivals.find((guild) => guild.id === mirroredOpponentId(tournament.activeEntrants, 'player'));
+  if (!opponent) return null;
+  const mine = tournament.assignments.map((assignment) => getHero(state, assignment.heroId)).filter(Boolean);
+  const theirs = [opponent.star, ...(opponent.members || [])].filter((hero) => hero && !['dead', 'retired'].includes(hero.status)).sort((a, b) => (b.power || 0) - (a.power || 0)).slice(0, mine.length || tournament.teamSize);
+  const key = ['player', opponent.id].sort().join('|');
+  const meetings = state.circuit?.meetings?.[key] || [];
+  const ours = tournamentTeamEstimate(state, tournament.assignments).power;
+  const chance = clamp(Math.round(100 / (1 + Math.exp(-(ours - guildTournamentRating(state, opponent.id)) / 8))), 5, 95);
+  const odds = chance >= 50 ? `${Math.max(1, Math.round(chance / (100 - chance)))} to 1 on` : `${Math.max(1, Math.round((100 - chance) / chance))} to 1 against`;
+  const form = (id) =>
+    (state.tournamentHistory || [])
+      .flatMap((record) => [...(record.bracket || [])].reverse().filter((bout) => [bout.guildAId, bout.guildBId].includes(id)).map((bout) => (bout.winnerId === id ? 'W' : 'L')))
+      .slice(0, 5);
+  const side = (hero) => ({ name: hero.name, level: hero.level, classId: hero.classId, primal: hero.primal });
+  return {
+    opponent: { id: opponent.id, name: opponent.name, creed: opponent.creed, color: opponent.color, story: Boolean(opponent.storyId) },
+    mine: mine.map(side),
+    theirs: theirs.map(side),
+    meetings: { won: meetings.filter((meeting) => meeting.winnerId === 'player').length, lost: meetings.filter((meeting) => meeting.winnerId !== 'player').length },
+    form: { mine: form('player'), theirs: form(opponent.id) },
+    chance,
+    odds,
+  };
+}
+
 function mirroredOpponentId(entrants, playerId) {
   const index = entrants.indexOf(playerId);
   if (index < 0) return null;

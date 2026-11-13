@@ -172,3 +172,5 @@ export {
 } from './engine/story.js';
 
 export { greatRivalId, storyRival } from './engine/universe.js';
+export { getGuildRecord, getArenaRoll, getForm, getGazette } from './engine/seasons.js';
+export { getTaleOfTape } from './engine/tournamentEntry.js';

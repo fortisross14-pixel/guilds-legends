@@ -3,6 +3,7 @@
 // the record book, end-of-year awards and the season review, plus the read
 // models behind the Herald (records, hall of fame, ladders, head-to-head),
 // the Chronicle (mission log, past reviews) and hero Career tabs.
+import { TOURNAMENTS } from '../../data/tournaments.js';
 import { PATRONS, PATRON_LIST } from '../../data/patrons.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { addChronicle, getHero, noteSeasonHighlight, pushMoment, seasonOf, tallyFamily, tallyGuild, tallyHero } from './core.js';
@@ -512,5 +513,102 @@ export function getHeadToHead(state, rivalId) {
     },
     titles: { ours: (state.stats?.tournamentsWon || 0), theirs: rival.titles || 0 },
     seasons,
+  };
+}
+
+// ---------------------------------------------------------------- the sports desk (docs/design/PILLARS.md, Pillar 2)
+// Read models over state.circuit (filed by guildTournaments.js for every tournament, AI ones too).
+
+const guildName = (state, id) => (id === 'player' ? state.guild.name : state.rivals.find((rival) => rival.id === id)?.name || 'Unknown guild');
+const pct = (won, bouts) => (bouts ? Math.round((won / bouts) * 100) : 0);
+const finishLabel = (place) => (place === 1 ? 'champion' : place === 2 ? 'final' : place <= 4 ? 'semifinal' : place <= 8 ? 'quarterfinal' : '—');
+
+/** A guild's record by year (tournaments, bouts, won, %, titles, best), its totals, and its best and worst opponents. */
+export function getGuildRecord(state, guildId = 'player') {
+  const circuit = state.circuit || { guildYears: {}, byTournament: {}, meetings: {} };
+  const years = Object.entries(circuit.guildYears[guildId] || {})
+    .map(([year, row]) => {
+      const best = Math.min(99, ...Object.values(circuit.byTournament).map((event) => event[guildId]?.years?.[year] ?? 99));
+      return { year: Number(year), ...row, pct: pct(row.won, row.bouts), best: finishLabel(best) };
+    })
+    .sort((a, b) => b.year - a.year);
+  const totals = years.reduce((sum, row) => ({ entries: sum.entries + row.entries, bouts: sum.bouts + row.bouts, won: sum.won + row.won, titles: sum.titles + row.titles, finals: sum.finals + row.finals }), { entries: 0, bouts: 0, won: 0, titles: 0, finals: 0 });
+  const opponents = Object.entries(circuit.meetings)
+    .filter(([key]) => key.split('|').includes(guildId))
+    .map(([key, list]) => {
+      const other = key.split('|').find((id) => id !== guildId) || guildId;
+      const won = list.filter((meeting) => meeting.winnerId === guildId).length;
+      return { id: other, name: guildName(state, other), won, lost: list.length - won, last: list[0] };
+    })
+    .sort((a, b) => b.won + b.lost - (a.won + a.lost));
+  return { years, totals: { ...totals, pct: pct(totals.won, totals.bouts) }, opponents };
+}
+
+/** An arena's roll of champions: per event held there, winners by year, most titles, the record, and the guild's finishes there. */
+export function getArenaRoll(state, locationId) {
+  const circuit = state.circuit || { byTournament: {} };
+  return TOURNAMENTS.filter((definition) => definition.locationId === locationId).map((definition) => {
+    const record = state.titleRecords?.[definition.id] || {};
+    const counts = Object.entries(circuit.byTournament[definition.id] || {})
+      .map(([id, row]) => ({ id, name: guildName(state, id), titles: row.titles }))
+      .filter((row) => row.titles)
+      .sort((a, b) => b.titles - a.titles);
+    const mine = circuit.byTournament[definition.id]?.player;
+    return {
+      definition,
+      winners: (record.winners || []).slice(0, 10),
+      mostTitles: counts[0] || null,
+      recordHolder: record.recordHolderName ? { name: record.recordHolderName, wins: record.recordWins } : null,
+      you: mine ? Object.entries(mine.years).map(([year, place]) => ({ year: Number(year), finish: finishLabel(place) })).sort((a, b) => b.year - a.year) : [],
+      yourRecord: mine ? { bouts: mine.bouts, won: mine.won, titles: mine.titles } : null,
+    };
+  });
+}
+
+/** The guild's (or a rival's) last bouts, newest first: 'W' or 'L'. */
+export function getForm(state, guildId = 'player', count = 5) {
+  return (state.tournamentHistory || [])
+    .flatMap((record) => [...(record.bracket || [])].reverse().filter((bout) => [bout.guildAId, bout.guildBId].includes(guildId)).map((bout) => (bout.winnerId === guildId ? 'W' : 'L')))
+    .slice(0, count);
+}
+
+/**
+ * The Herald's Gazette, this month's issue: a headline from the latest tournament, the standings,
+ * the form guide (the guild and its great rival), what's coming, and the guild's own line.
+ */
+export function getGazette(state) {
+  const months = ['Deepwinter', 'Thawrise', 'Rainmoot', 'Greengale', 'Highsun', 'Brightwane', 'Harvestcall', 'Amberfall', 'Mistmarch', 'Redleaf', 'Frostwane', 'Longnight'];
+  const issue = (state.date.year - 1187) * 12 + state.date.month - 4;
+  const latest = (state.tournamentHistory || [])[0] || null;
+  const mine = (state.tournamentHistory || []).find((record) => record.playerResult) || null;
+  const headline = latest
+    ? latest.championGuildId === 'player'
+      ? `${state.guild.name.toUpperCase()} TAKE THE ${latest.title.toUpperCase()}!`
+      : `${latest.championName.toUpperCase()} WIN THE ${latest.title.toUpperCase()}`
+    : 'THE SEASON AWAITS ITS FIRST CHAMPION';
+  const final = latest?.bracket?.find((bout) => bout.round === 'Final');
+  const lead = latest
+    ? `${latest.championName} won the ${latest.title} in ${LOCATION_BY_ID[latest.location]?.name || latest.location || 'the ring'}${final ? `, beating ${final.winnerId === final.guildAId ? final.guildBName : final.guildAName} in the final` : ''}.${latest.playerResult ? ` ${state.guild.name} reached the ${finishLabel(latest.playerResult.finish)}.` : ''}`
+    : 'No tournament has been fought yet this season. The heralds are sharpening their quills.';
+  const great = (state.guild?.standing?.honorBand || 'neutral') === 'wicked' ? 'rival-dawn' : 'rival-thistle';
+  const rival = state.rivals.find((item) => item.storyId === great) || null;
+  const thisYear = state.circuit?.guildYears?.player?.[state.date.year] || null;
+  return {
+    issue: Math.max(1, issue),
+    date: `${months[state.date.month]} ${state.date.year}`,
+    headline,
+    lead,
+    standings: guildLadder(state, 'official').slice(0, 8).map((row, index) => ({ rank: index + 1, id: row.id, name: row.name, points: Math.round(row.official || 0), titles: row.titles || 0, player: row.player })),
+    form: [
+      { name: state.guild.name, form: getForm(state, 'player') },
+      ...(rival ? [{ name: rival.name, form: getForm(state, rival.id), rival: true }] : []),
+    ],
+    upcoming: (state.tournaments || [])
+      .filter((tournament) => tournament.status !== 'completed')
+      .sort((a, b) => a.month - b.month || (a.week || 0) - (b.week || 0))
+      .slice(0, 4)
+      .map((tournament) => ({ id: tournament.id, name: tournament.name, where: LOCATION_BY_ID[tournament.locationId]?.name, when: months[tournament.month], circuit: tournament.circuit })),
+    yours: thisYear ? `${thisYear.entries} tournament${thisYear.entries === 1 ? '' : 's'}, ${thisYear.bouts} bouts, ${thisYear.won} won (${pct(thisYear.won, thisYear.bouts)}%), ${thisYear.titles} title${thisYear.titles === 1 ? '' : 's'}.` : 'No tournaments for the guild yet this year.',
+    lastYours: mine ? `${mine.title} ${mine.year}: ${finishLabel(mine.playerResult.finish)}.` : null,
   };
 }

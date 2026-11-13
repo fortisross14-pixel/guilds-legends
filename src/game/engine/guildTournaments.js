@@ -213,6 +213,55 @@ function finishPlayerGuildTournamentInPlace(state, tournament, actualFinish) {
   };
 }
 
+// ---------------------------------------------------------------- the circuit's records (docs/design/PILLARS.md, Pillar 2)
+const ROUND_FINISH = { Final: 2, Semifinal: 4, Quarterfinal: 8 };
+
+/**
+ * Files a finished tournament into state.circuit, for the sports pages (seasons.js read models):
+ * guildYears[guildId][year] ({ entries, bouts, won, titles, finals }), byTournament[defId][guildId]
+ * ({ entries, bouts, won, titles, finals, best, years: { year: finish } }) and meetings['a|b'] (every
+ * bout between two guilds: { year, defId, round, winnerId }).
+ */
+function recordCircuitInPlace(state, record) {
+  const circuit = (state.circuit ||= { guildYears: {}, byTournament: {}, meetings: {} });
+  const year = record.year;
+  const finish = {};
+  record.entrants.forEach(({ guildId }) => (finish[guildId] = 8));
+  const yearOf = (guildId) => ((circuit.guildYears[guildId] ||= {})[year] ||= { entries: 0, bouts: 0, won: 0, titles: 0, finals: 0 });
+  const eventOf = (guildId) => ((circuit.byTournament[record.definitionId] ||= {})[guildId] ||= { entries: 0, bouts: 0, won: 0, titles: 0, finals: 0, best: 99, years: {} });
+  (record.bracket || []).forEach((bout) => {
+    [bout.guildAId, bout.guildBId].forEach((guildId) => {
+      if (!guildId) return;
+      const won = bout.winnerId === guildId;
+      yearOf(guildId).bouts += 1;
+      eventOf(guildId).bouts += 1;
+      if (won) {
+        yearOf(guildId).won += 1;
+        eventOf(guildId).won += 1;
+      } else finish[guildId] = Math.min(finish[guildId] || 8, ROUND_FINISH[bout.round] || 8);
+    });
+    const key = [bout.guildAId, bout.guildBId].sort().join('|');
+    circuit.meetings[key] = [{ year, defId: record.definitionId, round: bout.round, winnerId: bout.winnerId }, ...(circuit.meetings[key] || [])].slice(0, 20);
+  });
+  if (record.championGuildId) finish[record.championGuildId] = 1;
+  Object.entries(finish).forEach(([guildId, place]) => {
+    const years = yearOf(guildId);
+    const event = eventOf(guildId);
+    years.entries += 1;
+    event.entries += 1;
+    if (place <= 2) {
+      years.finals += 1;
+      event.finals += 1;
+    }
+    if (place === 1) {
+      years.titles += 1;
+      event.titles += 1;
+    }
+    event.best = Math.min(event.best, place);
+    event.years[year] = place;
+  });
+}
+
 function recordGuildTournamentInPlace(state, tournament, championGuildId, playerResult = null) {
   updateGuildTitleRecordInPlace(state, tournament, championGuildId);
   noteWinInPlace(state, championGuildId, tournament);
@@ -266,6 +315,7 @@ function recordGuildTournamentInPlace(state, tournament, championGuildId, player
       ? `${state.guild.name} finished top ${playerResult.finish}, against an expectation of top ${playerResult.expectedFinish}.`
       : `${championName} won the ${tournament.name}.`,
   };
+  recordCircuitInPlace(state, record);
   state.tournamentHistory.unshift(record);
   state.tournamentHistory = state.tournamentHistory.slice(0, MAX_TOURNAMENT_HISTORY);
   state.universeStats.tournamentsResolved = (state.universeStats.tournamentsResolved || 0) + 1;
