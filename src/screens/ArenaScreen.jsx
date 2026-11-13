@@ -1,9 +1,10 @@
+import { RollOfChampions, TaleOfTape } from './SportsDesk.jsx';
 import React, { useEffect, useState } from 'react';
 import { MONTHS } from '../data/content.js';
 import { locationBuildings } from '../data/world.js';
 import { TOURNAMENT_LORE } from '../data/lore.js';
 import { getArenaView, getStoryView } from '../game/engine.js';
-import { Badge, Button, EmptyState, HeroPortrait, Panel } from '../components/UI.jsx';
+import { Badge, Button, HeroPortrait, Panel } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import { CIRCUITS, CIRCUIT_BY_TIER } from '../data/tournaments.js';
 
@@ -12,7 +13,6 @@ import { CIRCUITS, CIRCUIT_BY_TIER } from '../data/tournaments.js';
 
 const when = (date) => `${MONTHS[date.month]} ${date.year}, week ${date.week + 1}`;
 const inWeeks = (days) => (days <= 0 ? 'today' : days < 7 ? `in ${days} day${days === 1 ? '' : 's'}` : `in ${Math.round(days / 7)} week${Math.round(days / 7) === 1 ? '' : 's'}`);
-const ordinal = (finish) => (finish === 1 ? 'Champion' : finish === 2 ? 'Runner-up' : `Top ${finish}`);
 
 function Spot({ id, active, asset, title, text, badge, onClick }) {
   return (
@@ -65,6 +65,7 @@ function FightingGround({ state, view, actions }) {
             {view.opponentGuild ? <small className="muted">{CIRCUIT_BY_TIER[view.opponentGuild.tierIndex || 0]?.id} guild</small> : null}
           </div>
         </div>
+        <TaleOfTape state={state} tournamentId={view.active.id} />
         <p className="arena-line">“Teams ready? Then step into the ring.”</p>
         <Button variant="primary" size="lg" disabled={Boolean(state.activeEncounter)} onClick={() => actions.startBout(view.active.id)}>
           {state.activeEncounter?.sourceId === view.active.id ? 'Bout in progress' : 'Start the next bout'}
@@ -183,51 +184,11 @@ function Registrar({ state, view, actions }) {
   );
 }
 
-function HistoryBoard({ state, view, actions, navigate }) {
+function HistoryBoard({ state, navigate }) {
   const hasHerald = locationBuildings(state.world?.currentLocationId || 'dunmere').includes('herald');
   return (
     <>
-      {view.history.map((item) => (
-        <Panel key={item.definition.id} title={item.definition.name} eyebrow={`History board · ${item.definition.trophy}`}>
-          <div className="arena-history">
-            <section>
-              <h3>Champions by year</h3>
-              <ul>
-                {item.winners.map((winner, index) => (
-                  <li key={`${winner.year}-${index}`}>
-                    <b className="num">{winner.year}</b>{' '}
-                    {winner.vacated ? (
-                      <>
-                        <s>{winner.struck}</s> <small>· title vacated</small>
-                      </>
-                    ) : (
-                      winner.guildName
-                    )}
-                  </li>
-                ))}
-                {!item.winners.length ? <li className="muted">No champions recorded.</li> : null}
-              </ul>
-            </section>
-            <section>
-              <h3>Title record</h3>
-              <p>
-                {item.record?.recordHolderName || '—'} · {item.record?.recordWins || 0} titles
-              </p>
-              <h3>Repeat winners</h3>
-              <p>{item.repeat.length ? item.repeat.map((row) => `${row.name} (${row.count})`).join(', ') : 'None yet.'}</p>
-              <h3>Your best</h3>
-              {item.best ? (
-                <Button size="sm" onClick={() => actions.openReport({ kind: 'tournament', id: item.best.id })}>
-                  {ordinal(item.best.finish)} in {item.best.year} ›
-                </Button>
-              ) : (
-                <p className="muted">The guild has not fought here yet.</p>
-              )}
-            </section>
-          </div>
-        </Panel>
-      ))}
-      {!view.history.length ? <EmptyState icon="♛" title="An empty board" text="No tournament has been held here." /> : null}
+      <RollOfChampions state={state} locationId={state.world?.currentLocationId || 'dunmere'} />
       {hasHerald ? (
         <Button onClick={() => navigate({ view: 'town', building: 'herald', tab: 'tournaments' })}>The full regional almanac at the Herald ›</Button>
       ) : (
@@ -280,7 +241,7 @@ export default function ArenaScreen({ state, actions, navigate, locationId, init
       </nav>
       {spot === 'ground' ? <FightingGround state={state} view={view} actions={actions} /> : null}
       {spot === 'registrar' ? <Registrar state={state} view={view} actions={actions} /> : null}
-      {spot === 'board' ? <HistoryBoard state={state} view={view} actions={actions} navigate={navigate} /> : null}
+      {spot === 'board' ? <HistoryBoard state={state} navigate={navigate} /> : null}
       {!spot ? <p className="muted arena-hint">Tap the fighting ground, the sign-up desk or the history board.</p> : null}
     </div>
   );

@@ -93,3 +93,36 @@ button.ranking-star { min-height: 40px; padding-left: 24px; }
   .record-chase-grid, .world-artifact-grid, .artifact-grid { grid-template-columns: 1fr; }
   .directory-banner > div { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* The sports desk: a medieval broadsheet (src/screens/SportsDesk.jsx). Ink on parchment. */
+.broadsheet { display: grid; gap: 10px; margin-bottom: 14px; padding: 16px 18px; border: 1px solid #6b5a40; border-radius: 3px; background: linear-gradient(180deg, #efe3c6, #e4d4ae); box-shadow: inset 0 0 40px rgba(110, 80, 40, .25), 0 2px 6px rgba(0, 0, 0, .35); color: #2a2118; font-family: var(--font-ui); }
+.broadsheet h2, .broadsheet h3, .broadsheet h4 { margin: 0; color: #1d150d; }
+.broadsheet__masthead { display: grid; gap: 2px; padding-bottom: 8px; border-bottom: 3px double #3a2c1c; text-align: center; }
+.broadsheet__masthead h2 { font: 700 clamp(22px, 5vw, 34px) / 1.1 var(--font-display); letter-spacing: .04em; }
+.broadsheet__masthead--small h2 { font-size: clamp(18px, 4vw, 24px); }
+.broadsheet__masthead small { color: #5a4a35; font-style: italic; }
+.broadsheet__headline { font: 700 clamp(17px, 4vw, 24px) / 1.2 var(--font-display); text-align: center; }
+.broadsheet__lead { margin: 0; font-size: var(--fs-3); line-height: 1.4; }
+.broadsheet__columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.broadsheet__columns > section { display: grid; align-content: start; gap: 6px; padding-left: 12px; border-left: 1px solid rgba(58, 44, 28, .4); }
+.broadsheet__columns > section:first-child { padding-left: 0; border-left: 0; }
+.broadsheet__columns--two { grid-template-columns: 1fr 1fr; }
+.broadsheet h4 { font: 700 var(--fs-2) var(--font-display); letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid rgba(58, 44, 28, .5); }
+.broadsheet p { margin: 0; }
+.sheet-table { width: 100%; border-collapse: collapse; font-size: var(--fs-2); }
+.sheet-table th { font: 700 var(--fs-1) var(--font-display); text-align: left; border-bottom: 1px solid #3a2c1c; }
+.sheet-table td { padding: 3px 4px; border-bottom: 1px dotted rgba(58, 44, 28, .35); }
+.sheet-table tr.is-you td, .sheet-list li.is-you { font-weight: 700; background: rgba(200, 150, 60, .18); }
+.sheet-table tr.is-total td { font-weight: 700; border-top: 2px solid #3a2c1c; }
+.sheet-list { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.sheet-list li { display: flex; justify-content: space-between; gap: 8px; }
+.sheet-list small { color: #5a4a35; }
+.sheet-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sheet-line em { color: #7a2c1c; font-style: italic; }
+.sheet-small { color: #5a4a35; font-size: var(--fs-1); font-style: italic; }
+.sheet-form { display: inline-flex; gap: 3px; }
+.sheet-form b { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1px solid #3a2c1c; font: 700 11px var(--font-ui); }
+.sheet-form b.is-win { background: #2f4a2a; color: #efe3c6; }
+.sheet-form b.is-loss { background: #efe3c6; color: #7a2c1c; }
+.sheet-form--none { font-style: italic; color: #5a4a35; }
+@media (max-width: 520px) { .broadsheet__columns--two { grid-template-columns: 1fr; } }

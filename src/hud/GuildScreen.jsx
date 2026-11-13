@@ -6,6 +6,7 @@ import { Badge, Button, ProgressBar } from '../components/UI.jsx';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
 import { NemesisView } from '../screens/RivalryScreens.jsx';
+import { GuildRecord } from '../screens/SportsDesk.jsx';
 import { Treasury } from '../places/GuildHallRooms.jsx';
 
 // Guild orb → Guild: who the guild is and how it stands. Charter (with status,
@@ -17,6 +18,7 @@ export const GUILD_TABS = [
   { id: 'standing', label: 'Standing', icon: 'heart' },
   { id: 'reputation', label: 'Reputation', icon: 'shield' },
   { id: 'patrons', label: 'Patrons', icon: 'letter' },
+  { id: 'record', label: 'Record', icon: 'trophy' },
   { id: 'rivals', label: 'Rivals', icon: 'swords' },
   { id: 'finances', label: 'Finances', icon: 'coin' },
 ];
@@ -241,6 +243,7 @@ function StoryRivals({ state }) {
 
 export default function GuildScreen({ state, actions, tab = 'charter' }) {
   if (tab === 'standing') return <StandingTab state={state} />;
+  if (tab === 'record') return <GuildRecord state={state} />;
   if (tab === 'reputation') return <ReputationTab state={state} />;
   if (tab === 'patrons') return <PatronsTab state={state} actions={actions} />;
   if (tab === 'rivals')

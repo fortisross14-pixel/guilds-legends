@@ -10,6 +10,7 @@ import JournalScreen, { JOURNAL_TABS } from '../places/JournalScreen.jsx';
 import RankingsScreen, { HallOfFameTab, RecordBookTab } from '../screens/RankingsScreen.jsx';
 import { MissionLog, SeasonReviewsPage } from '../screens/HistoryScreens.jsx';
 import CodexScreen from '../screens/CodexScreen.jsx';
+import { Gazette } from '../screens/SportsDesk.jsx';
 import GuildScreen, { GUILD_TABS } from './GuildScreen.jsx';
 import SettingsScreen from '../screens/SettingsScreen.jsx';
 import CreditsScreen from './CreditsScreen.jsx';
@@ -37,7 +38,7 @@ export const SECTION_TABS = {
   guild: GUILD_TABS,
   items: tabs(['equipment', 'Equipment', 'swords'], ['inventory', 'Inventory', 'bag']),
   journal: JOURNAL_TABS,
-  records: tabs(['rankings', 'Rankings', 'trophy'], ['seasons', 'Seasons', 'hourglass'], ['book', 'Record book', 'star'], ['fame', 'Hall of fame', 'crown'], ['log', 'Mission log', 'scroll'], ['codex', 'Codex', 'book']),
+  records: tabs(['gazette', 'Gazette', 'scroll'], ['rankings', 'Rankings', 'trophy'], ['seasons', 'Seasons', 'hourglass'], ['book', 'Record book', 'star'], ['fame', 'Hall of fame', 'crown'], ['log', 'Mission log', 'scroll'], ['codex', 'Codex', 'book']),
   system: tabs(['game', 'Game', 'save'], ['settings', 'Settings', 'gear'], ['credits', 'Credits', 'info']),
 };
 
@@ -149,6 +150,7 @@ export function SectionView({ section, state, actions, navigate, slot, setSectio
   if (id === 'records') {
     return (
       <Section {...common}>
+        {tab === 'gazette' ? <Gazette {...props} /> : null}
         {tab === 'rankings' ? <RankingsScreen {...props} /> : null}
         {tab === 'seasons' ? <SeasonReviewsPage {...props} /> : null}
         {tab === 'book' ? <RecordBookTab {...props} /> : null}
