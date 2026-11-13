@@ -39,6 +39,11 @@ export default {
     speaker: 'Dagna Hale',
     portrait: P('foreman'),
     variants: [
+      // How they feel about the guild (its standing: fear, respect, disgust, warmth).
+      { if: { talked: true, quadrant: 'fear' }, lines: ['My foundry gives you whatever you want. Just say it and go.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['Ironford respects steel, and people who keep their word. You have both.'] },
+      { if: { talked: true, quadrant: 'disgust' }, lines: ['Your coin spends. Your name doesn’t, not in my foundry.'] },
+      { if: { talked: true, quadrant: 'compassion' }, lines: ['Sit by the fire. You look like you’ve been helping strangers again.'] },
       { if: { patronRival: 'smiths' }, lines: ['The Guild has you down as people who undercut good smiths. Talk fast.'] },
       { if: { tierAtLeast: 1 }, lines: ['A promoted guild. The Smiths will want to talk armour contracts. Bring your own tea.'] },
       { if: { talked: true }, lines: ['Back on Foundry Row. Still got your eyebrows? Good.'] },

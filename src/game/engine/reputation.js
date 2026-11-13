@@ -193,19 +193,36 @@ export function fadeStandingInPlace(state) {
   standing.dreadBand = dreadBandFor(standing.dread, standing.dreadBand);
 }
 
-const HONOR_WORDS = { honourable: 'honourable', wicked: 'wicked', neutral: '' };
-const DREAD_WORDS = { feared: 'feared', dreaded: 'dreaded', none: '' };
+/**
+ * How people feel about the guild, by its standing (docs/design/PILLARS.md): feared and wicked
+ * guilds are met with fear, feared and honourable ones with respect, wicked ones nobody fears
+ * with disgust, honourable ones nobody fears with warmth. Null in between.
+ */
+export function standingQuadrant(state) {
+  const { honorBand, dreadBand } = getStanding(state);
+  const feared = dreadBand === 'feared' || dreadBand === 'dreaded';
+  if (honorBand === 'wicked') return feared ? 'fear' : 'disgust';
+  if (honorBand === 'honourable') return feared ? 'respect' : 'compassion';
+  return null;
+}
+
+// What people call the guild: [the word in "the … guild of X", the prefix in "… X"], by honor and dread.
+const EPITHETS = {
+  honourable: { none: ['honourable', 'Honourable'], feared: ['respected', 'Respected'], dreaded: ['very respectable', 'Venerable'] },
+  neutral: { none: null, feared: ['hard', 'Hard'], dreaded: ['grim', 'Grim'] },
+  wicked: { none: ['shameless', 'Shameless'], feared: ['feared', 'Feared'], dreaded: ['dreaded', 'Dreaded'] },
+};
 
 /**
- * The epithet the guild has earned: words ('honourable and feared'), the long form
- * ('the honourable and feared guild of the New Lantern') and the short one ('Honourable New Lantern').
+ * The epithet the guild has earned: words ('very respectable'), the long form
+ * ('the very respectable guild of the New Lantern') and the short one ('Venerable New Lantern').
  * A guild that is neither has none.
  */
 export function standingEpithet(state) {
   const standing = getStanding(state);
-  const words = [HONOR_WORDS[standing.honorBand], DREAD_WORDS[standing.dreadBand]].filter(Boolean).join(' and ');
+  const pair = EPITHETS[standing.honorBand || 'neutral']?.[standing.dreadBand || 'none'] || null;
   const name = state.guild?.name || 'the guild';
   const bare = name.replace(/^the\s+/i, '');
-  if (!words) return { words: '', long: name, short: name };
-  return { words, long: `the ${words} guild of the ${bare}`, short: `${words[0].toUpperCase()}${words.slice(1)} ${bare}` };
+  if (!pair) return { words: '', long: name, short: name };
+  return { words: pair[0], long: `the ${pair[0]} guild of the ${bare}`, short: `${pair[1]} ${bare}` };
 }

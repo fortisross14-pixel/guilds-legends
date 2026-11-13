@@ -20,7 +20,7 @@ import { PATRON_DELTAS } from '../../data/patrons.js';
 import { grantPatronRewardsInPlace } from './connections.js';
 import { addItemsInPlace, battleItems, settleBattleItemsInPlace } from './inventory.js';
 import { concludeActiveCombat } from './encounters.js';
-import { adjustRegionReputationInPlace, adjustStandingInPlace } from './reputation.js';
+import { adjustRegionReputationInPlace, adjustStandingInPlace, standingEpithet } from './reputation.js';
 import {
   addEvidenceInPlace,
   checkCondition,
@@ -72,7 +72,8 @@ function knowledgeInPlace(state) {
 
 function fillText(state, text) {
   const founder = state.heroes?.find((hero) => hero.id === state.guild.founderHeroId)?.name || state.guild.founder || 'the founder';
-  return String(text).replaceAll('{guild}', state.guild.name).replaceAll('{founder}', founder);
+  // {epithet}: what people call the guild ('the very respectable guild of the New Lantern'), or its name.
+  return String(text).replaceAll('{epithet}', standingEpithet(state).long).replaceAll('{guild}', state.guild.name).replaceAll('{founder}', founder);
 }
 
 function resolveLines(state, conversation, lines = []) {

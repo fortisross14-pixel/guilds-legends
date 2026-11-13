@@ -153,7 +153,7 @@ export {
   offerTerms,
 } from './engine/contracts.js';
 export { makeOffer } from './engine/recruitment.js';
-export { REPUTATION_FAMILIES, REPUTATION_LEVELS, FAMILY_PERKS, getReputationSummary, specializationTitle, reputationLevel, getStanding, standingEpithet, STANDING } from './engine/reputation.js';
+export { REPUTATION_FAMILIES, REPUTATION_LEVELS, FAMILY_PERKS, getReputationSummary, specializationTitle, reputationLevel, getStanding, standingEpithet, standingQuadrant, STANDING } from './engine/reputation.js';
 export { nemesisIds, rivalRecord, getNemesisView, challengeNemesis, acceptChallenge, declineChallenge } from './engine/rivalry.js';
 export { declineContract } from './engine/missions.js';
 export { resolveTownEvent, startSideJob, markNewsRead, festivalFor } from './engine/townLife.js';

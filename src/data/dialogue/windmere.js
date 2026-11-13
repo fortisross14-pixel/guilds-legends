@@ -14,6 +14,11 @@ export default {
     speaker: 'Sela Wick',
     portrait: P('courier'),
     variants: [
+      // How they feel about the guild (its standing: fear, respect, disgust, warmth).
+      { if: { talked: true, quadrant: 'fear' }, lines: ['I’ll take your letters. Fast. And I won’t read them, I promise.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['The couriers say the roads are safer behind your banner. I like that rumour.'] },
+      { if: { talked: true, quadrant: 'disgust' }, lines: ['I carry for anyone who pays. Some days I wish I didn’t.'] },
+      { if: { talked: true, quadrant: 'compassion' }, lines: ['You’re the ones who stop for people on the road. Everybody knows. Come in.'] },
       { if: { talked: true }, lines: ['You again! Quick, I’ve a parcel going cold. What do you need?'] },
       {
         lines: ['Mind out! Oh, sorry. Delivery. You’re not a delivery, are you?'],

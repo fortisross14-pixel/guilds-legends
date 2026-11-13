@@ -44,7 +44,9 @@
 //   patronRival: patronId, patronGiftReady: patronId (no gift this month and 50 gold)
 //   Items (docs/design/ITEMS.md): hasItem: { itemId: n }, notItem: itemId (or list)
 //   Standing (docs/design/PILLARS.md): honorAtLeast: n, honorBelow: n, dreadAtLeast: n,
-//   honorBand: 'honourable' | 'neutral' | 'wicked' (or a list)
+//   honorBand: 'honourable' | 'neutral' | 'wicked' (or a list); quadrant: 'fear' | 'respect' | 'disgust' | 'compassion'
+//   (feared and wicked, feared and honourable, wicked unfeared, honourable unfeared)
+// Text: {guild} the guild's name, {epithet} what people call it, {founder} the founder
 //
 // Effects:
 //   { gold: n }  { item: { itemId: n } }  { reputation: { region, amount } }

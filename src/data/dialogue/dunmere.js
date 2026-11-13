@@ -19,6 +19,11 @@ export default {
     speaker: 'Mara Fen',
     portrait: P('innkeeper'),
     variants: [
+      // How they feel about the guild (its standing: fear, respect, disgust, warmth).
+      { if: { talked: true, quadrant: 'fear' }, lines: ['Evening. What’ll it be? …Quickly, love. People get nervous when your lot sits down.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['Well, if it isn’t {epithet}! Sit, love, the good table’s yours. People feel safer with you in the room.'] },
+      { if: { talked: true, quadrant: 'disgust' }, lines: ['You. I’ll pour, because coin’s coin. Don’t expect me to smile about it.'] },
+      { if: { talked: true, quadrant: 'compassion' }, lines: ['Ah, love. You look tired. Sit. The first one’s on the house for people like you.'] },
       {
         if: { talked: true, tierAtLeast: 1 },
         lines: ['Well, look at you. Promoted, and you still drink here. I’m almost touched.'],
@@ -56,6 +61,11 @@ export default {
     speaker: 'Corwin Pell',
     portrait: P('merchant'),
     variants: [
+      // How they feel about the guild (its standing: fear, respect, disgust, warmth).
+      { if: { talked: true, quadrant: 'fear' }, lines: ['Ah! Of course, of course. Whatever you need. No charge for looking.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['My favourite guild, and the town’s too. People pay more for roads you’ve walked.'] },
+      { if: { talked: true, quadrant: 'disgust' }, lines: ['Business is business. But I count my fingers after shaking your hand.'] },
+      { if: { talked: true, quadrant: 'compassion' }, lines: ['You again! Half my drivers name their mules after your people now.'] },
       { if: { patronRival: 'trade' }, lines: ['Ah. You. The Trade House keeps two lists, and you’re on the other one now.'] },
       { if: { oldRoadCleared: true, talked: true }, lines: ['My guild of choice! The wagons run the Old Road every morning now. What can I do for you?'] },
       { if: { talked: true }, lines: ['Back again? Time is money, friend, and you’re holding some of mine.'] },
@@ -183,6 +193,11 @@ export default {
     speaker: 'Orren Pike',
     portrait: P('herald'),
     variants: [
+      // How they feel about the guild (its standing: fear, respect, disgust, warmth).
+      { if: { talked: true, quadrant: 'fear' }, lines: ['I’ve written your name in my book. I’d rather not write it again, for both our sakes.'] },
+      { if: { talked: true, quadrant: 'respect' }, lines: ['The heralds speak well of {epithet}. I’m careful to say it correctly.'] },
+      { if: { talked: true, quadrant: 'disgust' }, lines: ['I post the notices. I don’t have to like who reads them.'] },
+      { if: { talked: true, quadrant: 'compassion' }, lines: ['Dunmere notices kindness. Slowly, but it notices. What can I do for you?'] },
       { if: { tierAtLeast: 1 }, lines: ['Hear ye! {guild}, promoted! I’ve written it on three boards and shouted it from the fountain. Twice.'] },
       { if: { talked: true, fameAtLeast: 40 }, lines: ['Ah, {guild}! Your name crossed my desk twice this week. A good start. Keep it coming.'] },
       { if: { talked: true }, lines: ['Back for news? Names are my trade, and business is brisk.'] },

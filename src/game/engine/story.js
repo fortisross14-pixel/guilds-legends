@@ -39,7 +39,7 @@ import {
 import { adjustPatronInPlace, applyCharterInPlace, patronAtLeast, patronLevel } from './charter.js';
 import { createHeroFromBase, generateHero } from './heroes.js';
 import { addItemsInPlace, battleItems } from './inventory.js';
-import { adjustRegionReputationInPlace, missionFamily, regionLevel } from './reputation.js';
+import { adjustRegionReputationInPlace, missionFamily, regionLevel, standingQuadrant } from './reputation.js';
 import { instantiateMission } from './universe.js';
 import { makeContract } from './contracts.js';
 import { rentLotInPlace } from './hall.js';
@@ -217,6 +217,8 @@ export function checkCondition(state, condition, context = {}) {
         return (state.guild?.standing?.honor || 0) < value;
       case 'dreadAtLeast':
         return (state.guild?.standing?.dread || 0) >= value;
+      case 'quadrant':
+        return list(value).includes(standingQuadrant(state));
       case 'honorBand':
         return list(value).includes(state.guild?.standing?.honorBand || 'neutral');
       case 'freeBed':
