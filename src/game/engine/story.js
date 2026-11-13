@@ -80,6 +80,17 @@ function storyHero(state, id) {
   return state.heroes.find((hero) => hero.storyId === id && !['dead', 'retired'].includes(hero.status)) || null;
 }
 
+/** True when the guild won a tournament: `value` a circuit ('Initiation'), an event id, or 'any'. */
+function tournamentWon(state, value) {
+  return (state.tournamentHistory || []).some((record) => record.championGuildId === 'player' && (value === 'any' || record.circuit === value || record.definitionId === value));
+}
+
+/** True when the guild reached the final (finished first or second) of one of these events. */
+function reachedFinal(state, ids) {
+  const list = Array.isArray(ids) ? ids : [ids];
+  return (state.tournamentHistory || []).some((record) => record.playerResult && record.playerResult.finish <= 2 && list.includes(record.definitionId));
+}
+
 function tournamentPlayed(state, definitionId) {
   return (state.tournamentHistory || []).some(
     (record) => record.playerResult && (definitionId === 'any' ? REGIONAL_TOURNAMENTS.includes(record.definitionId) : record.definitionId === definitionId),
@@ -188,6 +199,10 @@ export function checkCondition(state, condition, context = {}) {
         return state.heroes.some((hero) => !['dead', 'retired'].includes(hero.status) && hero.classId === value.classId && hero.level >= (value.level || 1));
       case 'signedUp':
         return (state.tournaments || []).some((tournament) => tournament.definitionId === value && (tournament.signup || tournament.assignments?.length));
+      case 'wonTournament':
+        return tournamentWon(state, value);
+      case 'reachedFinal':
+        return reachedFinal(state, value);
       case 'tournamentPlayed':
         return tournamentPlayed(state, value);
       // Items (docs/design/ITEMS.md): { hasItem: { 'wolf-pelt': 3 } }.
@@ -634,7 +649,7 @@ function bannerRelic(state) {
     discoveredYear: state.date.year,
     originMission: PROLOGUE.title,
     ownerId: null,
-    legend: `Carried by the Broken Lantern. Taken by Cassian Rook. Recovered in Dunmere, Year ${state.date.year}. Preserved by the founder of ${state.guild.name}.`,
+    legend: `Carried by the Broken Lantern. Brought to Dunmere by a stranger called Rook, Year ${state.date.year}. Carried now by the founder of ${state.guild.name}.`,
     prestige: 12,
     effect: artifactEffectFromPrestige(12, 'The Last Banner'),
     ownerHistory: [{ year: state.date.year, month: state.date.month, heroId: null, heroName: 'Guild Vault', action: 'inherited' }],
@@ -647,15 +662,17 @@ export function foundGuildInPlace(state, guildName) {
   const founder = state.heroes.find((hero) => hero.id === state.guild.founderHeroId);
   if (founder) {
     founder.origin = `Founder of ${state.guild.name}`;
-    addHeroHistory(founder, state, { type: 'founding', title: `Founded ${state.guild.name}`, text: 'Raised a new guild under the Broken Lantern’s last banner, the morning after Cassian Rook died on the floor.' });
+    addHeroHistory(founder, state, { type: 'founding', title: `Founded ${state.guild.name}`, text: 'Raised a new guild under the Broken Lantern’s last banner, the morning after a stranger called Rook brought it in from the storm.' });
   }
   if (!state.artifacts.some((artifact) => artifact.id === 'artifact-last-banner')) state.artifacts.push(bannerRelic(state));
+  // The bearer's medal came tied to the banner's pole (a keepsake: some doors open to it).
+  if (!state.inventory?.['lantern-medal']) addItemsInPlace(state, { 'lantern-medal': 1 });
   ['broken-lantern', 'the-banner', 'cassian-rook', 'door-emblem'].forEach((id) => unlockCodexInPlace(state, id, true));
   addChronicle(state, {
     type: 'founding',
     importance: 5,
     title: `${state.guild.founder} raises the banner of ${state.guild.name}`,
-    text: 'A dying guildmaster brought the Broken Lantern’s banner to a house in Dunmere. The next morning, a new guild had a name.',
+    text: 'A wounded stranger brought the Broken Lantern’s banner to a house in Dunmere, and a promise. The next morning, a new guild had a name.',
     heroIds: founder ? [founder.id] : [],
     tags: ['founding', 'story'],
   });

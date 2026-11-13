@@ -124,17 +124,30 @@ right reasons means dread +, honor + or none. Paying moves neither.
 
 | # | Mission | Types | What happens | Fights (party level) | Status |
 |---|---|---|---|---|---|
-| 2.1 | **The Iron Road** | search | Walk the Iron Road to Ironford. A toll gang has taken the bridge. | the toll gang (12) | ⬜ |
-| 2.2 | **The Ledger of Ironford** | convince / pay / fight | The ledger is in the foundry council's archive. Talk the council round (a test), buy a key from a clerk, force the archive at night (fight), or (Scholars) decipher a copy. Inside: a torn page, and a scrap in an old script nobody can read. Evidence: the ledger. | the archive guards (14) | ⬜ |
-| 2.3 | **The Archivist's Door** | find someone, **rank gate** | Magister Venn opens his door only to an Initiation champion or a Champion guild. Win any Initiation tournament (or reach Champion status). He reads a word: temple script, faded. Ask at Dawnwatch. | the tournament (14–16) | ⬜ |
-| 2.4 | **The Faded Papyrus** | find someone, gather | Dawnwatch can't read it; the priests send you to Sister Oriel, a scribe at the priests' house. She can restore it with three dyes: ochre from the Iron Road heights, woad from the cliff road, sea purple from the coast road. Each lies past a band. Restored: "The seven did not die in the fire. Ask the cliff champion who paid him to lose." | three road fights (16, 17, 18) | ⬜ |
-| 2.5 | **Windmere** | search, errand fight | Reach Windmere by the cliff road. The cliff champion is a recluse; the town wants a band of wreckers on the coast road gone before anyone will say where he lives. | the wreckers (19) | ⬜ |
-| 2.6 | **Two Doors** | find someone, **standing dead end** | Two people know Halden Marsh: Overseer Hale of the docks (talks only to honourable guilds) and Cass Vey, a fence (only to wicked ones). Oriel sends you to one; if your standing doesn't fit, it's a dead end and the Journal sends you back to her to ask for the other. A neutral guild can use either, for a price. | — | ⬜ |
-| 2.7 | **The Cliff Duels** | tournament | Marsh comes to watch the Windmere Cliff Duels. Reach the final and he'll come down to the sand. | Initiation teams (20–22) | ⬜ |
-| 2.8 | **The Fighter Who Never Lost** | fight / convince | Beat Marsh in a duel, or (honourable) show him the Lantern's medal, or (wicked) threaten his family. He confesses that Thorne paid him to throw the 1183 semifinal; he refused, and the Lantern won anyway. Evidence: the champion's testimony. | Marsh, one on one (23) | ⬜ |
-| 2.9 | **The Last Scout** | find someone, escort | Marsh knows a survivor hides in Greenhollow under another name: Linnet, really Wren, the Lantern's scout. The Crown's men are already there. Get her out: protect her, smuggle her, or ask door to door. Evidence: Wren's testimony. | the Crown's enforcers (24–25) | ⬜ |
+| 2.1 | **The Iron Road** | search | Walk the Iron Road to Ironford. A toll gang has taken the bridge. | the toll gang (12) | ✅ |
+| 2.2 | **The Ledger of Ironford** | convince / pay / fight | The ledger is in the foundry council's archive. Talk the council round (a test), buy a key from a clerk, force the archive at night (fight), or (Scholars) decipher a copy. Inside: a torn page, and a scrap in an old script nobody can read. Evidence: the ledger. | the archive guards (14) | ✅ |
+| 2.3 | **The Archivist's Door** | find someone, **rank gate** | Magister Venn opens his door only to an Initiation champion or a Champion guild. Win any Initiation tournament (or reach Champion status). He reads a word: temple script, faded. Ask at Dawnwatch. | the tournament (14–16) | ✅ |
+| 2.4 | **The Faded Papyrus** | find someone, gather | Dawnwatch can't read it; the priests send you to Sister Oriel, a scribe at the priests' house. She can restore it with three dyes: ochre from the Iron Road heights, woad from the cliff road, sea purple from the coast road. Each lies past a band. Restored: "The seven did not die in the fire. Ask the cliff champion who paid him to lose." | three road fights (16, 17, 18) | ✅ |
+| 2.5 | **Windmere** | search, errand fight | Reach Windmere by the cliff road. The cliff champion is a recluse; the town wants a band of wreckers on the coast road gone before anyone will say where he lives. | the wreckers (19) | ✅ |
+| 2.6 | **Two Doors** | find someone, **standing dead end** | Two people know Halden Marsh: Overseer Hale of the docks (talks only to honourable guilds) and Cass Vey, a fence (only to wicked ones). Oriel sends you to one; if your standing doesn't fit, it's a dead end and the Journal sends you back to her to ask for the other. A neutral guild can use either, for a price. | — | ✅ |
+| 2.7 | **The Cliff Duels** | tournament | Marsh comes to watch the Windmere Cliff Duels. Reach the final and he'll come down to the sand. | Initiation teams (20–22) | ✅ |
+| 2.8 | **The Fighter Who Never Lost** | fight / convince | Beat Marsh in a duel, or (honourable) show him the Lantern's medal, or (wicked) threaten his family. He confesses that Thorne paid him to throw the 1183 semifinal; he refused, and the Lantern won anyway. Evidence: the champion's testimony. | Marsh, one on one (23) | ✅ |
+| 2.9 | **The Last Scout** | find someone, escort | Marsh knows a survivor hides in Greenhollow under another name: Linnet, really Wren, the Lantern's scout. The Crown's men are already there. Get her out: protect her, smuggle her, or ask door to door. Evidence: Wren's testimony. | the Crown's enforcers (24–25) | ✅ |
 
 *Chapter end:* Wren's banner scene, and her line: "He gave you that? Then he's alive. And so is the man who sent us into the Blackwood."
+
+**Build notes (Chapter 2, 2026-11-13).** Built as planned, with these choices:
+- 2.2: the ledger's routes are as before (talk, buy, force at level 14–15, decipher); its read scene gives the scrap in the old script.
+- 2.3: Magister Venn is Ironford's visiting scholar, Venn Ashby.
+- 2.4: the dyes are gathering spots on the three roads, each behind a standing band: ochre on the Iron Road heights (16), woad on the cliff road ledge (17), sea purple on the coast road (18).
+- 2.6: the honourable contact is **Overseer Dace** (not Hale: Ironford's foreman and Windmere's monk are already Hales). Dace helps honourable guilds, asks a neutral one for 100 gold (the widows' fund), refuses a wicked one; then Sela sends you to Cass Vey, who helps wicked guilds, charges neutral ones, refuses honourable ones.
+- 2.7: either Windmere event counts (the Cliff Duels or the Gale Games).
+- 2.8: Marsh duels at level 23; he skips the duel for Rook's note, for the Lantern's medal (honourable guilds) or a threat to his family (wicked: honor −10, dread +10).
+- 2.9: Wren's hunters are fixed at level 24–25.
+- Rook's secret stays for Chapter 4: Halden now says "someone high in the Crown", and Wren's banner scene ("He called himself Rook… Then he's alive") no longer names him as the Crown's guildmaster. Garrick Thorne is already named in Chapter 2 (the ledger's "G.T.", Wren's account); 3.1's envoy confirms it.
+- Errands: Corr's ore, the pit fighters (a veteran practice team), Sela's letter to Dagna Hale, the wreck on the coast road.
+- Mission ids: 2.1 `c2-ironroad`, 2.2 `m6`, 2.3 `c2-venn`, 2.4 `c2-papyrus`, 2.5 `c2-windmere`, 2.6 `c2-doors`, 2.7 `c2-duels`, 2.8 `m7`, 2.9 `m8` (ends the chapter); errands `e7-ore` … `e10-wreck`.
+- Also built for Chapter 2: tournament teams by event level, practice teams by town tier, contract fights by town.
 
 **Secondary missions in Chapter 2:** the foundry's missing shipment (search), the smith's ore from the heights (gather), a duel for a dock boss (errand fight), the lighthouse keeper's lamp oil (gather), the Ironford pit fighters (training), the wreck on the coast road (search + fight).
 

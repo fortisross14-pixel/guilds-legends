@@ -116,11 +116,15 @@ const list = [
   { id: 'poacher-snare', name: 'Poacher’s Snare', kind: 'good', tier: 0, price: 5, use: 'The Greenhollow wardens want these out of the Thornwood.' },
   { id: 'ochre', name: 'Ochre', kind: 'good', tier: 0, price: 15, use: 'A yellow-red earth from the Iron Road heights. Scribes use it.' },
   { id: 'woad', name: 'Woad', kind: 'good', tier: 0, price: 15, use: 'A blue dye plant from the cliff road.' },
+  { id: 'iron-ore', name: 'Iron Ore', kind: 'good', tier: 0, price: 7, use: 'Raw ore from the Iron Road. Ironford’s smiths buy it.' },
   { id: 'sea-purple', name: 'Sea Purple', kind: 'good', tier: 0, price: 18, use: 'A purple dye from coast-road shells.' },
   // Keepsakes: story and quest items. Never sold.
   { id: 'lantern-medal', name: 'The Lantern’s Medal', kind: 'keepsake', tier: 0, price: 0, for: 'The bearer’s medal of the Broken Lantern. Rook gave it to you with the banner.' },
   { id: 'watch-token', name: 'The Watch’s Token', kind: 'keepsake', tier: 0, price: 0, for: 'Sergeant Hobb’s token of trust. Show it to Prior Aubrey at Dawnwatch.' },
   { id: 'corwin-strongbox', name: 'Corwin’s Strongbox', kind: 'keepsake', tier: 0, price: 0, for: 'Corwin’s, taken by a bandit on the Old Road. Bring it back to him.' },
+  { id: 'old-scrap', name: 'A Scrap in an Old Script', kind: 'keepsake', tier: 0, price: 0, for: 'Torn from the Ironford ledger. Nobody in the archive can read it.' },
+  { id: 'restored-papyrus', name: 'The Restored Scrap', kind: 'keepsake', tier: 0, price: 0, for: '“The seven did not die in the fire. Ask the cliff champion who paid him to lose.”' },
+  { id: 'sealed-letter', name: 'A Sealed Letter', kind: 'keepsake', tier: 0, price: 0, for: 'Sela Wick’s letter for Foreman Brandt in Ironford.' },
   { id: 'waystone-rubbing', name: 'Waystone Rubbing', kind: 'keepsake', tier: 0, price: 0, for: 'The Lantern’s marks, copied off the waystone in the Thornwood.' },
   // Story rewards (The Last Banner, src/data/story.js).
   { id: 'marens-satchel', name: 'Maren’s Satchel', kind: 'accessory', tier: 9, price: 500, unique: true, stats: { hp: 25, mag: 3 } },

@@ -11,6 +11,7 @@ import { TILE_SIZE } from '../../data/tiles.js';
 import { WILD_AREAS, WILD_RESPAWN, areaGroups, areaLinks, findWildGroup } from '../../data/wilds/index.js';
 import { roadForArea } from '../../data/roads.js';
 import { ENEMY_TYPES } from '../../data/enemies.js';
+import { ITEMS } from '../../data/items.js';
 import { LOCATION_BY_ID } from '../../data/world.js';
 import { createPartyEncounter } from '../combat.js';
 import { addChronicle, campaignMonthSerial, campaignWeekSerial, clamp, clone, commitRng, earnGoldInPlace, finalize, hashString, rngFor, tallySpend } from './core.js';
@@ -323,7 +324,8 @@ export function getWildAreaView(state, areaId) {
   });
   const gathers = area.gathers.map((spot) => {
     const until = wild.gathered?.[spot.id] || 0;
-    return { id: spot.id, name: spot.name, available: until <= serial, weeksLeft: Math.max(0, until - serial) };
+    // A spot can wait on something (`if`: a band guarding it beaten, a story step).
+    return { id: spot.id, name: spot.name, available: until <= serial && checkCondition(state, spot.if), weeksLeft: Math.max(0, until - serial) };
   });
   const unlocked = checkCondition(state, area.unlock);
   // How dangerous the area is: the levels of the bands that wait there (lowest–highest).
@@ -454,6 +456,7 @@ function areaSpot(state, areaId, spotId) {
 export function gatherAtSpot(state, areaId, spotId) {
   const { view, spot, status } = areaSpot(state, areaId, spotId);
   if (!view?.here || !spot) return { state, error: 'There is nothing to gather here.' };
+  if (!checkCondition(state, spot.if)) return { state, error: spot.guarded || `Something keeps you from ${spot.name} for now.` };
   if (!status.available) return { state, error: `${spot.name} has been picked clean. Come back in ${status.weeksLeft} week${status.weeksLeft === 1 ? '' : 's'}.` };
   const next = clone(state);
   const rng = rngFor(next, `gather:${areaId}:${spotId}:${campaignWeekSerial(next)}`);
@@ -465,7 +468,7 @@ export function gatherAtSpot(state, areaId, spotId) {
   }
   if (spot.reward.items) {
     addItemsInPlace(next, spot.reward.items);
-    parts.push(Object.entries(spot.reward.items).map(([id, count]) => `${count}× ${id.replace(/-/g, ' ')}`).join(', '));
+    parts.push(Object.entries(spot.reward.items).map(([id, count]) => `${count}× ${ITEMS[id]?.name || id.replace(/-/g, ' ')}`).join(', '));
   }
   commitRng(next, rng);
   wildStateInPlace(next, areaId).gathered[spotId] = campaignWeekSerial(next) + (spot.respawnWeeks || WILD_RESPAWN.gathers);

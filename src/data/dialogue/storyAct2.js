@@ -20,11 +20,11 @@ const BANNER = [
   wren('Where did you get that?'),
   you('A man brought it to me.'),
   wren('Who?'),
-  you('Cassian Rook.'),
+  you('He called himself Rook.'),
   narrate('She draws her dagger.'),
-  wren('Then burn it.'),
+  wren('Rook. He gave you that? Then he’s alive. And so is the man who sent us into the Blackwood.'),
   you('It was your banner.'),
-  wren('No. It was ours. And he carried it away while my friends were dying.'),
+  wren('No. It was ours. The last time I saw it, it was in the Crown’s camp while my friends were dying.'),
   narrate('Carrying a heroic symbol doesn’t make you a hero. You will have to earn the right to it.'),
 ];
 
@@ -135,7 +135,11 @@ export default {
       ],
       '“Seven heads, Thornfield included.” They wrote my brother’s name in a ledger. Like a mule.',
       3,
-    ).map((variant) => ({ ...variant, choices: [{ text: 'This comes with us.', effects: [{ codex: 'ironford-ledger' }] }] })),
+    ).map((variant) => ({
+      ...variant,
+      lines: [...variant.lines, narrate('Where a page has been torn out, someone has tucked a scrap of paper in an old script. Nobody in the archive can read it.')],
+      choices: [{ text: 'This comes with us. The scrap too.', effects: [{ codex: 'ironford-ledger' }, { giveItem: { 'old-scrap': 1 } }] }],
+    })),
   },
   // ---------------------------------------------------------------- 7. The Fighter Who Never Lost
   // Halden Marsh: old, proud, laconic; respects only fighters.
@@ -151,10 +155,22 @@ export default {
           { text: 'We’ll fight in the Cliff Duels.', reply: ['“Sign up at the arena here. I’ll be watching.”'] },
           { text: 'Why wait? Fight me now.', if: { charter: 'free' }, effects: [{ choice: { m7: 'challenge' } }], reply: ['He laughs. “A Free Company. Fine. The ring, when you’re ready.”'] },
           {
-            text: 'Read this. Rook wrote it before he died.',
+            text: 'Read this. A man called Rook dropped it at my door.',
             if: { evidence: 'confession' },
             effects: [{ choice: { m7: 'confession' } }],
-            reply: ['He reads it twice. “Rook. The old fool finally said it.”', 'He hands it back. “Sit. I’ll tell you about the final.”'],
+            reply: ['He reads it twice, and his face changes. “Rook. So he’s still alive.”', 'He hands it back. “Sit. I’ll tell you about the final.”'],
+          },
+          {
+            text: 'This medal was tied to the Lantern’s banner. It’s ours to carry now.',
+            if: { hasItem: { 'lantern-medal': 1 }, honorBand: 'honourable' },
+            effects: [{ choice: { m7: 'medal' } }],
+            reply: ['He turns the medal over in his hands. “Aldric’s. He wore it at the final.”', '“Sit. People who carry this deserve the truth.”'],
+          },
+          {
+            text: 'You have grandchildren in Windmere, old man. Talk, and they stay safe.',
+            if: { honorBand: 'wicked' },
+            effects: [{ choice: { m7: 'threat' } }, { standing: { honor: -10, dread: 10, text: 'Threatened Halden Marsh’s family' } }],
+            reply: ['He goes very still. “You’re no better than the ones who paid me.”', '“Sit, then. And when this is over, never come back to my ring.”'],
           },
         ],
       },
@@ -174,7 +190,7 @@ export default {
         lines: [
           'Sit. You’ve earned the story.',
           'The final against the Argent Crown was clean. I watched every bout. Aldric’s people were faster, braver, better.',
-          'The Crown didn’t lose to a curse. They lost to seven nobodies, and Rook couldn’t stand it.',
+          'The Crown didn’t lose to a curse. They lost to seven nobodies, and someone high in the Crown couldn’t stand it.',
           'I’ll swear to it, in front of anyone. Here.',
           narrate('He presses a gull feather into your hand: the old Cliff Duels token.'),
           bram('Lost to the old man too. You’re going after the Crown, aren’t you?'),
@@ -189,7 +205,7 @@ export default {
         lines: [
           'Sit. You’ve earned the story.',
           'The final against the Argent Crown was clean. I watched every bout. Aldric’s people were faster, braver, better.',
-          'The Crown didn’t lose to a curse. They lost to seven nobodies, and Rook couldn’t stand it.',
+          'The Crown didn’t lose to a curse. They lost to seven nobodies, and someone high in the Crown couldn’t stand it.',
           'I’ll swear to it, in front of anyone. Here.',
           narrate('He presses a gull feather into your hand: the old Cliff Duels token.'),
           narrate('In the crowd, Bram Calder watches with his arms crossed, then leaves without a word.'),
@@ -220,7 +236,7 @@ export default {
     ],
     topics: [
       { id: 'who', text: 'Who’s in town?', lines: ['Two men asking for a girl who came out of the Blackwood four years ago.', 'Argent Crown boots.'] },
-      { id: 'us', text: 'We’re not with them. A dying man asked us to carry this banner.', lines: ['…Then help me live through the next three days. After that, we’ll talk.'] },
+      { id: 'us', text: 'We’re not with them. A wounded stranger asked us to carry this banner.', lines: ['…Then help me live through the next three days. After that, we’ll talk.'] },
     ],
   },
   'story.m8.account': {

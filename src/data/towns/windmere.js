@@ -56,6 +56,9 @@ export default {
   npcs: [
     { id: 'courier', name: 'Sela Wick', role: 'Courier', at: [12, 15], dialogue: 'windmere.courier' },
     { id: 'monk', name: 'Brother Hale', role: 'Monastery keeper', at: [24, 15], dialogue: 'windmere.monk' },
+    // Chapter 2 (2.6, Two Doors): the honest overseer of the docks and the fence.
+    { id: 'dace', name: 'Overseer Dace', role: 'Dock overseer', at: [6, 20], dialogue: 'windmere.dace', asset: 'npc.role.council-steward' },
+    { id: 'cass', name: 'Cass Vey', role: 'Fence', at: [30, 20], dialogue: 'windmere.cass', asset: 'npc.role.traveller' },
   ],
   exits: [
     { id: 'exit-cliff-road', area: 'cliff-road', name: 'The cliff road', at: [35, 7], size: [1, 1] },

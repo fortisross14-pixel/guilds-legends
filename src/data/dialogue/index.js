@@ -32,7 +32,8 @@
 //   evidence: id, evidenceAtLeast: n, codex: id; choice / notChoice: { name: value };
 //   storyHero / notStoryHero: id, storyHeroLoyalty: { id, at }; contractsWon: n;
 //   regionLevel: { region: n }; heroClass: { classId, level }; signedUp: tournamentId;
-//   tournamentPlayed: tournamentId | 'any'; freeBed, atHome, hallLeased: bool
+//   tournamentPlayed: tournamentId | 'any'; wonTournament: circuit | tournamentId | 'any'; reachedFinal: tournamentId (or list);
+//   freeBed, atHome, hallLeased: bool
 //   season: 'spring' | 'summer' | 'autumn' | 'winter' (or a list)
 //   flag: name, notFlag: name  (state.flags.dialogue)
 //   candidateHere: bool      a recruit is in this town
@@ -71,8 +72,9 @@ import wilds from './wilds.js';
 import story from './story.js';
 import storyAct2 from './storyAct2.js';
 import chapter1 from './chapter1.js';
+import chapter2 from './chapter2.js';
 
-export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...windmere, ...wilds, ...story, ...storyAct2, ...chapter1 };
+export const DIALOGUES = { ...dunmere, ...greenhollow, ...ironford, ...windmere, ...wilds, ...story, ...storyAct2, ...chapter1, ...chapter2 };
 
 /** Flags that live at state.flags[name] (other systems read them), not in state.flags.dialogue. */
 export const TOP_LEVEL_FLAGS = ['oldRoadIntroduced', 'harvestMeleeIntroduced'];

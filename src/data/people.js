@@ -19,6 +19,8 @@ export const REGULARS = [
   // Dawnwatch Temple, at the end of the Old Road (its buildings count as Dunmere's).
   // Mother Aveline: tired, dry, unafraid; she has waited a long time for someone to come.
   reg('dunmere', 'temple', 'altar', 'aveline', 'Mother Aveline', 'High priestess', { dialogue: 'dunmere.aveline', sprite: 'npc.role.high-priestess' }),
+  // Sister Oriel: the priests' scribe; precise, patient, faintly amused by everything (story 2.4).
+  reg('dunmere', 'priory', 'hearth', 'oriel', 'Sister Oriel', 'Scribe', { dialogue: 'dunmere.oriel', sprite: 'npc.role.temple-acolyte', portrait: 'portrait.role.temple-acolyte' }),
   // Brother Tamas: young, nervous, kind; he fed the pilgrims while Malric held the gate.
   reg('dunmere', 'priory', 'table', 'tamas', 'Brother Tamas', 'Priest', {
     hello: ['Oh. Visitors. Real ones.', 'Tamas. I keep the pot on and the cots clean.'],

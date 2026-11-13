@@ -14,7 +14,7 @@ function roadBands(name, types, [low, high]) {
   ];
 }
 
-export function emptyRoad({ id, name, region, primal = 'Plant', west, east, map, description, bands = null }) {
+export function emptyRoad({ id, name, region, primal = 'Plant', west, east, map, description, bands = null, enemies = [], gathers = [], props = [] }) {
   const width = 40;
   const height = 14;
   const line = (char, ends = 'T') => ends + char.repeat(width - 2) + ends;
@@ -46,14 +46,61 @@ export function emptyRoad({ id, name, region, primal = 'Plant', west, east, map,
       { town: east.town, at: [width - 1, 6], size: [1, 2], name: `To ${east.name}`, arrive: [width - 3, 6] },
     ],
     camp: { at: [19, 3], size: [2, 2], name: 'A spot to rest' },
-    props: [],
-    enemies: [],
+    props,
+    // Standing groups (a band holding a bridge, guarding a dye), gathering spots and props: the chapter's places on the box.
+    enemies,
     ambushes: bands ? roadBands(bands.name, bands.types, bands.levels) : [],
-    gathers: [],
+    gathers,
   };
 }
 
 // Danger by road (the open world: anyone can walk anywhere; a band far above the guild sends it home).
-export const coastRoad = emptyRoad({ id: 'coast-road', name: 'The coast road', region: 'Crownlands', primal: 'Water', west: { town: 'dunmere', name: 'Dunmere' }, east: { town: 'windmere', name: 'Windmere' }, map: { x: 21, y: 60 }, bands: { name: 'Wrecker', types: ['harbor-brute', 'reef-raider', 'tide-caller', 'brine-cleric'], levels: [14, 18] } });
-export const ironRoad = emptyRoad({ id: 'iron-road', name: 'The Iron Road', region: 'Crownlands', primal: 'Iron', west: { town: 'greenhollow', name: 'Greenhollow' }, east: { town: 'ironford', name: 'Ironford' }, map: { x: 36, y: 42 }, bands: { name: 'Toll gang', types: ['shield-thug', 'road-bandit', 'field-priest', 'hedge-witch'], levels: [12, 16] } });
-export const cliffRoad = emptyRoad({ id: 'cliff-road', name: 'The cliff road', region: 'Crownlands', primal: 'Air', west: { town: 'windmere', name: 'Windmere' }, east: { town: 'ironford', name: 'Ironford' }, map: { x: 33, y: 64 }, bands: { name: 'Cliff raider', types: ['cliff-brute', 'gale-skirmisher', 'storm-adept', 'wind-shaman'], levels: [18, 22] } });
+export const coastRoad = emptyRoad({
+  id: 'coast-road',
+  name: 'The coast road',
+  region: 'Crownlands',
+  primal: 'Water',
+  west: { town: 'dunmere', name: 'Dunmere' },
+  east: { town: 'windmere', name: 'Windmere' },
+  map: { x: 21, y: 60 },
+  bands: { name: 'Wrecker', types: ['harbor-brute', 'reef-raider', 'tide-caller', 'brine-cleric'], levels: [14, 18] },
+  // Chapter 2: the wreckers Windmere wants gone (2.5), the shell-pickers by the sea purple (2.4), the wreck (errand).
+  enemies: [
+    { id: 'wreckers', name: 'The wreckers of the coast road', at: [12, 3], asset: 'enemy.group.bandits', types: ['harbor-brute', 'reef-raider', 'tide-caller'], count: 3, level: 19, power: 81, if: { storyStep: 'c2-windmere.wreckers' }, respawnWeeks: 100000, reward: { gold: [160, 220] } },
+    { id: 'shell-band', name: 'Shell-pickers with knives', at: [30, 10], asset: 'enemy.group.bandits', types: ['reef-raider', 'brine-cleric', 'reef-raider'], count: 3, level: 18, power: 79, respawnWeeks: 100000, reward: { gold: [120, 170] } },
+  ],
+  gathers: [{ id: 'sea-purple', kind: 'herb', name: 'Purple shells', at: [33, 11], if: { wildBeaten: 'coast-road:shell-band' }, guarded: 'The shell-pickers won’t let anyone near their shells.', respawnWeeks: 8, reward: { items: { 'sea-purple': 1 } } }],
+  props: [{ id: 'wreck', asset: 'deco.cart', at: [6, 11], size: [2, 1], poi: { name: 'A wrecked wagon', verb: 'Inspect', dialogue: 'wild.coast.wreck' } }],
+});
+export const ironRoad = emptyRoad({
+  id: 'iron-road',
+  name: 'The Iron Road',
+  region: 'Crownlands',
+  primal: 'Iron',
+  west: { town: 'greenhollow', name: 'Greenhollow' },
+  east: { town: 'ironford', name: 'Ironford' },
+  map: { x: 36, y: 42 },
+  bands: { name: 'Toll gang', types: ['shield-thug', 'road-bandit', 'field-priest', 'hedge-witch'], levels: [12, 16] },
+  // Chapter 2: the toll gang on the bridge (2.1), the ochre on the heights and who guards it (2.4), iron ore (errand).
+  enemies: [
+    { id: 'toll-gang', name: 'The toll gang on the bridge', at: [20, 5], asset: 'enemy.group.bandits', types: ['shield-thug', 'road-bandit', 'shield-thug'], count: 3, level: 12, power: 65, respawnWeeks: 100000, reward: { gold: [90, 130], items: { liquor: 2 } } },
+    { id: 'heights-band', name: 'Ochre diggers gone bad', at: [31, 2], asset: 'enemy.group.bandits', types: ['shield-thug', 'hedge-witch', 'road-bandit'], count: 3, level: 16, power: 74, respawnWeeks: 100000, reward: { gold: [110, 160] } },
+  ],
+  gathers: [
+    { id: 'ochre', kind: 'ore', name: 'Ochre seam', at: [34, 2], if: { wildBeaten: 'iron-road:heights-band' }, guarded: 'The diggers on the heights won’t share their seam.', respawnWeeks: 8, reward: { items: { ochre: 1 } } },
+    { id: 'ore', kind: 'ore', name: 'Iron ore', at: [8, 11], respawnWeeks: 2, reward: { items: { 'iron-ore': 2 } } },
+  ],
+});
+export const cliffRoad = emptyRoad({
+  id: 'cliff-road',
+  name: 'The cliff road',
+  region: 'Crownlands',
+  primal: 'Air',
+  west: { town: 'windmere', name: 'Windmere' },
+  east: { town: 'ironford', name: 'Ironford' },
+  map: { x: 33, y: 64 },
+  bands: { name: 'Cliff raider', types: ['cliff-brute', 'gale-skirmisher', 'storm-adept', 'wind-shaman'], levels: [18, 22] },
+  // Chapter 2: the woad on the cliff ledge and the raiders camped on it (2.4).
+  enemies: [{ id: 'ledge-band', name: 'Raiders on the woad ledge', at: [10, 10], asset: 'enemy.group.bandits', types: ['cliff-brute', 'storm-adept', 'gale-skirmisher'], count: 3, level: 17, power: 76, respawnWeeks: 100000, reward: { gold: [120, 170] } }],
+  gathers: [{ id: 'woad', kind: 'herb', name: 'Woad on the ledge', at: [6, 11], if: { wildBeaten: 'cliff-road:ledge-band' }, guarded: 'The raiders camped on the ledge are in the way.', respawnWeeks: 8, reward: { items: { woad: 1 } } }],
+});
