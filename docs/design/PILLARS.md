@@ -241,5 +241,7 @@ Waves 1, 4 and 6 don't depend on each other; 2 needs 1, 3 needs 1, 5 needs 4.
   … guild of" form, from the grid's cell ("the feared guild of the New Lantern", "Honourable New
   Lantern"). It changes once the guild is clearly past a line (a margin of 6 points), so it never
   flickers. Neutral in both earns no epithet.
+- Items: equipment and inventory (goods, keepsakes, drops, items in missions): [`ITEMS.md`](ITEMS.md).
+- Levels run to about 53 (cap 60); the top guilds are 45–50 (`STORY_DRAFT.md`, Levels).
 - The main story draft (four chapters, primary and secondary missions in the Journal, mission
   types, the turn and the two paths): [`STORY_DRAFT.md`](STORY_DRAFT.md).

@@ -1,130 +1,174 @@
-# The Last Banner — mission draft (four chapters)
+# The Last Banner — the mission plan (four chapters)
 
-A draft for the author to adjust. It replaces the mission list in `docs/STORY.md` once agreed;
-the characters and the world stay. Agreed so far (2026-11-13):
+The plan for the main story, mission by mission, and the tracker for building it. Agreed with
+the author (2026-11-13); it replaces the mission list in `docs/STORY.md` (the characters and the
+world stay). Status: ⬜ to build · 🟨 building · ✅ built.
 
-- **The opening.** A wounded stranger gives you the fallen guild's banner: the Broken Lantern's
-  cloth on its pole and the bearer's medal. You repaint it with your colours and emblem (the
-  banner maker). He makes you promise to find out what happened to them, and leaves into the
-  storm. He gives no name but "Rook".
-- **The secret is kept to the end.** Who Rook really was (the Argent Crown's old guildmaster, who
+## What is agreed
+
+- **The opening.** A wounded stranger gives you the fallen guild's banner (the Broken Lantern's
+  cloth on its pole, and the bearer's medal). You repaint it with your colours and emblem. He
+  makes you promise to find out what happened to them and leaves into the storm. He gives no
+  name but "Rook".
+- **The investigation.** Most people only remember the outline ("a small guild, cursed, gone").
+  A few know more, and each wants something first: a beer, a job, a fight, gold, an item, a
+  token of trust, or a threat they believe. Each points to the next.
+- **The secret is kept to the end.** Who Rook was (the Argent Crown's old guildmaster, who
   ordered the Lantern destroyed and then tried to undo it) comes out only in Chapter 4.
-- **The turn** (end of Chapter 3). Rook is found dead in the Blackwood, killed by Thorne's men,
-  and the Lantern's survivors rise again as **the Ashen Lantern**. One of the two guilds is good
-  (the Ashen Lantern) and one is wicked (the Argent Crown). You first fight the one that shares
-  your standing, then learn the truth and go after the other.
+- **The turn** (end of Chapter 3). Rook is found dead in the Blackwood, killed by Thorne's men;
+  the Lantern's survivors rise again as **the Ashen Lantern**. The Ashen Lantern is good, the
+  Argent Crown wicked. You first fight the guild that shares your standing, learn the truth, then
+  go after the other. Each path has its own ending; a wicked guild's is the darker one.
 
-Levels are the party's level for a fair fight, read against the XP rule (the foes' levels added up and shared among
-your fighters). They follow the practice teams (4–6, 8–11, 15–16) and the circuits (Initiation,
-Champion, Elite).
+## Levels (the scale)
 
-## How the Journal shows it
+Levels run from 1 to about **53**; the level cap becomes 60.
+
+| | Party level | Circuit | Opposing teams |
+|---|---|---|---|
+| Chapter 1 | 1 → 12 | Initiation (teams of 2) | Dunmere's Harvest Melee about level 9 |
+| Chapter 2 | 12 → 25 | Initiation titles, first Champion events | Initiation 10–16, Champion 18–24 |
+| Chapter 3 | 25 → 40 | Champion (teams of 4) | Champion 25–38 |
+| Chapter 4 | 40 → 50+ | Elite (teams of 5) | the top guilds 45–50 |
+
+- **Beating a top guild:** a full team of five above level 45, with potions, good weapons and smart
+  element play (fire on plant, water on fire). Or grind to about 53 and win easily. Player's choice.
+- Levels in the tables below are the **party's level for a fair fight** (the foes' levels added
+  up and shared among your fighters, as the XP rule reads them).
+- Practice teams move with the scale (to set when Chapter 2 is built): about 6–10, 18–24, 30–36, 45–48.
+- To change before Chapter 2 is built: hero level cap (20 → 60), attribute and power caps, rival
+  rosters by circuit, enemy levels in wild areas.
+
+## The Journal
 
 - **Primary** (the story): one line, the current lead ("Find someone in Dunmere who knows about
-  the fallen guild"), the clues found so far under it, and where the lead points. A dead end
-  shows as a struck-through line with why ("Overseer Hale only speaks to honest guilds") and
-  what to do instead ("Ask Maren again").
-- **Secondary**: guild tasks (rent a hall, hire, build a room), contracts, people's errands,
-  tournaments you signed up for. Some primary steps need a secondary one first; the Journal says
-  so ("First: hire a companion").
+  the fallen guild"), the clues found so far under it, and where the lead points. A dead end shows
+  struck through, with why and what to do instead.
+- **Secondary**: guild tasks (rent a hall, hire), contracts, people's errands ("Bring me three
+  bundles of feverfew from the Old Road", "Beat the bandit who robbed my cart", "Find out who's
+  been poaching in the Thornwood"), and tournaments you signed up for. A primary step that needs a
+  secondary one says so ("First: hire a companion").
 
 ## Mission types
 
 | Type | What you do |
 |---|---|
-| **Ask around** | Talk to people in a place until one knows; most don't (a few lines each, and a different one knows in each new campaign) |
-| **Find someone** | Go to a named person in a place |
-| **Search** | Walk an area to find a thing (marked on the map once you have a clue) |
-| **Gather** | Bring a number of things from an area (dyes, herbs, keys) |
-| **Convince / pay** | A talk with a stat test, a bribe, a threat or a favour; the options depend on your standing |
-| **Fight** | A battle, a duel or a training bout ("beat me and I'll tell you") |
-| **Errand fight** | "Beat someone for me": a band, a rival's fighter, a tournament round |
-| **Gate** | A person or place that needs a rank, a tournament result or a standing |
+| **Ask around** | Ask people in a place until one knows; most don't. |
+| **Find someone** | Go to a named person in a place. |
+| **Search** | Walk an area to find a thing (marked on the map once you have a clue). |
+| **Gather** | Bring items: from fights (wolf pelts), from the ground (herbs, dyes), or from a camp (liquor). |
+| **Trade** | Give an item or gold for something (a beer for a story, a token of trust). |
+| **Convince** | A talk with a stat test, a bribe or a threat; what's on offer depends on your standing. |
+| **Fight** | A battle, a duel or a training bout ("beat me and I'll tell you"). |
+| **Errand fight** | "Beat someone for me": a band, a rival's fighter, a tournament round. |
+| **Gate** | A person or place that needs a rank, a tournament result, a standing or a token. |
 
-Traps (one of each across the story, no more): a **rank gate** (Chapter 2, mission 2), a
-**standing dead end** (Chapter 2, mission 4) and a **"fight me first"** gate (Chapter 1, mission 5).
+One trap of each kind across the story: **fight me first** (1.7), **a token of trust with three
+ways to get it** (1.5), **a rank gate** (2.3) and **a standing dead end** (2.6).
+
+**Standing on story choices.** Threatening means honor −, dread +. Beating the thing down by force for the
+right reasons means dread +, honor + or none. Paying moves neither.
 
 ---
 
 ## Chapter 1 — A Guild of Nobodies
-*Dunmere, the Old Road, Dawnwatch Temple, the Thornwood, Greenhollow · party levels 1–5 · the Initiation circuit*
+*Dunmere, the Old Road, Dawnwatch Temple, the Thornwood, Greenhollow · party 1 → 12 · Initiation*
 
-| # | Mission | Type | What happens | Fights (level) |
-|---|---|---|---|---|
-| 0 | **The knock at the door** | scene | Rook, the banner, the promise. You paint your colours on it. | — |
-| 1 | **Who Remembers the Lantern?** | ask around | Dunmere: most remember only "a small guild, cursed, gone". Old Ebb at the Wayfarer will talk for a beer (2 gold): the Lantern's people prayed at Dawnwatch Temple before every trip west. *Secondary first:* rent a hall (Gideon's yard) so Mara will introduce you around. | — |
-| 2 | **No One Walks the Old Road Alone** | find someone + hire | The temple is at the end of the Old Road, and the watch won't let a lone walker past the gate. Hire a companion at the Wayfarer (Nessa offers; she has her own reason). | — |
-| 3 | **Wolfskins on the Old Road** | errand fight | Corwin the merchant: the bands block the road; clear them and he'll vouch for you at the temple. Verdict: the Wolfskin handler. | the pair (1–2), the camp band (2), the handler (3) |
-| 4 | **The Ash Abbot** | fight + convince | Brother Malric holds the temple gate and sells passage. Get a hero to level 3, buy gear at Mira's, beat him. Verdict: Malric yields. Behind the altar: the Lantern's prayer book, a name circled (Maren, herbalist, Greenhollow). The Thornwood road opens. | Malric and two acolytes (4) |
-| 5 | **The Herbalist's Price** | find someone + fight-me-first | Greenhollow: Maren won't talk to a stranger with a borrowed banner. Her son, a warden, will "test your arm" in the arena first (a training bout). Then she tells you: she treated two Lantern survivors after the Blackwood. One spoke of a ledger kept at Ironford. Evidence: *the herbalist's testimony.* Verdict: Maren's safety. | the warden's practice pair (4–5) |
-| 6 | **The Harvest Melee** | tournament | Bram Calder dares you into the Dunmere Harvest Melee. Win a bout (any finish). Verdict: Bram's challenge (fair or dirty). Ending: the Argent Crown's man warns you to retire the banner. | two bouts against Initiation teams (4–5) |
+| # | Mission | Types | What happens | Fights (party level) | Status |
+|---|---|---|---|---|---|
+| 1.0 | **The Knock at the Door** | scene | Rook, the banner and the medal, the promise. You paint your colours on it. | — | ⬜ |
+| 1.1 | **Who Remembers the Lantern?** | ask around, trade | Ask in Dunmere. Most shrug ("cursed, gone"). Old Ebb at the Wayfarer will talk for a beer (2 gold): the Lantern prayed at Dawnwatch Temple before every trip west, and the old priests kept their names. | — | ⬜ |
+| 1.2 | **A Roof and a Sword** | find someone ×2 | The watch won't let a lone walker onto the Old Road. *Needs:* rent a hall (Gideon's yard) and hire a companion (Mara points to Nessa). | — | ⬜ |
+| 1.3 | **Wolfskins on the Old Road** | errand fight, gather | Corwin the merchant: drive off the Wolfskins and bring him three wolf pelts as proof; he'll vouch for you at the temple. Verdict: the Wolfskin handler. | the pair (2), the camp (3), the handler and his pack (4) | ⬜ |
+| 1.4 | **The Ash Abbot** | fight | Brother Malric holds the temple gate and sells passage. Get ready (level 5, a weapon from Mira's), then beat him. Verdict: Malric yields. | the acolytes (5), Malric and two acolytes (7) | ⬜ |
+| 1.5 | **The Prior's Silence** | gate, trade / convince / fight | Prior Aubrey keeps the Lantern's prayer book, and shows it only to someone the Dunmere watch trusts. Sergeant Hobb will give you the watch's token: **pay** him (80 gold; neither honor nor dread), **bring** three bottles of liquor from the Wolfskin den (dread +, honor +), or **threaten** him (a fight with the watch: honor −, dread +). In the book a name is circled: Maren, herbalist, Greenhollow. | the den (7), or the watch (6) | ⬜ |
+| 1.6 | **The Thornwood Road** | search | The Thornwood road opens. Walk it to Greenhollow; on the way, find the Lantern's waystone (their marks carved in it) off the path, guarded by poachers. | poachers (7), the waystone's band (8) | ⬜ |
+| 1.7 | **The Herbalist's Son** | find someone, **fight me first** | Maren won't talk to a stranger with a borrowed banner. Her son Tobin, a warden, will test your arm in a training bout. Then she tells you: she treated two Lantern survivors after the Blackwood, and one spoke of a ledger kept at Ironford. Evidence: the herbalist's testimony. Verdict: Maren's safety. | Tobin and a warden (9) | ⬜ |
+| 1.8 | **Bram's Dare** | fight | Back in Dunmere, Bram Calder says the banner belongs to real fighters and dares you to a duel. Verdict: fair or dirty. | Bram, one on one (9) | ⬜ |
+| 1.9 | **The Harvest Melee** | tournament | Fight the Dunmere Harvest Melee; win at least one bout. After it the Argent Crown's man warns you to retire the banner. | Initiation teams of two (9–11) | ⬜ |
 
-*Chapter end:* the warning, and your first standing prefix (e.g. "the honourable guild of the New Lantern").
+*Chapter end:* the warning; your first epithet ("the honourable guild of the New Lantern"); Ironford is next.
+
+**Secondary missions in Chapter 1** (people's errands, straightforward):
+- Mira: "Bring me three bundles of feverfew from the Old Road" (gather, 3).
+- Corwin: "A bandit took my strongbox on the Old Road. Get it back" (errand fight, 4).
+- The arena master: "Beat my novice team" (training, 5).
+- Orren the herald: "Someone's been tearing down notices at night. Find out who" (search in town).
+- Greenhollow's wardens: "Poachers in the Thornwood. Bring back their snares" (gather + fight, 8).
+- Nessa (loyalty): "My brother's old camp is past the Thornwood's creek. Come with me" (search, 8).
 
 ---
 
 ## Chapter 2 — The Names They Erased
-*Ironford, Windmere, the coast road, the Iron Road heights · party levels 5–9 · Initiation titles, the first Champion events*
+*Ironford, the Iron Road, Windmere, the cliff and coast roads · party 12 → 25 · Initiation titles, the first Champion events*
 
-| # | Mission | Type | What happens | Fights (level) |
-|---|---|---|---|---|
-| 1 | **The Ledger of Ironford** | find someone + convince / pay | The ledger sits in the foundry council's archive. Routes: talk the council round (a test), buy a key from a clerk, force the archive at night, or (Scholars) decipher a copy. Inside: a page torn out, and a scrap in an old script, nobody can read it. Evidence: *the ledger*. | forced route: the archive guards (6) |
-| 2 | **The Archivist's Door** | find someone + **rank gate** | The scrap goes to Magister Venn at the Ironford archive. His door is open only to guilds of Champion status, or to an Initiation champion. Win any Initiation tournament (or reach Champion status). Venn: it's temple script, faded; ask at Dawnwatch. | the tournament (5–7) |
-| 3 | **The Faded Papyrus** | find someone + gather | Dawnwatch's priests can't read it either; they send you to Sister Oriel, a scribe in the priests' house. It can be restored with three dyes: *ochre* from the Iron Road heights, *woad* from the cliff road and *sea purple* from the coast road. Each sits past a band. Restored, it reads: "The seven did not die in the fire. Ask the cliff champion who paid him to lose." | three road fights (6, 6–7, 7) |
-| 4 | **The Champion Who Never Lost** | find someone + **standing dead end** | Windmere: Halden Marsh, the old cliff champion. Two contacts can lead you to him: *Overseer Hale* of the docks (speaks only to honourable guilds) and *Cass Vey*, a fence (speaks only to wicked ones). The first you're sent to may be the wrong one: a dead end, and the Journal sends you back to Oriel to ask for the other. Neutral guilds can use either, for a price. | — |
-| 5 | **The Fighter Who Never Lost** | fight / convince | Marsh agrees to talk if you beat him in the Cliff Duels (or, wicked: if you threaten his family; honourable: if you bring him the Lantern's medal and he sees whose it was). He confesses: Thorne paid him to throw the 1183 semifinal against the Lantern; he refused, and the Lantern won anyway. Evidence: *the champion's testimony*. | Marsh in a duel (8) |
-| 6 | **The Last Scout** | escort | Marsh knows one survivor is hiding in Greenhollow under another name: Linnet, really Wren, the Lantern's scout. The Crown's men are already in town. Get her out (protect her, smuggle her, or ask door to door). Evidence: *Wren's testimony*. She sees the banner on your pole and goes white. | the Crown's enforcers (8–9) |
+| # | Mission | Types | What happens | Fights (party level) | Status |
+|---|---|---|---|---|---|
+| 2.1 | **The Iron Road** | search | Walk the Iron Road to Ironford. A toll gang has taken the bridge. | the toll gang (12) | ⬜ |
+| 2.2 | **The Ledger of Ironford** | convince / pay / fight | The ledger is in the foundry council's archive. Talk the council round (a test), buy a key from a clerk, force the archive at night (fight), or (Scholars) decipher a copy. Inside: a torn page, and a scrap in an old script nobody can read. Evidence: the ledger. | the archive guards (14) | ⬜ |
+| 2.3 | **The Archivist's Door** | find someone, **rank gate** | Magister Venn opens his door only to an Initiation champion or a Champion guild. Win any Initiation tournament (or reach Champion status). He reads a word: temple script, faded. Ask at Dawnwatch. | the tournament (14–16) | ⬜ |
+| 2.4 | **The Faded Papyrus** | find someone, gather | Dawnwatch can't read it; the priests send you to Sister Oriel, a scribe at the priests' house. She can restore it with three dyes: ochre from the Iron Road heights, woad from the cliff road, sea purple from the coast road. Each lies past a band. Restored: "The seven did not die in the fire. Ask the cliff champion who paid him to lose." | three road fights (16, 17, 18) | ⬜ |
+| 2.5 | **Windmere** | search, errand fight | Reach Windmere by the cliff road. The cliff champion is a recluse; the town wants a band of wreckers on the coast road gone before anyone will say where he lives. | the wreckers (19) | ⬜ |
+| 2.6 | **Two Doors** | find someone, **standing dead end** | Two people know Halden Marsh: Overseer Hale of the docks (talks only to honourable guilds) and Cass Vey, a fence (only to wicked ones). Oriel sends you to one; if your standing doesn't fit, it's a dead end and the Journal sends you back to her to ask for the other. A neutral guild can use either, for a price. | — | ⬜ |
+| 2.7 | **The Cliff Duels** | tournament | Marsh comes to watch the Windmere Cliff Duels. Reach the final and he'll come down to the sand. | Initiation teams (20–22) | ⬜ |
+| 2.8 | **The Fighter Who Never Lost** | fight / convince | Beat Marsh in a duel, or (honourable) show him the Lantern's medal, or (wicked) threaten his family. He confesses that Thorne paid him to throw the 1183 semifinal; he refused, and the Lantern won anyway. Evidence: the champion's testimony. | Marsh, one on one (23) | ⬜ |
+| 2.9 | **The Last Scout** | find someone, escort | Marsh knows a survivor hides in Greenhollow under another name: Linnet, really Wren, the Lantern's scout. The Crown's men are already there. Get her out: protect her, smuggle her, or ask door to door. Evidence: Wren's testimony. | the Crown's enforcers (24–25) | ⬜ |
 
-*Chapter end:* Wren's banner scene (authored), and her line: "Rook gave you that? Then he's still alive. And so is the man who sent us into the Blackwood."
+*Chapter end:* Wren's banner scene, and her line: "He gave you that? Then he's alive. And so is the man who sent us into the Blackwood."
+
+**Secondary missions in Chapter 2:** the foundry's missing shipment (search), the smith's ore from the heights (gather), a duel for a dock boss (errand fight), the lighthouse keeper's lamp oil (gather), the Ironford pit fighters (training), the wreck on the coast road (search + fight).
 
 ---
 
 ## Chapter 3 — The Blackwood
-*Mooncourt (the Moon Road opens), the Blackwood (deep), Tidecross · party levels 9–13 · the Champion circuit*
+*the Moon Road, Mooncourt, the Blackwood (deep), Tidecross · party 25 → 40 · the Champion circuit*
 
-| # | Mission | Type | What happens | Fights (level) |
-|---|---|---|---|---|
-| 1 | **The Price of Silence** | convince / pay | A patron offers a fortune to sponsor your guild if you drop the banner (the Merchant House's temptation). Accept (gold, the trail goes cold for a season, standing moves) or refuse. Either way, his envoy lets slip a name: *Lieutenant Garrick Thorne*. | — |
-| 2 | **The Road to Mooncourt** | search + errand fight | The Moon Road from Ironford opens to Champion guilds. At Mooncourt, the Crown's old quartermaster will trade the ambush maps for a favour: beat the Crown's second team in a Champion exhibition. | the second team (10) |
-| 3 | **The Blackwood Expedition** | search | Walk the deep Blackwood with Wren's map: the ambush site, the burned camp, seven stones. Find the remains and the Crown's arrows. Evidence: *the Blackwood remains*. The Hollow Warden guards the last glade. | wardens of the wood (10–11), the Hollow Warden (12) |
-| 4 | **The Crown's Secret** | find someone + convince | Back in Mooncourt, a court clerk will hand over the Crown's orders if your evidence is enough (4 of 6), or for a heavy bribe, or (dreaded guilds) if you scare him enough. The orders are signed by Thorne. | — |
-| 5 | **The Tidecross Open** | tournament | Thorne's Argent Crown enters the Tidecross Open; so do you. Reach the semifinal to face him in public. You don't win yet: he walks away, untouchable. | three bouts (11–13) |
-| 6 | **Blood on the Snow** | search + scene | Word comes from the Blackwood: a body by the seven stones. It's Rook, killed by Crown blades. On him: a sealed letter "for the bearer". The same night the Lantern's survivors raise a new banner: **the Ashen Lantern**, sworn to burn the Crown down. | — |
+| # | Mission | Types | What happens | Fights (party level) | Status |
+|---|---|---|---|---|---|
+| 3.1 | **The Price of Silence** | convince | A patron offers a fortune to sponsor the guild if you put the banner away. Take it (gold; the trail goes cold for a season) or refuse. His envoy lets slip a name: Lieutenant Garrick Thorne. | — | ⬜ |
+| 3.2 | **The Moon Road** | search, gate | The Moon Road from Ironford opens to Champion guilds. Walk it to Mooncourt; the moon-cult raiders hold the pass. | the raiders (27), their priest (29) | ⬜ |
+| 3.3 | **The Quartermaster's Favour** | errand fight | The Crown's old quartermaster, retired in Mooncourt, will trade the ambush maps for a favour: beat the Crown's second team in a Champion exhibition. | the second team of four (31) | ⬜ |
+| 3.4 | **The Edge of the Blackwood** | search, gather | With Wren's map, walk past the Blackwood's edge. Find the Lantern's three trail marks, and cut through the briar with the warden's axe (from Tobin, if he trusts you; or bought in Mooncourt). | the wood's outlaws (32), the briar band (33) | ⬜ |
+| 3.5 | **The Seven Stones** | search, fight | The ambush site: a burned camp, seven stones, the Crown's arrows. The Hollow Warden guards the last glade. Evidence: the Blackwood remains. | the wardens of the wood (34), the Hollow Warden (36) | ⬜ |
+| 3.6 | **The Crown's Secret** | find someone, convince | A Mooncourt court clerk hands over the Crown's orders if your evidence is enough (4 of 6), for a heavy bribe, or (dreaded guilds) if you frighten him. The orders are signed by Thorne. | — | ⬜ |
+| 3.7 | **The Tidecross Open** | tournament | The Argent Crown enters the Tidecross Open; so do you. Reach the semifinal to face Thorne in public; he walks away untouchable. | Champion teams of four (36–39) | ⬜ |
+| 3.8 | **Blood on the Snow** | search, scene | A body by the seven stones: Rook, killed by Crown blades, a sealed letter "for the bearer" on him. That night the survivors raise a new banner: the Ashen Lantern. | the Crown's killers at the stones (40) | ⬜ |
 
-*Chapter end (the turn):* two guilds stand against the Crown's crimes, and both now stand in your way.
+*Chapter end (the turn):* two guilds stand in your way.
+
+**Secondary missions in Chapter 3:** Mooncourt's stolen relic (search + fight), the moon-cult's prisoners (escort), the Tidecross smugglers (convince / fight), the Blackwood herbs for the temple (gather), a Champion guild's challenge (fight), the court's missing heir (ask around).
 
 ---
 
 ## Chapter 4 — Crownfall (the ending)
-*Mooncourt, Crownfall, the World Conclave · party levels 13–16 · Champion and Elite*
+*Mooncourt, Crownfall, the World Conclave · party 40 → 50+ · Champion and Elite*
 
-Three missions and two fights. Which guild you face first depends on your standing at the turn:
-the one that shares it. A neutral guild chooses at the start of the chapter.
+Three missions and two fights, then a symbolic last mission. Which guild comes first depends on
+your standing at the turn: the one that shares it. A neutral guild chooses at the start of the chapter.
 
-### The honourable path (you first fight the Ashen Lantern)
-| # | Mission | Type | What happens | Fights (level) |
-|---|---|---|---|---|
-| 1 | **The Last Clue** | find someone | Rook's letter names "the one who held the knife". Thorne's people spread it about: the Ashen Lantern killed Rook. Everything points to them. | — |
-| 2 | **Ash and Embers** | fight | You corner the Ashen Lantern at the Blackwood stones. You beat them; Wren, wounded, shows you Rook's true letter: Rook was the Crown's guildmaster, he ordered the ambush, and he spent his last years trying to undo it. Thorne killed him to bury it. | the Ashen Lantern (14) |
-| 3 | **The Crown Must Fall** | find + convince | With the Lantern beside you, gather the court's ear (your evidence) and get Thorne named before the Crownfall Tournament. | — |
-| 4 | **Crownfall** | fight (final) | The Crownfall Tournament final against the Argent Crown, Thorne at its head. | the Argent Crown (16) |
-| 5 | **A Banner at Rest** | symbolic | Bring the medal and the banner to Rook's grave by the seven stones. The Lantern's 1183 title is restored (Ending A or B, by evidence). | — |
+### The honourable path: the Ashen Lantern first
+| # | Mission | Types | What happens | Fights (party level) | Status |
+|---|---|---|---|---|---|
+| 4.1 | **The Last Clue** | find someone | Rook's letter names "the one who held the knife"; Thorne's people say the Ashen Lantern killed Rook. Everything points at them. | — | ⬜ |
+| 4.2 | **Ash and Embers** | fight | Corner the Ashen Lantern at the seven stones and beat them. Wren, wounded, shows you Rook's true letter: Rook was the Crown's guildmaster, ordered the ambush, and spent his last years trying to undo it. Thorne killed him to bury it. | the Ashen Lantern, five (45) | ⬜ |
+| 4.3 | **The Crown Must Fall** | find someone, convince | With the Lantern beside you, put your evidence before the court and get Thorne named before Crownfall. | — | ⬜ |
+| 4.4 | **Crownfall** | fight (final) | The Crownfall final against the Argent Crown, Thorne at its head. | the Argent Crown, five (48–50) | ⬜ |
+| 4.5 | **A Banner at Rest** | symbolic | Bring the medal and the banner to Rook's grave at the seven stones. The Lantern's 1183 title is restored if your evidence is enough (Ending A); otherwise you are champions and the record still reads "vacated" (Ending B). | — | ⬜ |
 
-### The wicked path (you first fight the Argent Crown)
-| # | Mission | Type | What happens | Fights (level) |
-|---|---|---|---|---|
-| 1 | **The Last Clue** | find someone | Rook's letter names Thorne. Good: you've wanted the Crown's place since Mooncourt. | — |
-| 2 | **The Crown's Fall** | fight | You beat the Argent Crown at Crownfall. Thorne, beaten, laughs: the Lantern will come for you next, and they know what you've done to get here. Rook's secret comes out of his mouth, spat as an insult. | the Argent Crown (15) |
-| 3 | **Ashes to Ashes** | search + convince | Find the Ashen Lantern's hideout before they turn the court against you: buy an informant, or frighten one. | — |
-| 4 | **The Last Lantern** | fight (final) | The Ashen Lantern, Wren at their head, in the ruins of the old Lantern hall. | the Ashen Lantern (16) |
-| 5 | **The New Crown** | symbolic | Burn the old banner and raise yours over the Crown's hall in Mooncourt. Everyone fears you now (Ending C). | — |
+### The wicked path: the Argent Crown first
+| # | Mission | Types | What happens | Fights (party level) | Status |
+|---|---|---|---|---|---|
+| 4.1 | **The Last Clue** | find someone | Rook's letter names Thorne. Good: you've wanted the Crown's place since Mooncourt. | — | ⬜ |
+| 4.2 | **The Crown's Fall** | fight | Beat the Argent Crown at Crownfall. Thorne, beaten, spits out Rook's secret as an insult, and warns you that the Lantern will come for you, because they know what you've done to get here. | the Argent Crown, five (45) | ⬜ |
+| 4.3 | **Ashes to Ashes** | search, convince | Find the Ashen Lantern before they turn the court against you: buy an informant, or frighten one. | — | ⬜ |
+| 4.4 | **The Last Lantern** | fight (final) | The Ashen Lantern, Wren at their head, in the ruins of the old Lantern hall. | the Ashen Lantern, five (48–50) | ⬜ |
+| 4.5 | **The New Crown** | symbolic | Burn the old banner and raise yours over the Crown's hall in Mooncourt. Everyone fears you now (Ending C). | — | ⬜ |
+
+Afterwards: the World Conclave Championship (Elite, top guilds 45–50) is there for the champion of the world.
 
 ---
 
 ## Open questions
-- Rook's grave: where? (The seven stones in the Blackwood fits the turn.)
-- Ending A or B on the honourable path: A by evidence (the court restores the title), B without
-  enough evidence (you win Crownfall but the record stays "vacated" until you find the rest)?
-- The Ash Abbot and the Harvest Melee stay in Chapter 1 as the tutorial; fine, or move the
-  tournament earlier?
-- Old Ebb, Sister Oriel, Overseer Hale, Cass Vey and Magister Venn are new names; rename freely.
+- Rook's grave: at the seven stones (assumed above)?
+- Names to keep or change: Old Ebb, Sergeant Hobb, Prior Aubrey, Tobin, Sister Oriel, Overseer
+  Hale, Cass Vey, Magister Venn.
