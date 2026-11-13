@@ -1283,6 +1283,41 @@ export const LAST_NAMES = [
   'Wyrd',
 ];
 
+/**
+ * Names by element: a hero's name sounds like what they fight with. First names and surnames;
+ * no story or town names (Aldric, Wren, Rook, Bram Calder, Nessa, Mara, Mira, Tamsin, Tobin, Maren, Halden, Corr, Oswin, …).
+ */
+export const PRIMAL_NAMES = {
+  Fire: {
+    first: ['Ember', 'Ashe', 'Pyra', 'Cinder', 'Brand', 'Sorcha', 'Aidan', 'Kindra', 'Flint', 'Soren', 'Blaise', 'Ignis', 'Rhosyn', 'Pyrrhus', 'Seraph', 'Edda'],
+    last: ['Ashfall', 'Emberly', 'Pyre', 'Brandmoor', 'Cinderhall', 'Redforge', 'Sunmantle', 'Hearthstone', 'Blazewood', 'Coalbrook', 'Firth', 'Scorch'],
+  },
+  Water: {
+    first: ['Marin', 'Nerys', 'Coralie', 'Brook', 'Delphine', 'Rill', 'Morwen', 'Kai', 'Isla', 'Dylan', 'Meri', 'Talia', 'Caspian', 'Lir', 'Wenna', 'Ondine'],
+    last: ['Tidewell', 'Quickwater', 'Brine', 'Saltmarsh', 'Wavecrest', 'Deepwell', 'Rainmere', 'Fairweather', 'Seaholm', 'Riverbend', 'Mistwater', 'Shoal'],
+  },
+  Air: {
+    first: ['Aeryn', 'Zephan', 'Skye', 'Lark', 'Sirocco', 'Avel', 'Gale', 'Ilya', 'Nimbus', 'Eira', 'Corvin', 'Aria', 'Zephyra', 'Kestrel', 'Fen', 'Lio'],
+    last: ['Windhollow', 'Skyward', 'Galeheart', 'Cloudmere', 'Highfeather', 'Stormcrest', 'Swiftwing', 'Featherstone', 'Vane', 'Breeze', 'Hawkridge', 'Gust'],
+  },
+  Plant: {
+    first: ['Briony', 'Fern', 'Rowan', 'Ivy', 'Hazel', 'Linden', 'Laurel', 'Alder', 'Juniper', 'Moss', 'Willa', 'Oren', 'Sage', 'Thistle', 'Elowen', 'Bryn'],
+    last: ['Briar', 'Oakheart', 'Thornfield', 'Greenleaf', 'Ashgrove', 'Mossbank', 'Willowmere', 'Hollyhock', 'Elmwood', 'Rootwell', 'Fernhill', 'Bramble'],
+  },
+  Iron: {
+    first: ['Thane', 'Dagny', 'Varek', 'Ingrid', 'Brannoc', 'Steel', 'Hilda', 'Hadric', 'Gunnar', 'Petra', 'Ulric', 'Brunhild', 'Axel', 'Sigrun', 'Torvald', 'Magda'],
+    last: ['Ironwood', 'Steelhand', 'Anvilmere', 'Forgeborn', 'Hammerfall', 'Stone', 'Copperfield', 'Blackiron', 'Rivetson', 'Slate', 'Ironside', 'Cogsworth'],
+  },
+  Animal: {
+    first: ['Ursa', 'Fara', 'Lupa', 'Rhea', 'Bjorn', 'Leona', 'Garth', 'Vixen', 'Hart', 'Corvina', 'Ralf', 'Talon', 'Sable', 'Bertram', 'Ulla', 'Brock'],
+    last: ['Wolfsbane', 'Bearclaw', 'Foxglen', 'Ravenhill', 'Stagmoor', 'Boarstead', 'Hawkins', 'Lynx', 'Wildmane', 'Crowe', 'Otterburn', 'Hound'],
+  },
+  Psychic: {
+    first: ['Nyx', 'Orin', 'Sybil', 'Lucan', 'Isolde', 'Zara', 'Merrin', 'Quill', 'Vesper', 'Aurelia', 'Dorian', 'Liora', 'Ysolde', 'Ezra', 'Celeste', 'Mordecai'],
+    last: ['Wyrd', 'Dreamweaver', 'Starling', 'Veyne', 'Moonwhisper', 'Nightshade', 'Hollow', 'Grey', 'Farsight', 'Sigil', 'Mistral', 'Dusk'],
+  },
+};
+
 export const ORIGINS = ['Farmer', 'Noble bastard', 'Temple orphan', 'Nomad', 'Ex-soldier', 'Street thief', 'Scholar', 'Refugee', 'Hunter', 'Artisan'];
 export const PERSONALITIES = ['Brave', 'Vain', 'Patient', 'Jealous', 'Merciful', 'Obsessive', 'Cautious', 'Witty', 'Honorable', 'Restless'];
 export const DREAMS = [

@@ -1,7 +1,7 @@
 // @ts-check
 // Hero generation, XP and levels, relationships, party role ratings and estimates.
 import { skillLabel, skillsUnlockedBetween } from '../../data/skills.js';
-import { CLASSES, normalizeClassId, FIRST_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
+import { CLASSES, normalizeClassId, FIRST_NAMES, PRIMAL_NAMES, FLAWS, HIDDEN_TRAITS, LAST_NAMES, ORIGINS, PERSONALITIES, DREAMS } from '../../data/content.js';
 import { FORMATION_TYPES, PARTY_ROLES, formationForMission } from '../../data/formations.js';
 import { LOCATION_BY_ID, PRIMAL_IDS, RARITIES, primalCombatModifier, primalDiplomacyModifier } from '../../data/world.js';
 import { addHeroHistory, appointmentHolder, clamp, getHero, roomLevel, tallyHero, uid, pushMoment } from './core.js';
@@ -70,9 +70,19 @@ function powerForLevel(level, rarity, rng) {
   return clamp(38 + level * 2.25 + rarityBonus + rng.int(-3, 3), 38, 91);
 }
 
+/** A name that fits the element (src/data/content.js PRIMAL_NAMES), not already worn by a living hero or recruit. */
+function heroName(state, rng, primal) {
+  const pool = PRIMAL_NAMES[primal] || { first: FIRST_NAMES, last: LAST_NAMES };
+  const taken = new Set([...(state?.heroes || []), ...(state?.candidates || []), ...(state?.freeAgents || []), ...(state?.rivals || []).flatMap((rival) => [rival.star, ...(rival.members || [])])].filter(Boolean).map((hero) => hero.name));
+  let name = `${rng.pick(pool.first)} ${rng.pick(pool.last)}`;
+  for (let tries = 0; tries < 12 && taken.has(name); tries += 1) name = `${rng.pick(pool.first)} ${rng.pick(pool.last)}`;
+  return name;
+}
+
 export function choosePrimal(rng, locationId) {
   const locationPrimal = LOCATION_BY_ID[locationId]?.primal;
-  if (locationPrimal && rng.chance(0.58)) return locationPrimal;
+  // Most people share their town's element; the rest are drawn from all seven.
+  if (locationPrimal && rng.chance(0.7)) return locationPrimal;
   return rng.pick(PRIMAL_IDS);
 }
 
@@ -247,7 +257,7 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
   const scoutBonus = roomLevel(state, 'scouts') * 0.025;
   const qualityBonus = quality === 'elite' ? 0.24 : quality === 'veteran' ? 0.12 : 0;
   const rarity = options.rarity || rarityFromRoll(rng, scoutBonus + qualityBonus);
-  const level = options.level || levelBandForRarity(rarity, rng, quality === 'veteran');
+  const level = options.level || clamp(levelBandForRarity(rarity, rng, quality === 'veteran') + (options.levelOffset || 0), 1, 60);
   // Recruits reflect the guild: its charter draws certain classes, Temple friends bring clerics.
   const drawn = options.recruit ? [...(charterOf(state)?.recruitClasses || []), ...(patronAtLeast(state, 'temple', 'partner') ? ['Cleric'] : [])] : [];
   const classPool = (
@@ -258,7 +268,8 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
   const powerBase = powerForLevel(level, rarity, rng);
   const rarityPotential = RARITIES[rarity]?.maxPotential || 72;
   const potential = clamp(powerBase + rng.int(5, 16), powerBase + 3, rarityPotential);
-  const name = options.name || `${rng.pick(FIRST_NAMES)} ${rng.pick(LAST_NAMES)}`;
+  const primal = options.primal || choosePrimal(rng, locationId);
+  const name = options.name || heroName(state, rng, primal);
   return createHeroFromBase(
     {
       name,
@@ -266,7 +277,7 @@ export function generateHero(state, rng, quality = 'normal', options = {}) {
       age,
       level,
       rarity,
-      primal: options.primal || choosePrimal(rng, locationId),
+      primal,
       homeLocationId: locationId,
       power: powerBase,
       potential,

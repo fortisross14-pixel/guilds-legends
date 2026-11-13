@@ -1,7 +1,7 @@
 // @ts-check
 // Recruitment market (candidates per location) and recruitment promises.
 import { normalizeClassId, MONTHS } from '../../data/content.js';
-import { RARITIES, unlockedLocations, LOCATION_BY_ID } from '../../data/world.js';
+import { RARITIES, LOCATIONS, LOCATION_BY_ID } from '../../data/world.js';
 import { addChronicle, addHeroHistory, campaignMonthSerial, clamp, dateLabel, roomLevel } from './core.js';
 import { patronAtLeast, patronLevel } from './charter.js';
 import { PATRON_LIST } from '../../data/patrons.js';
@@ -131,13 +131,19 @@ export function updatePromiseDeadlinesInPlace(state) {
 }
 
 /** A recruit for a town's tavern. `options` can fix the hero (name, classId, primal, rarity, level). */
+/** Levels added to a recruit's rarity band by where they are: Dunmere as is, the far towns much stronger. */
+const RECRUIT_LEVEL_OFFSET = { dunmere: 0, greenhollow: 2, ironford: 6, windmere: 9 };
+const RECRUIT_LEVEL_BY_TIER = { Regional: 4, National: 18, Global: 33 };
+
 export function makeCandidate(state, rng, forcedQuality, locationId = state.world?.currentLocationId || 'dunmere', options = {}) {
   // A State of the art Crown Room draws better recruits (visitors).
   const visitors = roomLevel(state, 'crown') >= 3 ? VISITORS.recruitQuality : 0;
   const spymasterBonus = state.guild.appointments?.Spymaster ? 0.08 : 0;
   const qualityRoll = rng.next() + visitors + spymasterBonus;
   const quality = forcedQuality || (qualityRoll > 1.12 ? 'elite' : qualityRoll > 0.92 ? 'veteran' : 'normal');
-  const hero = generateHero(state, rng, quality, { homeLocationId: locationId, recruit: true, ...options });
+  // Recruits are as strong as where they wait (the open world's danger, docs/design/WORLD.md).
+  const levelOffset = RECRUIT_LEVEL_OFFSET[locationId] ?? RECRUIT_LEVEL_BY_TIER[LOCATION_BY_ID[locationId]?.tier] ?? 0;
+  const hero = generateHero(state, rng, quality, { homeLocationId: locationId, recruit: true, levelOffset, ...options });
   const rarityFactor = RARITIES[hero.rarity]?.signing || 1;
   const signingFee = Math.round(
     (hero.level * 85 + hero.power * 3.5 + Math.max(0, hero.potential - 70) * 10) * rarityFactor * recruitFeeFactor(state, LOCATION_BY_ID[locationId]?.region),
@@ -160,7 +166,8 @@ export function makeCandidate(state, rng, forcedQuality, locationId = state.worl
 }
 
 export function refreshCandidatesForLocationInPlace(state, rng, locationId = state.world?.currentLocationId || 'dunmere') {
-  const unlockedIds = new Set(unlockedLocations(state.guild.tierIndex).map((location) => location.id));
+  // The open world: recruits wait in every town, whatever the guild's status.
+  const unlockedIds = new Set(LOCATIONS.map((location) => location.id));
   state.candidates = (state.candidates || []).filter(
     (candidate) => candidate.expiresYear >= state.date.year && unlockedIds.has(candidate.locationId || 'dunmere'),
   );
