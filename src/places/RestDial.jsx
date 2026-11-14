@@ -11,7 +11,7 @@ const toPos = (days) => (days <= 7 ? ((days - 1) / 6) * 30 : days <= 28 ? 30 + (
 const fromPos = (pos) => Math.round(pos <= 30 ? 1 + (pos / 30) * 6 : pos <= 60 ? 7 + ((pos - 30) / 30) * 21 : 28 + ((pos - 60) / 40) * (MAX_REST_DAYS - 28));
 const SKIP = ['reputation', 'season'];
 
-export default function RestDial({ state, disabled, onRest }) {
+export default function RestDial({ state, disabled, onRest, children = null }) {
   const events = useMemo(
     () =>
       getCalendarEntries(state, 4)
@@ -60,6 +60,8 @@ export default function RestDial({ state, disabled, onRest }) {
       <Button variant="primary" size="lg" disabled={disabled} why="Something needs you first (a fight, a decision or a road event)." onClick={() => onRest(days)}>
         Rest {spanLabel(days)}
       </Button>
+      {/* "Rest until …" (fit, full health, the next tournament): under the timeline, above what's coming. */}
+      {children}
       {events.length ? (
         <div className="rest-dial__ahead">
           <strong>Coming up</strong>

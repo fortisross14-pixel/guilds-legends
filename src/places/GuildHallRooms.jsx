@@ -500,7 +500,7 @@ function RestPanel({ state, hall, actions, onDone = null }) {
           actions.restAtHall(days, draft);
           onDone?.();
         }}
-      />
+      >
       <div className="rest-room__until">
         {tournamentStop ? (
           <Button size="sm" variant="primary" disabled={Boolean(paused)} onClick={() => { actions.restUntil('tournament'); onDone?.(); }}>
@@ -514,6 +514,7 @@ function RestPanel({ state, hall, actions, onDone = null }) {
           Rest until full health
         </Button>
       </div>
+      </RestDial>
       <p className="muted">Stops early if a battle, decision or tournament needs you.</p>
       <details className="rest-room__calendar">
         <summary>Calendar</summary>

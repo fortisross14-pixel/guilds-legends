@@ -48,7 +48,9 @@ function worldZoomFor(map, cssWidth, cssHeight, coarse) {
   if (map.fit === 'contain') return Math.min(2.6, Math.max(0.6, Math.min(cssWidth / map.size.width, roomBand(cssWidth, cssHeight).height / map.size.height) * 0.96));
   const fill = Math.max(cssWidth / map.size.width, cssHeight / map.size.height);
   const comfort = coarse ? 1.2 : 1;
-  return Math.min(2.2, Math.max(fill, map.zoom ? map.zoom * comfort : comfort));
+  // Big screens: about 30 tiles across at most, so a town or road is explored, not seen whole.
+  const explore = (cssWidth / (30 * 32)) * (map.zoom || 1);
+  return Math.min(2.2, Math.max(fill, explore, map.zoom ? map.zoom * comfort : comfort));
 }
 
 /** Doors and exits ask first (playtest-1-feedback): a tap opens a bubble, the bubble's tap goes through. */

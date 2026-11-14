@@ -6,6 +6,7 @@ import { Dialogue } from './EventCardModal.jsx';
 import { SeasonReview } from '../screens/HistoryScreens.jsx';
 import ChapterEnd from './ChapterEnd.jsx';
 import { getSeasonReview } from '../game/engine.js';
+import { ITEMS } from '../data/items.js';
 
 // Reward effect sprites from public/art/effects.
 const FX = { sparkle: 'effect_12', burst: 'effect_10' };
@@ -52,6 +53,14 @@ function Details({ lines }) {
 // Reward moments: victory, level up, rankings, status title, nemesis, recruit,
 // a broken record and the end-of-year season review.
 // A click anywhere on a ceremony finishes its animation.
+/** What a won item is (a gear piece's stats, a good's use, a consumable's effect). */
+function lootNote(item) {
+  const data = ITEMS[item?.id];
+  if (!data) return '';
+  if (data.stats) return Object.entries(data.stats).map(([key, value]) => `${key.toUpperCase()} ${value > 0 ? '+' : ''}${value}`).join(' · ') + (data.level > 1 ? ` · level ${data.level}` : '');
+  return data.use || data.for || data.description || '';
+}
+
 export default function MomentModal({ moment, state, onClose }) {
   const [skipped, setSkipped] = useState(null);
   if (!moment) return null;
@@ -107,9 +116,13 @@ export default function MomentModal({ moment, state, onClose }) {
                 </li>
               ) : null}
               {(moment.loot || []).map((item, index) => (
-                <li key={`${item.id || item}-${index}`} title={item.name || item}>
+                <li key={`${item.id || item}-${index}`} className="moment__loot" title={lootNote(item)}>
                   <Icon name={LOOT_ICONS[item.kind] || 'bag'} size={20} />
-                  {item.count ? <span className="num">×{item.count}</span> : <small>{item}</small>}
+                  <span>
+                    {item.name || item}
+                    {item.count > 1 ? <span className="num"> ×{item.count}</span> : null}
+                    {lootNote(item) ? <small>{lootNote(item)}</small> : null}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -155,9 +168,13 @@ export default function MomentModal({ moment, state, onClose }) {
               </li>
             ) : null}
             {(moment.loot || []).map((item, index) => (
-              <li key={`${item.id || item}-${index}`} title={item.name || item}>
+              <li key={`${item.id || item}-${index}`} className="moment__loot" title={lootNote(item)}>
                 <Icon name={LOOT_ICONS[item.kind] || 'bag'} size={20} />
-                {item.count ? <span className="num">×{item.count}</span> : <small>{item}</small>}
+                <span>
+                  {item.name || item}
+                  {item.count > 1 ? <span className="num"> ×{item.count}</span> : null}
+                  {lootNote(item) ? <small>{lootNote(item)}</small> : null}
+                </span>
               </li>
             ))}
           </ul>

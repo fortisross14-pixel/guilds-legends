@@ -202,3 +202,7 @@
 .road-event { display: grid; gap: 14px; }
 .road-event__line { margin: 0; color: var(--text); font: italic 600 var(--fs-4)/1.4 var(--font-display); }
 .modal--road .decision-options button { width: 100%; }
+/* A won item: its name, the count, and what it is (stats, use) on a second line. */
+.moment__spoils li.moment__loot { border-radius: var(--r-2); text-align: left; }
+.moment__loot > span { display: grid; gap: 1px; color: var(--text); font-size: var(--fs-2); }
+.moment__loot > span small { max-width: 26ch; color: var(--text-dim); font: 500 var(--fs-1)/1.3 var(--font-ui); white-space: normal; }
