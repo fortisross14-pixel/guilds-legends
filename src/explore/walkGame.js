@@ -31,10 +31,21 @@ function isSheet(scene, key) {
  * Camera zoom in CSS px per world px: fill the screen, a little closer on touch.
  * Rooms (`fit: 'contain'`) fit whole on one screen instead, leaving room for the HUD.
  */
+/**
+ * Where a small room (fit: 'contain') stands on screen: below the HUD, above the bottom band the
+ * dialogue box takes. Landscape screens keep the room up top (the box is shorter than tall).
+ */
+function roomBand(cssWidth, cssHeight) {
+  const landscape = cssWidth > cssHeight * 1.15;
+  const top = landscape ? 64 : 70;
+  const bottom = landscape ? Math.max(130, Math.min(240, cssHeight * 0.26)) : 150;
+  return { top, height: Math.max(120, cssHeight - top - bottom) };
+}
+
 function worldZoomFor(map, cssWidth, cssHeight, coarse) {
   // Rooms stay at a person's scale: walkers about 60 px tall on a phone, not the whole height of the screen.
   if (map.room) return Math.max(cssWidth / map.size.width, Math.min(Math.max(cssWidth / map.size.width, cssHeight / map.size.height), coarse ? 1.15 : 1.35));
-  if (map.fit === 'contain') return Math.min(2.6, Math.max(0.6, Math.min(cssWidth / map.size.width, (cssHeight - 150) / map.size.height) * 0.96));
+  if (map.fit === 'contain') return Math.min(2.6, Math.max(0.6, Math.min(cssWidth / map.size.width, roomBand(cssWidth, cssHeight).height / map.size.height) * 0.96));
   const fill = Math.max(cssWidth / map.size.width, cssHeight / map.size.height);
   const comfort = coarse ? 1.2 : 1;
   return Math.min(2.2, Math.max(fill, map.zoom ? map.zoom * comfort : comfort));
@@ -364,7 +375,12 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     // Pixel art stays crisp at whole device pixels per art pixel (the art is drawn at 2x).
     if (map.pixelArt) state.worldZoom = Math.max(1, Math.round(state.worldZoom * dpr * 2)) / (dpr * 2);
     scene.cameras.main.setZoom(state.worldZoom * dpr);
-    if (map.fit === 'contain') scene.cameras.main.centerOn(map.size.width / 2, map.size.height / 2 - 12);
+    if (map.fit === 'contain') {
+      // The room's middle sits in the middle of its band (world units: CSS pixels / zoom).
+      const band = roomBand(width, height);
+      const offset = (height / 2 - (band.top + band.height / 2)) / state.worldZoom;
+      scene.cameras.main.centerOn(map.size.width / 2, map.size.height / 2 + offset);
+    }
   }
 
   const initial = size();

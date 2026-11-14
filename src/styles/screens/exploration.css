@@ -88,6 +88,20 @@
 .dialogue__log-head strong { font: 700 var(--fs-4) var(--font-display); }
 .dialogue__log-body { display: grid; align-content: start; gap: 10px; overflow: auto; padding: 4px 20px calc(var(--safe-b) + 20px); }
 .dialogue__log-body p { margin: 0; font-size: var(--fs-2); line-height: 1.5; }
+/* Laptops, tablets and phones held sideways: a shorter box, centred, not a full-width sheet,
+   so the scene above stays visible (small rooms stand above it: walkGame.js roomBand). */
+@media (min-width: 760px) and (min-aspect-ratio: 23/20) {
+  .dialogue__box { width: min(1040px, calc(100% - 2 * var(--gutter))); margin: 0 auto calc(var(--safe-b) + 10px); padding: 14px 20px 12px; border: 1px solid rgba(201, 166, 107, .7); border-radius: var(--r-2); max-height: min(46dvh, 420px); }
+  .dialogue__box.is-reading { --read-h: clamp(56px, 11dvh, 104px); }
+  .dialogue__portrait { width: 84px; height: 84px; }
+  .dialogue__body { gap: 8px; }
+}
+@media (max-height: 520px) and (min-aspect-ratio: 23/20) {
+  .dialogue__box { width: min(1040px, calc(100% - 2 * var(--gutter))); margin: 0 auto calc(var(--safe-b) + 6px); padding: 10px 16px 8px; border-radius: var(--r-2); max-height: 58dvh; }
+  .dialogue__box.is-reading { --read-h: 52px; }
+  .dialogue__portrait { width: 56px; height: 56px; }
+  .dialogue__text { font-size: var(--fs-3); }
+}
 @media (max-width: 759px) {
   .dialogue__box { gap: 4px 12px; padding-top: 14px; }
   .dialogue__portrait { width: 60px; height: 60px; }
