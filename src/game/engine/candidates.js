@@ -26,7 +26,25 @@ function topFamily(state) {
 /** The line a candidate refuses with, if the guild is what they dislike right now (else null). */
 export function recruitObjection(state, candidate) {
   const objection = OBJECTIONS.find((item) => item.id === candidate?.objection);
-  return objection && objection.applies(state) ? objection.line : null;
+  if (objection && objection.applies(state)) return objection.line;
+  return leaderObjection(state, candidate);
+}
+
+/**
+ * Nobody follows a nobody: a recruit wants a leader near their own level (two below theirs, at
+ * least level 2), unless the guild's name already carries weight (fame). They say so plainly.
+ */
+export const LEADER_RULE = { below: 2, min: 2, famePerLevel: 6 };
+export function leaderLevelNeeded(candidate) {
+  return Math.max(LEADER_RULE.min, (candidate?.level || 1) - LEADER_RULE.below);
+}
+function leaderObjection(state, candidate) {
+  if (!candidate) return null;
+  const leader = state.heroes.find((hero) => hero.id === (state.guild.currentGuildmasterHeroId || 'founder-player')) || state.heroes.find((hero) => hero.id === 'founder-player');
+  const level = leader?.level || 1;
+  const need = leaderLevelNeeded(candidate);
+  if (level >= need || (state.guild.fame || 0) >= candidate.level * LEADER_RULE.famePerLevel) return null;
+  return `I don’t follow a level ${level} leader. Come back when you’re at least level ${need}, or when your guild’s name means something.`;
 }
 import { generateHero } from './heroes.js';
 import { familyLevel, recruitFeeFactor } from './reputation.js';

@@ -156,6 +156,8 @@ export default {
     ],
     topics: [
       { id: 'guilds', text: 'Why won’t the guilds take you?', lines: ['Too young, too local, too stubborn. Pick one.'] },
+      // Before Mara vouches for the guild (story 1.2b), Nessa says no, and says who could change her mind.
+      { id: 'join', text: 'Join my guild.', if: { notStoryHero: 'nessa' }, lines: ['You? I don’t know you. Nobody in Dunmere follows a stranger with a banner.', 'Mara at the Wayfarer knows everyone. If she says you’re worth it, I’ll listen.'] },
       { id: 'thornwood', text: 'You know the Thornwood?', lines: ['Guided caravans through it since I was twelve. I know every path that doesn’t want to be found.'] },
       { id: 'family', text: 'Do you have family here?', lines: ['…Not here. Ask me something else.'] },
     ],
