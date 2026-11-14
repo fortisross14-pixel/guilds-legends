@@ -382,6 +382,26 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     scene: [WalkScene],
   });
 
+  // While a menu, a talk or a fight covers the scene, it stops drawing (after a few last frames):
+  // a canvas redrawn 60 times a second under a panel made every menu slow. Phaser's TimeStep
+  // has no "sleeping" flag (only `running`), so the scene keeps its own.
+  const sleepSoon = () => {
+    window.clearTimeout(state.sleepTimer);
+    state.sleepTimer = window.setTimeout(() => {
+      if (!dead && state.paused && scene?.player && game.loop.running) {
+        game.loop.sleep();
+        state.asleep = true;
+      }
+    }, 250);
+  };
+  const wakeUp = () => {
+    window.clearTimeout(state.sleepTimer);
+    if (state.asleep && !dead) {
+      state.asleep = false;
+      game.loop.wake(true);
+    }
+  };
+
   // Project world → CSS pixels after each render, for the React labels.
   game.events.on('postrender', () => {
     if (dead || !scene?.player) return;
@@ -467,12 +487,8 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
       state.nearId = undefined;
       // While a menu, a talk or a fight covers the scene, stop drawing it (after one last
       // frame): a canvas redrawn 60 times a second under a blurred panel made every menu slow.
-      window.clearTimeout(state.sleepTimer);
-      if (paused) {
-        state.sleepTimer = window.setTimeout(() => {
-          if (!dead && state.paused && scene?.player) game.loop.sleep();
-        }, 120);
-      } else if (game.loop.sleeping) game.loop.wake();
+      if (paused) sleepSoon();
+      else wakeUp();
     },
     /** Which targets exist right now (e.g. the door only after the dialogue). */
     setActiveTargets(ids) {
@@ -482,8 +498,11 @@ export async function createWalkGame({ parent, map, bridge, start, coarse = fals
     },
     resize() {
       const { width, height } = size();
+      // A resize while the scene sleeps: draw it again at the new size, then sleep again.
+      wakeUp();
       game.scale.resize(Math.round(width * dpr), Math.round(height * dpr));
       applyZoom();
+      if (state.paused) sleepSoon();
     },
     position() {
       return scene?.player ? { x: Math.round(scene.player.x), y: Math.round(scene.player.y) } : null;
