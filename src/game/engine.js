@@ -55,7 +55,7 @@ export { getTournamentAccess } from './engine/tournaments.js';
 export { signUpForTournament, getArenaView, tournamentStartDay, tournamentCloseDay, REGISTRATION_WEEKS, beginTournamentBout, nextTournamentStop } from './engine/tournamentEntry.js';
 export { saveFormation, acceptContract, contractSite, contractPlace, activeContracts, contractSteps, firstStep, reportTo, contractDaysLeft, siteObjects, siteDoors, objectiveOpen } from './engine/missions.js';
 export { siteObjectiveView, siteAct, startSiteFight, retrySiteBattle, checkLabel } from './engine/sites.js';
-export { townPeople, peopleIn, findPerson, getPersonTalk, meetPerson, talkToPerson, hireTerms, getContacts, knownMissions, missionPosted, shortLabels } from './engine/people.js';
+export { townPeople, peopleIn, findPerson, getPersonTalk, meetPerson, talkToPerson, hireTerms, getContacts, knownMissions, missionPosted, shortLabels, helpWanted } from './engine/people.js';
 export { reportContract, contractGrade, acknowledgeReport, GRADES } from './engine/outcomes.js';
 export {
   performActiveCombatAction,

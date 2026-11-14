@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { LOCATION_BY_ID } from '../data/world.js';
-import { contractDaysLeft, contractPlace, contractSteps, knownMissions, reportTo } from '../game/engine.js';
+import { contractDaysLeft, contractPlace, contractSteps, helpWanted, knownMissions, reportTo } from '../game/engine.js';
 import { Button } from '../components/UI.jsx';
 import Icon from '../components/Icon.jsx';
 
-// The notice board (missions-in-world spec): a compact list of the contracts
-// posted here or taken from people in this town. Tap one for its panel: what to
-// do (short steps), where, what it pays, its deadline, and Accept, Report or
-// Give up. Contracts are played in the world, not sent off from here.
+// The notice board: who in town is looking for help, and where to find them (the job is
+// theirs to tell: walk over and talk), the posted story and bounty contracts, and the
+// contracts the guild is working on, until they're done. Tap a contract for its panel.
 
 const FAMILY_ICONS = { 'Bounty Hunt': 'swords', Rescue: 'heart', Investigation: 'search', Political: 'crown', Tournament: 'trophy', Dungeon: 'skull', Saga: 'book', Escort: 'boot', Exploration: 'map', Infiltration: 'eye' };
 
@@ -99,8 +98,30 @@ export default function MissionsScreen({ state, actions, navigate }) {
     .sort((a, b) => Number(Boolean(b.story)) - Number(Boolean(a.story)) || Number(Boolean(b.site)) - Number(Boolean(a.site)));
   const elsewhere = knownMissions(state).filter((mission) => mission.locationId !== here);
   const [openId, setOpenId] = useState(local[0]?.id || null);
+  const help = helpWanted(state, here);
   return (
     <div className="notice-board">
+      <h3 className="notice-board__head">Looking for help</h3>
+      {help.length ? (
+        <ul className="help-list">
+          {help.map((person) => (
+            <li key={person.id} className={`help-row${person.working ? ' is-working' : ''}`}>
+              <Icon name="letter" size={20} />
+              <span className="help-row__who">
+                <strong>{person.name}</strong>
+                <small>{person.role}</small>
+              </span>
+              <span className="help-row__where">
+                <Icon name="pin" size={14} /> {person.where}
+              </span>
+              {person.working ? <span className="contract-row__status is-blue">{person.working.ready ? 'Done: tell them' : 'On it'}</span> : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted">Nobody is asking for help here this month.</p>
+      )}
+      <h3 className="notice-board__head">Contracts</h3>
       {local.length ? (
         <ul className="contract-list">
           {local.map((mission) => {
@@ -119,7 +140,7 @@ export default function MissionsScreen({ state, actions, navigate }) {
           })}
         </ul>
       ) : (
-        <p className="muted">Nothing posted. People around town may have work: ask them.</p>
+        <p className="muted">No contracts posted or taken here.</p>
       )}
       {elsewhere.length ? (
         <p className="notice-board__elsewhere">

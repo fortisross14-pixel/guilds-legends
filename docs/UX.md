@@ -165,7 +165,7 @@ From a recruit's first line, a card sits right above the conversation: portrait,
 - **Herald's office** (Dunmere, Ironford): the clerk at the desk (rankings), the ranking board (rankings), the records shelf (almanac and lore), a messenger while there is unread news.
 - **Shop:** the shopkeeper opens the shop; each shelf opens its category (potions, weapons, armor, charms).
 
-**The notice board** (the one list): a physical board in each town square. It lists the contracts posted there (story and boss contracts) and the ones people here gave you, each with its status (New, Working, Done: report, Too late). Tap one for its panel: the stakes in one line, where it happens, its steps, the pay and the deadline, then **Accept** (and **Decline**), **Go**, **Report** (a posted job) or **Give up**. Contracts in other towns are listed under "Elsewhere".
+**The notice board**: a physical board in each town square. It lists **who is looking for help** in town and where to find them (the building); the job itself is theirs to tell, so walk over and talk, and the contract is taken in the conversation ("We’ll do it"). Below, the contracts posted there (story and boss contracts: **Accept**) and the ones the guild is working on, each with its status (Working, Done: report, Too late) until it's done. Tap one for its panel: the stakes in one line, where it happens, its steps, the pay and the deadline, then **Go**, **Report** (a posted job) or **Give up**. Contracts in other towns are listed under "Elsewhere".
 
 ### Contracts in the world (missions-in-world spec)
 

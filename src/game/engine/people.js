@@ -21,7 +21,7 @@ import { addChronicle, campaignMonthSerial, clamp, clone, commitRng, finalize, f
 import { makeCandidate, recruitObjection } from './candidates.js';
 import { baseSalaryFor, candidateRanges, contractSalary } from './contracts.js';
 import { battleItems } from './inventory.js';
-import { declineContract, firstStep } from './missions.js';
+import { acceptContractInPlace, declineContract, firstStep } from './missions.js';
 import { askAroundHere, askAroundReply, askedAroundInPlace } from './story.js';
 
 const MAX_PEOPLE = 7; // a room fits one screen
@@ -40,6 +40,22 @@ function townBuildings(locationId) {
 /** Is this contract on the board without anyone handing it over (story and boss contracts)? */
 export function missionPosted(mission) {
   return Boolean(mission.story || mission.bossId);
+}
+
+/**
+ * The notice board's list of people looking for help in a town: who, what they do, and where to
+ * find them (the building). Nothing about the job itself: that's for them to tell. A person stays
+ * on it until their contract is done (`working` while the guild is on it).
+ */
+export function helpWanted(state, locationId) {
+  const labels = Object.fromEntries([...(TOWNS[locationId]?.buildings || []), ...wildBuildings(locationId)].map((building) => [building.building, building.label]));
+  return townPeople(state, locationId)
+    .filter((person) => person.offers.some((offer) => offer.type === 'mission'))
+    .map((person) => {
+      const missions = person.offers.flatMap((offer) => offer.missionIds || []).map((id) => state.missions.find((mission) => mission.id === id)).filter(Boolean);
+      const working = missions.find((mission) => mission.accepted);
+      return { id: person.id, name: person.name, role: person.role, where: labels[person.building] || 'in town', building: person.building, working: working ? { title: working.title, ready: working.site?.status === 'ready' } : null };
+    });
 }
 
 /** Contracts the guild knows about: posted ones, and those people gave it. */
@@ -447,9 +463,18 @@ export function talkToPerson(state, personId, choiceId) {
     else if (pinned) lines = [`“${pinned.title}” is pinned on the notice board, under your banner. Take it from there.`];
     else if (!open) lines = ['Nothing right now. Ask me next month.'];
     else {
-      lines = [briefLine(open), `It pays ${open.reward} gold. ${RISK_LINES[clamp(open.risk || 1, 1, 5) - 1]}`, 'The terms are written up for the notice board. Want me to pin it there for you?'];
-      choices = [choice(`mission.post:${open.id}`, 'Pin it. We’ll read it there.'), choice(`mission.decline:${open.id}`, 'Not this one.'), choice('back', BACK)];
+      lines = [briefLine(open), `It pays ${open.reward} gold. ${RISK_LINES[clamp(open.risk || 1, 1, 5) - 1]}`, 'Will you take it?'];
+      choices = [choice(`mission.take:${open.id}`, 'We’ll do it.'), choice(`mission.decline:${open.id}`, 'Not this one.'), choice('back', BACK)];
     }
+  } else if (action === 'mission.take') {
+    // Taken in person: the contract starts now, and stays on the notice board (under their name) until it's done.
+    const mission = next.missions.find((item) => item.id === argument);
+    if (!mission) return { state, error: 'That contract is gone.' };
+    if (mission.accepted) return { state, error: 'You already took that one.' };
+    acceptContractInPlace(next, mission, { id: person.id, name: person.name });
+    memory.relationship = clamp(memory.relationship + 1, -10, 10);
+    lines = ['Good.', `${firstStep(next, mission)?.text || 'You know what to do'}. Come back to me when it’s done.`];
+    ui = { notice: `Contract taken: “${mission.title}”.` };
   } else if (action === 'mission.post') {
     // The job goes up on the notice board with the giver's name; the guild takes it there (missions.js acceptContract).
     const mission = next.missions.find((item) => item.id === argument);

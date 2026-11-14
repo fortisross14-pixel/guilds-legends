@@ -162,3 +162,11 @@
 .contract-panel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .contract-panel__actions .button { min-height: 44px; }
 .notice-board__elsewhere { margin: 0; color: var(--text-dim); font-size: var(--fs-2); }
+/* The notice board's "Looking for help": who, what they do, and where to find them. */
+.notice-board__head { margin: 6px 0 8px; font: 700 var(--fs-3) var(--font-ui); color: var(--text-dim); letter-spacing: .04em; }
+.help-list { display: grid; gap: 6px; margin: 0 0 14px; padding: 0; list-style: none; }
+.help-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border-top: 1px solid var(--line-soft); }
+.help-row__who { display: grid; min-width: 0; }
+.help-row__who small { color: var(--text-dim); }
+.help-row__where { display: inline-flex; align-items: center; gap: 4px; color: var(--gold-bright); font-size: var(--fs-2); white-space: nowrap; }
+.help-row.is-working { opacity: .85; }
