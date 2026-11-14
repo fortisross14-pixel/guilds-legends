@@ -404,6 +404,31 @@ export default {
       },
     ],
   },
+  // The practice bout Tavish offers once you've met (story r1-dawn): a peek at his two, then fight or put it off.
+  // Put him off and try to leave Dunmere for another town, and he blocks the road (exploration.js).
+  'story.r1.practice': {
+    speaker: 'Tavish Rowe',
+    portrait: 'portrait.class.guardian',
+    decide: true,
+    leave: 'Not now.',
+    variants: [
+      {
+        if: { flag: 'dawnPracticePutOff' },
+        lines: ['Ready yet? Same offer: me and one of mine, two against two. I’m level 4, my second is level 3.'],
+        choices: [
+          { text: 'Let’s fight.', effects: [{ battle: { id: 'dawn-practice', name: 'The Dawnriders', rival: 'dawn', levels: [4, 3], count: 2, practice: true, objective: 'A practice bout: nobody gets hurt.', onDone: { flag: 'dawnPractice' }, onWin: { flag: 'dawnPracticeWon' } } }], reply: ['“Shields up!”'] },
+          { text: 'Not yet. Give me a little longer.', effects: [{ wait: true }, { flag: 'dawnPracticePutOff' }], reply: ['“You keep saying that. Don’t try to sneak out of town on me.”'] },
+        ],
+      },
+      {
+        lines: ['How about a practice bout? Two of mine against two of yours, here in the street. Nobody gets hurt. Much.', 'Me, level 4, and my second, level 3. Fair warning.'],
+        choices: [
+          { text: 'Let’s fight.', effects: [{ battle: { id: 'dawn-practice', name: 'The Dawnriders', rival: 'dawn', levels: [4, 3], count: 2, practice: true, objective: 'A practice bout: nobody gets hurt.', onDone: { flag: 'dawnPractice' }, onWin: { flag: 'dawnPracticeWon' } } }], reply: ['“Ha! Shields up!”'] },
+          { text: 'Let me get ready, and I’ll come back to you.', effects: [{ wait: true }, { flag: 'dawnPracticePutOff' }], reply: ['“Don’t take all summer. I’ll be right here.”'] },
+        ],
+      },
+    ],
+  },
   // Morra Quell (the Black Thistle): sly, contemptuous, ambitious; respects only fear.
   'greenhollow.quell': {
     speaker: 'Morra Quell',

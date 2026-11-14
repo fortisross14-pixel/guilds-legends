@@ -763,7 +763,11 @@ export const STORY_MISSIONS = [
     summary: 'Your banner isn’t the only new one in Dunmere. A smith’s son called Tavish Rowe founded the Dawnriders the same summer.',
     gate: { text: 'A hall and a companion (1.2)', if: { storyDone: 'c1-road' } },
     alternatives: [],
-    steps: [{ id: 'meet', kind: 'scene', scene: 'story.r1.rowe', at: 'dunmere', npc: 'dunmere.rowe', text: 'Meet the other new guild in Dunmere.', screen: 'town' }],
+    steps: [
+      { id: 'meet', kind: 'scene', scene: 'story.r1.rowe', at: 'dunmere', npc: 'dunmere.rowe', text: 'Meet the other new guild in Dunmere.', screen: 'town' },
+      { id: 'practice', kind: 'scene', scene: 'story.r1.practice', at: 'dunmere', npc: 'dunmere.rowe', text: 'Tavish Rowe wants a practice bout.', hint: 'Nobody gets hurt. Put him off too long and he won’t let you leave town.', screen: 'town' },
+      { id: 'bout', kind: 'check', if: { flag: 'dawnPractice' }, text: 'Fight the Dawnriders’ practice bout.', screen: 'town' },
+    ],
     rewards: { fame: 1 },
   },
   {

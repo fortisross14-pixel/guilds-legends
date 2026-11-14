@@ -99,7 +99,18 @@ function concludeWildCombatInPlace(next, encounter, combatResult) {
  */
 function concludeTalkBattleInPlace(next, encounter, combatResult) {
   const fighters = encounter.party.map((unit) => getHero(next, unit.heroId)).filter(Boolean);
+  const done = encounter.sourceMeta?.onDone;
+  if (done?.flag) {
+    next.flags.dialogue ||= {};
+    next.flags.dialogue[done.flag] = true;
+  }
   if (!combatResult.playerWon) {
+    // A practice bout: they help you up. Nobody goes to the infirmary.
+    if (encounter.sourceMeta?.practice) {
+      fighters.forEach((hero) => (hero.health = Math.max(hero.health || 0, 30)));
+      next.notifications.push({ id: `practice-${encounter.id}`, tone: 'blue', title: `${encounter.title}: beaten`, text: 'A practice bout: they help you up. Train and try them in the ring.' });
+      return;
+    }
     defeatInPlace(next, fighters.map((hero) => hero.id), next.world?.currentLocationId);
     return;
   }
@@ -175,7 +186,7 @@ function carryVitalsInPlace(state, encounter, combatResult) {
       return;
     }
     hero.health = 1;
-    if (NO_INJURY.has(encounter.sourceType)) {
+    if (NO_INJURY.has(encounter.sourceType) || encounter.sourceMeta?.practice) {
       // Spent, not hurt: low HP and no MP, but free to keep going.
       hero.health = 10;
       hero.mana = 0;

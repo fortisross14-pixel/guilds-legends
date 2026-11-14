@@ -35,6 +35,8 @@ import { rentLotInPlace } from './hall.js';
 import { HOME_LOT_ID } from '../../data/lots.js';
 import { advanceDays } from './time.js';
 import { introduceInPlace } from './people.js';
+import { storyRival } from './universe.js';
+import { STORY_RIVALS } from '../../data/universe.js';
 
 
 /** Pixel centre of a tile, for saved positions. */
@@ -375,6 +377,12 @@ export function enterWildArea(state, areaId, fromPosition = null) {
   const road = roadForArea(areaId);
   if (road?.gate && !checkCondition(state, road.gate)) return { state, error: road.lockedText || `${road.name} is closed for now.` };
   if (state.activeEncounter) return { state, error: 'Finish what is in front of you first.' };
+  // Put the Dawnriders off and try to leave Dunmere for another town: Tavish Rowe blocks the road.
+  if (from === 'dunmere' && areaLinks(area).length > 1 && state.flags?.dialogue?.dawnPracticePutOff && !state.flags?.dialogue?.dawnPractice) {
+    const next = clone(state);
+    startTalkBattleInPlace(next, { ...DAWN_PRACTICE, forced: true, objective: 'Tavish Rowe blocks the road out of town. No more putting it off.' });
+    return { state: finalize(next), error: null, forced: true };
+  }
   const next = clone(state);
   const wild = wildStateInPlace(next, areaId);
   const exploration = explorationInPlace(next);
@@ -395,6 +403,9 @@ export function enterWildArea(state, areaId, fromPosition = null) {
   }
   return { state: finalize(next), error: null, days };
 }
+
+/** The Dawnriders' practice bout (story r1-dawn): Tavish Rowe (level 4) and one of his (level 3). */
+export const DAWN_PRACTICE = { id: 'dawn-practice', name: 'The Dawnriders', rival: 'dawn', levels: [4, 3], count: 2, practice: true, objective: 'A practice bout: nobody gets hurt.', onDone: { flag: 'dawnPractice' }, onWin: { flag: 'dawnPracticeWon' } };
 
 /** "Brightwane week 2, day 3": a date for trip reports. */
 function dateText(date) {
@@ -520,11 +531,26 @@ function wildFighters(state) {
 }
 
 /** A battle a conversation starts (src/data/dialogue/index.js, the { battle } effect). */
+/**
+ * A story rival's fighters for a bout (`battle.rival`: 'dawn' or 'thistle'), at the levels given
+ * (`battle.levels`, the captain first): the Dawnriders' practice bout in Dunmere.
+ */
+function rivalRoster(state, battle) {
+  const rival = storyRival(state, battle.rival === 'thistle' ? STORY_RIVALS.wicked : STORY_RIVALS.honourable);
+  if (!rival) return null;
+  const levels = battle.levels || [rival.star?.level || 1];
+  return [rival.star, ...(rival.members || []).filter((member) => member.id !== rival.star?.id)]
+    .filter(Boolean)
+    .slice(0, levels.length)
+    .map((hero, index) => ({ ...hero, level: levels[index], power: Math.min(98, Math.round(38 + 2.25 * levels[index])), health: 100, mana: 100 }));
+}
+
 function startTalkBattleInPlace(state, battle) {
   const fighters = wildFighters(state);
   if (!fighters.length || state.activeEncounter) return;
   const here = state.world?.currentLocationId || 'dunmere';
-  const types = battle.types.map((id) => ENEMY_TYPES[id]).filter(Boolean);
+  const types = (battle.types || []).map((id) => ENEMY_TYPES[id]).filter(Boolean);
+  const roster = battle.rival ? rivalRoster(state, battle) : null;
   const level = battle.level || 1;
   const count = (state.world?.exploration?.talkBattles || 0) + 1;
   state.activeEncounter = createPartyEncounter({
@@ -542,11 +568,13 @@ function startTalkBattleInPlace(state, battle) {
     opponentPower: battle.power || Math.min(98, Math.round(38 + 2.25 * level)),
     enemyCount: clamp(battle.count || 2, 1, 5),
     enemyTypes: types,
+    opponentRoster: roster,
     risk: 2,
-    canFlee: true,
+    canFlee: !battle.forced,
     items: battleItems(state),
   });
-  state.activeEncounter.sourceMeta = { onWin: battle.onWin || null };
+  // `practice`: a friendly bout (nobody is carried to the infirmary); `onDone` flags either way.
+  state.activeEncounter.sourceMeta = { onWin: battle.onWin || null, practice: Boolean(battle.practice), onDone: battle.onDone || null };
   (battle.names || []).forEach((name, index) => {
     if (state.activeEncounter.enemies[index]) state.activeEncounter.enemies[index].name = name;
   });
