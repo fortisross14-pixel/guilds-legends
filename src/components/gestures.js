@@ -109,3 +109,22 @@ export function dropTargetAt(x, y) {
   const element = document.elementFromPoint(x, y)?.closest?.('[data-drop]');
   return element ? { kind: element.dataset.drop, id: element.dataset.dropId, element } : null;
 }
+
+/**
+ * Choices ignore clicks for a moment after they appear (or change): the tap that finishes a
+ * line or skips it must not land on a choice that just popped up under the finger or cursor.
+ * Spread the returned props on the choices' container; `key` changes when new choices show.
+ */
+export const CHOICE_GUARD_MS = 450;
+export function useChoiceGuard(key, ms = CHOICE_GUARD_MS) {
+  const last = useRef({ key: undefined, at: 0 });
+  if (last.current.key !== key) last.current = { key, at: typeof performance !== 'undefined' ? performance.now() : 0 };
+  return {
+    onClickCapture: (event) => {
+      if (performance.now() - last.current.at < ms) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+  };
+}

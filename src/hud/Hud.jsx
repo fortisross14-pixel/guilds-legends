@@ -146,7 +146,8 @@ export function Orb({ side, icon, art = null, label, items, showLabel = false, o
                   <Icon name={item.icon} size={24} />
                   {item.badge ? <b className="orb__count">{typeof item.badge === 'number' ? item.badge : ''}</b> : null}
                 </button>
-                <span className="orb__item-label" aria-hidden="true">
+                {/* The label is part of the target too (with a mouse, people click the word). */}
+                <span className="orb__item-label" aria-hidden="true" onClick={() => select(index)}>
                   {item.label}
                   {item.hint ? <small>{item.hint}</small> : null}
                 </span>
@@ -159,9 +160,27 @@ export function Orb({ side, icon, art = null, label, items, showLabel = false, o
   );
 }
 
-/** Taps outside the open fan (or swipes) close it. */
+/**
+ * Taps outside the open fan close it: a press and release both on the scrim, not in the first
+ * moments after it opened (a quick mouse click while the fan was still flying out closed it).
+ */
 export function OrbScrim({ onClose }) {
-  return <div className="orb-scrim" onPointerUp={onClose} onContextMenu={(event) => event.preventDefault()} aria-hidden="true" />;
+  const opened = useRef(performance.now());
+  const down = useRef(false);
+  return (
+    <div
+      className="orb-scrim"
+      onPointerDown={() => {
+        down.current = performance.now() - opened.current > 250;
+      }}
+      onPointerUp={() => {
+        if (down.current) onClose();
+        down.current = false;
+      }}
+      onContextMenu={(event) => event.preventDefault()}
+      aria-hidden="true"
+    />
+  );
 }
 
 const FLASH_MS = 2600;

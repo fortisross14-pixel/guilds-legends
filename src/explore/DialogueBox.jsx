@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useChoiceGuard } from '../components/gestures.js';
 import { getDialogueReply, getDialogueView, getTopicReply } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
@@ -70,6 +71,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
   const atLastLine = index >= lines.length - 1;
   const current = lines[index] || null;
   const typing = useTypewriter(phase === 'lines' ? current?.text : '', prefersInstantText(state.settings));
+  const choiceGuard = useChoiceGuard(`${phase}:${index}:${lines.length}`);
   const advance = () => {
     if (phase !== 'lines') return;
     if (!typing.done) typing.finish();
@@ -185,7 +187,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
           {line.speaker ? <span className="dialogue__speaker">{line.speaker}</span> : null}
           <TypedLine className={`dialogue__text${line.speaker ? '' : ' is-narration'}`} text={line.text} shown={phase === 'lines' ? typing.shown : line.text} />
           {phase === 'choices' ? (
-            <div className="dialogue__choices">
+            <div className="dialogue__choices" {...choiceGuard}>
               {view.decide && view.hub
                 ? view.hub.map((topic) => (
                     <button key={topic.id} type="button" className={`dialogue__ask ${asked.has(topic.id) ? 'is-asked' : ''}`} onClick={() => ask(topic)}>
@@ -207,7 +209,7 @@ export default function DialogueBox({ state, actions, conversationId, visit = nu
             </div>
           ) : null}
           {phase === 'hub' ? (
-            <div className="dialogue__choices dialogue__choices--hub">
+            <div className="dialogue__choices dialogue__choices--hub" {...choiceGuard}>
               {view.hub.map((topic) => (
                 <button key={topic.id} type="button" className={asked.has(topic.id) ? 'is-asked' : ''} onClick={() => ask(topic)}>
                   {asked.has(topic.id) ? <Icon name="check" size={14} tone="plain" /> : null}

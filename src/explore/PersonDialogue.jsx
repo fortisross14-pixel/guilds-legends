@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useChoiceGuard } from '../components/gestures.js';
 import { getPersonTalk } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
@@ -35,6 +36,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
   // After Skip, the last line shows whole, so the topics come up at once.
   const [skipped, setSkipped] = useState(false);
   const typing = useTypewriter(lines[index] || '', skipped || prefersInstantText(state.settings));
+  const choiceGuard = useChoiceGuard(`${index}:${lines.length}:${choices.length}`);
   if (!talk) return null;
   const { person } = talk;
   // A recruit's ID card sits above the box from the first line (battle-hiring spec).
@@ -96,7 +98,7 @@ export default function PersonDialogue({ state, actions, personId, onClose, onOp
           </span>
           <TypedLine text={lines[index]} shown={typing.shown} />
           {!waiting ? (
-            <div className="dialogue__choices dialogue__choices--hub">
+            <div className="dialogue__choices dialogue__choices--hub" {...choiceGuard}>
               {choices.map((choice) => (
                 <button key={choice.id} type="button" className={choice.asked ? 'is-asked' : ''} onClick={() => choose(choice)}>
                   {choice.asked ? <Icon name="check" size={14} tone="plain" /> : null}

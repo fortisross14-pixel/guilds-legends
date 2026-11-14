@@ -12,6 +12,7 @@ import { PlaceTag } from '../hud/Hud.jsx';
 import Asset from './Asset.jsx';
 import { Button, founderArt } from './UI.jsx';
 import { prefersInstantText, useTypewriter } from '../explore/useTypewriter.js';
+import { useChoiceGuard } from './gestures.js';
 import TypedLine from '../explore/TypedLine.jsx';
 
 // The prologue, "The knock at the door" (docs/STORY.md, Scene 01). The house
@@ -44,6 +45,7 @@ export default function Prologue({ state, onComplete }) {
           : [];
   const line = script[index] || null;
   const typing = useTypewriter(line?.text || '', prefersInstantText(state.settings));
+  const choiceGuard = useChoiceGuard(phase);
 
   // The end of this part of the scene: walk to the door, the choice, or the founding.
   const endScript = () => {
@@ -138,7 +140,7 @@ export default function Prologue({ state, onComplete }) {
             <div className="dialogue__box">
               <div className="dialogue__body">
                 <p className="dialogue__text is-narration">The footsteps stop. Someone tries the door. What do you do?</p>
-                <div className="dialogue__choices">
+                <div className="dialogue__choices" {...choiceGuard}>
                   {PROLOGUE.choices.map((item) => (
                     <button key={item.id} type="button" onClick={() => pick(item.id)}>
                       {item.label}

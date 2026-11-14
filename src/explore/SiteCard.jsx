@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useChoiceGuard } from '../components/gestures.js';
 import { siteObjectiveView } from '../game/engine.js';
 import Asset from '../components/Asset.jsx';
 import Icon from '../components/Icon.jsx';
@@ -12,6 +13,7 @@ import Icon from '../components/Icon.jsx';
 export default function SiteCard({ state, actions, missionId, objectiveId, arrive = false, onClose }) {
   const view = siteObjectiveView(state, missionId, objectiveId);
   const [result, setResult] = useState(null);
+  const choiceGuard = useChoiceGuard(result ? `r:${result.text || ''}` : 'start');
   if (!view) return null;
   const act = (options = {}) => {
     const outcome = actions.siteAct(missionId, objectiveId, { arrive, ...options });
@@ -59,7 +61,7 @@ export default function SiteCard({ state, actions, missionId, objectiveId, arriv
             </span>
           )}
           <p className={`dialogue__text${speaker ? '' : ' is-narration'}${result && !result.ok ? ' is-setback' : ''}`}>{text}</p>
-          <div className="dialogue__choices">
+          <div className="dialogue__choices" {...choiceGuard}>
             {actionsFor().map((choice) => (
               <button key={choice.key} type="button" onClick={choice.run}>
                 {choice.text}
