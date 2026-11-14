@@ -166,7 +166,9 @@ function base(place) {
       ? { groundPaint: { asset: 'tiles.handpainted', rows: place.tiles, tileSize: T, wild: place.kind === 'wild', tone: place.id === 'blackwood' ? 'rgba(30, 20, 50, .34)' : null } }
       : { tiles: { asset: 'tiles.ground', size: T, data } }),
     player: { asset: 'char.founder', ...personSize('char.founder') },
-    pad: 9,
+    // The walker's clearance from blocks: 7 px lets it through a one-tile gap between trees
+    // (a 16 px path cell's centre falls inside 32 - 2 × 7); at 9 px such gaps were walls.
+    pad: 7,
     blocks,
   };
 }
